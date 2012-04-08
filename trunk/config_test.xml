@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>no comments</comment>
+<entry key="log4j-settings">config/log4j-log-debug-eclipse.cfg</entry>
+<entry key="wiki-login">NirvanaBot</entry>
+<entry key="wiki-password">yeghsq1</entry>
+<entry key="new-pages-template">Участник:NirvanaBot/test/Новые статьи</entry>
+<entry key="wiki-lang">ru</entry>
+<entry key="wiki-java-loglevel">OFF</entry>
+<entry key="update-comment">обновление</entry>
+<entry key="default-depth">15</entry>
+<entry key="default-hours">720</entry>
+<entry key="default-maxitems">20</entry>
+<entry key="default-comment">обновление</entry>
+<entry key="default-comment-new">обновление</entry>
+<entry key="default-comment-new-archive">обновление</entry>
+<entry key="error-notification">no</entry>
+<entry key="debug-mode">yes</entry>
+<entry key="stop-after">0</entry>
+<entry key="start-from">0</entry>
+<entry key="update-pause">2000</entry>
+<entry key="time-format">short</entry>
+<entry key="task-list">yes</entry>
+<entry key="task-list-file">task.txt</entry>
+<entry key="statistics">yes</entry>
+<entry key="statistics-file">report-%(date).txt</entry>
+<entry key="statistics-format">txt</entry>
+<entry key="type">all</entry>
+
+</properties>
