@@ -1,5 +1,5 @@
 /**
- *  @(#)ArchiveSettings.java 07/04/2012
+ *  @(#)ArchiveSettings.java 02/07/2012
  *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -37,24 +37,38 @@ public class ArchiveSettings {
 	public boolean addToTop;
 	public boolean removeDeleted;
 	public Period archivePeriod;
+	public Enumeration enumeration;
+	//public boolean supportCategory;
+	
+	public enum Enumeration {
+		NONE,
+		HASH,
+		HTML,
+		HTML_GLOBAL,
+		DETECT
+	};
 
 	public enum Period {
-		NONE (100,null),
-		DAY (1,"%(день)"),
-		WEEK (2,"%(недел€)"),
-		MONTH (3,"%(мес€ц)"),
-		MONTHRP (3,"%(мес€ц в родительном падеже)"),
-		QUARTER (4,"%(квартал)"),
-		SEASON (4,"%(сезон)"),
-		YEAR (6,"%(год)");
+		NONE (100,null,false),
+		DAY (1,"%(день)",true),
+		WEEK (2,"%(недел€)",true),
+		MONTH (3,"%(мес€ц)",false),
+		MONTHRP (3,"%(мес€ц в родительном падеже)",false),
+		QUARTER (4,"%(квартал)",true),
+		SEASON (4,"%(сезон)",true),
+		YEAR (6,"%(год)",true);
 		private final int degree;
 		private final String template;
-		Period(int degree, String template) {
+		private final boolean numeric;
+		Period(int degree, String template, boolean numeric) {
 			this.degree = degree;
 			this.template = template;
+			this.numeric = numeric;
 		}
 		public int degree() { return degree; }
 		public String template() { return template; }
+		public boolean isNumeric() { return numeric; }
+		//public String 
 	};
 	
 	ArchiveSettings() {
@@ -64,6 +78,8 @@ public class ArchiveSettings {
 		removeDeleted = false;
 		headerFormat = null;
 		headerHeaderFormat = null;
+		enumeration = Enumeration.NONE;
+		//supportCategory = false;
 	}
 	
 	public boolean isSingle() {
@@ -75,7 +91,11 @@ public class ArchiveSettings {
 	}
 	
 	public boolean isSimple() {
-		return ((addToTop==true) && isSingle() && withoutHeaders()); 
+		return ((addToTop==true) && isSingle() && withoutHeaders() && !hasHtmlEnumeration() /*&& !supportCategory*/); 
+	}
+	
+	public boolean hasHtmlEnumeration () {
+		return (enumeration == Enumeration.HTML || enumeration == Enumeration.HTML_GLOBAL);
 	}
 	
 	public static ArchiveSettings.Period getHeaderPeriod(String format) {
@@ -100,11 +120,13 @@ public class ArchiveSettings {
 		if(name.contains(Period.SEASON.template))
 			name = name.replace(Period.SEASON.template, DateTools.russianSeasons[c.get(Calendar.MONTH)/3]);
 		if(name.contains(Period.QUARTER.template))
-			name = name.replace(Period.QUARTER.template, String.valueOf(c.get(Calendar.MONTH)/3));
+			name = name.replace(Period.QUARTER.template, String.valueOf(c.get(Calendar.MONTH)/3+1));
 		if(name.contains(Period.MONTH.template))
 			name = name.replace(Period.MONTH.template, DateTools.russianMonths[c.get(Calendar.MONTH)]);
 		return name;
 	}
+	
+
 	public static String getHeaderForDate(Calendar c, String format) {
 		String header=format;
 		if(header==null)

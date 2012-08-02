@@ -1,5 +1,5 @@
 /**
- *  @(#)StringTools.java 07/04/2012
+ *  @(#)StringTools.java 02/07/2012
  *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,9 @@
  */
 
 package org.wikipedia.nirvana;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author kin
@@ -50,5 +53,61 @@ public class StringTools {
     public static String trimRight(String s) {
         return s.replaceAll("\\s+$", "");
     } 
+    
+    public static String[] splitBottom(String str, String separatorChars, int max) {
+        
+        if (str == null) {
+            return null;
+        }
+        int len = str.length();
+        if (len == 0) {
+            return new String[0];
+        }
+        List<String> list = new ArrayList<String>();
+        int sizePlus1 = 1;
+        int i = len-1, start = len;
+        boolean match = false;
+        if (separatorChars.length() == 1) {
+            // Optimise 1 character case
+            char sep = separatorChars.charAt(0);
+            while (i >= 0) {
+                if (str.charAt(i) == sep) {
+                    if (match) {
+                        if (sizePlus1++ == max) {
+                            i = -1;
+                        }
+                        list.add(0,str.substring(i+1, start));
+                        match = false;
+                    }
+                    start = i--;
+                    continue;
+                }
+                match = true;
+                i--;
+            }
+        } else {
+            // standard case
+        	/*
+            while (i < len) {
+                if (separatorChars.indexOf(str.charAt(i)) >= 0) {
+                    if (match) {
+                        if (sizePlus1++ == max) {
+                            i = len;
+                        }
+                        list.add(str.substring(start, i));
+                        match = false;
+                    }
+                    start = ++i;
+                    continue;
+                }
+                match = true;
+                i++;
+            }*/
+        }
+        if (match) {
+        	list.add(0,str.substring(i+1, start));
+        }
+        return list.toArray(new String[list.size()]);
+    }
     
 }

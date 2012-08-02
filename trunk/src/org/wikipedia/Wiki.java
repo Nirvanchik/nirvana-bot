@@ -467,12 +467,12 @@ public class Wiki implements Serializable
     private int max = 500; // awkward workaround
     protected static final Logger logger = Logger.getLogger("wiki"); // only one required
     private int throttle = 10000; // throttle
-    private int maxlag = 5;
-    private volatile long lastlagcheck;
+    protected int maxlag = 5;
+    protected volatile long lastlagcheck;
     private int assertion = 0; // assertion mode
     private int statusinterval = 100; // status check
     private String useragent = "Wiki.java " + version;
-    private boolean zipped = true;
+    protected boolean zipped = true;
 
     // retry flag
     private boolean retry = true;
@@ -481,10 +481,10 @@ public class Wiki implements Serializable
     private static final long serialVersionUID = -8745212681497644126L;
 
     // time to open a connection
-    private static final int CONNECTION_CONNECT_TIMEOUT_MSEC = 30000; // 30 seconds
+    protected static final int CONNECTION_CONNECT_TIMEOUT_MSEC = 30000; // 30 seconds
     // time for the read to take place. (needs to be longer, some connections are slow
     // and the data volume is large!)
-    private static final int CONNECTION_READ_TIMEOUT_MSEC = 180000; // 180 seconds
+    protected static final int CONNECTION_READ_TIMEOUT_MSEC = 180000; // 180 seconds
 
     // CONSTRUCTORS AND CONFIGURATION
 
@@ -6253,7 +6253,7 @@ public class Wiki implements Serializable
      *  @param u an unconnected URLConnection
      *  @param map the cookie store
      */
-    private void grabCookies(URLConnection u)
+    protected void grabCookies(URLConnection u)
     {
         String headerName = null;
         for (int i = 1; (headerName = u.getHeaderFieldKey(i)) != null; i++)

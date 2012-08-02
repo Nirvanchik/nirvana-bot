@@ -1,5 +1,5 @@
 /**
- *  @(#)WatchList.java 07/04/2012
+ *  @(#)WatchList.java 02/07/2012
  *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -75,7 +75,7 @@ public class WatchList extends NewPages {
 		
 	}
 	
-	public String getData(Wiki wiki) throws IOException, InterruptedException {
+	public void getData(Wiki wiki) throws IOException, InterruptedException {
 		log.info("Getting data for [[" + this.pageName+"]]");
 		pageLists = new HashMap<String,String>();
 		for(String category : this.categories)
@@ -90,12 +90,7 @@ public class WatchList extends NewPages {
 		    pageListsToIgnore.put(category, text);
 		}
 		
-		try
-		{
-		    return wiki.getPageText(this.pageName);
-		} catch (java.io.FileNotFoundException e) {
-			return "";
-		}
+		return;
 	}
 	
 	

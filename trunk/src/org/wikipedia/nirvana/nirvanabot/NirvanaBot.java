@@ -1,5 +1,5 @@
 /**
- *  @(#)NirvanaBot.java 0.02 08/04/2012
+ *  @(#)NirvanaBot.java 0.03 02/07/2012
  *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -26,12 +26,10 @@ package org.wikipedia.nirvana.nirvanabot;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -43,45 +41,44 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.PropertyConfigurator;
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.StringTools;
+import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Period;
 
 /**
  * @author kin
  *
  */
-public class NirvanaBot {
+public class NirvanaBot extends NirvanaBasicBot{
 //	private static final String TESTING_PORTAL = "Участник:NirvanaBot/test/Новые статьи";
 
-	private static final boolean DEBUG_BUILD = false;
+	//private static final boolean DEBUG_BUILD = false;
 	private static int STOP_AFTER = 0;
 	public static int UPDATE_PAUSE = 1000;
 	//private static boolean DEBUG_DESTINATION = true;
-	private static boolean DEBUG_MODE = false;
+	//private static boolean DEBUG_MODE = false;
 	
 	public static String TIME_FORMAT = "short"; // short,long
 	
 	private static boolean TASK = false;
 	private static String TASK_LIST_FILE = "task.txt";
 	
-	private static Properties properties = null;
+	//private static Properties properties = null;
 	
 	private static int START_FROM = 0;
 	
-	public static final String YES = "yes";
-	public static final String NO = "no";
 	
-	public static org.apache.log4j.Logger log = null;
 	
-	public static NirvanaWiki wiki;
+	//public static org.apache.log4j.Logger log = null;
+	
+	//public static NirvanaWiki wiki;
 	
 	private static String newpagesTemplateName = null;
 	
@@ -110,6 +107,8 @@ public class NirvanaBot {
 	
 	private static int RETRY_MAX = 1;
 	
+	private static String newpagesTemplate = null;
+	
 	private static class NewPagesData {
 		ArrayList<String> errors;
 		PortalModule portalModule;
@@ -126,26 +125,18 @@ public class NirvanaBot {
 		SKIP,
 		PROCESSED,
 		UPDATED,
+		//DENIED,
 		ERROR
 	};
-	
-	public static final String LICENSE = 
-		"NirvanaBot v1.01 Updates Portal/Project sections at http://ru.wikipedia.org\n" +
-		"Copyright (C) 2011-2012 Dmitry Trofimovich (KIN)\n" +
-		"\n" +
-		"This program is free software: you can redistribute it and/or modify\n" +
-		"it under the terms of the GNU General Public License as published by\n" +
-		"the Free Software Foundation, either version 3 of the License, or\n" +
-		"(at your option) any later version.\n" +
-		"\n" +
-		"This program is distributed in the hope that it will be useful,\n" +
-		"but WITHOUT ANY WARRANTY; without even the implied warranty of\n" +
-		"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n" +
-		"GNU General Public License for more details.\n" +
-		"\n" +
-		"You should have received a copy of the GNU General Public License\n" +
-		"along with this program.  If not, see <http://www.gnu.org/licenses/>\n\n";
-	
+	public static String PROGRAM_INFO = 
+			"NirvanaBot v1.02 Updates Portal/Project sections at http://ru.wikipedia.org\n" +
+			"Copyright (C) 2011-2012 Dmitry Trofimovich (KIN)\n" +
+			"\n";
+			
+	public void showInfo() {
+		System.out.print(PROGRAM_INFO);
+	}
+		
 	/**
 	 * 
 	 */
@@ -153,66 +144,17 @@ public class NirvanaBot {
 		
 	}
 	
-	public static void main( String[] args ) throws Exception {
-		String configFile = null;
-		if(args.length==0) {
-			if(DEBUG_BUILD) {
-				configFile = "config_test.xml";				
-			} else {
-				configFile = "config.xml";				
-			}			
-		} else {
-			configFile = args[0];				
-		}
-		System.out.print(LICENSE);
+	public static void main(String[] args) {
+		NirvanaBasicBot bot = new NirvanaBot();
+		bot.showInfo();
+		bot.showLicense();
+		System.out.print("-----------------------------------------------------------------\n");
+		String configFile = bot.getConfig(args);		
 		System.out.println("applying config file: "+configFile);
-		startWithConfig(configFile);
-		
+		bot.startWithConfig(configFile);
 	}
 	
-	
-	private static int validateIntegerSetting(Properties pop, String name, int def, boolean notifyNotFound) {
-		int val = def;
-		try {
-			String str = properties.getProperty(name);
-			if(str==null) {
-				if(notifyNotFound) { 
-					log.info("settings: integer value not found in settings ("+name+")");
-				}
-				return val;
-			}
-			val = Integer.parseInt(str);				
-		}catch(NumberFormatException e){
-			log.error("invalid settings: error when parsing integer values of "+name);
-			//properties.setProperty(name, String.valueOf(def));
-		} catch(NullPointerException e){
-			if(notifyNotFound) {
-				log.info("settings: integer value not found in settings ("+name+"), using default");
-			}
-			//properties.setProperty(name, String.valueOf(def));
-		}
-		return val;
-	}
-
-	
-	public static void startWithConfig(String cfg) {
-		properties = new Properties();
-		try {
-			InputStream in = new FileInputStream(cfg);
-			if(cfg.endsWith(".xml")) {
-				properties.loadFromXML(in);			
-			} else {
-				properties.load(in);		
-			}
-			in.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("ABORT: file "+cfg+" not found");
-			//e.printStackTrace();
-		} catch (IOException e) {			
-			e.printStackTrace();
-		}
-		//boolean nologs = true;
-		
+	protected void initLog() {
 		String log4jSettings = properties.getProperty("log4j-settings");
 		if(log4jSettings==null || log4jSettings.isEmpty() || !(new File(log4jSettings)).exists()) {
 			System.out.println("INFO: logs disabled");
@@ -227,15 +169,10 @@ public class NirvanaBot {
 			log = org.apache.log4j.Logger.getLogger(NirvanaBot.class.getName());	
 			System.out.println("INFO: using log settings : " + log4jSettings);
 		}
-		String login = properties.getProperty("wiki-login");
-		String pw = properties.getProperty("wiki-password");
-		if(login==null || pw==null) {
-			System.out.println("ABORT: properties not found");
-			log.fatal("login (wiki-login) or password(wiki-password) is not specified in settings");
-			return;
-		}
-		log.info("login="+login+",password="+pw);
-		String newpagesTemplate = properties.getProperty("new-pages-template");
+	}
+	
+	protected void loadCustomProperties() {
+		newpagesTemplate = properties.getProperty("new-pages-template");
 		if(newpagesTemplate==null) {
 			if(DEBUG_BUILD)
 				newpagesTemplate = "Участник:NirvanaBot/test/Новые статьи";
@@ -246,17 +183,8 @@ public class NirvanaBot {
 			}
 		}	
 		log.info("new pages template : "+newpagesTemplate);	
-			
-		/*
-		if(login==null || pw==null || newpagesTemplate==null || LANGUAGE==null) {
-			System.out.println("ABORT: properties not found");
-			return;
-		}*/
 		
 		
-		LANGUAGE = properties.getProperty("wiki-lang",LANGUAGE);
-		log.info("language="+LANGUAGE);
-		COMMENT = properties.getProperty("update-comment",COMMENT);
 		ERROR_NOTIFICATION = properties.getProperty("error-notification",ERROR_NOTIFICATION?YES:NO).equals(YES);
 		log.info("error_notification="+ERROR_NOTIFICATION);
 		
@@ -282,9 +210,6 @@ public class NirvanaBot {
 		TASK_LIST_FILE = properties.getProperty("task-list-file",TASK_LIST_FILE);
 		log.info("task list file: "+TASK_LIST_FILE);
 		
-		DEBUG_MODE = properties.getProperty("debug-mode",DEBUG_MODE?YES:NO).equals(YES);
-		log.info("DEBUG_MODE="+DEBUG_MODE);
-		
 		GENERATE_REPORT = properties.getProperty("statistics",GENERATE_REPORT?YES:NO).equals(YES);
 		REPORT_FILE_NAME = properties.getProperty("statistics-file",REPORT_FILE_NAME);
 		REPORT_FORMAT = properties.getProperty("statistics-format",REPORT_FORMAT);
@@ -295,39 +220,14 @@ public class NirvanaBot {
 		}
 		
 		TYPE = properties.getProperty("type",TYPE);
-		//File fSettings= new File(log4jSettings);
-		
-		
-		//log.error("hh");
-		
-		wiki = new NirvanaWiki( LANGUAGE + ".wikipedia.org" );
-		wiki.setMaxLag( 15 );
-		log.info("login to "+LANGUAGE+ ".wikipedia.org, login: "+login+", password: "+pw);
-		try {
-			wiki.login(login, pw.toCharArray());
-		} catch (FailedLoginException e) {
-			log.fatal("Failed to login to "+LANGUAGE+ ".wikipedia.org, login: "+login+", password: "+pw);
-			return;
-		} catch (IOException e) {			
-			log.fatal(e.toString());
-			e.printStackTrace();
-			return;
-		}
-		
-		if(NirvanaBot.DEBUG_MODE) {
-			wiki.setDumpMode("dump");
-		}		
-		
+	}
+	
+	protected void go() {
 		go(newpagesTemplate);
-		
-		
-		wiki.logout();		
-		//print( "db lag (seconds): " + m_wiki.getCurrentDatabaseLag() );
-		log.warn("EXIT");
 	}
 	
 	@SuppressWarnings("unused")
-	static void go(String template) {
+	void go(String template) {
 		Calendar cStart = Calendar.getInstance();
 		long start = cStart.getTimeInMillis();
 		//Date d = cStart.getTime();
@@ -372,12 +272,12 @@ public class NirvanaBot {
 /*		for(String str:portalNewPagesLists) {
 			log.debug(str);
 		}*/
-		int i = 0;
-		int t = 0;
-		int j = 0;
-		int k = 0;
-		int l = 0;
-		int max = 10;
+		int i = 0;	// текущий портал
+		int t = 0;	// количество проверенных порталов
+		int j = 0;  // количество обработанных порталов
+		int k = 0;  // количество на самом деле проверенных порталов
+		int l = 0;	// количество обновленных порталов
+		//int max = 10;
 		int er = 0;
 		int retry_count = 0;
 		boolean retry = false;
@@ -417,7 +317,7 @@ public class NirvanaBot {
 			if(tasks!=null) {
 				boolean skip = true;
 				for(String task : tasks) {
-					log.debug(task);
+					log.debug("task: "+task);
 					if(portalName.startsWith(task)) {
 						skip = false;
 						break;
@@ -425,10 +325,10 @@ public class NirvanaBot {
 				}
 				if(skip) { log.info("SKIP portal: "+portalName); reportItem.skip(); i++; continue; }
 			}
-			t++;
+			if(retry_count==0) t++;
 			if(t<START_FROM) {log.info("SKIP portal: "+portalName);	reportItem.skip(); i++; continue;}
 			
-			k++;
+			if(retry_count==0) k++;
 			
 			try {				
 				
@@ -804,13 +704,13 @@ public class NirvanaBot {
 		}
 		
 		int ns = 0;
-		if (options.containsKey("пространство имён"))
-		{
+		key = "пространство имён";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {			
 			try {
-				ns = Integer.parseInt(options.get("пространство имён"));
+				ns = Integer.parseInt(options.get(key));
 			} catch(NumberFormatException e) {
-				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, "пространство имён", options.get("пространство имён")));
-				data.errors.add(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING_RU, "пространство имён", options.get("пространство имён")));
+				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+				data.errors.add(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING_RU, key, options.get(key)));
 			}
 		}
 		
@@ -948,13 +848,13 @@ public class NirvanaBot {
 		data.type = t;
 		if (t.equals("список новых статей")) {
 			data.portalModule = new NewPages(LANGUAGE,
-				    categories,
-				    categoriesToIgnore,
-				    usersToIgnore,
-				    title, archive, archiveSettings, 
-				    ns, depth, hours, maxItems,
-				    format, delimeter, header, footer,
-				    minor, bot);
+			    categories,
+			    categoriesToIgnore,
+			    usersToIgnore,
+			    title, archive, archiveSettings, 
+			    ns, depth, hours, maxItems,
+			    format, delimeter, header, footer,
+			    minor, bot);
 						
 		}
 		else if (t.equals("список наблюдения")) {
@@ -962,13 +862,13 @@ public class NirvanaBot {
 				maxItems = MAX_MAXITEMS;
 			}
 			data.portalModule = new WatchList(LANGUAGE,
-				    categories,
-				    categoriesToIgnore,
-				    usersToIgnore,
-				    title, archive, 
-				    ns, depth, hours, maxItems,
-				    format, delimeter, header, footer,
-				    minor, bot);
+			    categories,
+			    categoriesToIgnore,
+			    usersToIgnore,
+			    title, archive, 
+			    ns, depth, hours, maxItems,
+			    format, delimeter, header, footer,
+			    minor, bot);
 		}
 		else if (t.equals("отсортированный список статей, которые должны быть во всех проектах")) {
 			/*module = new EncyShell(portal,
@@ -981,23 +881,23 @@ public class NirvanaBot {
 			}
 		else if (t.equals("список новых статей с изображениями в карточке")) {
 			data.portalModule = new NewPagesWithImages(LANGUAGE,
-					categories,
-				    categoriesToIgnore,
-					usersToIgnore,
-				    title, archive, 
-				    ns, depth, hours, maxItems,
-				    format, delimeter, header, footer,
-				    minor, bot, true);
+				categories,
+			    categoriesToIgnore,
+				usersToIgnore,
+			    title, archive, 
+			    ns, depth, hours, maxItems,
+			    format, delimeter, header, footer,
+			    minor, bot, true);
 		}
 		else if (t.equals("список новых статей с изображениями")) {
 			data.portalModule = new NewPagesWithImages(LANGUAGE,
-					categories,
-				    categoriesToIgnore,
-					usersToIgnore,
-				    title, archive, 
-				    ns, depth, hours, maxItems,
-				    format, delimeter, header, footer,
-				    minor, bot, false);
+				categories,
+			    categoriesToIgnore,
+				usersToIgnore,
+			    title, archive, 
+			    ns, depth, hours, maxItems,
+			    format, delimeter, header, footer,
+			    minor, bot, false);
 		}
 		else if (t.equals("списки новых статей по дням")) {
 			/*data.portalModule = new NewPagesWithWeeks(LANGUAGE,
@@ -1066,7 +966,7 @@ public class NirvanaBot {
 	
 	
 
-	private static ArrayList<String> parseArchiveSettings(ArchiveSettings archiveSettings,
+	public static ArrayList<String> parseArchiveSettings(ArchiveSettings archiveSettings,
 			String settings) {
 		ArrayList<String> errors = new ArrayList<String>();
 		String items[];
@@ -1076,12 +976,34 @@ public class NirvanaBot {
 			itemsVector.add(item.trim());
 		}		
 		if(itemsVector.contains("сверху") && itemsVector.contains("снизу")) {
-			errors.add(String.format(ERROR_PARAMETER_HAS_MULTIPLE_VALUES_RU, "сверху/снизу"));
+			errors.add(String.format(ERROR_PARAMETER_HAS_MULTIPLE_VALUES_RU, "параметры архива -> сверху/снизу"));
 		} else if(itemsVector.contains("сверху")) {
 			archiveSettings.addToTop = true;
 		} else if(itemsVector.contains("снизу")) {
 			archiveSettings.addToTop = false;
 		}
+		int cnt = 0;
+		if(itemsVector.contains("нумерация решетками")||itemsVector.contains("нумерация решётками")) {
+			cnt++;
+			archiveSettings.enumeration = Enumeration.HASH;
+		}
+		if(itemsVector.contains("нумерация кодом html")||itemsVector.contains("нумерация решётками")) {
+			cnt++;
+			archiveSettings.enumeration = Enumeration.HTML;
+		}
+		if(itemsVector.contains("глобальная нумерация кодом html")||itemsVector.contains("нумерация решётками")) {
+			cnt++;
+			archiveSettings.enumeration = Enumeration.HTML_GLOBAL;
+		}
+		if(cnt>1) {
+			archiveSettings.enumeration = Enumeration.NONE;
+			errors.add(String.format(ERROR_PARAMETER_HAS_MULTIPLE_VALUES_RU, "параметры архива -> нумерация"));
+		}
+		
+		/*if(itemsVector.contains("категории")) {
+			archiveSettings.supportCategory = true;
+		}*/
+		
 		//boolean byYear = false,byQarter=false,byMonth=false,byWeek=false,byDay=false;
 		/*
 		int cnt = 0;
@@ -1117,7 +1039,7 @@ public class NirvanaBot {
 
 		return errors;
 	}
-	private static ArrayList<String> parseArchiveName(ArchiveSettings archiveSettings,
+	public static ArrayList<String> parseArchiveName(ArchiveSettings archiveSettings,
 			String name) {
 		ArrayList<String> errors = new ArrayList<String>();		
 		archiveSettings.archive = name;
@@ -1164,7 +1086,7 @@ public class NirvanaBot {
 		return errors;
 	}*/
 
-	private static ArrayList<String> optionToStringArray(Map<String, String> options, String key) {
+	public static ArrayList<String> optionToStringArray(Map<String, String> options, String key) {
 		ArrayList<String> list = new ArrayList<String>();
 		if (options.containsKey(key)) {
 			String separator;

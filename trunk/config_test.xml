@@ -4,7 +4,7 @@
 <comment>no comments</comment>
 <entry key="log4j-settings">config/log4j-log-debug-eclipse.cfg</entry>
 <entry key="wiki-login">NirvanaBot</entry>
-<entry key="wiki-password">yeghsq1</entry>
+<entry key="wiki-password"></entry>
 <entry key="new-pages-template">Участник:NirvanaBot/test/Новые статьи</entry>
 <entry key="wiki-lang">ru</entry>
 <entry key="wiki-java-loglevel">OFF</entry>

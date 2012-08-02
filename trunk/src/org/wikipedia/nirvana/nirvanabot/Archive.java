@@ -1,5 +1,5 @@
 /**
- *  @(#)Archive.java 07/04/2012
+ *  @(#)Archive.java 02/07/2012
  *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,13 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import java.io.IOException;
+
+import javax.security.auth.login.LoginException;
+
+import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Enumeration;
+
 
 /**
  * @author kin
@@ -33,8 +40,15 @@ public class Archive {
 	//private String latestItemHeader = null;
 	protected int newLines = 0;
 	protected String delimeter = "\n";
+	//protected boolean hasOL = false;
+	//protected boolean globalEnumeration = false;
+	//protected String archiveName = "";
+	protected Enumeration enumeration = Enumeration.NONE;
 	
 	protected static org.apache.log4j.Logger log = null;	
+	
+	public static final String OL = "<ol>";
+	public static final String OL_END = "</ol>";
 
 	public String toString() {
 		return "";
@@ -48,6 +62,22 @@ public class Archive {
 	
 	public Archive() {
 		log = org.apache.log4j.Logger.getLogger(Archive.class.getName());
+	}
+	
+	public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
+		
+	}
+	
+	public String trimEnumerationAndWhiteSpace(String text) {
+		String oldText = text.trim();
+		if(oldText.startsWith(OL)) {
+			oldText = oldText.substring(OL.length());		
+		}
+		if(oldText.endsWith(OL_END)) {
+			oldText = oldText.substring(0,oldText.length()-OL_END.length());
+		}
+		oldText = oldText.trim();
+		return oldText;
 	}
 
 }

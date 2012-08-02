@@ -2,9 +2,9 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>no comments</comment>
-<entry key="log4j-settings">config/log4j-log-debug.cfg</entry>
+<entry key="log4j-settings">config/log4j-log-fulldebug.cfg</entry>
 <entry key="wiki-login">NirvanaBot</entry>
-<entry key="wiki-password">yeghsq1</entry>
+<entry key="wiki-password"></entry>
 <entry key="new-pages-template">Участник:ClaymoreBot/Новые статьи</entry>
 <entry key="wiki-lang">ru</entry>
 <entry key="wiki-java-loglevel">OFF</entry>
@@ -23,7 +23,7 @@
 <entry key="statistics-file">report/report-%(date).txt</entry>
 <entry key="statistics-format">txt</entry>
 <entry key="task-list">yes</entry>
-<entry key="task-list-file">task.txt</entry>
+<entry key="task-list-file">task_eval.txt</entry>
 
 
 </properties>

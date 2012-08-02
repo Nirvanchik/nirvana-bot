@@ -1,5 +1,5 @@
 /**
- *  @(#)DateTools.java 07/04/2012
+ *  @(#)DateTools.java 02/07/2012
  *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -62,7 +62,7 @@ public class DateTools {
 		   "январь", 
 		   "февраль", 
 		   "март", 
-		   "апрел", 
+		   "апрель", 
 		   "май", 
 		   "июнь", 
 		   "июль", 

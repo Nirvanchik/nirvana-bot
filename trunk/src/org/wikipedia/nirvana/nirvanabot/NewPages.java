@@ -1,5 +1,5 @@
 /**
- *  @(#)NewPages.java 0.02 07/04/2012
+ *  @(#)NewPages.java 0.03 02/07/2012
  *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,6 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -48,6 +47,7 @@ import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.StringTools;
+import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Enumeration;
 
 /**
  * @author kin
@@ -85,6 +85,9 @@ public class NewPages implements PortalModule{
     protected int NS_POS = 0;
     protected int TITLE_POS = 1;
     protected int REVID_POS = 5;
+    
+    //protected boolean botsAllow = false;
+    protected String botsAllowString = null;
 	/**
 	 * 
 	 */
@@ -121,8 +124,18 @@ public class NewPages implements PortalModule{
     	log = org.apache.log4j.Logger.getLogger(NewPages.class.getName());
     	log.debug("Portal module created for portal subpage [["+this.pageName+"]]");
 	}
+    
+    public String getOldText(Wiki wiki) throws IOException {
+    	try
+		{
+			return wiki.getPageText(this.pageName);
+		} catch (java.io.FileNotFoundException e) {
+			return "";
+		}
+    }
 	
-	public String getData(Wiki wiki) throws IOException, InterruptedException {
+	public void getData(Wiki wiki) throws IOException, InterruptedException {
+		
 		log.info("Getting data for [[" + this.pageName+"]]");
 		pageLists = new HashMap<String,String>();
 		for(String category : this.categories)
@@ -137,12 +150,7 @@ public class NewPages implements PortalModule{
 		    pageListsToIgnore.put(category, text);
 		}
 		
-		try
-		{
-		    return wiki.getPageText(this.pageName);
-		} catch (java.io.FileNotFoundException e) {
-			return "";
-		}
+		return ;
 	}
 	
 	public static class Data {		
@@ -299,28 +307,53 @@ public class NewPages implements PortalModule{
 		if (true/*count < maxItems /*|| archive!=null*/) { 
 			String oldText = text;
 			String[] oldItems;
-			/*if(archive!=null)*/ /*archiveItems = new ArrayList<String>();*/
-			if (!footer.isEmpty() && oldText.endsWith(footer)) {
-				oldText = StringTools.trimLeft(oldText);
-			} else {
-				oldText = oldText.trim();
+			
+			// remove {{bots|allow=}} record
+			this.botsAllowString = NirvanaWiki.getAllowBotsString(text);
+			//log.debug("bot allow string: "+botsAllowString);
+			if(botsAllowString!=null) {
+				int pos = oldText.indexOf(botsAllowString);
+				oldText = oldText.substring(0, pos) + oldText.substring(pos+botsAllowString.length());
 			}
-		    	    
+			/*if(archive!=null)*/ /*archiveItems = new ArrayList<String>();*/
+			
+			//text.matches("(?si).*\\{\\{(nobots|bots\\|(allow=none|deny=(.*?" + user + ".*?|all)|optout=all))\\}\\}.*");
+			
+			
+			if (!footer.isEmpty() && oldText.endsWith(footer)) {				
+				oldText = oldText.substring(0, oldText.length() - footer.length());
+				oldText = StringTools.trimRight(oldText);
+			} else {
+				oldText = StringTools.trimRight(oldText);
+				if (!footer.isEmpty() && oldText.endsWith(footer)) {				
+					oldText = oldText.substring(0, oldText.length() - footer.length());
+					oldText = StringTools.trimRight(oldText);
+				}
+			} 		    	    
+			
 		    if (!header.isEmpty() && oldText.startsWith(header))
 		    {
 		        oldText = oldText.substring(header.length());
+		        oldText = StringTools.trimLeft(oldText);
+		    } else {
+		    	oldText = StringTools.trimLeft(oldText);
+		    	if (!header.isEmpty() && oldText.startsWith(header))
+			    {
+			        oldText = oldText.substring(header.length());
+			        oldText = StringTools.trimLeft(oldText);
+			    }
 		    }
 		    //FileTools.dump(footer, "dump", this.pageName +".footer.txt");
-		    if (!footer.isEmpty() && oldText.endsWith(footer))
-		    {
-		        oldText = oldText.substring(0, oldText.length() - footer.length());
-		    }
-		    oldItems = oldText.split(delimeter);
+		   
+		    //oldItems = oldText.split(delimeter); // this includes empty lines, and incorrect result calculation
+		    oldItems = StringUtils.split(oldText,delimeter); // removes empty items
 		    if(delimeter.equals("\n")) log.debug("delimeter is \\n");
 		    else if(delimeter.equals("\r")) log.debug("delimeter is \\r");
 		    else log.debug("delimeter is "+delimeter);
 		    
 		
+		    
+		    
 		 // Find intersection of new and old pages
 			/*ArrayList<String> intersect = new ArrayList<String>();
 			for (int i = 0; i < count ; ++i)
@@ -349,15 +382,18 @@ public class NewPages implements PortalModule{
 		    	if(skip) continue;
 		        if (subset.size() < maxItems)  {
 		        	if(!subset.contains(oldItems[i])) { 
-		        		if(UPDATE_FROM_OLD)
+		        		if(UPDATE_FROM_OLD) {
+		        			log.debug("ADD old line: \t"+oldItems[i]);
 		        			subset.add(oldItems[i]);
+		        		}
 		        		else {
+		        			log.debug("ARCHIVE old line: \t"+oldItems[i]);
 		        			if(archive!=null) {		        		
 				        		archiveItems.add(oldItems[i]);
 				        	}
 				        	archiveCount++;
 		        		}
-		        		log.debug("ADD old line: \t"+oldItems[i]);
+		        		
 		        	} else {
 		        		log.debug("SKIP old line: \t"+oldItems[i]);
 		        	}
@@ -375,12 +411,22 @@ public class NewPages implements PortalModule{
 		//StringUtils.
 		//com.sun.xml.internal.ws.util.StringUtils.
 		Data d = new Data();
-		d.newText = header + StringUtils.join(subset.toArray(),this.delimeter) + footer;
-		if(archive!=null && archiveItems!=null && archiveItems.size()>0) {
-			d.archiveText = StringUtils.join(archiveItems.toArray(),delimeter) + "\n";
-			//if(archiveSettings!=null)
-				d.archiveItems = archiveItems;
+		//String bots = if(botsAllowString!=null)
+		log.debug("bots allow string: "+botsAllowString);
+		String bots = "";
+		if(botsAllowString!=null) {
+			bots = botsAllowString+"\n";
 		}
+		d.newText = bots + header + StringUtils.join(subset.toArray(),this.delimeter) + footer;
+		if(archive!=null && archiveItems!=null && archiveItems.size()>0) {
+			if(archiveSettings.enumeration==Enumeration.HASH) {
+				enumerateWithHash(archiveItems);
+			}
+			d.archiveText = StringUtils.join(archiveItems.iterator(),delimeter) + "\n";
+			//if(archiveSettings!=null)
+			d.archiveItems = archiveItems;
+		}
+		//archiveItems.i
 		d.archiveCount = archiveCount;
 		d.newPagesCount = subset.size() - (oldCount - archiveCount);
 		if(d.newPagesCount<0) d.newPagesCount = 0;
@@ -391,57 +437,37 @@ public class NewPages implements PortalModule{
 		
 		return d;
 	}
-	/*
-	private String createArchive(String oldText, String newText) {
-		if (!this.header.isEmpty())
-        {
-            if (oldText.startsWith(header))
-            {
-                oldText = oldText.substring(header.length());
-            }
-            if (newText.startsWith(header))
-            {
-                newText = newText.substring(header.length());
-            }
-        }
-        if (!footer.isEmpty())
-        {
-            if (oldText.endsWith(footer))
-            {
-                oldText = oldText.substring(0, oldText.length() - footer.length());
-            }
-            if (oldText.endsWith(footer))
-            {
-                newText = newText.substring(0, oldText.length() - footer.length());
-            }
-        }
-        String[] items = oldText.split(delimeter);
-        String[] newItems = newText.split(delimeter);
-        HashSet<String> hashSet = new HashSet<String>();
-        for(String item : newItems) {
-        	hashSet.add(item);
-        }
-        ArrayList<String> archiveItems = new ArrayList<String>();
-        for (int i = 0; i < items.length; ++i)
-        {
-            if (!hashSet.contains(items[i]))
-            {
-                archiveItems.add(items[i]);
-            }
-        }
-        String archiveText = null;
-        if (archiveItems.size() != 0)
-        {            
-            archiveText = StringUtils.join(archiveItems.toArray(),delimeter) + "\n";
-        }
-        return archiveText;
-	}*/
 	
+	public void enumerateWithHash(ArrayList<String> list) {
+		for(int i =0; i<list.size();i++) {
+			String item = list.get(i);
+			if(item.startsWith("#")) {
+				// do nothing
+			} else if(item.startsWith("*")) {
+				item = "#" + item.substring(1);
+			} else {
+				item = "# " + item;
+			}
+			list.set(i, item);
+		}
+		return;
+	}
 		
 	@Override
 	public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment) throws IOException, LoginException, InterruptedException {
+		log.debug("=> update()");
 		boolean updated = false;
-		String text = getData(wiki);
+		String text = getOldText(wiki);
+		log.debug("old text retrieved");
+		Wiki.User user = wiki.getCurrentUser();
+		log.debug("current user retrieved");
+		if(!NirvanaWiki.allowBots(text, user.getUsername())) {
+			//reportData.status = Status.DENIED;
+			log.info("bots/nobots template forbids updating this portal section");
+			return false;
+		}
+		//this.botsAllowString = NirvanaWiki.getAllowBotsString(text);
+		getData(wiki);		
 		Data d = processData(wiki, text);
 		reportData.pagesArchived = d.archiveCount;
 		reportData.newPagesFound = d.newPagesCount;
@@ -491,14 +517,8 @@ public class NewPages implements PortalModule{
     	if(archiveSettings==null || archiveSettings.isSimple()) {	
     		log.debug("archive has simple format");
     		log.info("Updating "+archive);
-	    	try{
-	    		wiki.prepend(archive, d.archiveText, "+"+d.archiveCount+" статей", this.minor, this.bot);
-	    		reportData.archived = true;
-	    		
-	    	} catch (java.io.FileNotFoundException e) {
-	    		wiki.edit(archive, d.archiveText, "Создание архива", this.minor, this.bot);
-	    		reportData.archived = true;	    		
-	    	}
+    		wiki.prependOrCreate(archive, d.archiveText, "+"+d.archiveCount+" статей", this.minor, this.bot);
+    		reportData.archived = true;
 	    	return;
     	}
     	
@@ -513,19 +533,8 @@ public class NewPages implements PortalModule{
     	} else {
     		defaultArhiveName = archiveSettings.getArchiveForDate(Calendar.getInstance());
     	}
+    	defaultArchive = ArchiveFactory.createArchive(archiveSettings, wiki, defaultArhiveName, delimeter);
     	
-    	String text = "";
-		try{
-			text = wiki.getPageText(defaultArhiveName);
-		} catch(FileNotFoundException e) {
-			log.info("archive "+defaultArhiveName+" is empty");
-		}
-		if(archiveSettings.withoutHeaders()) {
-			defaultArchive = new ArchiveNoHeaders(archiveSettings.addToTop,this.delimeter);
-		} else {
-			defaultArchive = new ArchiveWithHeaders(text,archiveSettings.addToTop,this.delimeter);
-			((ArchiveWithHeaders)defaultArchive).initLatestItemHeaderHeader(wiki,archiveSettings);
-		}
 		HashMap<String,Archive> hmap = null;
 		hmap = 	new HashMap<String,Archive>(3);
 		hmap.put(defaultArhiveName, defaultArchive);
@@ -544,24 +553,17 @@ public class NewPages implements PortalModule{
     			String arname = archiveSettings.getArchiveForDate(c);
     			thisArchive = hmap.get(arname);
     			if(thisArchive == null) {
-    				text = "";
-    				try{
-    					text = wiki.getPageText(arname);
-    				} catch(FileNotFoundException e) {
-    					log.info("archive "+arname+" is empty");
-    				}
-    				if(archiveSettings.withoutHeaders()) {
-    					thisArchive = new ArchiveNoHeaders(archiveSettings.addToTop,this.delimeter);
-    				} else {
-    					thisArchive = new ArchiveWithHeaders(text,archiveSettings.addToTop,this.delimeter);    				
-    					((ArchiveWithHeaders)thisArchive).initLatestItemHeaderHeader(wiki,archiveSettings);
-    				}
+    				thisArchive = ArchiveFactory.createArchive(archiveSettings, wiki, arname, delimeter);    				
     				hmap.put(arname, thisArchive);
     			}
     		}
     		// find where to put this item
     		if(archiveSettings.withoutHeaders()) {
-    			((ArchiveNoHeaders)thisArchive).add(item);
+    			if(!archiveSettings.hasHtmlEnumeration()) {
+    				((ArchiveSimple)thisArchive).add(item);
+    			} else {
+    				((ArchiveWithEnumeration)thisArchive).add(item);
+    			}
     		} else {
 	    		String thisHeader = archiveSettings.getHeaderForDate(c);
 	    		String superHeader = archiveSettings.getHeaderHeaderForDate(c);
@@ -572,32 +574,20 @@ public class NewPages implements PortalModule{
 	    		}
     		}
     		
-    	}
-    	
+    	}    	
     	
     	Iterator<Entry<String, Archive>> it = hmap.entrySet().iterator();
     	while(it.hasNext()) {
     		Entry<String, Archive> ar = it.next();
     		Archive thisArchive = ar.getValue();
     		log.info("Updating "+ar.getKey());
-    		if(archiveSettings.withoutHeaders()) {
-    			if(archiveSettings.addToTop) {
-    				wiki.prependOrCreate(ar.getKey(), thisArchive.toString(), 
-    						"+"+thisArchive.newItemsCount()+" статей", this.minor, this.bot);
-    			} else {
-    				wiki.appendOrCreate(ar.getKey(), thisArchive.toString(), 
-    						"+"+thisArchive.newItemsCount()+" статей", this.minor, this.bot);
-    			}
-    		} else {    			
-    			wiki.edit(ar.getKey(), thisArchive.toString(), 
-    					"+"+thisArchive.newItemsCount()+" статей", this.minor, this.bot);
-    		}
+    		thisArchive.update(wiki,ar.getKey(), minor, bot);
     	}   		
    		reportData.archived = true;	    		
     	return;
 	}
 		
-	public static Calendar getNewPagesItemDate(Wiki wiki, String item) {
+	public static Calendar getNewPagesItemDate(NirvanaWiki wiki, String item) {
 		Calendar c = null;
 		//NewPagesItem itemData = null;
 		Pattern p = Pattern.compile("\\[\\[(?<article>.+)\\]\\]");
@@ -607,7 +597,7 @@ public class NewPages implements PortalModule{
 			String article = m.group("article");
 			Revision r = null;
 			try {
-				r = wiki.getFirstRevision(article);
+				r = wiki.getFirstRevision(article,true);
 			} catch (IOException e) {				
 				//e.printStackTrace();
 				log.warn("article "+article+" not found");
@@ -638,7 +628,7 @@ public class NewPages implements PortalModule{
 				//System.out.println("check string: "+s);
 				Revision r = null;
 				try {
-					r = wiki.getFirstRevision(s);
+					r = wiki.getFirstRevision(s,true);
 					//r = null;
 				} catch (IOException e) {
 					log.warn("page "+s+ " not found");
