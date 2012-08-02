@@ -1,5 +1,5 @@
 /**
- *  @(#)ArchiveWithHeaders.java 07/04/2012
+ *  @(#)ArchiveWithHeaders.java 02/07/2012
  *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -28,46 +28,104 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import javax.security.auth.login.LoginException;
 import org.apache.commons.lang3.StringUtils;
-import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.StringTools;
+import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Enumeration;
 
 public class ArchiveWithHeaders extends Archive{
 	//private String archiveFullText;
-	private String archivePartialText;
+	private String archivePartialText = "";
 	//private String archiveBottom;
-	private List<ItemsWithHeader> parts;	
-	public static int HOW_MANY_ITEMS_TO_PARSE = 100;
-	
+	private List<Section> parts;	
+	public static int HOW_MANY_ITEMS_TO_PARSE = 100;	
 	private String latestItemHeaderHeader = null;
-	private static class ItemsWithHeader {
-		private String header;
-		private String headerText;
-		private String headerHeader;
-		private String headerHeaderText;
+	
+	//private boolean localEnumeration = false;
+	//private boolean addOL = false;	
+	
+	/*
+	private static class Header {
+		public String header = null;
+		public String headerString = "";
+		public String headerForComparison = null;
+		boolean hasVariable = false;
+		public boolean compareHeader(String h) {
+			
+		}
+		public boolean compareTo(Header h) {
+			if(headerForComparison!=null) {
+				return (headerForComparison.compareTo(anotherString)==0)
+			}
+		}
+		/*
+		public boolean compareHeaderString(String hs) {
+			
+		}
+	}*/
+	
+	protected Section createSection(Enumeration enumeration, boolean old) {
+		return new Section(enumeration,old);		
+	}
+	
+	protected Section createSection(Enumeration enumeration,
+			String header,	String headerText,	boolean old) {
+		return new Section(enumeration,header,headerText,old);		
+	}
+	
+	protected Section createSection(Enumeration enumeration,
+			String header,String headerText,
+			String sHeader, String sHeaderText,
+			boolean old) {
+		return new Section(enumeration,header,headerText,sHeader,sHeaderText,old);		
+	}
+
+	
+	protected class Section {
+		//private ArchiveWithHeaders parent = null;
+		private Enumeration enumeration = Enumeration.NONE;
+		protected String header;
+		protected String headerText;
+		protected String headerHeader;
+		protected String headerHeaderText;
 		private ArrayList<String> items;
-		ItemsWithHeader() {
+		private boolean hasOL = false;
+		private boolean old;
+		protected boolean trancated;// = true;
+		Section(Enumeration enumeration,boolean old) {
+			log.debug("section created, no header");
+			this.enumeration = enumeration;
 			header = null;
 			headerText = "";
 			headerHeader = null;
 			headerHeaderText = "";
 			items = new ArrayList<String>();
+			this.old = old;
+			trancated = old;			 
 		}
-		ItemsWithHeader(String header,String headerText) {
+		Section(Enumeration enumeration,String header,String headerText,boolean old) {
+			log.debug("section created, "+headerText);
+			this.enumeration = enumeration;
 			this.header = header;
 			this.headerText = headerText;
 			headerHeader = null;
 			headerHeaderText = "";
 			items = new ArrayList<String>();
+			this.old = old;
+			trancated = old;	
 		}
-		ItemsWithHeader(String header,String headerText,String hHeader, String hHeaderText) {
+		Section(Enumeration enumeration,String header,String headerText,String hHeader, String hHeaderText,boolean old) {
+			log.debug("section created, "+headerText);
+			log.debug("super header: "+hHeaderText);
+			this.enumeration = enumeration;
 			this.header = header;
 			this.headerText = headerText;
 			headerHeader = hHeader;
 			headerHeaderText = hHeaderText;
 			items = new ArrayList<String>();
+			this.old = old;
+			trancated = old;	
 		}
 		public String getHeader() {
 			return header;
@@ -82,7 +140,7 @@ public class ArchiveWithHeaders extends Archive{
 			this.headerHeader = null;
 			this.headerHeaderText = "";
 		}
-		public String getText(String delimeter) {
+		public String toString() {
 			StringBuffer buf = new StringBuffer();
 			if(!this.headerHeaderText.isEmpty()) {
 				buf.append(headerHeaderText);
@@ -92,18 +150,70 @@ public class ArchiveWithHeaders extends Archive{
 				buf.append(headerText);
 				buf.append(delimeter);
 			}
+			if(enumeration==Enumeration.HTML && (!trancated || hasOL)) {
+				buf.append(OL);
+				buf.append(delimeter);
+			}
+			if(!trancated && !this.hasOL && this.old && (enumeration==Enumeration.HTML ||
+					enumeration==Enumeration.HTML_GLOBAL		)) {
+				for(int i=0;i<items.size();i++) {
+					String item = items.get(i);
+					if(!item.startsWith("<li>")) {
+						if(item.startsWith("#") || item.startsWith("*")) {
+							item = "<li>" + item.substring(1);
+						} else {
+							item = "<li> "+item;
+						}
+						items.set(i, item);
+					}
+				}
+			}
 			String str = StringUtils.join(items, delimeter);
 			if(!str.isEmpty()) {
 				buf.append(str);
 				buf.append(delimeter);
 			}
+			if(enumeration==Enumeration.HTML && (!trancated || hasOL)) {
+				buf.append(OL_END);
+				buf.append(delimeter);
+			}
 			return buf.toString();
 		}
-		public void addItemToEnd(String item) {
+		public String enumItem(String item) {
+			String str = item;
+			//log.debug("enumItem() item: "+item);
+			//log.debug("enumItem() enumeration: "+enumeration + " hasOL: "+hasOL + " trancated: "+ trancated);
+			if(enumeration==Enumeration.HTML_GLOBAL ||
+					(enumeration==Enumeration.HTML && 
+						(this.hasOL || !this.trancated))) {
+				if(item.startsWith("#") || item.startsWith("*")) {
+					str = "<li>"+ item.substring(1);
+				} else {
+					str = "<li> "+ item;
+				}
+			} else if(enumeration==Enumeration.HASH) {
+				if(str.startsWith("#")) {
+					// do nothing
+				} else if(str.startsWith("*")) {
+					str = "#" + str.substring(1);
+				} else {
+					str = "# " + str;
+				}
+			}
+			return str;
+		}
+		public void addOldItemToEnd(String item) {			
 			items.add(item);
 		}
-		public void addItemToBegin(String item) {
+		public void addOldItemToBegin(String item) {
 			items.add(0, item);
+		}
+		
+		public void addItemToEnd(String item) {			
+			items.add(enumItem(item));
+		}
+		public void addItemToBegin(String item) {
+			items.add(0, enumItem(item));
 		}
 		
 		public void pushHeader(String h, String hText) {
@@ -131,11 +241,9 @@ public class ArchiveWithHeaders extends Archive{
 		public String getItem(int index) {
 			return this.items.get(index);
 		}
-		@SuppressWarnings("unused")
 		public String getFirst() {
 			return this.items.get(0);
 		}
-		@SuppressWarnings("unused")
 		public String getLast() {
 			return this.items.get(items.size()-1);
 		}
@@ -145,17 +253,31 @@ public class ArchiveWithHeaders extends Archive{
 	}
 	
 	public String toString() {
-		StringBuffer buf = new StringBuffer();
+		//StringBuilder b;
+		StringBuilder buf = new StringBuilder();
+		if(this.enumeration == Enumeration.HTML_GLOBAL) {
+			buf.append(OL);
+			buf.append(delimeter);
+		}
 		if(!addToTop) {
 			buf.append(this.archivePartialText);
 			//buf.ap
 		}
-		for(ItemsWithHeader part:parts) {
-			buf.append(part.getText(this.delimeter));
+		
+		for(Section part:parts) {			
+			buf.append(part.toString());
 		}
-		if(addToTop) {
-			buf.append(this.archivePartialText);
+		
+		if(addToTop && !archivePartialText.isEmpty()) {
+			buf.append(this.archivePartialText);			
+			if(!archivePartialText.endsWith(delimeter)) 
+				buf.append(delimeter);
 		}
+		
+		if(this.enumeration == Enumeration.HTML_GLOBAL) {			
+			buf.append(OL_END);
+		}
+		
 		return buf.toString();
 	}
 	
@@ -163,17 +285,47 @@ public class ArchiveWithHeaders extends Archive{
 		this.latestItemHeaderHeader = hh;
 	}
 	
+	
+	
+	void parseTop(String lines[]) {
+		int i = 0;
+		while(i<lines.length && lines[i].isEmpty()) i++;
+		if(i< lines.length && lines[i].compareToIgnoreCase(OL)==0) i++;
+		else if (i< lines.length && lines[i].startsWith(OL)) {
+			lines[i] = lines[i].substring(OL.length());
+		}
+		int j = lines.length-1;
+		while(j>=0 && lines[j].isEmpty()) j--;
+		if(j>=0 && lines[j].compareToIgnoreCase(OL_END)==0) j--;
+		else if(j>=0 && lines[j].endsWith(OL_END)) {
+			lines[j]=lines[j].substring(0,lines[j].length()-OL.length());			
+		}
+		int first=0, last;
+		last = (j-i)>HOW_MANY_ITEMS_TO_PARSE?HOW_MANY_ITEMS_TO_PARSE-1:j;
+		if(last<j) {
+			archivePartialText = StringUtils.join(lines,delimeter,last+1,j+1);
+		}
+		parseTopLines(lines,first,last);
+	}
+	
 	void parseTop(String text) {
 		String [] oldItems;
-		oldItems = text.trim().split(delimeter);
-		int first,last;
-		first = 0;
-		last = oldItems.length>HOW_MANY_ITEMS_TO_PARSE?HOW_MANY_ITEMS_TO_PARSE-1:oldItems.length-1;
-		if(last<oldItems.length-1) {
-			archivePartialText = StringUtils.join(oldItems,delimeter,last+1,oldItems.length);
+		oldItems = StringUtils.split(text.trim(),delimeter,HOW_MANY_ITEMS_TO_PARSE);
+		int first=0,last;		
+		if(oldItems.length==HOW_MANY_ITEMS_TO_PARSE) {
+			archivePartialText = oldItems[oldItems.length-1];
+			last = oldItems.length-2;
+		} else {
+			last = oldItems.length-1;
 		}
+		parseTopLines(oldItems,first,last);
+	}
+	
+	void parseTopLines(String oldItems[],int first, int last) {	
+		
 		Pattern p = Pattern.compile("^==(=?)(\\s*)(?<headername>[^=]+)(\\s*)(=?)==$");
-		ItemsWithHeader part = null;//new ItemsWithHeader();
+		Section part = null;//new Section();
+		boolean trancated = !this.archivePartialText.isEmpty();
 		for(int i=first;i<=last;i++) {
 			String item = oldItems[i];
 			if(item.isEmpty()) continue;
@@ -187,82 +339,172 @@ public class ArchiveWithHeaders extends Archive{
             			  StringTools.howMany(item, '=', true)        )            ) {
             		part.pushHeader(m.group("headername").trim(),item);         
             	} else {
-            		part = new ItemsWithHeader(m.group("headername").trim(),item);
+            		if(part!=null) {
+            			part.trancated = false;
+            		}
+            		part = createSection(enumeration,m.group("headername").trim(),item,true);
+            		part.trancated = trancated;
             		parts.add(part);
             	}
             } else {
             	if(part==null) {
-            		part = new ItemsWithHeader();
-            		parts.add(part);
+            		part = createSection(enumeration,true);
+            		part.trancated = trancated;
+            		parts.add(part);            	
+	            }
+            	if(item.compareToIgnoreCase("<ol>")==0) {
+            		part.hasOL = true;
+            	} else if(item.compareToIgnoreCase("</ol>")==0) {
+            		part.trancated = false;
             	}
-            	part.addItemToEnd(item);
+            	else {/*
+	            	if(part==null) {
+	            		part = new Section();
+	            		parts.add(part);
+	            	}*/
+	            	part.addOldItemToEnd(item);
+            	}
             }           
 		}
 	}
+	void parseBottom(String lines[]) {	
+		int i = 0;
+		while(i<lines.length && lines[i].isEmpty()) i++;
+		if(i<lines.length && lines[i].compareToIgnoreCase(OL)==0) i++;
+		int j = lines.length-1;
+		while(j>=0 && lines[j].isEmpty()) j--;
+		if(j>=0 && lines[j].compareToIgnoreCase(OL_END)==0) j--;
+		
+		int first,last;
+		last = j;
+		first = (j-i)>HOW_MANY_ITEMS_TO_PARSE?j+1-HOW_MANY_ITEMS_TO_PARSE:0;
+		if(first>0) {
+			archivePartialText = StringUtils.join(lines,delimeter,0,first)+delimeter;
+		}
+		parseBottomLines(lines,first,last);
+	}
 	void parseBottom(String text) {
 		String [] oldItems;
-		oldItems = text.trim().split(delimeter);
+		oldItems = StringTools.splitBottom(text.trim(), delimeter, HOW_MANY_ITEMS_TO_PARSE);
 		int first,last;
-		last = oldItems.length-1;
-		first = oldItems.length>HOW_MANY_ITEMS_TO_PARSE?oldItems.length-HOW_MANY_ITEMS_TO_PARSE:0;
-		if(first>0) {
-			archivePartialText = StringUtils.join(oldItems,delimeter,0,first)+delimeter;
+		last = oldItems.length-1;		
+		if(oldItems.length==HOW_MANY_ITEMS_TO_PARSE) {
+			archivePartialText = oldItems[0];
+			first = 1; 
+		} else {
+			first = 0;
 		}
-		try {
-			FileTools.dump(archivePartialText, "dump", "partial.txt");
-		} catch (IOException e) {}
+		parseBottomLines(oldItems,first,last);
+	}
+	void parseBottomLines(String oldItems[],int first, int last) {
+		
 		Pattern p = Pattern.compile("^==(=?)(\\s*)(?<headername>[^=]+)(\\s*)(=?)==$");
-		ItemsWithHeader part = null;
+		Section part = null;
 		boolean wasHeader = false;
+		boolean trancated = !this.archivePartialText.isEmpty();
 		for(int i = last;i>=first;i--) {
 			String item = oldItems[i];
 			if(item.isEmpty()) continue;
             Matcher m = p.matcher(item);
             if(part==null) {
-        		part = new ItemsWithHeader();
+        		part = createSection(enumeration,true);
+        		part.trancated = trancated;
         		parts.add(0,part);
         	}
             if(m.matches()) {    
             	wasHeader = true;
-            	if(part.getHeader()!=null && part.getHeaderHeader()==null &&
+            	part.trancated = false;
+            	if(part.getHeader()==null) {
+            		part.pushHeader(m.group("headername").trim(),item);
+            	} else if(part.getHeader()!=null && part.getHeaderHeader()==null &&
             			( StringTools.howMany(part.getHeaderText(), '=', true)>
                   			  StringTools.howMany(item, '=', true)        )     ) {
             		part.pushHeaderHeader(m.group("headername").trim(),item);
-            	} else if(part.getHeader()!=null) {
-            		part = new ItemsWithHeader(m.group("headername").trim(),item);
-            		parts.add(0,part);
             	} else {
-            		part.pushHeader(m.group("headername").trim(),item);
-            	}
-            } else {
-            	if(wasHeader) {
-            		part = new ItemsWithHeader();
+            		part = createSection(enumeration,m.group("headername").trim(),item,true);
+            		part.trancated = trancated;
             		parts.add(0,part);
+            	} 
+            } else {
+            	if(item.equalsIgnoreCase(OL)) {
+            		part.trancated = false;
+            	} else if(item.equalsIgnoreCase(OL_END)) {
+            		if(wasHeader) {
+                		part = createSection(enumeration,true);
+                		part.trancated = trancated;
+                		parts.add(0,part);
+                	}
+            		part.hasOL = true;
+            	} else {
+	            	if(wasHeader) {
+	            		part = createSection(enumeration,true);
+	            		part.trancated = trancated;
+	            		parts.add(0,part);
+	            	}
+	            	//wasHeader = false;
+	            	part.addOldItemToBegin(item);
             	}
             	wasHeader = false;
-            	part.addItemToBegin(item);
             }
 		}
 		
 	}
 	
-	public ArchiveWithHeaders(String text, boolean addToTop, String delimeter) {
+	public ArchiveWithHeaders(String text, boolean addToTop, String delimeter,
+			Enumeration enumeration) {
+		log.debug("ArchiveWithHeaders created, enumeration: "+enumeration.toString()+ " top:"+addToTop);
 		this.addToTop = addToTop;
 		this.delimeter = delimeter;
 		archivePartialText = "";	
-		parts = new ArrayList<ItemsWithHeader>();
-		
+		this.enumeration = enumeration;		
+		parts = new ArrayList<Section>();
+		init(text);
+	}
+	
+	public void init(String text) {
+		String oldText = trimEnumerationAndWhiteSpace(text);
 		if(addToTop) {
-			parseTop(text);
+			parseTop(oldText);
 		} else {
-			parseBottom(text);
+			parseBottom(oldText);
 		}		
 	}
+	
+	public ArchiveWithHeaders(boolean addToTop, String delimeter,
+			Enumeration enumeration) {
+		log.debug("ArchiveWithHeaders created, enumeration: "+enumeration.toString()+ " top:"+addToTop);
+		this.addToTop = addToTop;
+		this.delimeter = delimeter;
+		archivePartialText = "";	
+		this.enumeration = enumeration;		
+		parts = new ArrayList<Section>();		
+	}
+	
+	public ArchiveWithHeaders(String lines[], boolean addToTop, String delimeter,
+			Enumeration enumeration) {
+		log.debug("ArchiveWithHeaders created, enumeration: "+enumeration.toString()+ " top:"+addToTop);
+		this.addToTop = addToTop;
+		this.delimeter = delimeter;
+		archivePartialText = "";	
+		this.enumeration = enumeration;
+		parts = new ArrayList<Section>();
+		
+		init(lines);
+	}
+	
+	public void init(String lines[]) {
+		if(addToTop) {
+			parseTop(lines);
+		} else {
+			parseBottom(lines);
+		}		
+	}
+
 
 	public void add(String item) {
 		newLines++;
 		if(parts.isEmpty()) {
-			ItemsWithHeader section = new ItemsWithHeader();
+			Section section = createSection(enumeration, false);
 			section.addItemToBegin(item);
 			parts.add(section);
 			return;
@@ -278,7 +520,7 @@ public class ArchiveWithHeaders extends Archive{
 	
 	public void add(String item, String header) {
 		newLines++;
-		ItemsWithHeader part= null;
+		Section part= null;
 		String headerStripped = StringUtils.strip(header, "=").trim();
 		if(addToTop) {
 			boolean found = false;
@@ -292,7 +534,7 @@ public class ArchiveWithHeaders extends Archive{
 			if(found) {
 				part.addItemToBegin(item);
 			} else {
-				part = new ItemsWithHeader(headerStripped,header);
+				part = createSection(enumeration, headerStripped,header,false);
 				parts.add(0, part);
 				part.addItemToBegin(item);
 			}
@@ -308,7 +550,7 @@ public class ArchiveWithHeaders extends Archive{
 			if(found) {
 				part.addItemToEnd(item);
 			} else {
-				part = new ItemsWithHeader(headerStripped,header);
+				part = createSection(enumeration, headerStripped,header,false);
 				parts.add(part);
 				part.addItemToEnd(item);
 			}
@@ -319,14 +561,14 @@ public class ArchiveWithHeaders extends Archive{
 		newLines++;
 		String headerHeaderStripped = StringUtils.strip(headerHeader, "=").trim();
 		String headerStripped = StringUtils.strip(header, "=").trim();
-		ItemsWithHeader part = null;
+		Section part = null;
 		int hhIndex = -1;
-		hhIndex = findHeaderHeader(headerHeaderStripped);
+		hhIndex = findSuperHeader(headerHeaderStripped);
 		// если заголовок верхнего уровня не найден,
 		// значит его нужно создать
 		if(hhIndex<0) {
 			if(addToTop) {		
-				part = new ItemsWithHeader(headerStripped,header,headerHeaderStripped,headerHeader);
+				part = createSection(enumeration, headerStripped,header,headerHeaderStripped,headerHeader,false);
 				parts.add(0, part);
 				part.addItemToBegin(item);
 				return;
@@ -340,7 +582,7 @@ public class ArchiveWithHeaders extends Archive{
 					} 
 				} 
 				if(createNewSection) {
-					part = new ItemsWithHeader(headerStripped,header,headerHeaderStripped,headerHeader);
+					part = createSection(enumeration, headerStripped,header,headerHeaderStripped,headerHeader,false);
 					parts.add(part);
 					part.addItemToEnd(item);
 					return;
@@ -359,11 +601,11 @@ public class ArchiveWithHeaders extends Archive{
 			if(addToTop) {		
 				part = parts.get(hhIndex);
 				part.clearHeaderHeader();
-				part = new ItemsWithHeader(headerStripped,header,headerHeaderStripped,headerHeader);
+				part = createSection(enumeration, headerStripped,header,headerHeaderStripped,headerHeader,false);
 				parts.add(hhIndex, part);
 				part.addItemToBegin(item);				
 			} else {
-				part = new ItemsWithHeader(headerStripped,header);
+				part = createSection(enumeration, headerStripped,header,false);
 				parts.add(findLastSectionInSuperSection(hhIndex)+1,part);
 				part.addItemToEnd(item);	
 			}
@@ -383,7 +625,7 @@ public class ArchiveWithHeaders extends Archive{
 		latestItemHeaderHeader = null;
 		if(!addToTop) {
 			if(this.parts.size()>0) {
-				ItemsWithHeader items = parts.get(0);
+				Section items = parts.get(0);
 				if(items.getHeaderHeader()==null) {
 					for(int i=items.getSize()-1;i>=0;i++) {
 						Calendar c = NewPages.getNewPagesItemDate(wiki, items.getItem(i));
@@ -399,9 +641,9 @@ public class ArchiveWithHeaders extends Archive{
 	}
 	
 	
-	public int findHeaderHeader(String hh) {
+	public int findSuperHeader(String hh) {
 		int index = -1;
-		ItemsWithHeader part = null;
+		Section part = null;
 		if(addToTop) {
 			for(int i=0;i<parts.size();i++) {
 				part = parts.get(i);
@@ -425,7 +667,7 @@ public class ArchiveWithHeaders extends Archive{
 	
 	public int findHeaderInSuperSection(String header, int startFrom) {
 		//int index = -1;
-		ItemsWithHeader part = parts.get(startFrom);
+		Section part = parts.get(startFrom);
 		String hh = part.getHeaderHeader();
 		for(int i = startFrom;i<this.parts.size();i++) {
 			part = parts.get(i);
@@ -436,7 +678,7 @@ public class ArchiveWithHeaders extends Archive{
 		return -1;
 	}
 	public int findLastSectionInSuperSection(int startFrom) {
-		ItemsWithHeader part = parts.get(startFrom);
+		Section part = parts.get(startFrom);
 		String hh = part.getHeaderHeader();
 		int i = 0;
 		for(i = startFrom;i<this.parts.size();i++) {
@@ -445,6 +687,11 @@ public class ArchiveWithHeaders extends Archive{
 			else if (hh!=null && part.getHeaderHeader()!=null && part.getHeaderHeader().compareTo(hh)!=0) break;			
 		}		
 		return (i-1);
+	}
+	
+	public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
+		wiki.edit(archiveName, toString(), 
+				"+"+newItemsCount()+" статей", minor, bot);
 	}
 	
 }

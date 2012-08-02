@@ -1,5 +1,5 @@
 /**
- *  @(#)NirvanaWiki.java 0.02 07/04/2012
+ *  @(#)NirvanaWiki.java 0.03 02/07/2012
  *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -23,13 +23,20 @@
 
 package org.wikipedia.nirvana;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 import javax.security.auth.login.LoginException;
 
@@ -130,7 +137,7 @@ public class NirvanaWiki extends Wiki {
      */
     public void setLogLevel(Level level)
     {
-    	super.setLogLevel(level);
+    	logger.setLevel(level);
     	log.setLevel(org.apache.log4j.Level.OFF);
     }
 
@@ -263,4 +270,157 @@ public class NirvanaWiki extends Wiki {
     	Matcher m = p.matcher(article);    	
     	return m.matches();
     }
+    
+    /* this is implementation from http://en.wikipedia.org/wiki/Template:Bots#Java
+     * Does not work for {{bots|allow=OtherBot}} case
+    public static boolean allowBots(String text, String user)
+    {
+    	return !text.matches("(?si).*\\{\\{(nobots|bots\\|(allow=none|deny=(.*?" + user + ".*?|all)|optout=all))\\}\\}.*");
+    }*/
+    
+	public static boolean allowBots(String text, String user)
+    {
+		log.debug("=> allowBots()");
+		String pattern = "\\{\\{(nobots|bots\\|(allow=none|deny=(.*?" + user + ".*?|all)|optout=all))\\}\\}";
+    	//Pattern p = Pattern.compile("\\[\\[(?<article>.+)\\]\\]");
+    	Pattern p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+    	Matcher m = p.matcher(text);
+    	boolean b1 = m.find();
+    	log.debug("m.find() finished");
+    	pattern = "\\{\\{(bots\\|(allow=([^\\}]+?)))\\}\\}"; 
+    	p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+    	m = p.matcher(text);
+    	boolean b2 = false;
+    	//m.find()
+    	if(m.find()) {
+    		String who = m.group(3);
+    		if(who.trim().compareToIgnoreCase("none")!=0 && 
+    			who.trim().compareToIgnoreCase("all")!=0 &&
+    			!who.contains(user)) {
+    			b2 = true;    			
+    		}
+    	}
+    	log.debug("m.find() finished");
+    	log.debug("<= allowBots()");
+        return (!b1 && !b2);  
+    }
+	
+	public static String getAllowBotsString(String text) {
+		String nobots = null;
+		String pattern = "(\\{\\{(nobots|bots\\|([^\\}]+))\\}\\})";
+    	Pattern p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+    	Matcher m = p.matcher(text);
+    	//boolean b1 = m.matches();
+    	if(m.find()) {
+    		//log("matches");
+    		nobots = m.group(1);
+    	}
+		return nobots;
+	}
+	
+	 public String [] getPageLines(String title) throws IOException
+	    {
+	        // pitfall check
+	        if (namespace(title) < 0)
+	            throw new UnsupportedOperationException("Cannot retrieve Special: or Media: pages!");
+
+	        // go for it
+	        String url = base + URLEncoder.encode(title, "UTF-8") + "&action=raw";
+	        String [] temp = fetchLines(url, "getPageLines");
+	        log(Level.INFO, "Successfully retrieved text of " + title, "getPageLines");
+	        return decode(temp);
+	    }
+	 
+	 protected String [] decode(String items[])
+	    {
+	        // Remove entity references. Oddly enough, URLDecoder doesn't nuke these.
+		 	for(int i=0;i<items.length;i++) {
+		 		String item = items[i];
+		 		items[i] = item.replace("&lt;", "<").
+		 				replace("&gt;", ">").
+		 				replace("&amp;", "&").
+		 				replace("&quot;", "\"").
+		 				replace("&#039;", "'");
+		 	}
+	        return items;
+	    }
+	 protected String [] fetchLines(String url, String caller) throws IOException
+	    {
+	        // check the database lag
+	        logurl(url, caller);
+	        do // this is just a dummy loop
+	        {
+	            if (maxlag < 1) // disabled
+	                break;
+	            // only bother to check every 30 seconds
+	            if ((System.currentTimeMillis() - lastlagcheck) < 30000) // TODO: this really should be a preference
+	                break;
+
+	            try
+	            {
+	                // if we use this, this can block unrelated read requests while we edit a page
+	                synchronized(domain)
+	                {
+	                    // update counter. We do this before the actual check, so that only one thread does the check.
+	                    lastlagcheck = System.currentTimeMillis();
+	                    int lag = getCurrentDatabaseLag();
+	                    while (lag > maxlag)
+	                    {
+	                        log(Level.WARNING, "Sleeping for 30s as current database lag (" + lag + ")exceeds the maximum allowed value of " + maxlag + " s", caller);
+	                        Thread.sleep(30000);
+	                        lag = getCurrentDatabaseLag();
+	                    }
+	                }
+	            }
+	            catch (InterruptedException ex)
+	            {
+	                // nobody cares
+	            }
+	        }
+	        while (false);
+
+	        // connect
+	        URLConnection connection = new URL(url).openConnection();
+	        connection.setConnectTimeout(CONNECTION_CONNECT_TIMEOUT_MSEC);
+	        connection.setReadTimeout(CONNECTION_READ_TIMEOUT_MSEC);
+	        setCookies(connection);
+	        connection.connect();
+	        BufferedReader in = new BufferedReader(new InputStreamReader(
+	            zipped ? new GZIPInputStream(connection.getInputStream()) : connection.getInputStream(), "UTF-8"));
+	        grabCookies(connection);
+
+	        // get the text
+	        String line;
+	        ArrayList<String> lines = new ArrayList<String>(1000);
+	        while ((line = in.readLine()) != null)
+	        {
+	            lines.add(line);
+	            //text.append("\n");
+	        }
+	        in.close();
+	        return lines.toArray(new String[0]);
+	    }
+	 
+	 /**
+	     *  Gets the first revision of a page.
+	     *  @param title a page
+	     *  @return the oldest revision of that page
+	     *  @throws IOException if a network error occurs
+	     *  @since 0.24
+	     */
+	    public Revision getFirstRevision(String title, boolean resolveRedirect) throws IOException
+	    {
+	        StringBuilder url = new StringBuilder(query);
+	        url.append("action=query&prop=revisions&rvlimit=1&rvdir=newer&titles=");
+	        url.append(URLEncoder.encode(title, "UTF-8"));
+	        if(resolveRedirect) {
+	        	url.append("&redirects");
+	        }
+	        url.append("&rvprop=timestamp%7Cuser%7Cids%7Cflags%7Csize%7Ccomment");
+	        String line = fetch(url.toString(), "getFirstRevision");
+	        int a = line.indexOf("<rev");
+	        if(a<0) return null;
+	        int b = line.indexOf("/>", a);
+	        return parseRevision(line.substring(a, b), title);
+	    }
 }

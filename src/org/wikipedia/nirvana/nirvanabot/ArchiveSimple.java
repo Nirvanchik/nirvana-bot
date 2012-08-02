@@ -1,5 +1,5 @@
 /**
- *  @(#)ArchiveNoHeaders.java 07/04/2012
+ *  @(#)ArchiveSimple.java 02/07/2012
  *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -23,12 +23,16 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.commons.lang3.StringUtils;
+import javax.security.auth.login.LoginException;
 
-public class ArchiveNoHeaders extends Archive {
-	private ArrayList<String> items;
+import org.apache.commons.lang3.StringUtils;
+import org.wikipedia.nirvana.NirvanaWiki;
+
+public class ArchiveSimple extends Archive {
+	protected ArrayList<String> items;
 	public String toString() {
 		if(addToTop)
 			return StringUtils.join(items, delimeter)+delimeter;// перенос строки нужен для склейки
@@ -36,7 +40,8 @@ public class ArchiveNoHeaders extends Archive {
 			return StringUtils.join(items, delimeter); // для склейки нужно отсутствие переноса 
 	}
 	
-	public ArchiveNoHeaders(boolean addToTop, String delimeter) {
+	public ArchiveSimple(boolean addToTop, String delimeter) {
+		log.debug("ArchiveSimple created");
 		this.addToTop = addToTop;
 		this.delimeter = delimeter;
 		items = new ArrayList<String>();
@@ -50,5 +55,13 @@ public class ArchiveNoHeaders extends Archive {
 			items.add(item);
 		}
 	}
-
+	public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
+		if(addToTop) {
+			wiki.prependOrCreate(archiveName, toString(), 
+					"+"+newItemsCount()+" статей", minor, bot);
+		} else {
+			wiki.appendOrCreate(archiveName, toString(), 
+					"+"+newItemsCount()+" статей", minor, bot);
+		}
+	}
 }
