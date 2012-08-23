@@ -48,6 +48,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Period;
@@ -88,8 +89,10 @@ public class NirvanaBot extends NirvanaBasicBot{
 	@SuppressWarnings("unused")
 	private static final String ERROR_NOTIFICATION_TEXT = "При проверке параметров были обнаружены ошибки. %1$s Напишите [[%1$s|мне]], если нужна помощь в настройке параметров. ~~~~";
 	private static final String ERROR_PARAMETER_HAS_MULTIPLE_VALUES_RU = "Для параметра \"%1$s\" дано несколько значений. Использовано значение по умолчанию.";
+	private static final String ERROR_INVALID_PARAMETER = "Error in parameter \"%1$s\". Invalid value (%2$s).";
+	private static final String ERROR_INVALID_PARAMETER_RU = "Ошибка в параметре \"%1$s\". Задано неправильное значение (%2$s).";
 	
-	private static int MAX_DEPTH = 50;
+	private static int MAX_DEPTH = 30;
 	private static int DEFAULT_DEPTH = 15;
 	private static int MAX_MAXITEMS = 5000;
 	private static int DEFAULT_MAXITEMS = 20;
@@ -102,12 +105,27 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static boolean GENERATE_REPORT = false;
 	private static String REPORT_FILE_NAME = "report.txt";
 	private static String REPORT_FORMAT = "txt";
+	private static String DEFAULT_FORMAT = "* [[%(название)]]";
+	private static String DEFAULT_TYPE = "список новых статей";
 	
 	private static String TYPE = "all";
+	
+	private static String DEFAULT_DELIMETER = "\n";
 	
 	private static int RETRY_MAX = 1;
 	
 	private static String newpagesTemplate = null;
+	
+	private static String overridenPropertiesPage = null;
+	
+	private static String PICTURE_SEARCH_TAGS = "image file,Фото,портрет,Изображение";
+	
+	private static int DEFAULT_NAMESPACE = 0;
+	
+	private static String DEFAULT_HEADER = null;
+	private static String DEFAULT_FOOTER = null;
+	private static PortalParam.Deleted DEFAULT_DELETED_FLAG = PortalParam.Deleted.DONT_TOUCH;
+	private NirvanaWiki commons = null;
 	
 	private static class NewPagesData {
 		ArrayList<String> errors;
@@ -219,11 +237,131 @@ public class NirvanaBot extends NirvanaBasicBot{
 			REPORT_FILE_NAME = REPORT_FILE_NAME.replace("%(date)", date);
 		}
 		
-		TYPE = properties.getProperty("type",TYPE);
+		PICTURE_SEARCH_TAGS = properties.getProperty("picture-search-tags",PICTURE_SEARCH_TAGS);
+		log.info("picture search tags = "+PICTURE_SEARCH_TAGS);
+		
+		TYPE = properties.getProperty("type",TYPE); 
+		
+		overridenPropertiesPage = properties.getProperty("overriden-properties-page",null);
 	}
 	
-	protected void go() {
+	protected void go() {	
+		commons = new NirvanaWiki("commons.wikimedia.org");
+		commons.setMaxLag( 15 );
 		go(newpagesTemplate);
+	}
+	
+	private void loadOverridenProperties() throws IOException	{
+		if(overridenPropertiesPage==null || overridenPropertiesPage.isEmpty())
+			return;
+		log.info("loading overriden properties from page "+overridenPropertiesPage);
+		String overridenPropertiesText = null;
+		try {
+			overridenPropertiesText = wiki.getPageText(overridenPropertiesPage);
+		} catch (IOException e) {			
+			log.fatal("Failed to read overriden properties page: "+overridenPropertiesPage);
+			throw e;
+		}
+		Map<String, String> options = new HashMap<String, String>();
+		if(TryParseTemplate(overridenPropertiesText,options)) {			
+			if (options.containsKey("разделитель") && !options.get("разделитель").isEmpty())
+			{
+				DEFAULT_DELIMETER = options.get("разделитель").replace("\"", "").replace("\\n", "\n");
+			}
+			
+			String key = "формат элемента";
+			if (options.containsKey(key) && !options.get(key).isEmpty())
+			{
+				DEFAULT_FORMAT = options.get(key);//.replace("{", "{{").replace("}", "}}");
+			}			
+			
+			key = "глубина";
+			if (options.containsKey(key) && !options.get(key).isEmpty()) {			
+				try {
+					DEFAULT_DEPTH = Integer.parseInt(options.get(key));
+				} catch(NumberFormatException e) {
+					log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));					
+				}
+				if(DEFAULT_DEPTH>MAX_DEPTH) {					
+					DEFAULT_DEPTH = MAX_DEPTH;				
+				}
+			}			
+			
+			key = "часов";
+			if (options.containsKey(key) && !options.get(key).isEmpty()) {		
+				try {
+					DEFAULT_HOURS = Integer.parseInt(options.get(key));
+				} catch(NumberFormatException e) {
+					log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+				}
+				if(DEFAULT_HOURS>MAX_HOURS) {
+					DEFAULT_HOURS = MAX_HOURS;				
+				}
+			}
+			
+			key = "элементов";
+			if (options.containsKey(key) && !options.get(key).isEmpty())
+			{		
+				try {
+					DEFAULT_MAXITEMS = Integer.parseInt(options.get(key));
+				} catch(NumberFormatException e) {
+					log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+				}
+				if(DEFAULT_MAXITEMS>MAX_MAXITEMS) {
+					DEFAULT_MAXITEMS = MAX_MAXITEMS;
+				}
+			}
+			
+			key = "пространство имён";
+			if (options.containsKey(key) && !options.get(key).isEmpty()) {			
+				try {
+					DEFAULT_NAMESPACE = Integer.parseInt(options.get(key));
+				} catch(NumberFormatException e) {
+					log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+				}
+			}			
+			
+			if (options.containsKey("шапка") && !options.get("шапка").isEmpty())
+			{
+				DEFAULT_HEADER = options.get("шапка").replace("\\n", "\n");
+			}			
+			
+			if (options.containsKey("подвал") && !options.get("подвал").isEmpty())
+			{
+				DEFAULT_FOOTER = options.get("подвал").replace("\\n", "\n");
+			}
+			
+			if(options.containsKey("тип") && !options.get("тип").isEmpty()) {				
+				DEFAULT_TYPE = options.get("тип").toLowerCase();
+			}	
+			
+			key = "удаленные статьи";
+			if (options.containsKey(key) && !options.get(key).isEmpty()) {
+				DEFAULT_DELETED_FLAG = parseDeleted(options.get(key),DEFAULT_DELETED_FLAG,null);
+			}
+			
+			key = "поиск картинки";
+			if (options.containsKey(key) && !options.get(key).isEmpty()) {
+				PICTURE_SEARCH_TAGS = options.get(key);
+			}
+		}
+	}
+	
+	protected static PortalParam.Deleted parseDeleted(String value, PortalParam.Deleted defaultValue,ArrayList<String> errors) {
+		PortalParam.Deleted flag = defaultValue;
+		if(value.equalsIgnoreCase("удалять")) {
+			flag = PortalParam.Deleted.REMOVE;
+		} else if(value.equalsIgnoreCase("помечать")) {
+			flag = PortalParam.Deleted.MARK;
+		} else if(value.equalsIgnoreCase("оставлять")) {
+			flag = PortalParam.Deleted.DONT_TOUCH;
+		} else {
+			log.warn(String.format(ERROR_INVALID_PARAMETER,"удаленные статьи", value));
+			if(errors!=null) {
+				errors.add(String.format(ERROR_INVALID_PARAMETER_RU,"удаленные статьи", value));
+			}
+		}
+		return flag;
 	}
 	
 	@SuppressWarnings("unused")
@@ -235,6 +373,13 @@ public class NirvanaBot extends NirvanaBasicBot{
 		log.info("template to check: "+template);
 		
 		newpagesTemplateName = template;
+		
+		try {
+			loadOverridenProperties();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
 		
 		// 1 extract portal list
 		String []portalNewPagesLists = null;
@@ -436,7 +581,18 @@ public class NirvanaBot extends NirvanaBasicBot{
 			} catch (InterruptedException e) {				
 				log.fatal(e.toString());
 				break;
-			} 
+			}/* catch (Exception e) {
+				log.error(e.toString());
+				log.trace("OOOOPS!!!", e);
+				if(retry_count<RETRY_MAX) {
+					log.info("RETRY AGAIN");
+					retry = true;
+				} else {
+					er++;
+					reportItem.status = Status.ERROR;
+					e.printStackTrace();
+				}	
+			}*/
 			reportItem.endTime = System.currentTimeMillis();
 			if(STOP_AFTER>0 && j>=STOP_AFTER) break;
 			if(!retry) i++;
@@ -493,12 +649,11 @@ public class NirvanaBot extends NirvanaBasicBot{
 		String ns1 = "Участник:";
 		String ns2 = "User:";
 		if(recognizeTemplate.startsWith(ns1))  {
-			recognizeTemplate = recognizeTemplate.substring(ns1.length());
-			recognizeTemplate = "("+ns1+")?("+ns2+")?"+recognizeTemplate;
+			recognizeTemplate = recognizeTemplate.substring(ns1.length());			
 		} else if (recognizeTemplate.startsWith(ns2)) {
-			recognizeTemplate = recognizeTemplate.substring(ns2.length());
-			recognizeTemplate = "("+ns1+")?("+ns2+")?"+recognizeTemplate;
+			recognizeTemplate = recognizeTemplate.substring(ns2.length());			
 		}
+		recognizeTemplate = "("+ns1+"|"+ns2+")"+recognizeTemplate;
         String str = "^(\\{\\{"+recognizeTemplate+")(.+)$"; // GOOD
         //String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{.+?\\}\\})*.*))+?\\}\\}";
         //String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{[^\\{\\}]+\\}\\})*[^\\{]*))\\}\\}";
@@ -563,6 +718,7 @@ public class NirvanaBot extends NirvanaBasicBot{
         	//log.debug("checking string: "+p);
         	boolean newStringToLastVal = false;
         	int count = StringTools.howMany(p, '=');
+        	if(count==0 && i==0) continue;
         	if(!lastVal.isEmpty() && lastVal.endsWith("{")) { // {| означает начало таблицы
         		newStringToLastVal = true;        		
         	} else if(count>0) {
@@ -598,39 +754,46 @@ public class NirvanaBot extends NirvanaBasicBot{
     }
 
 
-	public static boolean createPortalModule(Map<String, String> options, NewPagesData data) {
+	public boolean createPortalModule(Map<String, String> options, NewPagesData data) {
 		log.debug("portal settings init started");
 		String key;
 		
-		ArrayList<String> categories = optionToStringArray(options,"категории");
+		PortalParam param = new PortalParam();
+		param.lang = NirvanaBot.LANGUAGE;
+		
+		String type = null;
+		if(!options.containsKey("тип") || options.get("тип").isEmpty()) {
+			data.errors.add("Параметр \"тип\" не задан. Использовано значение по умолчанию ");
+			type = DEFAULT_TYPE;
+		} else {
+			type = options.get("тип").toLowerCase();
+		}	
+		log.debug("тип: "+type);
+		data.type = type;
+		
+		param.categories = optionToStringArray(options,"категории");
 		if (options.containsKey("категория"))
 		{
-			categories.add(options.get("категория"));
+			param.categories.add(options.get("категория"));
 		}		
 		
-		ArrayList<String> categoriesToIgnore = optionToStringArray(options,"игнорировать");
+		param.categoriesToIgnore = optionToStringArray(options,"игнорировать");
 				
-		ArrayList<String> usersToIgnore = optionToStringArray(options,"игнорировать авторов");
+		param.usersToIgnore = optionToStringArray(options,"игнорировать авторов");
 		
-		String title = "";
+		param.page = "";
 		if (options.containsKey("страница"))
 		{
-			title = options.get("страница");
+			param.page = options.get("страница");
 		}
 		
-		ArchiveSettings archiveSettings = new ArchiveSettings();
-		String archive = null;
+		param.archSettings = new ArchiveSettings();
+		param.archive = null;
 		key = "архив";
 		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
-			archive = options.get(key);
-			parseArchiveName(archiveSettings,options.get(key));
-			//archiveSettings.archive = options.get(key);
-			//archiveSettings.archivePeriod = ArchiveSettings.getHeaderPeriod(archive);
-			/*if(archiveSettings.archivePeriod.degree()<Period.MONTH.degree()) {
-				
-			}*/
-			//data.errors.addAll(parseArchiveName(archiveSettings,options.get(key)));
+			param.archive = options.get(key);
+			parseArchiveName(param.archSettings,options.get(key));			
 		}
 		
 		String str = "";
@@ -642,7 +805,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 			if(p1==Period.NONE) {
 				data.errors.add("В параметре \"формат заголовка в архиве\" не задан переменный параметр. Значение этого параметра не принято.");
 			} else {
-				archiveSettings.headerFormat = str;
+				param.archSettings.headerFormat = str;
 			}
 		}
 		
@@ -654,8 +817,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 			if(p2==Period.NONE) {
 				data.errors.add("В параметре \"формат подзаголовка в архиве\" не задан переменный параметр. Значение этого параметра не принято.");
 			} else {
-				archiveSettings.headerHeaderFormat = archiveSettings.headerFormat;
-				archiveSettings.headerFormat = str;
+				param.archSettings.headerHeaderFormat = param.archSettings.headerFormat;
+				param.archSettings.headerFormat = str;
 			}			
 		}
 		
@@ -674,7 +837,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		
 		key = "параметры архива";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
-			data.errors.addAll(parseArchiveSettings(archiveSettings,options.get(key)));
+			data.errors.addAll(parseArchiveSettings(param.archSettings,options.get(key)));
 			//archiveSettings.headerFormat = options.get(key); 
 		}
 		
@@ -686,44 +849,44 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}*/
 		
 		//boolean markEdits = true;
-		boolean bot = true;
-		boolean minor = true;
+		param.bot = true;
+		param.minor = true;
 		if (options.containsKey("помечать правки") && !options.get("помечать правки").isEmpty()) {
 			String mark = options.get("помечать правки").toLowerCase();
 			if(mark.equalsIgnoreCase("нет")) {
 				//markEdits = false;
-				bot = false;
-				minor = false;
+				param.bot = false;
+				param.minor = false;
 			} else {				
 				if(!mark.contains("бот") && mark.contains("малая")) {
-					bot = false;
+					param.bot = false;
 				} else if(mark.contains("бот") && !mark.contains("малая")) {
-					minor = false;
+					param.minor = false;
 				}				
 			}
 		}
 		
-		int ns = 0;
+		param.ns = DEFAULT_NAMESPACE;
 		key = "пространство имён";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {			
 			try {
-				ns = Integer.parseInt(options.get(key));
+				param.ns = Integer.parseInt(options.get(key));
 			} catch(NumberFormatException e) {
 				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
 				data.errors.add(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING_RU, key, options.get(key)));
 			}
 		}
 		
-		String header = null;
-		if (options.containsKey("шапка"))
+		param.header = DEFAULT_HEADER;
+		if (options.containsKey("шапка") && !options.get("шапка").isEmpty())
 		{
-			header = options.get("шапка").replace("\\n", "\n");
+			param.header = options.get("шапка").replace("\\n", "\n");
 		}
 		
-		String footer = null;
-		if (options.containsKey("подвал"))
+		param.footer = DEFAULT_FOOTER;
+		if (options.containsKey("подвал") && !options.get("подвал").isEmpty())
 		{
-			footer = options.get("подвал").replace("\\n", "\n");
+			param.footer = options.get("подвал").replace("\\n", "\n");
 		}
 		
 		/*
@@ -733,59 +896,67 @@ public class NirvanaBot extends NirvanaBasicBot{
 			templates = options.get("шаблоны").replace("\\n", "\n");
 		}*/
 		
-		String format = "* [[%(название)]]";
+		param.format = DEFAULT_FORMAT;
 		if (options.containsKey("формат элемента"))
 		{
-			format = options.get("формат элемента");//.replace("{", "{{").replace("}", "}}");
+			param.format = options.get("формат элемента");//.replace("{", "{{").replace("}", "}}");
 		}
 		
 		
-		int depth = DEFAULT_DEPTH;
+		param.depth = DEFAULT_DEPTH;
 		key = "глубина";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {			
 			try {
-				depth = Integer.parseInt(options.get(key));
+				param.depth = Integer.parseInt(options.get(key));
 			} catch(NumberFormatException e) {
 				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
 				data.errors.add(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING_RU, key, options.get(key)));
 			}
-			if(depth>MAX_DEPTH) {
+			if(param.depth>MAX_DEPTH) {
 				data.errors.add(String.format(ERROR_INTEGER_TOO_BIG_STRING_RU, key, options.get(key),MAX_DEPTH));
-				depth = MAX_DEPTH;				
+				param.depth = MAX_DEPTH;				
 			}
 		}
 		
-		int hours = DEFAULT_HOURS;
+		param.hours = DEFAULT_HOURS;
 		key = "часов";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {		
 			try {
-				hours = Integer.parseInt(options.get(key));
+				param.hours = Integer.parseInt(options.get(key));
 			} catch(NumberFormatException e) {
 				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
 				data.errors.add(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING_RU, key, options.get(key)));
 			}
-			if(hours>MAX_HOURS) {
+			if(param.hours>MAX_HOURS) {
 				data.errors.add(String.format(ERROR_INTEGER_TOO_BIG_STRING_RU, key, options.get(key),MAX_HOURS));
-				hours = MAX_HOURS;				
+				param.hours = MAX_HOURS;				
 			}
 		}
 		
-		int maxItems = DEFAULT_MAXITEMS;	
+		param.maxItems = DEFAULT_MAXITEMS;	
 		key = "элементов";
-		boolean maxItemsSetting = false;
+		if(type.equals("список наблюдения"))
+			param.maxItems = MAX_MAXITEMS;
+		//boolean maxItemsSetting = false;
 		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{		
 			try {
-				maxItems = Integer.parseInt(options.get(key));
-				maxItemsSetting = true;
+				param.maxItems = Integer.parseInt(options.get(key));
+				//maxItemsSetting = true;
 			} catch(NumberFormatException e) {
 				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
 				data.errors.add(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING_RU, key, options.get(key)));
 			}
-			if(maxItems>MAX_MAXITEMS) {
+			if(param.maxItems>MAX_MAXITEMS) {
 				data.errors.add(String.format(ERROR_INTEGER_TOO_BIG_STRING_RU, key, options.get(key),MAX_MAXITEMS));
-				maxItems = MAX_MAXITEMS;
+				param.maxItems = MAX_MAXITEMS;
 			}
+		}
+		
+		param.deletedFlag = DEFAULT_DELETED_FLAG;
+		key = "удаленные статьи";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			param.deletedFlag = parseDeleted(options.get(key),param.deletedFlag,data.errors);
 		}
 		
 		/*
@@ -831,46 +1002,26 @@ public class NirvanaBot extends NirvanaBasicBot{
 			//archive = options.get("цвет нормальной");
 		}*/
 		
-		String delimeter = "\n";
+		param.delimeter = DEFAULT_DELIMETER;
 		if (options.containsKey("разделитель"))
 		{
-			delimeter = options.get("разделитель").replace("\"", "").replace("\\n", "\n");
+			param.delimeter = options.get("разделитель").replace("\"", "").replace("\\n", "\n");
 		}
 		
-		String t;
-		if(!options.containsKey("тип") || options.get("тип").isEmpty()) {
-			data.errors.add("Параметр \"тип\" не задан. Использовано значение по умолчанию (список новых статей)");
-			t = "список новых статей";
-		} else {
-			t = options.get("тип").toLowerCase();
-		}	
-		log.debug("тип: "+t);
-		data.type = t;
-		if (t.equals("список новых статей")) {
-			data.portalModule = new NewPages(LANGUAGE,
-			    categories,
-			    categoriesToIgnore,
-			    usersToIgnore,
-			    title, archive, archiveSettings, 
-			    ns, depth, hours, maxItems,
-			    format, delimeter, header, footer,
-			    minor, bot);
-						
+		param.imageSearchTags = PICTURE_SEARCH_TAGS;
+		key = "поиск картинки";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			param.imageSearchTags = options.get(key);
 		}
-		else if (t.equals("список наблюдения")) {
-			if(!maxItemsSetting) {
-				maxItems = MAX_MAXITEMS;
-			}
-			data.portalModule = new WatchList(LANGUAGE,
-			    categories,
-			    categoriesToIgnore,
-			    usersToIgnore,
-			    title, archive, 
-			    ns, depth, hours, maxItems,
-			    format, delimeter, header, footer,
-			    minor, bot);
+		
+		
+		if (type.equals("список новых статей")) {
+			data.portalModule = new NewPages(param);						
 		}
-		else if (t.equals("отсортированный список статей, которые должны быть во всех проектах")) {
+		else if (type.equals("список наблюдения")) {
+			data.portalModule = new WatchList(param);
+		}
+		else if (type.equals("отсортированный список статей, которые должны быть во всех проектах")) {
 			/*module = new EncyShell(portal,
 			title,
 			shortSize,
@@ -878,28 +1029,17 @@ public class NirvanaBot extends NirvanaBasicBot{
 			shortColor,
 			normalColor,
 			longColor);*/
-			}
-		else if (t.equals("список новых статей с изображениями в карточке")) {
-			data.portalModule = new NewPagesWithImages(LANGUAGE,
-				categories,
-			    categoriesToIgnore,
-				usersToIgnore,
-			    title, archive, 
-			    ns, depth, hours, maxItems,
-			    format, delimeter, header, footer,
-			    minor, bot, true);
+			}//"Монета:Аверс,Реверс,Изображение аверса,Изображение реверса;image file,Фото,портрет,Изображение"
+		else if (type.equals("список новых статей с изображениями в карточке")) {
+			data.portalModule = new NewPagesWithImages(param, commons, new ImageFinderInCard(param.imageSearchTags));
 		}
-		else if (t.equals("список новых статей с изображениями")) {
-			data.portalModule = new NewPagesWithImages(LANGUAGE,
-				categories,
-			    categoriesToIgnore,
-				usersToIgnore,
-			    title, archive, 
-			    ns, depth, hours, maxItems,
-			    format, delimeter, header, footer,
-			    minor, bot, false);
+		else if (type.equals("список новых статей с изображениями в тексте") ) {
+			data.portalModule = new NewPagesWithImages(param, commons, new ImageFinderInBody());
+		} 
+		else if (type.equals("список новых статей с изображениями")) {
+			data.portalModule = new NewPagesWithImages(param, commons, new ImageFinderUniversal(param.imageSearchTags));
 		}
-		else if (t.equals("списки новых статей по дням")) {
+		else if (type.equals("списки новых статей по дням")) {
 			/*data.portalModule = new NewPagesWithWeeks(LANGUAGE,
 				    categories,
 				    categoriesToIgnore,
@@ -909,7 +1049,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 				    format, delimeter, header, footer,
 				    minor, bot);*/
 		}
-		else if (t.equals("список страниц с заданными категориями и шаблонами")) {
+		else if (type.equals("список страниц с заданными категориями и шаблонами")) {
 			/*
 		module = new CategoryTemplateIntersection(portal,
 		    categories,
@@ -926,7 +1066,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		    footer,
 		    markEdits);*/
 		}
-		else if (t.equals("список страниц с заданными категориями, шаблонами и обсуждением"))
+		else if (type.equals("список страниц с заданными категориями, шаблонами и обсуждением"))
 		{/*
 		module = new CategoryIntersectionAndTalkPages(portal,
 		    categories,
@@ -944,7 +1084,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		    footer,
 		    markEdits);*/
 		} else {
-			data.errors.add("Тип \""+t+"\" не поддерживается. Используйте только разрешенные значения в параметре \"тип\".");			
+			data.errors.add("Тип \""+type+"\" не поддерживается. Используйте только разрешенные значения в параметре \"тип\".");			
 		}
 	
 	log.debug("portal settings init finished");
@@ -1005,36 +1145,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}*/
 		
 		//boolean byYear = false,byQarter=false,byMonth=false,byWeek=false,byDay=false;
-		/*
-		int cnt = 0;
-		if(itemsVector.contains("по годам")) {
-			archiveSettings.headerPeriod = ArchiveSettings.Period.YEAR;
-			cnt++;
-		}
-		if(itemsVector.contains("по сезонам")) {
-			archiveSettings.headerPeriod = ArchiveSettings.Period.SEASON;
-			cnt++;
-		}
-		if(itemsVector.contains("по кварталам")) {
-			archiveSettings.headerPeriod = ArchiveSettings.Period.QUARTER;
-			cnt++;
-		}
-		if(itemsVector.contains("по месяцам")) {
-			archiveSettings.headerPeriod = ArchiveSettings.Period.MONTH;
-			cnt++;
-		}	
-		if(itemsVector.contains("по неделям")) {
-			archiveSettings.headerPeriod = ArchiveSettings.Period.WEEK;
-			cnt++;
-		}		
-		if(itemsVector.contains("по дням")) {
-			archiveSettings.headerPeriod = ArchiveSettings.Period.DAY;
-			cnt++;
-		}
-		if(cnt>1) {
-			archiveSettings.headerPeriod = ArchiveSettings.DEFAULT_HEADER;
-			errors.add(String.format(ERROR_PARAMETER_HAS_MULTIPLE_VALUES_RU, "периодичность заголовков"));
-		}	*/
+		
 		
 
 		return errors;
@@ -1057,34 +1168,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}			
 		return errors;
 	}
-	/*
-	private static ArrayList<String> parseArchiveName(ArchiveSettings archiveSettings,
-			String name) {
-		ArrayList<String> errors = new ArrayList<String>();
-		int cnt = 0;
-		archiveSettings.archive = name;
-		if(name.contains("%(месяц)")) {
-			cnt++;
-			archiveSettings.archivePeriod = Period.MONTH;
-		}
-		if(name.contains("%(квартал)")) {
-			cnt++;
-			archiveSettings.archivePeriod = Period.QUARTER;
-		}
-		if(name.contains("%(сезон)")) {
-			cnt++;
-			archiveSettings.archivePeriod = Period.SEASON;
-		}
-		if(name.contains("%(год)")) {
-			cnt++;
-			archiveSettings.archivePeriod = Period.YEAR;
-		}	
-		if(cnt>1) {
-			//archiveSettings.archivePeriod = ArchiveSettings.DEFAULT_HEADER;
-			errors.add(String.format(ERROR_PARAMETER_HAS_MULTIPLE_VALUES_RU, "архив"));
-		}	
-		return errors;
-	}*/
+	
 
 	public static ArrayList<String> optionToStringArray(Map<String, String> options, String key) {
 		ArrayList<String> list = new ArrayList<String>();

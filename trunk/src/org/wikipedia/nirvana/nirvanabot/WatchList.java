@@ -57,15 +57,11 @@ public class WatchList extends NewPages {
 	 * @param minor
 	 * @param bot
 	 */
-	public WatchList(String lang, ArrayList<String> categories,
-			ArrayList<String> categoriesToIgnore,
-			ArrayList<String> usersToIgnore, String page, String archive,
-			int ns, int depth, int hours, int maxItems, String format,
-			String delimeter, String header, String footer, boolean minor,
-			boolean bot) {
-		super(lang, categories, categoriesToIgnore, usersToIgnore, page,
-				archive, null, ns, depth, hours, maxItems, format, delimeter, header,
-				footer, minor, bot);
+	public WatchList(PortalParam param) {
+		super(param);
+		if(this.archiveSettings!=null) {
+			this.archiveSettings = null;
+		}
 		GET_FIRST_REV = true;
 		UPDATE_FROM_OLD = false;
 		SKIP_LINES = 2;

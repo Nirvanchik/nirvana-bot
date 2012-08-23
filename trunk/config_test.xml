@@ -6,6 +6,7 @@
 <entry key="wiki-login">NirvanaBot</entry>
 <entry key="wiki-password"></entry>
 <entry key="new-pages-template">Участник:NirvanaBot/test/Новые статьи</entry>
+<entry key="overriden-properties-page">Участник:NirvanaBot/test/Новые статьи/Настройки по умолчанию</entry>
 <entry key="wiki-lang">ru</entry>
 <entry key="wiki-java-loglevel">OFF</entry>
 <entry key="update-comment">обновление</entry>
@@ -15,6 +16,7 @@
 <entry key="default-comment">обновление</entry>
 <entry key="default-comment-new">обновление</entry>
 <entry key="default-comment-new-archive">обновление</entry>
+<entry key="picture-search-tags">image file,Фото,портрет,Изображение</entry>
 <entry key="error-notification">no</entry>
 <entry key="debug-mode">yes</entry>
 <entry key="stop-after">0</entry>

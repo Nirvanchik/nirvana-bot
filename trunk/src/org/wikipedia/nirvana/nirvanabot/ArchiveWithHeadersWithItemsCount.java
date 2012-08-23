@@ -23,6 +23,7 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import java.util.ArrayList;
+
 import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Period;
