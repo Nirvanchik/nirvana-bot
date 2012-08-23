@@ -47,7 +47,7 @@ public class HTTPTools {
     {
 		if(log==null) log = org.apache.log4j.Logger.getLogger(HTTPTools.class.getName());
 		log.debug("fetching url="+url);
-		log.debug("remove escape="+removeEscape);
+		log.trace("remove escape="+removeEscape);
         // connect
         URLConnection connection = new URL(url).openConnection();
         connection.setConnectTimeout(CONNECTION_CONNECT_TIMEOUT_MSEC);

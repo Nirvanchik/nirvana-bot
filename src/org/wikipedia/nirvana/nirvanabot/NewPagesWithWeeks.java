@@ -70,17 +70,11 @@ public class NewPagesWithWeeks extends NewPages {
 	 * @param minor
 	 * @param bot
 	 */
-	public NewPagesWithWeeks(String lang, ArrayList<String> categories,
-			ArrayList<String> categoriesToIgnore,
-			ArrayList<String> usersToIgnore, String page, String archive,
-			int ns, int depth, int hours, int maxItems, String format,
-			String delimeter, String header, String footer, boolean minor,
-			boolean bot) {
-		super(lang, categories, categoriesToIgnore, usersToIgnore, page,
-				archive, null,
-				ns, depth, HOURS, maxItems, format, delimeter, header,
-				footer, minor, bot);
-		
+	public NewPagesWithWeeks(PortalParam param) {
+		super(param);/*
+		if(this.archiveSettings!=null) {
+			this.archiveSettings = null;
+		}		*/
 	}
 	
 	public void getNewPages(NirvanaWiki wiki, 

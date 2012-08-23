@@ -31,8 +31,6 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.Wiki;
@@ -45,7 +43,9 @@ import org.wikipedia.nirvana.NirvanaWiki;
  *
  */
 public class NewPagesWithImages extends NewPages {
-	private String regexToFindImage;
+	//private String regexToFindImage;
+	private ImageFinder imageFinder;
+	private NirvanaWiki commons;
 	
 	public static class RevisionWithImage extends Revision {
 		String image;
@@ -84,22 +84,19 @@ public class NewPagesWithImages extends NewPages {
 	 * @param footer
 	 * @param markEdits
 	 */
-	public NewPagesWithImages(String lang, ArrayList<String> categories,
-			ArrayList<String> categoriesToIgnore,
-			ArrayList<String> usersToIgnore, String page, String archive,
-			int ns, int depth, int hours, int maxItems, String format,
-			String delimeter, String header, String footer, boolean minor, boolean bot,
-			boolean inCard) {
-		super(lang, categories, categoriesToIgnore, usersToIgnore, page,
-				archive, null,
-				ns, depth, hours, maxItems, format, delimeter, header,
-				footer, minor, bot);
+	public NewPagesWithImages(PortalParam param, NirvanaWiki commons, ImageFinder imageFinder) {
+		super(param);
+		if(this.archiveSettings!=null) {
+			this.archiveSettings = null;
+		}
 		this.format = this.format.replace("%(имя файла)", "%4$s");
-		if(inCard) {
-			regexToFindImage = "\\| *image file *= *(?<filename>.+?) *\n";
+		this.imageFinder = imageFinder;
+		this.commons = commons;
+		/*if(inCard) {
+			regexToFindImage = "\\| *(image file|Аверс|Реверс|Изображение аверса|Изображение реверса) *= *(?<filename>.+?) *\n";
 		} else {
 			regexToFindImage = "\\[\\[(Image|File|Файл|Изображение):(?<filename>.+?)(\\||\\])";
-		}
+		}*/
 	}
 	
 	public Data processData(NirvanaWiki wiki, String text) throws IOException {
@@ -167,15 +164,15 @@ public class NewPagesWithImages extends NewPages {
 		                	//FileTools.dump(article, "dump", page.getPage());
 		                }
 		                
-		                Pattern p = Pattern.compile(this.regexToFindImage);
-		                Matcher m = p.matcher(article);
+		                //Pattern p = Pattern.compile(this.regexToFindImage);
+		                //Matcher m = p.matcher(article);
 		               // FileTools.dump(article, "dump", title+".txt");
-		                if(m.find()) {	
+		                String image = imageFinder.findImage(wiki, commons, article);
+		                if(image!=null) {	
 		                	//log.debug("found pattern");
-		                	String image = m.group("filename").trim();	                	
-		                	//log.debug("image group = "+((image==null)?"":image));
+		                	//String image = m.group("filename").trim();	                	
+		                	log.debug("image found = "+image);
 		                	
-		                	if(image!=null && !image.isEmpty()) {
 		                		if(page==null) {
 		                			page = new RevisionWithImage(wiki, revId, Calendar.getInstance(), title, "", "",false,false,0,image);
 		                		} else {
@@ -183,8 +180,7 @@ public class NewPagesWithImages extends NewPages {
 		                		}
 		                		pages.add(title);
 		                		pageInfoList.add(page);
-		                	
-		                	}
+		                		log.debug("adding page to list: "+title);
 		                }
 	                }
 	            }
@@ -221,9 +217,19 @@ public class NewPagesWithImages extends NewPages {
 		    	else {
 		    		time = String.format("%1$tFT%1$tTZ",page.getTimestamp());
 		    	}
+		    	/*
+		    	log.debug("title -> ["+title+"]");
+		    	log.debug("user -> ["+page.getUser()+"]");
+		    	log.debug("image -> ["+page.getImage()+"]");
+		    	log.debug("title2 -> "+(namespace!=0?title.substring(wiki.namespaceIdentifier(this.namespace).length()+1):title));
+		    	log.debug("user2 -> "+HTTPTools.removeEscape(page.getUser()));
+		    	log.debug("time -> "+time);
+		    	log.debug("format -> "+this.format);*/
 		    	String element = String.format(this.format,
 		    			namespace!=0?title.substring(wiki.namespaceIdentifier(this.namespace).length()+1):title,
-		    			HTTPTools.removeEscape(page.getUser()), time, page.getImage()
+		    			HTTPTools.removeEscape(page.getUser()), 
+		    			time, 
+		    			page.getImage()
 		    			);
 		    	
 		        if (!subset.contains(element))
