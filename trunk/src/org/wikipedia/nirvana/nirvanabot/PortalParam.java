@@ -48,12 +48,19 @@ public class PortalParam {
 	public boolean minor;
 	public boolean bot;
 	Deleted deletedFlag;
+	public int renamedFlag;
 	public String imageSearchTags;
+	
 	public enum Deleted{
 		DONT_TOUCH,
 		REMOVE,
 		MARK
 	}
+	
+	public static final int RENAMED_OLD = 1;
+	public static final int RENAMED_NEW = 2;
+	//public static final int RENAMED_MARK = 4;
+	
 	public PortalParam() {
 		lang = "ru";
 		minor = true;

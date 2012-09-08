@@ -45,6 +45,14 @@ public abstract class ImageFinder {
         	String image = m.group(tag).trim();
         	log.debug("image: "+image);
         	if(image!=null && !image.isEmpty() && !image.contains(">") && !image.contains("<")) {
+        		// некоторые товарищи умудряются вставлять изображение с | например: Equisetum.palustre.jpg|Equisetum.palustre
+        		// в итоге выпрыгивает IOException
+        		if(image.contains("|")) {
+        			image = image.substring(0, image.indexOf('|'));
+        		}
+        		// здесь мы обрабатываем случаи когда попадается картинка с URL-кодами
+        		// например Haloragis_erecta_2007-06-02_%28plant%29.jpg
+        		image = java.net.URLDecoder.decode(image, "UTF-8");
         		String str = null;
         		try {
 					str = wiki.getPageText("File:"+image);
