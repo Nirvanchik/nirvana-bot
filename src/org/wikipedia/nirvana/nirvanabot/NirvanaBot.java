@@ -125,6 +125,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static String DEFAULT_HEADER = null;
 	private static String DEFAULT_FOOTER = null;
 	private static PortalParam.Deleted DEFAULT_DELETED_FLAG = PortalParam.Deleted.DONT_TOUCH;
+	private static int DEFAULT_RENAMED_FLAG = PortalParam.RENAMED_NEW;
 	private NirvanaWiki commons = null;
 	
 	private static class NewPagesData {
@@ -338,6 +339,11 @@ public class NirvanaBot extends NirvanaBasicBot{
 			key = "удаленные статьи";
 			if (options.containsKey(key) && !options.get(key).isEmpty()) {
 				DEFAULT_DELETED_FLAG = parseDeleted(options.get(key),DEFAULT_DELETED_FLAG,null);
+			}
+			
+			key = "переименованные статьи";			
+			if (options.containsKey(key) && !options.get(key).isEmpty()) {
+				DEFAULT_RENAMED_FLAG = parseRenamed(options.get(key),DEFAULT_RENAMED_FLAG,null);
 			}
 			
 			key = "поиск картинки";
@@ -566,10 +572,13 @@ public class NirvanaBot extends NirvanaBasicBot{
 					e.printStackTrace();
 				}
 			} catch (IOException e) {
+				
 				if(retry_count<RETRY_MAX) {
+					log.warn(e.toString());
 					log.info("RETRY AGAIN");
 					retry = true;
 				} else {
+					log.error(e.toString());
 					er++;
 					reportItem.status = Status.ERROR;
 					e.printStackTrace();
@@ -959,6 +968,12 @@ public class NirvanaBot extends NirvanaBasicBot{
 			param.deletedFlag = parseDeleted(options.get(key),param.deletedFlag,data.errors);
 		}
 		
+		param.renamedFlag = DEFAULT_RENAMED_FLAG;
+		key = "переименованные статьи";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {			
+			param.renamedFlag = parseRenamed(options.get(key),param.renamedFlag,data.errors);
+		}
+		
 		/*
 		int normalSize = 40 * 1000;
 		key = "нормальная";
@@ -1003,8 +1018,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}*/
 		
 		param.delimeter = DEFAULT_DELIMETER;
-		if (options.containsKey("разделитель"))
-		{
+		key = "разделитель";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			param.delimeter = options.get("разделитель").replace("\"", "").replace("\\n", "\n");
 		}
 		
@@ -1105,6 +1120,29 @@ public class NirvanaBot extends NirvanaBasicBot{
 	}*/
 	
 	
+
+	private int parseRenamed(String string, int defaultValue,
+			ArrayList<String> errors) {
+		int flag = 0;
+		String items[];
+		items = string.split(",");
+		for(String item:items) {
+			String str = item.trim();
+			if(str.equals("старое название")) {
+				flag = flag|PortalParam.RENAMED_OLD;
+			} else if(str.equals("новое название")) {
+				flag = flag|PortalParam.RENAMED_NEW;
+			} /*else if(str.equals("помечать")) {
+				flag = flag|PortalParam.RENAMED_MARK;
+			}*/
+		}
+		if(flag==0) {
+			flag = defaultValue;
+			if(errors!=null) errors.add("Ошибка в параметре \"переименованные статьи\"");
+		}		
+		
+		return flag;
+	}
 
 	public static ArrayList<String> parseArchiveSettings(ArchiveSettings archiveSettings,
 			String settings) {

@@ -76,6 +76,7 @@ public class NewPages implements PortalModule{
     protected boolean minor;
     protected boolean bot;
     protected PortalParam.Deleted deletedFlag;
+    protected int renamedFlag;
     
     protected Map<String,String> pageLists;
     protected Map<String,String> pageListsToIgnore;
@@ -119,6 +120,7 @@ public class NewPages implements PortalModule{
     	this.minor = param.minor;
     	this.bot = param.bot;
     	this.deletedFlag = param.deletedFlag;
+    	this.renamedFlag = param.renamedFlag;
     	
     	log = org.apache.log4j.Logger.getLogger(NewPages.class.getName());
     	log.debug("Portal module created for portal subpage [["+this.pageName+"]]");
@@ -247,6 +249,33 @@ public class NewPages implements PortalModule{
 		});
 	}
 	
+	protected void addNewItem(NirvanaWiki wiki, String title, boolean deleted, String time, String user, 
+			List<String> subset, List<String> includedPages) throws IOException {
+		String element = null;    	
+    	
+    	String titleToInsert = title;
+    	if(namespace!=0) {
+    		titleToInsert = title.substring(wiki.namespaceIdentifier(this.namespace).length()+1);
+    	}
+    	if(this.format.contains("{{") && this.format.contains("}}")) {
+    		titleToInsert = pageTitleNormalToEscaped(titleToInsert); // replaces '=' equal-sign by escape-code
+    	}
+    	element = String.format(this.format,
+    			titleToInsert,
+    			HTTPTools.removeEscape(user), 
+    			time);
+    	if(deletedFlag==PortalParam.Deleted.MARK && deleted) {
+    		element = markDeleted(element);
+    	} 
+    	
+        if (!subset.contains(element))
+        {
+            subset.add(element);
+            includedPages.add(title);
+            log.debug("ADD new line: \t"+element);
+        }
+	}
+	
 	public Data processData(NirvanaWiki wiki, String text) throws IOException {
 		log.info("Processing data for [[" + this.pageName+"]]");
 		HashSet<String> ignore = getIgnorePages(null);
@@ -281,16 +310,16 @@ public class NewPages implements PortalModule{
 		          //  page.Author,
 		            //page.FirstEdit.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"));
 		    	@SuppressWarnings("unused")
-				String title1 = pageInfoList.get(i).getPage();
-		    	String title = HTTPTools.removeEscape(page.getPage());
+				String title_old = HTTPTools.removeEscape(pageInfoList.get(i).getPage());
+		    	String title_new = HTTPTools.removeEscape(page.getPage());
 		    	//log.debug("check page: "+title1+" "+title);
 		    	boolean deleted = false;
 		    	if(this.deletedFlag != PortalParam.Deleted.DONT_TOUCH) {		    		 
 	                try {
 	                	@SuppressWarnings("unused")
-						String article = wiki.getPageText(title);
+						String article = wiki.getPageText(title_new);
 	                } catch(java.io.FileNotFoundException e) {
-	                	log.warn(e.toString()+" "+title); // page was created and renamed or deleted after that
+	                	log.warn(e.toString()+" "+title_new); // page was created and renamed or deleted after that
 	                	deleted = true;
 	                	if(this.deletedFlag==PortalParam.Deleted.REMOVE) 
 	                		continue;
@@ -302,28 +331,27 @@ public class NewPages implements PortalModule{
 		    	else {
 		    		time = String.format("%1$tFT%1$tTZ",page.getTimestamp());
 		    	}
-		    	String element = null;
-		    	String titleToInsert = title;
-		    	if(namespace!=0) {
-		    		titleToInsert = title.substring(wiki.namespaceIdentifier(this.namespace).length()+1);
-		    	}
-		    	if(this.format.contains("{{") && this.format.contains("}}")) {
-		    		titleToInsert = pageTitleNormalToEscaped(titleToInsert); // replaces '=' equal-sign by escape-code
-		    	}
-		    	element = String.format(this.format,
-		    			titleToInsert,
-		    			HTTPTools.removeEscape(page.getUser()), 
-		    			time);
-		    	if(deletedFlag==PortalParam.Deleted.MARK && deleted) {
-		    		element = markDeleted(element);
-		    	} 
 		    	
-		        if (!subset.contains(element))
-		        {
-		            subset.add(element);
-		            includedPages.add(title);
-		            log.debug("ADD new line: \t"+element);
-		        }
+		    	boolean renamed = !title_new.equals(title_old);
+		    	
+		    	String user = page.getUser();
+		    	
+		    	if(renamed) {
+			    	if((this.renamedFlag & PortalParam.RENAMED_NEW) != 0 ) {
+			    		addNewItem(wiki,title_new,deleted,time,user,subset,includedPages);
+			    	} 
+			    	if((this.renamedFlag & PortalParam.RENAMED_OLD) != 0) {
+			    		addNewItem(wiki,title_old,deleted,time,user,subset,includedPages);
+			    	} else {
+			    		includedPages.add(title_old); 
+			    	}
+			    	///if(!includedPages.contains(title_old)) {
+			    	//	includedPages.add(title_old); 
+			    	//}
+			    	
+		    	} else {
+		    		addNewItem(wiki,title_new,deleted,time,user,subset,includedPages);
+		    	}
 		    }
 		}
 		
@@ -403,8 +431,14 @@ public class NewPages implements PortalModule{
 		    	boolean skip = false;
 		    	if(oldItems[i].isEmpty()) continue;
 		    	for(String title:includedPages) {
-		    		if(oldItems[i].contains("[["+title+"]]") ||
-		    				oldItems[i].contains("|"+pageTitleNormalToEscaped(title)+"|")) {
+		    		String variant1 = "[["+title+"]]";		        		
+		    		String variant2 = "|"+
+		    				pageTitleNormalToEscaped(
+		    						title.substring((namespace==0)?0:wiki.namespaceIdentifier(this.namespace).length()+1)
+		    						)+
+		    				"|";
+		    		if(oldItems[i].contains(variant1) ||
+		    				oldItems[i].contains(variant2)) {
 		    			skip = true;
 		    			log.debug("SKIP old line: \t"+oldItems[i]);
 		    			break;
