@@ -1,5 +1,5 @@
 /**
- *  @(#)NirvanaBot.java 0.03 02/07/2012
+ *  @(#)NirvanaBot.java 1.3 20/10/2012
  *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -50,8 +50,9 @@ import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.StringTools;
-import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Enumeration;
-import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Period;
+import org.wikipedia.nirvana.archive.ArchiveSettings;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 
 /**
  * @author kin
@@ -83,7 +84,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	
 	private static String newpagesTemplateName = null;
 	
-	private static final String ERROR_PARSE_INTEGER_FORMAT_STRING = "Error when parsing integer parameter \"%1$s\" integer value %2$s";
+	public static final String ERROR_PARSE_INTEGER_FORMAT_STRING = "Error when parsing integer parameter \"%1$s\" integer value %2$s";
 	private static final String ERROR_PARSE_INTEGER_FORMAT_STRING_RU = "Ошибка при чтении параметра \"%1$s\". Значение %2$s не распознано как число.";
 	private static final String ERROR_INTEGER_TOO_BIG_STRING_RU = "Значение параметра \"%1$s\" слишком велико (%2$s). Использовано максимальное значение (%3$s). Укажите разумную величину.";
 	@SuppressWarnings("unused")
@@ -148,7 +149,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		ERROR
 	};
 	public static String PROGRAM_INFO = 
-			"NirvanaBot v1.02 Updates Portal/Project sections at http://ru.wikipedia.org\n" +
+			"NirvanaBot v1.3 Updates Portal/Project sections at http://ru.wikipedia.org\n" +
 			"Copyright (C) 2011-2012 Dmitry Trofimovich (KIN)\n" +
 			"\n";
 			
@@ -539,7 +540,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 					log.error("validate portal settings FAILED");
 				}
 				
-			} catch (ArrayIndexOutOfBoundsException e) {
+			} catch (IndexOutOfBoundsException e) { // includes ArrayIndexOfBoundsException
 				log.error(e.toString());
 				log.trace("OOOOPS!!!", e);
 				if(retry_count<RETRY_MAX) {
@@ -1159,6 +1160,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 			archiveSettings.addToTop = true;
 		} else if(itemsVector.contains("снизу")) {
 			archiveSettings.addToTop = false;
+		}
+		if(itemsVector.contains("сортировать")||itemsVector.contains("сортировка")) {
+			archiveSettings.sorted = true;
 		}
 		int cnt = 0;
 		if(itemsVector.contains("нумерация решетками")||itemsVector.contains("нумерация решётками")) {

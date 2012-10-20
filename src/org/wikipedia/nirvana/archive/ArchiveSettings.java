@@ -20,7 +20,7 @@
  * WARNING: This file may contain Russian characters.
  * Recommended code page for this file is CP1251 (also called Windows-1251).
  * */
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.archive;
 
 import java.util.Calendar;
 
@@ -38,6 +38,7 @@ public class ArchiveSettings {
 	public boolean removeDeleted;
 	public Period archivePeriod;
 	public Enumeration enumeration;
+	public boolean sorted;
 	//public boolean supportCategory;
 	
 	public enum Enumeration {
@@ -71,7 +72,7 @@ public class ArchiveSettings {
 		//public String 
 	};
 	
-	ArchiveSettings() {
+	public ArchiveSettings() {
 		archive = null;
 		archivePeriod = Period.NONE;
 		addToTop = true;
@@ -79,6 +80,7 @@ public class ArchiveSettings {
 		headerFormat = null;
 		headerHeaderFormat = null;
 		enumeration = Enumeration.NONE;
+		sorted = false;
 		//supportCategory = false;
 	}
 	

@@ -21,7 +21,7 @@
  * Recommended code page for this file is CP1251 (also called Windows-1251).
  * */
 
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.archive;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -46,7 +46,19 @@ public class ArchiveFactory {
 		log.debug("creating archive: "+name);
 		if(archiveSettings.withoutHeaders()) {
 			if(!archiveSettings.hasHtmlEnumeration()) {
-				archive = new ArchiveSimple(archiveSettings.addToTop,delimeter);
+				if(archiveSettings.sorted) {
+					String lines[] = new String[0];
+					if(!empty) {
+						try{
+							lines = wiki.getPageLines(name);
+						} catch(FileNotFoundException e) {
+							//log.info("archive "+arname+" is empty");
+						}
+					}
+					archive = new ArchiveSimpleSorted(wiki,lines,archiveSettings.addToTop,delimeter);
+				}
+				else	
+					archive = new ArchiveSimple(archiveSettings.addToTop,delimeter);
 			} else {
 				String text = "";
 				if(!empty) {

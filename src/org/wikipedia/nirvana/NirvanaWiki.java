@@ -214,6 +214,30 @@ public class NirvanaWiki extends Wiki {
     {
     	this.edit(title, text, summary, minor, bot, -2);
     }
+    
+    public boolean editIfChanged(String title, String text, String summary, boolean minor) throws IOException, LoginException
+    {
+    	String old = null;
+    	try {
+    		old = this.getPageText(title);
+    	} catch(FileNotFoundException e) {
+    		// ignore. all job is done not here :)
+    	}
+    	if(old==null || old.length()!=text.length() || !old.equals(text)) { // to compare lengths is faster than comparing 5k chars
+    		edit(title, text, summary, minor, true, -2);
+    		return true;
+    	} else {
+    		log.debug("skip updating "+title+ " (no changes)");
+    	}
+    	return false;
+    }
+
+    
+    /*
+    public void editIfNotDuplicate(String title, String text, String summary) throws IOException, LoginException
+    {
+    	this.edit(title, text, summary, minor, bot, -2);
+    }*/
 
     
     public void prepend(String title, String stuff, boolean minor, boolean bot) throws IOException, LoginException
@@ -422,5 +446,50 @@ public class NirvanaWiki extends Wiki {
 	        if(a<0) return null;
 	        int b = line.indexOf("/>", a);
 	        return parseRevision(line.substring(a, b), title);
+	    }
+	    
+	    /**
+	     *  Gets the most recent revision of a page.
+	     *  @param title a page
+	     *  @return the most recent revision of that page
+	     *  @throws IOException if a network error occurs
+	     *  @since 0.24
+	     */
+	    public Revision getTopRevisionWithNewTitle(String title, boolean resolveRedirect) throws IOException
+	    {
+	        StringBuilder url = new StringBuilder(query);
+	        url.append("action=query&prop=revisions&rvlimit=1&rvtoken=rollback&titles=");
+	        url.append(URLEncoder.encode(title, "UTF-8"));
+	        if(resolveRedirect) {
+	        	url.append("&redirects");
+	        }
+	        url.append("&rvprop=timestamp%7Cuser%7Cids%7Cflags%7Csize%7Ccomment%7Ctitle");
+	        String line = fetch(url.toString(), "getTopRevision");
+	        int a = line.indexOf("<rev");
+	        int b = line.indexOf("/>", a);
+	        return parseRevision(line.substring(a, b), "");
+	    }
+	    
+	    public String resolveRedirect(String title) throws IOException
+	    {
+	        StringBuilder url = new StringBuilder(query);
+	        url.append("action=query&prop=revisions&rvlimit=1&rvtoken=rollback&titles=");
+	        url.append(URLEncoder.encode(title, "UTF-8"));
+	        	url.append("&redirects");
+	        url.append("&rvprop=timestamp%7Cuser%7Cids%7Cflags%7Csize%7Ccomment%7Ctitle");
+	        String line = fetch(url.toString(), "getTopRevision");
+	        int a = line.indexOf("<redirects>");
+	        int b = line.indexOf("</redirects>");
+	        if(a>0 && b>0) {
+	        	String redirect = line.substring(a,b);
+	        	if(redirect.contains("to=\"")) {
+	        		a = redirect.indexOf("to=");
+	        		a = redirect.indexOf("\"",a)+1;
+	        		b = redirect.indexOf("\"",a);
+	        		if(a>=0 && b>0)
+	        			return redirect.substring(a,b);
+	        	}
+	        }
+	        return null;
 	    }
 }

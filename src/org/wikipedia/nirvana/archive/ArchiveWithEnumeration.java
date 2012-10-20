@@ -21,7 +21,7 @@
  * Recommended code page for this file is CP1251 (also called Windows-1251).
  * */
 
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.archive;
 
 import java.io.IOException;
 
@@ -29,7 +29,7 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 
 /**
  * @author kin

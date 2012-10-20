@@ -25,6 +25,8 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import java.util.List;
 
+import org.wikipedia.nirvana.archive.ArchiveSettings;
+
 /**
  * @author kin
  *

@@ -36,7 +36,20 @@ import java.util.Locale;
  *
  */
 public class DateTools {
-
+	/** Настройки недели по ГОСТ ИСО 8601-2001 п. 2.17 неделя календарная.
+	 * Период времени, состоящий из семи дней внутри календарного года.
+	 * Неделя начинается с понедельника и идентифицируется своим порядковым номером в году.
+	 * Первой календарной неделей года считают первую неделю, содержащую первый четверг текущего года.
+	 * В григорианском календаре - это неделя, содержащая 4 января.
+	 */
+	public static final int MINIMAL_DAYS_IN_FIRST_WEEK_DEFAULT = 4;	
+	public static int FIRST_DAY_OF_WEEK_DEFAULT = Calendar.MONDAY; 
+	
+	public static int MINIMAL_DAYS_IN_FIRST_WEEK = MINIMAL_DAYS_IN_FIRST_WEEK_DEFAULT;
+	public static int FIRST_DAY_OF_WEEK = FIRST_DAY_OF_WEEK_DEFAULT;
+	
+	public static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(DateTools.class.getName());;
+	
 	/**
 	 * 
 	 */
@@ -114,5 +127,30 @@ public class DateTools {
 			}
 		}
 		return c;		 
+	}
+	public static int dayToWeek(int year, int month, int day) {
+		Calendar c = Calendar.getInstance();
+		c.set(year, month, day);
+		c.setFirstDayOfWeek(DateTools.FIRST_DAY_OF_WEEK);
+		c.setMinimalDaysInFirstWeek(DateTools.MINIMAL_DAYS_IN_FIRST_WEEK);		
+		int week = c.get(Calendar.WEEK_OF_YEAR);
+		if(month==0 && day<=7 && week>50) {
+			week = 0;
+		}
+		return week;
+	}
+	
+	public static int weekToMonth(int year, int week) {
+		if(week<=1) return 0;
+		Calendar c = Calendar.getInstance();
+		c.setFirstDayOfWeek(DateTools.FIRST_DAY_OF_WEEK);
+		c.setMinimalDaysInFirstWeek(DateTools.MINIMAL_DAYS_IN_FIRST_WEEK);
+		c.setWeekDate(year, week, 7); //sunday
+		int month = c.get(Calendar.MONTH);
+		int md = c.get(Calendar.DAY_OF_MONTH);
+		if(md<4) month--;
+		if(month<0) month = 11; // bug fix (ArrayIndexOutOfBoundsException)
+			//System.out.println("month < 0 week:"+week+" md = "+md+" year="+year);
+		return month;
 	}
 }

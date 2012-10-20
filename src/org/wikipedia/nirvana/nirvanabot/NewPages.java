@@ -48,7 +48,13 @@ import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.StringTools;
-import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.archive.Archive;
+import org.wikipedia.nirvana.archive.ArchiveFactory;
+import org.wikipedia.nirvana.archive.ArchiveSettings;
+import org.wikipedia.nirvana.archive.ArchiveSimple;
+import org.wikipedia.nirvana.archive.ArchiveWithEnumeration;
+import org.wikipedia.nirvana.archive.ArchiveWithHeaders;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 
 /**
  * @author kin
@@ -164,7 +170,7 @@ public class NewPages implements PortalModule{
 	}
 	
 
-	public HashSet<String> getIgnorePages(HashSet<String> ignorePages) throws IOException {
+	public HashSet<String> getIgnorePages(NirvanaWiki wiki, HashSet<String> ignorePages) throws IOException {
 		HashSet<String> ignore = ignorePages;
 		if(ignore==null)
 			ignore = new HashSet<String>();
@@ -181,6 +187,20 @@ public class NewPages implements PortalModule{
 	            {
 	                String title = groups[TITLE_POS].replace('_', ' ');
 	                ignore.add(title);
+	            } else if (groups[NS_POS].equals(String.valueOf(Wiki.USER_NAMESPACE)) &&
+	            		namespace!= Wiki.USER_NAMESPACE) {
+	            	long revId=0;
+                	if(REVID_POS>0) {
+		                try {
+		                	revId = Long.parseLong(groups[REVID_POS]);
+		                } catch(NumberFormatException e) {
+		                	log.error(e.toString());
+		                	continue;
+		                }
+                	}
+                	Revision r = wiki.getRevision(revId);
+                	String title = r.getPage();
+                	ignore.add(title);
 	            }
 	        }		    
 		}
@@ -196,8 +216,8 @@ public class NewPages implements PortalModule{
 			String line;
 			String pageList = pageLists.get(category);
 			//FileTools.dump(pageList, "dump", "pageList_"+category+".txt");
-			StringReader r = new StringReader(pageList);
-			BufferedReader b = new BufferedReader(r);
+			StringReader sr = new StringReader(pageList);
+			BufferedReader b = new BufferedReader(sr);
 			for(int j=0;j<SKIP_LINES;j++) b.readLine();
 	        while ((line = b.readLine()) != null)
 	        {
@@ -232,6 +252,44 @@ public class NewPages implements PortalModule{
 	                    pages.add(title);
 	                    log.debug("adding page to list:"+title);
 	                    pageInfoList.add(page);
+	                }
+	            } else if(groups[NS_POS].equals(String.valueOf(Wiki.USER_NAMESPACE)) &&
+	            		namespace!= Wiki.USER_NAMESPACE) {
+	            	// Здесь мы обрабатываем случаи, когда статьи сначала проходят через личное пространство
+	            	// а потом переименовываются в основное пространство
+	            	//String title = groups[TITLE_POS].replace('_', ' ');
+	            	long revId=0;
+	            	if(REVID_POS>0) {
+		                try {
+		                	revId = Long.parseLong(groups[REVID_POS]);
+		                } catch(NumberFormatException e) {
+		                	log.error(e.toString());
+		                	continue;
+		                }
+                	}
+	            	Revision r = wiki.getRevision(revId);
+	            	String title = r.getPage();
+	                if (ignore.contains(title))
+	                {
+	                    continue;
+	                }
+	                /*
+	                if (namespace != 0)
+	                {	                	
+	                    title = wiki.namespaceIdentifier(namespace) + ":" + title;	                	
+	                	log.debug("Namespace is not 0");
+	                }*/	                
+	                
+	                //Calendar.getInstance().
+	                
+	                if(namespace!= Wiki.USER_NAMESPACE && userNamespace(title))
+	                	continue;
+	                
+	                if (!pages.contains(title))
+	                {   
+	                	pages.add(title);
+	                    log.debug("adding page to list:"+title);
+	                    pageInfoList.add(r);
 	                }
 	            }
 	        }//while		    
@@ -278,7 +336,7 @@ public class NewPages implements PortalModule{
 	
 	public Data processData(NirvanaWiki wiki, String text) throws IOException {
 		log.info("Processing data for [[" + this.pageName+"]]");
-		HashSet<String> ignore = getIgnorePages(null);
+		HashSet<String> ignore = getIgnorePages(wiki, null);
 		//Revision r = wiki.getFirstRevision("Кай Юлий Цезарь");
 		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
 		HashSet<String> pages = new HashSet<String>();
@@ -309,7 +367,6 @@ public class NewPages implements PortalModule{
 		        //    Namespace != 0 ? page.Title.Substring(wiki.GetNamespace(Namespace).Length + 1) : page.Title,
 		          //  page.Author,
 		            //page.FirstEdit.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"));
-		    	@SuppressWarnings("unused")
 				String title_old = HTTPTools.removeEscape(pageInfoList.get(i).getPage());
 		    	String title_new = HTTPTools.removeEscape(page.getPage());
 		    	//log.debug("check page: "+title1+" "+title);
@@ -734,17 +791,26 @@ public class NewPages implements PortalModule{
 		}
 		return null;
 	}
+	
+	public static boolean userNamespace(String article) {
+		return (article.startsWith("Участник:") ||
+				article.startsWith("Обсуждение_участника") ||
+				article.startsWith("Обсуждение участника") ||
+				article.startsWith("User:") ||
+				article.startsWith("User_talk:"));
+	}
+	public static boolean categoryNamespace(String article) {
+		return (article.startsWith("Категория:") ||
+				article.startsWith("Category:") );
+	}
 
+	// TODO протестировать эту функцию на другие пространства имён!!!
 	public static String getNewPagesItemArticle(String item) {
 		Pattern p = Pattern.compile("\\[\\[(?<article>.+)\\]\\]");
 		Matcher m = p.matcher(item);
 		while(m.find()) {
 			String article = m.group("article");
-			if(!article.startsWith("User:") &&
-					!article.startsWith("Участник:") &&
-					!article.startsWith("Обсуждение_участника") &&
-					!article.startsWith("Обсуждение участника") &&
-					!article.startsWith("User_talk:"))
+			if(!userNamespace(article))
 				return article;
 		}
 		p = Pattern.compile("\\{\\{(?<template>.+)\\}\\}");
@@ -760,11 +826,7 @@ public class NewPages implements PortalModule{
 			for(int i=1;i<items.length;i++) {
 				String s = items[i];
 				String article = s;
-				if(!article.startsWith("User:") &&
-						!article.startsWith("Участник:") &&
-						!article.startsWith("Обсуждение_участника") &&
-						!article.startsWith("Обсуждение участника") &&
-						!article.startsWith("User_talk:"))
+				if(!userNamespace(article))
 					return article;
 			}			
 		}
