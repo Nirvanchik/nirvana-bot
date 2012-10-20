@@ -101,7 +101,7 @@ public class NewPagesWithImages extends NewPages {
 	
 	public Data processData(NirvanaWiki wiki, String text) throws IOException {
 		log.info("Processing data for [[" + this.pageName+"]]");
-		HashSet<String> ignore = getIgnorePages(null);
+		HashSet<String> ignore = getIgnorePages(wiki,null);
 		//Revision r = wiki.getFirstRevision("Кай Юлий Цезарь");
 		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
 		HashSet<String> pages = new HashSet<String>();

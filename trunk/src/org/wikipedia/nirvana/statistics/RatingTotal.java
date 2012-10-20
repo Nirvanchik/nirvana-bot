@@ -1,0 +1,215 @@
+/**
+ *  @(#)RatingTotal.java 20/10/2012
+ *  Copyright © 2012 Dmitry Trofimovich (KIN)
+ *    
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * WARNING: This file may contain Russian characters.
+ * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * */
+package org.wikipedia.nirvana.statistics;
+
+import java.io.FileNotFoundException;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.ListIterator;
+import java.util.Map;
+
+import javax.management.BadAttributeValueExpException;
+
+import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+
+/**
+ * @author kin
+ *
+ */
+public class RatingTotal extends Rating {
+	private static final int DEFAULT_SIZE = 20;
+	int size = DEFAULT_SIZE;
+	int startYear = 2008;
+	int endYear = 0;
+	Map<Integer,Map<String,Integer>> userstatByYear;
+	String userItemTemplate;
+	String headerItemTemplate;
+	
+	protected class StatItemRT extends StatItem {
+		public Map<Integer,Integer> userArticlesByYear;
+		StatItemRT() {
+			super();
+			this.userArticlesByYear = new HashMap<Integer,Integer>(5);
+		}
+		StatItemRT(StatItem item) {
+			super();
+			this.user = item.user;
+			this.number = item.number;
+			this.userArticles = item.userArticles;
+			this.userArticlesByYear = new HashMap<Integer,Integer>(5);
+			this.progress = item.progress;
+		}
+		public String toString() {
+			String str = super.toString();
+			StringBuffer sb = new StringBuffer("");
+			for(int year = startYear;year<=endYear;year++)
+				sb.append(userItemTemplate.replace(
+						"%(статей участника за год)", 
+						String.valueOf(this.userArticlesByYear.get(year))));
+			str = str.replace("%(статьи участника по годам)", sb.toString());
+			return str;
+		}
+	};
+
+	/**
+	 * @param type
+	 * @throws FileNotFoundException
+	 * @throws BadAttributeValueExpException
+	 */
+	public RatingTotal(String type) throws FileNotFoundException,
+			BadAttributeValueExpException {
+		super(type);
+		startYear = 2008;
+		endYear = Calendar.getInstance().get(Calendar.YEAR);
+		userstatByYear = new HashMap<Integer,Map<String,Integer>>(5);
+	}
+	
+	public void setOptions(Map<String,String> options) {
+		super.setOptions(options);
+		String key = "первый год";
+		if(options.containsKey(key) && !options.get(key).isEmpty()) {
+			try {
+				this.startYear = Integer.parseInt(options.get(key));
+			} catch(NumberFormatException e) {
+				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+			}					
+		}
+	}
+	
+	public void put(ArchiveDatabase2 db) throws IllegalStateException {
+		Statistics totalReporter = StatisticsFabric.getReporterWithUserData(this);
+		Map<Integer,Statistics> reporterByYear = new HashMap<Integer,Statistics>(5);
+		int years = endYear - startYear + 1;
+		for(int year = startYear;year<=endYear;year++) {
+			Statistics rep = StatisticsFabric.getReporterWithUserData(this,year);
+			if(rep!=null) reporterByYear.put(year, rep);
+		}
+		
+		if(totalReporter!=null) {
+			this.totalUserStat = totalReporter.getUserStat();
+		}
+		
+		if(reporterByYear.size()==years) {
+			for(int year = startYear;year<=endYear;year++) {
+				Statistics rep = reporterByYear.get(year);				 
+				userstatByYear.put(year, rep.getUserStat());
+			}
+		}
+		
+		
+		if(totalUserStat.isEmpty() && userstatByYear.isEmpty()) {
+			putFromDb(db); 
+		} else if(totalUserStat.isEmpty()) {
+			super.putFromDb(db); 
+		} else if(userstatByYear.isEmpty()) {
+			putFromDb(db); 
+		} else {
+			
+		}
+		analyze(); // here user rating is prepared
+		analyze2(); // here user rating is extended with articles by year
+		
+	}
+	
+	public void putFromDb(ArchiveDatabase2 db) throws IllegalStateException {
+		totalUserStat.clear();
+		userstatByYear.clear();
+		ListIterator<ArchiveItem> it = null;
+		it = db.getIterator();
+		int y = 0;
+		ArchiveItem item = null;
+		Map<String,Integer> userstat = new HashMap<String,Integer>(100);
+		if(it.hasNext()) {
+			item = it.next();
+			this.totalUserStat.put(item.user, 1);
+			y = item.year;
+			userstat.put(item.user, 1);
+		}
+		while(it.hasNext()) {
+			item = it.next();
+			if(item.year!=y) {
+				this.userstatByYear.put(y, userstat);
+				y = item.year;
+				userstat = new HashMap<String,Integer>(100);				
+			}
+			Integer n = totalUserStat.get(item.user);
+			if(n==null) totalUserStat.put(item.user, 1);
+			else totalUserStat.put(item.user, n+1);	
+			n = userstat.get(item.user);
+			if(n==null) userstat.put(item.user, 1);
+			else userstat.put(item.user, n+1);	
+		}
+		this.userstatByYear.put(y, userstat);
+	}
+	
+	void analyze2() {
+		for(int i = 0;i<this.items.size();i++) {
+			StatItem item = items.get(i);
+			StatItemRT newitem = new StatItemRT(item);
+			for(int year = startYear;year<=endYear;year++) {
+				Map<String,Integer> userstat = this.userstatByYear.get(year); 
+				Integer n = 0;
+				if(userstat!=null ) n = userstat.get(item.user);
+				if(n==null) n = 0;
+				newitem.userArticlesByYear.put(year, n);
+			}
+			items.set(i, newitem);
+		}
+	}
+	
+	protected void getSettingsFromIni(Map<String, String> options) throws BadAttributeValueExpException {
+		super.getSettingsFromIni(options);
+		headerItemTemplate = options.get("годы");
+		userItemTemplate = options.get("статьи участника по годам");
+		if(userItemTemplate==null||headerItemTemplate==null) {
+			log.error("incorrect settings for statistics");
+			throw new BadAttributeValueExpException(this.type);
+		}
+	}
+	/*
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		
+		for(int year=startYear;year<=endYear;year++)
+			sb.append(this.headerItemTemplate.replace("%(год)", String.valueOf(year)));
+		sb.append(DELIMETER);
+		
+		for(StatItem item:items) {
+			sb.append(item.toString());			
+			sb.append(DELIMETER);
+		}		
+		if(this.totalTemplate!=null && !totalTemplate.isEmpty()) {
+			sb.append(total.toString(totalTemplate));
+			sb.append(DELIMETER);
+		}
+		sb.append(footer);
+		return sb.toString();
+	}*/
+	public String toString() {
+		StringBuffer sb = new StringBuffer();		
+		for(int year=startYear;year<=endYear;year++)
+			sb.append(this.headerItemTemplate.replace("%(год)", String.valueOf(year)));
+		header = header.replace("%(годы)", sb.toString());
+		return super.toString();
+	}
+}

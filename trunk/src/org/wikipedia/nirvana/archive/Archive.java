@@ -21,14 +21,14 @@
  * Recommended code page for this file is CP1251 (also called Windows-1251).
  * */
 
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.archive;
 
 import java.io.IOException;
 
 import javax.security.auth.login.LoginException;
 
 import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 
 
 /**
@@ -68,7 +68,7 @@ public class Archive {
 		
 	}
 	
-	public String trimEnumerationAndWhiteSpace(String text) {
+	public static String trimEnumerationAndWhiteSpace(String text) {
 		String oldText = text.trim();
 		if(oldText.startsWith(OL)) {
 			oldText = oldText.substring(OL.length());		

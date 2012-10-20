@@ -1,5 +1,5 @@
 /**
- *  @(#)NirvanaArchiveBot.java 0.01 02/07/2012
+ *  @(#)NirvanaArchiveBot.java 1.2 20/10/2012
  *  Copyright © 2012 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -20,11 +20,9 @@
  * WARNING: This file may contain Russian characters.
  * Recommended code page for this file is CP1251 (also called Windows-1251).
  * */
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.archive;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -35,8 +33,11 @@ import java.util.regex.Pattern;
 import javax.security.auth.login.LoginException;
 
 import org.wikipedia.nirvana.DateTools;
+import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
-import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Period;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
 /**
  * @author kin
@@ -49,12 +50,9 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 	//public static String COMMENT = "Проставление заголовков и нумерации в архиве";
 	
 	public static final String INFO = 
-		"NirvanaArchiveBot v1.01 Updates archives of new articles lists at http://ru.wikipedia.org\n" +
-		"Copyright (C) 2011-2012 Dmitry Trofimovich (KIN)\n" +
-		"This program comes with ABSOLUTELY NO WARRANTY; for details type `'.\n" +
-		"This is free software, and you are welcome to redistribute it\n"+
-		"under certain conditions; type `' for details.\n"+
-		"";
+		"NirvanaArchiveBot v1.2 Updates archives of new articles lists at http://ru.wikipedia.org\n" +
+		"Copyright (C) 2011-2012 Dmitry Trofimovich (KIN)\n" +		
+		"\n";
 	
 	public void showInfo() {
 		System.out.print(INFO);
@@ -72,6 +70,8 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 		System.out.println("applying config file: "+configFile);
 		bot.startWithConfig(configFile);
 	}
+	
+	
 
 	protected void go() {
 		//log.info("Bot");
@@ -85,36 +85,12 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 		// ~5) шапка
 		// ~6) подвал
 		
-		File taskFile = new File(TASK_LIST_FILE);
-		String task = null;
-		try {
-			//FileInputStream in = new FileInputStream(taskFile);
-			//String line;
-	        StringBuilder sb = new StringBuilder(10000);
-	        FileReader fr = null;
-	        fr = new FileReader(taskFile);
-	       // BufferedReader br = new BufferedReader(fr);
-	        
-	        //fr.close();
-	        char buf[] = new char[1000];
-	       // fr.read(buf);
-	        //log.info(new String(buf));
-	        int end = 0;
-	        while ((end=fr.read(buf))>0)
-	        {	        	
-	            sb.append(buf,0,end);	           
-	        }
-	        //sb.append(buf);
-			fr.close();
-			task = sb.toString();
-		} catch (FileNotFoundException e) {
-			log.error(e.toString());
+		
+		String task = FileTools.readFile(TASK_LIST_FILE);
+		
+		if(task==null)
 			return;
-		} catch (IOException e) {
-			log.error(e.toString());
-			e.printStackTrace();
-			return;
-		}
+		
 		/*
 		try {
 			FileTools.dump(task, "dump", "task.txt");
@@ -122,7 +98,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 			e.printStackTrace();
 		}*/
 		Map<String, String> options = new HashMap<String, String>();
-		if(!parseTemplate(task,options)) {
+		if(!textOptionsToMap(task,options)) {
 			log.error("incorrect settings");
 			return;
 		}
@@ -286,7 +262,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 			return;
 		}
 		
-		Archive thisArchive = ArchiveFactory.createArchive(archiveSettings, wiki, archive, delimeter,true);
+		Archive thisArchive = ArchiveFactory.createArchive(archiveSettings, wiki, archive, delimeter, true);
     	
 		
 		int delta = 0;
@@ -333,19 +309,6 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 		wiki.edit(archive, thisArchive.toString(), COMMENT, minor, bot);
 	}
 	
-	private static boolean parseTemplate(String text, Map<String, String> parameters)
-    {
-		String lines[] = text.split("\r|\n");
-		log.debug("Archive settings");
-		for(String line: lines) {			
-			if(line.trim().isEmpty()) continue;
-			log.debug(line);
-			int index = line.indexOf("=");
-			if(index<0) return false;
-			parameters.put(line.substring(0,index).trim(), line.substring(index+1).trim());
-		}
-		return true;
-    }
 	//protected void
 	
 	protected void loadCustomProperties() {

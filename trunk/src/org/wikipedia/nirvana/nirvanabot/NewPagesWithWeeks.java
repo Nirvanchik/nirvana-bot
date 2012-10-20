@@ -129,7 +129,7 @@ public class NewPagesWithWeeks extends NewPages {
 	
 	public Map<String,Data> processData(NirvanaWiki wiki) throws IOException {
 		log.info("Processing data for [[" + this.pageName+"]]");
-		HashSet<String> ignore = getIgnorePages(null);
+		HashSet<String> ignore = getIgnorePages(wiki,null);
 		//Revision r = wiki.getFirstRevision("Кай Юлий Цезарь");
 		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
 		HashSet<String> pages = new HashSet<String>();

@@ -21,7 +21,9 @@ package org.wikipedia.nirvana;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -30,6 +32,8 @@ import java.io.InputStreamReader;
  *
  */
 public class FileTools {
+	protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(FileTools.class.getName());
+	
 	public static void dump(String text, String folder, String file) throws IOException {
 		String path = "";
 		if(folder!=null) {
@@ -48,6 +52,10 @@ public class FileTools {
 		FileOutputStream out = new FileOutputStream(new File(fileGood));
 		out.write(text.getBytes());
 		out.close();
+	}
+	
+	public static String normalizeFileName(String file) {
+		return file.replaceAll("\\\\|\\/|\\:|\\*|\\?", "_");
 	}
 	public static void append(String text, String file) throws IOException {
 		FileOutputStream out = new FileOutputStream(new File(file),true);
@@ -69,5 +77,39 @@ public class FileTools {
 	        }
 	        in.close();
 	    return text.toString();
+	}
+	
+	public static String readFile(String fileName) {
+		String text = null;
+		File file = new File(fileName);
+		try {
+			//FileInputStream in = new FileInputStream(taskFile);
+			//String line;
+	        StringBuilder sb = new StringBuilder(10000);
+	        FileReader fr = null;
+	        fr = new FileReader(file);
+	       // BufferedReader br = new BufferedReader(fr);
+	        
+	        //fr.close();
+	        char buf[] = new char[1000];
+	       // fr.read(buf);
+	        //log.info(new String(buf));
+	        int end = 0;
+	        while ((end=fr.read(buf))>0)
+	        {	        	
+	            sb.append(buf,0,end);	           
+	        }
+	        //sb.append(buf);
+			fr.close();
+			text = sb.toString();
+		} catch (FileNotFoundException e) {
+			log.error(e.toString());
+			return null;
+		} catch (IOException e) {
+			log.error(e.toString());
+			e.printStackTrace();
+			return null;
+		}
+		return text;
 	}
 }

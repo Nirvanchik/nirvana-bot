@@ -20,13 +20,13 @@
  * WARNING: This file may contain Russian characters.
  * Recommended code page for this file is CP1251 (also called Windows-1251).
  * */
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.archive;
 
 import java.util.ArrayList;
 
 import org.apache.commons.lang3.StringUtils;
-import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Enumeration;
-import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Period;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 
 /**
  * @author kin
@@ -150,17 +150,13 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 	
 	public class HeaderFormatItem{		
 		public Period period = Period.NONE;
-		public String string="";
-		//String template = "";
+		public String string = "";
 		HeaderFormatItem(String str) {
 			string = str;
 		}
-		HeaderFormatItem (Period p) {
+		HeaderFormatItem(Period p) {
 			period = p;
 		}
-		/*HeaderFormatItem (Period p) {
-			period = p;
-		}*/
 	}
 	
 	

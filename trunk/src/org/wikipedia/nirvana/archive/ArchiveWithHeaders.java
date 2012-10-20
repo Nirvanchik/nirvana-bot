@@ -20,7 +20,7 @@
  * WARNING: This file may contain Russian characters.
  * Recommended code page for this file is CP1251 (also called Windows-1251).
  * */
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.archive;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,7 +34,8 @@ import javax.security.auth.login.LoginException;
 import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.StringTools;
-import org.wikipedia.nirvana.nirvanabot.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.nirvanabot.NewPages;
 
 public class ArchiveWithHeaders extends Archive{
 	//private String archiveFullText;
@@ -629,7 +630,7 @@ public class ArchiveWithHeaders extends Archive{
 			if(this.parts.size()>0) {
 				Section items = parts.get(0);
 				if(items.getHeaderHeader()==null) {
-					for(int i=items.getSize()-1;i>=0;i++) {
+					for(int i=items.getSize()-1;i>=0;i--) {
 						Calendar c = NewPages.getNewPagesItemDate(wiki, items.getItem(i));
 						if(c!=null) {
 							latestItemHeaderHeader = aSettings.getHeaderHeaderForDate(c);

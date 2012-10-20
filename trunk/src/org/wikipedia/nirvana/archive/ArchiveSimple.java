@@ -21,7 +21,7 @@
  * Recommended code page for this file is CP1251 (also called Windows-1251).
  * */
 
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.archive;
 
 import java.io.IOException;
 import java.util.ArrayList;

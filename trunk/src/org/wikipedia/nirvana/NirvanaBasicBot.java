@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.security.auth.login.FailedLoginException;
@@ -214,5 +215,20 @@ public class NirvanaBasicBot {
 		}
 		return val;
 	}
+	
+	public static boolean textOptionsToMap(String text, Map<String, String> parameters)
+    {
+		String lines[] = text.split("\r|\n");
+		log.debug("Archive settings");
+		for(String line: lines) {			
+			if(line.trim().isEmpty()) continue;
+			log.debug(line);
+			int index = line.indexOf("=");
+			if(index<0) return false;
+			parameters.put(line.substring(0,index).trim(), line.substring(index+1).trim());
+		}
+		return true;
+    }
+
 
 }
