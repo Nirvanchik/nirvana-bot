@@ -45,12 +45,12 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
  */
 public class NirvanaArchiveBot extends NirvanaBasicBot{
 	private static String TASK_LIST_FILE = "task.txt";
-	public static final String delimeter = "\n";
+	public static final String delimeter = "\n";	
 	
 	//public static String COMMENT = "Проставление заголовков и нумерации в архиве";
 	
 	public static final String INFO = 
-		"NirvanaArchiveBot v1.2 Updates archives of new articles lists at http://ru.wikipedia.org\n" +
+		"NirvanaArchiveBot v1.3 Updates archives of new articles lists at http://ru.wikipedia.org\n" +
 		"Copyright (C) 2011-2012 Dmitry Trofimovich (KIN)\n" +		
 		"\n";
 	
@@ -173,6 +173,16 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 			//archiveSettings.headerFormat = options.get(key); 
 		}
 		
+		key = "первый год";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			try {
+				archiveSettings.startYear = Integer.parseInt(options.get(key));
+			} catch(NumberFormatException e) {
+				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+			}
+		}
+
+		
 		/*
 		String prefix = "";
 		if (options.containsKey("префикс"))
@@ -217,7 +227,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 				e.printStackTrace();
 			}
 		} else {
-			int start_year = 2008;
+			int start_year = archiveSettings.startYear;
 			Calendar c = Calendar.getInstance();
 			int end_year = c.get(Calendar.YEAR);
 			if(!archiveSettings.archive.contains(Period.YEAR.template())) {
@@ -281,27 +291,34 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 		for(int i=start;i!=end;i+=delta) {
 			String item = lines[i];			
 			if(!item.isEmpty() &&
-					item.compareToIgnoreCase(Archive.OL)!=0 &&
-					item.compareToIgnoreCase(Archive.OL_END)!=0 &&
-					!p.matcher(item).matches()) {
-				Calendar c = NewPages.getNewPagesItemDate(wiki,item);
-	    		if(c==null) {
-	    			thisArchive.add(item);
-	    			continue;
-	    		} 
-	    		if(archiveSettings.withoutHeaders()) {
+					archiveSettings.removeDuplicates ||
+					(	item.compareToIgnoreCase(Archive.OL)!=0 &&
+					 	item.compareToIgnoreCase(Archive.OL_END)!=0 &&
+					 	!p.matcher(item).matches())	) {
+				if(archiveSettings.removeDuplicates) {
+					((ArchiveUnique)thisArchive).add(item);
+				} else if(archiveSettings.withoutHeaders()) {
 	    			if(!archiveSettings.hasHtmlEnumeration()) {
-	    				((ArchiveSimple)thisArchive).add(item);
+	    				if(archiveSettings.sorted)
+	    					((ArchiveSimpleSorted)thisArchive).add(item);
+	    				else
+	    					((ArchiveSimple)thisArchive).add(item);
 	    			} else {
 	    				((ArchiveWithEnumeration)thisArchive).add(item);
 	    			}
 	    		} else {
-		    		String thisHeader = archiveSettings.getHeaderForDate(c);
-		    		String superHeader = archiveSettings.getHeaderHeaderForDate(c);
-		    		if(superHeader==null) {
-		    			((ArchiveWithHeaders)thisArchive).add(item, thisHeader);
+	    			Calendar c = NewPages.getNewPagesItemDate(wiki,item);
+		    		if(c==null) {
+		    			thisArchive.add(item);
+		    			//continue;
 		    		} else {
-		    			((ArchiveWithHeaders)thisArchive).add(item, thisHeader,superHeader);
+			    		String thisHeader = archiveSettings.getHeaderForDate(c);
+			    		String superHeader = archiveSettings.getHeaderHeaderForDate(c);
+			    		if(superHeader==null) {
+			    			((ArchiveWithHeaders)thisArchive).add(item, thisHeader);
+			    		} else {
+			    			((ArchiveWithHeaders)thisArchive).add(item, thisHeader,superHeader);
+			    		}
 		    		}
 	    		}
 			}

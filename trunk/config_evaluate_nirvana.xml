@@ -2,19 +2,29 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>no comments</comment>
-<entry key="log4j-settings">config/log4j-log-def.cfg</entry>
+<entry key="log4j-settings">config/log4j-log-fulldebug.cfg</entry>
 <entry key="wiki-login">NirvanaBot</entry>
 <entry key="wiki-password"></entry>
 <entry key="new-pages-template">Участник:NirvanaBot/Новые статьи</entry>
 <entry key="overriden-properties-page">Участник:NirvanaBot/Новые статьи/Настройки по умолчанию</entry>
 <entry key="wiki-lang">ru</entry>
-<entry key="default-depth">7</entry>
+<entry key="wiki-java-loglevel">OFF</entry>
+<entry key="update-comment">обновление</entry>
+<entry key="default-depth">15</entry>
 <entry key="default-hours">720</entry>
 <entry key="default-maxitems">20</entry>
+<entry key="default-comment">обновление</entry>
+<entry key="picture-search-tags">image file,Фото,портрет,Изображение</entry>
 <entry key="error-notification">no</entry>
+<entry key="debug-mode">no</entry>
+<entry key="update-limit">0</entry>
+<entry key="start-from">0</entry>
 <entry key="update-pause">1000</entry>
+<entry key="type">all</entry>
 <entry key="statistics">yes</entry>
-<entry key="statistics-file">report/report.NirvanaBot-%(date).txt</entry>
+<entry key="statistics-file">report/report-%(date).txt</entry>
 <entry key="statistics-format">txt</entry>
+<entry key="task-list">yes</entry>
+<entry key="task-list-file">task_eval_nirvana.txt</entry>
 
 </properties>

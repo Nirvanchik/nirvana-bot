@@ -125,8 +125,10 @@ public class NirvanaBot extends NirvanaBasicBot{
 	
 	private static String DEFAULT_HEADER = null;
 	private static String DEFAULT_FOOTER = null;
+	private static String DEFAULT_MIDDLE = null;
 	private static PortalParam.Deleted DEFAULT_DELETED_FLAG = PortalParam.Deleted.DONT_TOUCH;
 	private static int DEFAULT_RENAMED_FLAG = PortalParam.RENAMED_NEW;
+	private static int DEFAULT_PARSE_COUNT = -1;
 	private NirvanaWiki commons = null;
 	
 	private static class NewPagesData {
@@ -149,7 +151,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		ERROR
 	};
 	public static String PROGRAM_INFO = 
-			"NirvanaBot v1.3 Updates Portal/Project sections at http://ru.wikipedia.org\n" +
+			"NirvanaBot v1.4 Updates Portal/Project sections at http://ru.wikipedia.org\n" +
 			"Copyright (C) 2011-2012 Dmitry Trofimovich (KIN)\n" +
 			"\n";
 			
@@ -217,6 +219,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 		log.info("maxitems="+DEFAULT_MAXITEMS);		
 		STOP_AFTER = validateIntegerSetting(properties,"stop-after",STOP_AFTER,false);		
 		UPDATE_PAUSE = validateIntegerSetting(properties,"update-pause",UPDATE_PAUSE,false);
+		
+		DEFAULT_PARSE_COUNT = validateIntegerSetting(properties,"parse-count",DEFAULT_PARSE_COUNT,false);
 		
 		//if(UPDATE_LIMIT>0) UPDATE_LIMIT_ENABLED = true;
 		START_FROM = validateIntegerSetting(properties,"start-from",START_FROM,false);
@@ -327,6 +331,11 @@ public class NirvanaBot extends NirvanaBasicBot{
 			{
 				DEFAULT_HEADER = options.get("шапка").replace("\\n", "\n");
 			}			
+			
+			if (options.containsKey("середина") && !options.get("середина").isEmpty())
+			{
+				DEFAULT_MIDDLE = options.get("середина").replace("\\n", "\n");
+			}
 			
 			if (options.containsKey("подвал") && !options.get("подвал").isEmpty())
 			{
@@ -798,6 +807,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}
 		
 		param.archSettings = new ArchiveSettings();
+		param.archSettings.parseCount = DEFAULT_PARSE_COUNT;
+		
 		param.archive = null;
 		key = "архив";
 		if (options.containsKey(key) && !options.get(key).isEmpty())
@@ -888,15 +899,24 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}
 		
 		param.header = DEFAULT_HEADER;
-		if (options.containsKey("шапка") && !options.get("шапка").isEmpty())
+		key = "шапка";
+		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
-			param.header = options.get("шапка").replace("\\n", "\n");
+			param.header = options.get(key).replace("\\n", "\n");
 		}
 		
 		param.footer = DEFAULT_FOOTER;
-		if (options.containsKey("подвал") && !options.get("подвал").isEmpty())
+		key = "подвал";
+		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
-			param.footer = options.get("подвал").replace("\\n", "\n");
+			param.footer = options.get(key).replace("\\n", "\n");
+		}
+		
+		param.middle = DEFAULT_MIDDLE;
+		key = "середина";
+		if (options.containsKey(key) && !options.get(key).isEmpty())
+		{
+			param.middle = options.get(key).replace("\\n", "\n");
 		}
 		
 		/*
@@ -1163,6 +1183,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}
 		if(itemsVector.contains("сортировать")||itemsVector.contains("сортировка")) {
 			archiveSettings.sorted = true;
+		}
+		if(itemsVector.contains("удалить дубликаты")) {
+			archiveSettings.removeDuplicates = true;
 		}
 		int cnt = 0;
 		if(itemsVector.contains("нумерация решетками")||itemsVector.contains("нумерация решётками")) {

@@ -31,6 +31,8 @@ import java.util.Map;
 
 import javax.management.BadAttributeValueExpException;
 
+import org.wikipedia.nirvana.NirvanaWiki;
+
 /**
  * @author kin
  *
@@ -43,9 +45,9 @@ public class StatisticsMonth extends Statistics {
 	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
 	 */
-	public StatisticsMonth(String type) throws FileNotFoundException,
+	public StatisticsMonth(NirvanaWiki wiki,String type) throws FileNotFoundException,
 			BadAttributeValueExpException {
-		super(type);
+		super(wiki,type);
 		year = 0;
 	}
 	
@@ -54,9 +56,9 @@ public class StatisticsMonth extends Statistics {
 	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
 	 */
-	public StatisticsMonth(String type, int year) throws FileNotFoundException,
+	public StatisticsMonth(NirvanaWiki wiki,String type, int year) throws FileNotFoundException,
 			BadAttributeValueExpException {
-		super(type);
+		super(wiki,type);
 		this.year = year;
 	}
 	

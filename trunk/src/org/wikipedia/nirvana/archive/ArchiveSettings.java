@@ -39,6 +39,12 @@ public class ArchiveSettings {
 	public Period archivePeriod;
 	public Enumeration enumeration;
 	public boolean sorted;
+	public boolean removeDuplicates;
+	public int parseCount;
+	public int startYear;
+	public static final int START_YEAR_DEFAULT = 2003;
+	public int startYear2;
+	public String firstArchive;
 	//public boolean supportCategory;
 	
 	public enum Enumeration {
@@ -81,6 +87,11 @@ public class ArchiveSettings {
 		headerHeaderFormat = null;
 		enumeration = Enumeration.NONE;
 		sorted = false;
+		removeDuplicates = false;
+		parseCount = ArchiveWithHeaders.HOW_MANY_ITEMS_TO_PARSE_DEFAULT; 
+		startYear = START_YEAR_DEFAULT;
+		startYear2 = -1;
+		firstArchive = null;
 		//supportCategory = false;
 	}
 	

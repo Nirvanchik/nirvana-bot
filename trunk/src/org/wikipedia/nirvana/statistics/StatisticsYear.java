@@ -31,6 +31,7 @@ import java.util.Map;
 
 import javax.management.BadAttributeValueExpException;
 
+import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
 /**
@@ -45,9 +46,9 @@ public class StatisticsYear extends Statistics {
 	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
 	 */
-	public StatisticsYear(String type) throws FileNotFoundException,
+	public StatisticsYear(NirvanaWiki wiki, String type) throws FileNotFoundException,
 			BadAttributeValueExpException {
-		super(type);		
+		super(wiki,type);		
 		startYear = 2008;
 	}
 	

@@ -34,6 +34,7 @@ import javax.management.BadAttributeValueExpException;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.NirvanaWiki;
 
 
 /**
@@ -57,6 +58,7 @@ public class Statistics {
 	protected Map<String,Integer> totalUserStat;
 	protected TotalItem total;
 	protected org.apache.log4j.Logger log = null;
+	protected NirvanaWiki wiki = null;
 	
 	protected class StatItem {
 		public int number;
@@ -144,7 +146,8 @@ public class Statistics {
 		total = new TotalItem();
 	}
 	
-	Statistics(String type) throws FileNotFoundException, BadAttributeValueExpException {
+	Statistics(NirvanaWiki wiki, String type) throws FileNotFoundException, BadAttributeValueExpException {
+		this.wiki = wiki;
 		this.type = type;
 		init();
 	}
