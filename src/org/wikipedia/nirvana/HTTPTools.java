@@ -107,6 +107,6 @@ public class HTTPTools {
     }
 	
 	public static String removeEscape(String line) {
-		return line.replace("&quot;","\"").replace("&#039;", "'");
+		return line.replace("&quot;","\"").replace("&#039;", "'").replace("&amp;", "&");
 	}
 }

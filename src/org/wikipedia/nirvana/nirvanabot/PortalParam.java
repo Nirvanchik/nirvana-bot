@@ -47,6 +47,7 @@ public class PortalParam {
 	public String delimeter;
 	public String header;
 	public String footer;
+	public String middle;
 	public boolean minor;
 	public boolean bot;
 	Deleted deletedFlag;

@@ -1,5 +1,5 @@
 /**
- *  @(#)StatisticsBot.java 0.5 20/10/2012
+ *  @(#)StatisticsBot.java 1.0 02/12/2012
  *  Copyright © 2012 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -50,7 +50,7 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
  */
 public class StatisticsBot extends NirvanaBasicBot {
 	boolean DEBUG = false;
-	public static final int START_YEAR = 2008;
+	//public static final int START_YEAR = 2008;
 	private static String TASK_LIST_FILE = "task.txt";
 	public static final String delimeter = "\n";
 	public static final String YES_RU = "да";
@@ -62,7 +62,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 	//public static String COMMENT = "Проставление заголовков и нумерации в архиве";
 	
 	public static final String INFO = 
-		"StatisticsBot v0.5 Makes statistics of new created pages and ratings\n" +
+		"StatisticsBot v1.0 Makes statistics of new created pages and ratings\n" +
 		"Copyright (C) 2012 Dmitry Trofimovich (KIN)\n" +
 		"\n";
 	private static final boolean USE_CACHE_ONLY = false;
@@ -178,27 +178,27 @@ public class StatisticsBot extends NirvanaBasicBot {
 				comment = options.get(key);
 			}
 			
-			int startFromYear = START_YEAR;
+			//int startFromYear = START_YEAR;
 			key = "первый год";
 			if (options.containsKey(key) && !options.get(key).isEmpty()) {
 				try {
-					startFromYear = Integer.parseInt(options.get(key));
+					archiveSettings.startYear = Integer.parseInt(options.get(key));
 				} catch(NumberFormatException e) {
 					log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
 				}
 			}
 			
-			String firstArchive = null;
+			//String firstArchive = null;
 			key = "первый архив";
 			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				firstArchive = options.get(key);
+				archiveSettings.firstArchive = options.get(key);
 			}
 			
-			int startFromYear2 = -1;
+			//int startFromYear2 = -1;
 			key = "первый год после первого архива";
 			if (options.containsKey(key) && !options.get(key).isEmpty()) {
 				try {
-					startFromYear2 = Integer.parseInt(options.get(key));
+					archiveSettings.startYear2 = Integer.parseInt(options.get(key));
 				} catch(NumberFormatException e) {
 					log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
 				}
@@ -238,7 +238,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 			
 			if(!cacheonly) {
 				try {
-					getData(archiveSettings,db,startFromYear,firstArchive,startFromYear2,cache);
+					getData(archiveSettings,db,cache);
 				} catch (IOException e) {			
 					log.fatal(e);
 					return;
@@ -281,14 +281,14 @@ public class StatisticsBot extends NirvanaBasicBot {
 					
 					Map<String,String> suboptions = getSubOptions(options,type);
 					if(suboptions.get("первый год")==null)
-						suboptions.put("первый год",String.valueOf(startFromYear));
+						suboptions.put("первый год",String.valueOf(archiveSettings.startYear));
 					
 					
 					Statistics stat = null;
 					if(destination.contains("%(год)")) {
-						for(int year=startFromYear;year<=endYear;year++) {
+						for(int year=archiveSettings.startYear;year<=endYear;year++) {
 							log.info("creating report of type: "+type + " for year: "+String.valueOf(year));
-							stat = StatisticsFabric.createReporter(type,year);						
+							stat = StatisticsFabric.createReporter(wiki,type,year);						
 							if(stat==null) {
 								log.error("Report type "+type+" is not defined");
 								break;
@@ -306,7 +306,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 						}
 					} else {				
 						log.info("creating report of type: "+type);
-						stat = StatisticsFabric.createReporter(type);					
+						stat = StatisticsFabric.createReporter(wiki,type);					
 						if(stat==null) {
 							log.error("Report type "+type+" is not defined");
 							continue;
@@ -378,7 +378,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 		public void purge(ArchiveDatabase2 db);
 	};
 	
-	void getData(ArchiveSettings archiveSettings, ArchiveDatabase2 db, int startFromYear, String firstArchive, int startFromYear2, boolean cache) throws IOException {
+	void getData(ArchiveSettings archiveSettings, ArchiveDatabase2 db, boolean cache) throws IOException {
 		if(archiveSettings.isSingle()) {
 			PurgeDatabase purge = null;
 			if(!db.isEmpty()) {
@@ -394,7 +394,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 			db.markEnd();
 		} else {
 			boolean markAll = db.isEmpty();
-			int startYear = startFromYear;
+			int startYear = archiveSettings.startYear;
 			Calendar c = Calendar.getInstance();
 			int endYear = c.get(Calendar.YEAR);
 			int curQ = c.get(Calendar.MONTH)/3+1;
@@ -408,15 +408,17 @@ public class StatisticsBot extends NirvanaBasicBot {
 			for(int year=startYear;year<=endYear;year+=year_offset) {				
 				String archiveThisYear = null;
 				
-				if (firstArchive != null && year<startFromYear2) {
-					archiveThisYear = firstArchive;
-					year_offset = startFromYear2-startFromYear;
+				if (archiveSettings.firstArchive != null && year<archiveSettings.startYear2) {
+					archiveThisYear = archiveSettings.firstArchive;
+					year_offset = archiveSettings.startYear2-archiveSettings.startYear;
 				} else {
 					archiveThisYear = archiveSettings.archive.replace(
 							ArchiveSettings.Period.YEAR.template(), String.valueOf(year));
 					year_offset = 1;
 				}
-				if(archiveSettings.archivePeriod==Period.YEAR || archiveThisYear==firstArchive || archiveThisYear.equals(firstArchive)) {
+				if(archiveSettings.archivePeriod==Period.YEAR || 
+						archiveThisYear==archiveSettings.firstArchive || 
+						archiveThisYear.equals(archiveSettings.firstArchive)) {
 					PurgeDatabase purge = null;
 					if(last!=null && last.year==year) {
 						// db.removeItemsFromLastYear(); disabled because of new method

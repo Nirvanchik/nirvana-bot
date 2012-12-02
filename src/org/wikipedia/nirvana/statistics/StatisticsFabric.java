@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.commons.collections.keyvalue.MultiKey;
 import org.apache.commons.collections.map.MultiKeyMap;
+import org.wikipedia.nirvana.NirvanaWiki;
 
 /**
  * @author kin
@@ -63,16 +64,17 @@ public class StatisticsFabric {
 	}
 	
 	@SuppressWarnings("unchecked")
-	static Statistics createReporter(String type) {
+	static Statistics createReporter(NirvanaWiki wiki,String type) {
 		Statistics ob = null;
 		ob = reporters.get(type);
 		if(ob==null) {
 			Class cl = reporterClass.get(type);
 			if(cl==null) return null;			
 			try {
-				Class params[] = new Class[1];
-				params[0] = String.class;
-				ob = (Statistics) cl.getDeclaredConstructor(params).newInstance(type);
+				Class params[] = new Class[2];
+				params[0] = NirvanaWiki.class;
+				params[1] = String.class;
+				ob = (Statistics) cl.getDeclaredConstructor(params).newInstance(wiki,type);
 				reporters.put(type, ob);
 			} catch (Exception e) {
 				log.error(e);
@@ -83,7 +85,7 @@ public class StatisticsFabric {
 	}
 	
 	@SuppressWarnings("unchecked")
-	static Statistics createReporter(String type, int year) {
+	static Statistics createReporter(NirvanaWiki wiki, String type, int year) {
 		Statistics ob = null;
 		MultiKey multiKey = new MultiKey(type, new Integer(year));
 		ob = (Statistics) reportersYear.get(multiKey);
@@ -91,9 +93,9 @@ public class StatisticsFabric {
 			Class cl = reporterClass.get(type);
 			if(cl==null) return null;
 			try {
-				Class params[] = new Class[]{String.class,int.class};
+				Class params[] = new Class[]{NirvanaWiki.class,String.class,int.class};
 				Constructor c = cl.getDeclaredConstructor(params); 
-				ob = (Statistics) c.newInstance(type,year);
+				ob = (Statistics) c.newInstance(wiki,type,year);
 				reportersYear.put(multiKey,ob);
 			} catch (Exception e) {
 				log.error(e.toString());

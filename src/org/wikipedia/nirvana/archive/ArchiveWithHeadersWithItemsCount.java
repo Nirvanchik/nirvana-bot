@@ -43,10 +43,10 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 	 * @param delimeter
 	 * @param enumeration
 	 */
-	public ArchiveWithHeadersWithItemsCount(String text, boolean addToTop,
+	public ArchiveWithHeadersWithItemsCount(String text, int parseCount, boolean addToTop,
 			String delimeter, Enumeration enumeration, String headerFormat) {		
 		//this.headerFormat = headerFormat;
-		super(addToTop, delimeter, enumeration);		
+		super(parseCount, addToTop, delimeter, enumeration);		
 		initPattern(headerFormat);
 		init(text);		
 	}
@@ -57,9 +57,9 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 	 * @param delimeter
 	 * @param enumeration
 	 */
-	public ArchiveWithHeadersWithItemsCount(String[] lines, boolean addToTop,
+	public ArchiveWithHeadersWithItemsCount(String[] lines, int parseCount, boolean addToTop,
 			String delimeter, Enumeration enumeration, String headerFormat) {
-		super(addToTop, delimeter, enumeration);	
+		super(parseCount, addToTop, delimeter, enumeration);	
 		log.debug("ArchiveWithHeadersWithItemsCount created");
 		initPattern(headerFormat);
 		init(lines);		

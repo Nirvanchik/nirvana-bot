@@ -44,6 +44,7 @@ import java.util.Map;
 import javax.management.BadAttributeValueExpException;
 
 import org.wikipedia.nirvana.FileTools;
+import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -57,6 +58,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class Rating extends Statistics {
 	private static final int DEFAULT_SIZE = 20;
+	protected static final int RESERVE_PERCENT_FOR_RENAMED_USERS = 30;
 	int year;	
 	int size = DEFAULT_SIZE;
 
@@ -65,9 +67,9 @@ public class Rating extends Statistics {
 	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
 	 */
-	public Rating(String type) throws FileNotFoundException,
+	public Rating(NirvanaWiki wiki, String type) throws FileNotFoundException,
 			BadAttributeValueExpException {
-		super(type);
+		super(wiki,type);
 		year = 0;
 	}
 	
@@ -76,9 +78,9 @@ public class Rating extends Statistics {
 	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
 	 */
-	public Rating(String type, int year) throws FileNotFoundException,
+	public Rating(NirvanaWiki wiki, String type, int year) throws FileNotFoundException,
 			BadAttributeValueExpException {
-		super(type);
+		super(wiki,type);
 		this.year = year;		
 	}
 	
@@ -133,6 +135,10 @@ public class Rating extends Statistics {
 		}
 	}
 	
+	protected void additionalProcessing() {
+		
+	}
+	
 	protected void analyze() {
 		for(Map.Entry<String,Integer> entry:totalUserStat.entrySet()) {
 			StatItem stat = new StatItem();
@@ -147,13 +153,37 @@ public class Rating extends Statistics {
 					return (int)(item2.userArticles - item1.userArticles);
 				}					
 			});
+		
+		int maxsize = this.size + this.size*RESERVE_PERCENT_FOR_RENAMED_USERS/100;
 				
 		//this.totalUserStat.clear();
+		if(items.size()>maxsize) {			
+			//this.items = new ArrayList<StatItem>(this.items.subList(0, size));
+			this.items.subList(maxsize, this.items.size()).clear();					
+		}
+		
+		additionalProcessing();
+		
+		boolean duplicates = removeDuplicates();
+		
+		if(duplicates) {
+			Collections.sort(this.items, 
+				new Comparator<StatItem>(){
+					@Override
+					public int compare(StatItem item1, StatItem item2) {				
+						return (int)(item2.userArticles - item1.userArticles);
+					}					
+				});
+		}
+		
 		if(items.size()>this.size) {			
 			//this.items = new ArrayList<StatItem>(this.items.subList(0, size));
-			this.items.subList(size, this.items.size()).clear();					
-		}	
+			this.items.subList(this.size, this.items.size()).clear();					
+		}
+		
+		// assign rating position
 		int num = 1;
+		//int pos = 1;
 		int a = 0;
 		if(items.size()>0)
 			a = items.get(0).userArticles;
@@ -161,12 +191,55 @@ public class Rating extends Statistics {
 			StatItem stat = items.get(i);
 			if(stat.userArticles<a) {
 				a = stat.userArticles;
-				num++;
-			}
+				//num++;
+				num = i+1; // чтобы все нижележащие в рейтинге не сдвигались и не поднимались по рейтингу
+				// изза вышестоящих, и чтобы номер последнего отражал количество участников в рейтинге
+			} 
 			stat.number = num;
 		}
 		
 		if(this.itemTemplate.contains("%(прогресс)")) calcProgress();
+	}
+	
+		
+	protected boolean removeDuplicates() {
+		boolean duplicates = false;
+		int n = items.size();
+		for(int i=0;i<n;i++) {
+			StatItem item = items.get(i);
+			String redir = null;
+			try {
+				redir = wiki.resolveRedirect("User:"+item.user);
+			} catch (FileNotFoundException e) {
+				// ignore error
+			} catch (IOException e) {
+				// TODO how to handle this without declaring excepion?
+				//e.printStackTrace();
+			}
+			if(redir!=null) {
+				redir = redir.substring(redir.indexOf(":")+1);
+				for(int j=0;j<n;j++) {
+					StatItem item2 = items.get(j);
+					if(item2.user.equals(redir)) {
+						merge(i,j);
+						items.remove(i);
+						n--;
+						i--;
+						duplicates = true;
+						break;
+					}
+					
+				}
+			}
+			
+		}
+		return duplicates;
+	}
+	
+	protected void merge(int srcIndex, int destIndex) {
+		StatItem src = items.get(srcIndex);
+		StatItem dest = items.get(destIndex);
+		dest.userArticles += src.userArticles;
 	}
 
 	private void calcProgress() {

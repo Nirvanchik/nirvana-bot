@@ -30,7 +30,9 @@ import java.util.Map;
 
 import javax.management.BadAttributeValueExpException;
 
+import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.statistics.Statistics.StatItem;
 
 /**
  * @author kin
@@ -76,9 +78,9 @@ public class RatingTotal extends Rating {
 	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
 	 */
-	public RatingTotal(String type) throws FileNotFoundException,
+	public RatingTotal(NirvanaWiki wiki,String type) throws FileNotFoundException,
 			BadAttributeValueExpException {
-		super(type);
+		super(wiki,type);
 		startYear = 2008;
 		endYear = Calendar.getInstance().get(Calendar.YEAR);
 		userstatByYear = new HashMap<Integer,Map<String,Integer>>(5);
@@ -127,7 +129,7 @@ public class RatingTotal extends Rating {
 			
 		}
 		analyze(); // here user rating is prepared
-		analyze2(); // here user rating is extended with articles by year
+		//analyze2(); // here user rating is extended with articles by year
 		
 	}
 	
@@ -162,7 +164,7 @@ public class RatingTotal extends Rating {
 		this.userstatByYear.put(y, userstat);
 	}
 	
-	void analyze2() {
+	protected void additionalProcessing() {
 		for(int i = 0;i<this.items.size();i++) {
 			StatItem item = items.get(i);
 			StatItemRT newitem = new StatItemRT(item);
@@ -174,6 +176,17 @@ public class RatingTotal extends Rating {
 				newitem.userArticlesByYear.put(year, n);
 			}
 			items.set(i, newitem);
+		}
+	}
+	
+	protected void merge(int srcIndex, int destIndex) {
+		StatItemRT src = (StatItemRT)items.get(srcIndex);
+		StatItemRT dest = (StatItemRT)items.get(destIndex);
+		dest.userArticles += src.userArticles;		
+		for(int y = this.startYear;y<=endYear;y++) {
+			int a = dest.userArticlesByYear.get(y);
+			int b = src.userArticlesByYear.get(y);
+			dest.userArticlesByYear.put(y, a+b);
 		}
 	}
 	

@@ -44,7 +44,17 @@ public class ArchiveFactory {
 	public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki, String name, String delimeter, boolean empty) throws IOException {
 		Archive archive = null;
 		log.debug("creating archive: "+name);
-		if(archiveSettings.withoutHeaders()) {
+		if(archiveSettings.removeDuplicates) {
+			String lines[] = new String[0];
+			if(!empty) {
+				try{
+					lines = wiki.getPageLines(name);
+				} catch(FileNotFoundException e) {
+					//log.info("archive "+arname+" is empty");
+				}
+			}
+			archive = new ArchiveUnique(wiki,lines,archiveSettings.addToTop,delimeter);
+		} else if(archiveSettings.withoutHeaders()) {
 			if(!archiveSettings.hasHtmlEnumeration()) {
 				if(archiveSettings.sorted) {
 					String lines[] = new String[0];
@@ -79,14 +89,19 @@ public class ArchiveFactory {
 					//log.info("archive "+arname+" is empty");
 				}
 			}
-			if(archiveSettings.headerFormat.contains(ArchiveWithHeadersWithItemsCount.template) ||
-					archiveSettings.headerHeaderFormat.contains(ArchiveWithHeadersWithItemsCount.template)	) {
+			if(archiveSettings.headerFormat.contains(ArchiveWithHeadersWithItemsCount.template) /*||
+					(archiveSettings.headerHeaderFormat!=null &&
+					archiveSettings.headerHeaderFormat.contains(ArchiveWithHeadersWithItemsCount.template))*/	) {
 				
-				archive = new ArchiveWithHeadersWithItemsCount(lines,archiveSettings.addToTop,delimeter,
+				archive = new ArchiveWithHeadersWithItemsCount(lines,
+						archiveSettings.parseCount,
+						archiveSettings.addToTop,delimeter,
 						archiveSettings.enumeration,archiveSettings.headerFormat);
 			} else {
 				
-				archive = new ArchiveWithHeaders(lines,archiveSettings.addToTop,delimeter,
+				archive = new ArchiveWithHeaders(lines,
+						archiveSettings.parseCount,
+						archiveSettings.addToTop,delimeter,
 						archiveSettings.enumeration);
 			}
 			((ArchiveWithHeaders)archive).initLatestItemHeaderHeader(wiki,archiveSettings);

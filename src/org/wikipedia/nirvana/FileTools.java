@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 /**
  * @author kin
@@ -111,5 +112,62 @@ public class FileTools {
 			return null;
 		}
 		return text;
+	}
+	
+	public static String [] readFileToList(String fileName) {
+		File file = new File(fileName);
+		ArrayList<String> items = new ArrayList<String>(5000);
+		try {
+			//FileInputStream in = new FileInputStream(taskFile);
+			//String line;
+	        FileReader fr = null;
+	        fr = new FileReader(file);
+	        BufferedReader br = new BufferedReader(fr);
+	        String line = "";	        
+	        while((line=br.readLine())!=null) {
+	        	items.add(line);
+	        }	        
+	        br.close();
+			fr.close();
+		} catch (FileNotFoundException e) {
+			log.error(e.toString());
+			return null;
+		} catch (IOException e) {
+			log.error(e.toString());
+			e.printStackTrace();
+			return null;
+		}
+		return items.toArray(new String[0]);
+	}
+	
+	public static String [] readFileToListUTF8(String fileName) {
+		File file = new File(fileName);
+		ArrayList<String> items = new ArrayList<String>(5000);
+		try {
+			//FileInputStream in = new FileInputStream(taskFile);
+			//String line;
+	        //FileReader fr = null;
+	        //fr = new FileReader(file);
+	        FileInputStream fis = new FileInputStream(file);
+	        InputStreamReader isr = new InputStreamReader(fis,"UTF-8");
+	        BufferedReader br = new BufferedReader(isr);
+	        String line = "";	        
+	        while((line=br.readLine())!=null) {
+	        	//String UTF8Str = new String(line.getBytes(),"UTF-8");
+	        	//items.add(UTF8Str);
+	        	items.add(line);
+	        }	        
+	        br.close();
+			isr.close();
+			fis.close();
+		} catch (FileNotFoundException e) {
+			log.error(e.toString());
+			return null;
+		} catch (IOException e) {
+			log.error(e.toString());
+			e.printStackTrace();
+			return null;
+		}
+		return items.toArray(new String[0]);
 	}
 }

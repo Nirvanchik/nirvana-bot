@@ -258,6 +258,7 @@ public class NirvanaWiki extends Wiki {
     
     public void prependOrCreate(String title, String stuff, String comment, boolean minor, boolean bot) throws IOException, LoginException
     {
+    	if(stuff.isEmpty()) return;
         StringBuilder text = new StringBuilder(100000);
         text.append(stuff);
         try {
@@ -278,6 +279,7 @@ public class NirvanaWiki extends Wiki {
     
     public void appendOrCreate(String title, String stuff, String comment, boolean minor, boolean bot) throws IOException, LoginException
     {
+    	if(stuff.isEmpty()) return;
         StringBuilder text = new StringBuilder(100000);        
         try {
         	text.append(getPageText(title));
@@ -477,7 +479,7 @@ public class NirvanaWiki extends Wiki {
 	        url.append(URLEncoder.encode(title, "UTF-8"));
 	        	url.append("&redirects");
 	        url.append("&rvprop=timestamp%7Cuser%7Cids%7Cflags%7Csize%7Ccomment%7Ctitle");
-	        String line = fetch(url.toString(), "getTopRevision");
+	        String line = fetch(url.toString(), "resolveRedirect");
 	        int a = line.indexOf("<redirects>");
 	        int b = line.indexOf("</redirects>");
 	        if(a>0 && b>0) {

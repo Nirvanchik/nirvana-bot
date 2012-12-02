@@ -10,5 +10,11 @@
 <entry key="update-comment">Обновление статистики</entry>
 <entry key="default-comment">Обновление статистики</entry>
 <entry key="debug-mode">no</entry>
-<entry key="task-list-file">statistic_task_music.txt,statistic_task_Ireland.txt,statistic_task_VKL.txt,statistic_task_Donbass.txt</entry>
+<entry key="task-list-file">statistic_task_music.txt,
+	statistic_task_Ireland.txt,
+	statistic_task_VKL.txt,
+	statistic_task_Donbass.txt,
+	statistic_task_Dinosaurus.txt,
+	statistic_task_bio.txt
+</entry>
 </properties>

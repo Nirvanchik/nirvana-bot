@@ -42,7 +42,8 @@ public class ArchiveWithHeaders extends Archive{
 	private String archivePartialText = "";
 	//private String archiveBottom;
 	private List<Section> parts;	
-	public static int HOW_MANY_ITEMS_TO_PARSE = 100;	
+	public static int HOW_MANY_ITEMS_TO_PARSE_DEFAULT = 100;	
+	protected int HOW_MANY_ITEMS_TO_PARSE = HOW_MANY_ITEMS_TO_PARSE_DEFAULT;	
 	private String latestItemHeaderHeader = null;
 	
 	//private boolean localEnumeration = false;
@@ -453,7 +454,7 @@ public class ArchiveWithHeaders extends Archive{
 		
 	}
 	
-	public ArchiveWithHeaders(String text, boolean addToTop, String delimeter,
+	public ArchiveWithHeaders(String text, int parseCount, boolean addToTop, String delimeter,
 			Enumeration enumeration) {
 		log.debug("ArchiveWithHeaders created, enumeration: "+enumeration.toString()+ " top:"+addToTop);
 		this.addToTop = addToTop;
@@ -461,6 +462,9 @@ public class ArchiveWithHeaders extends Archive{
 		archivePartialText = "";	
 		this.enumeration = enumeration;		
 		parts = new ArrayList<Section>();
+		if(parseCount>=0)
+			HOW_MANY_ITEMS_TO_PARSE = parseCount;
+		
 		init(text);
 	}
 	
@@ -473,23 +477,27 @@ public class ArchiveWithHeaders extends Archive{
 		}		
 	}
 	
-	public ArchiveWithHeaders(boolean addToTop, String delimeter,
-			Enumeration enumeration) {
-		log.debug("ArchiveWithHeaders created, enumeration: "+enumeration.toString()+ " top:"+addToTop);
-		this.addToTop = addToTop;
-		this.delimeter = delimeter;
-		archivePartialText = "";	
-		this.enumeration = enumeration;		
-		parts = new ArrayList<Section>();		
-	}
-	
-	public ArchiveWithHeaders(String lines[], boolean addToTop, String delimeter,
+	public ArchiveWithHeaders(int parseCount, boolean addToTop, String delimeter,
 			Enumeration enumeration) {
 		log.debug("ArchiveWithHeaders created, enumeration: "+enumeration.toString()+ " top:"+addToTop);
 		this.addToTop = addToTop;
 		this.delimeter = delimeter;
 		archivePartialText = "";	
 		this.enumeration = enumeration;
+		if(parseCount>=0)
+			this.HOW_MANY_ITEMS_TO_PARSE = parseCount;
+		parts = new ArrayList<Section>();		
+	}
+	
+	public ArchiveWithHeaders(String lines[], int parseCount, boolean addToTop, String delimeter,
+			Enumeration enumeration) {
+		log.debug("ArchiveWithHeaders created, enumeration: "+enumeration.toString()+ " top:"+addToTop);
+		this.addToTop = addToTop;
+		this.delimeter = delimeter;
+		archivePartialText = "";	
+		this.enumeration = enumeration;
+		if(parseCount>=0)
+			this.HOW_MANY_ITEMS_TO_PARSE = parseCount;
 		parts = new ArrayList<Section>();
 		
 		init(lines);
@@ -693,8 +701,9 @@ public class ArchiveWithHeaders extends Archive{
 	}
 	
 	public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
-		wiki.edit(archiveName, toString(), 
-				"+"+newItemsCount()+" статей", minor, bot);
+		String text = this.toString();
+		if(!text.isEmpty())
+			wiki.edit(archiveName, text,"+"+newItemsCount()+" статей", minor, bot);
 	}
 	
 }

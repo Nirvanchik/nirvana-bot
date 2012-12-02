@@ -73,6 +73,7 @@ public class NewPages implements PortalModule{
     protected String format;
     protected String header;
     protected String footer;
+    protected String middle;
     protected int maxItems;
     protected int hours;
     protected String delimeter;    
@@ -122,6 +123,8 @@ public class NewPages implements PortalModule{
     	if(header==null) this.header = "";
     	this.footer = param.footer;
     	if(footer==null) this.footer = "";
+    	this.middle = param.middle;
+    	if(middle==null) this.middle = "";
     	this.namespace = param.ns;
     	this.minor = param.minor;
     	this.bot = param.bot;
@@ -457,6 +460,14 @@ public class NewPages implements PortalModule{
 			        oldText = StringTools.trimLeft(oldText);
 			    }
 		    }
+		    
+		    if(!middle.isEmpty()) {
+		    	if (oldText.contains(middle)) {
+		    		oldText = oldText.replace(middle, this.delimeter);
+		    	} else if(!middle.trim().isEmpty() && oldText.contains(middle.trim())) {
+		    		oldText = oldText.replace(middle.trim(), this.delimeter);
+		    	}
+		    } 
 		    //FileTools.dump(footer, "dump", this.pageName +".footer.txt");
 		   
 		    //oldItems = oldText.split(delimeter); // this includes empty lines, and incorrect result calculation
@@ -563,7 +574,22 @@ public class NewPages implements PortalModule{
 		if(botsAllowString!=null) {
 			bots = botsAllowString+"\n";
 		}
-		d.newText = bots + header + StringUtils.join(subset.toArray(),this.delimeter) + footer;
+		if(middle.isEmpty())
+			d.newText = bots + header + StringUtils.join(subset.toArray(),this.delimeter) + footer;
+		else {
+			if(subset.size()>1) {
+				int m = (subset.size()+1)/2; // 2->1, 3->2, 4->2
+				d.newText = bots + header + 
+						StringUtils.join(subset.subList(0, m),this.delimeter) + 
+						this.middle +
+						StringUtils.join(subset.subList(m, subset.size()),this.delimeter) +
+						footer;
+			} else d.newText = bots + header + 
+					StringUtils.join(subset,this.delimeter) + 
+					this.middle +					
+					footer;
+		}
+			
 		if(archive!=null && archiveItems!=null && archiveItems.size()>0) {
 			if(archiveSettings.enumeration==Enumeration.HASH) {
 				enumerateWithHash(archiveItems);
@@ -748,6 +774,8 @@ public class NewPages implements PortalModule{
 		boolean foundBrackets = false;
 		while(m.find()) {
 			String article = m.group("article");
+			if(article.startsWith(":"))
+				article = article.substring(1); // special case when title starts from : this : is not included in title
 			Revision r = null;
 			try {
 				r = wiki.getFirstRevision(article,true);
@@ -810,6 +838,8 @@ public class NewPages implements PortalModule{
 		Matcher m = p.matcher(item);
 		while(m.find()) {
 			String article = m.group("article");
+			if(article.startsWith(":"))
+				article = article.substring(1); // special case when title starts from : this : is not included in title
 			if(!userNamespace(article))
 				return article;
 		}
