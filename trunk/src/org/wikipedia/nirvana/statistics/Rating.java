@@ -219,6 +219,7 @@ public class Rating extends Statistics {
 			if(redir!=null) {
 				redir = redir.substring(redir.indexOf(":")+1);
 				for(int j=0;j<n;j++) {
+					if(j==i) continue;	// fix bug when redirection to User_talk removed user from rating
 					StatItem item2 = items.get(j);
 					if(item2.user.equals(redir)) {
 						merge(i,j);
