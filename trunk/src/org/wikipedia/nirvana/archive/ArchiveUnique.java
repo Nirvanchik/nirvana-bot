@@ -4,14 +4,11 @@
 package org.wikipedia.nirvana.archive;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.nirvanabot.NewPages;

@@ -52,14 +52,14 @@ public class NewPagesWithImages extends NewPages {
 
 		public RevisionWithImage(Wiki wiki, long revid, Calendar timestamp,
 				String title, String summary, String user, boolean minor,
-				boolean bot, int size, String image) {
-			wiki.super(revid, timestamp, title, summary, user, minor, bot, size);
+				boolean bot, boolean rvnew, int size, String image) {
+			wiki.super(revid, timestamp, title, summary, user, minor, bot, rvnew, size);
 			this.image = image;
 		}
 		
 		public RevisionWithImage(Wiki wiki, Revision r, String image) {
 			wiki.super(r.getRevid(), r.getTimestamp(), r.getPage(), 
-					r.getSummary(), r.getUser(), r.isMinor(), r.isBot(), r.getSize());
+					r.getSummary(), r.getUser(), r.isMinor(), r.isBot(), r.isNew(), r.getSize());
 			this.image = image;
 		}
 		
@@ -174,7 +174,7 @@ public class NewPagesWithImages extends NewPages {
 		                	log.debug("image found = "+image);
 		                	
 		                		if(page==null) {
-		                			page = new RevisionWithImage(wiki, revId, Calendar.getInstance(), title, "", "",false,false,0,image);
+		                			page = new RevisionWithImage(wiki, revId, Calendar.getInstance(), title, "", "",false,false, true, 0,image);
 		                		} else {
 		                			((RevisionWithImage)page).setImage(image);
 		                		}

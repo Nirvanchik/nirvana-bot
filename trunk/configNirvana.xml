@@ -16,5 +16,6 @@
 <entry key="statistics">yes</entry>
 <entry key="statistics-file">report/report.NirvanaBot-%(date).txt</entry>
 <entry key="statistics-format">txt</entry>
+<entry key="start-from">0</entry>
 
 </properties>

@@ -1,6 +1,6 @@
 /**
  *  @(#)FileTools.java 07/04/2012
- *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
+ *  Copyright © 2011 - 2013 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,9 +23,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 /**
@@ -33,9 +34,21 @@ import java.util.ArrayList;
  *
  */
 public class FileTools {
+	public static final String UTF8 = "UTF-8";
+	public static final String CP1251 = "CP1251";
+	public static String DEFAULT_ENCODING = UTF8;
+	
 	protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(FileTools.class.getName());
 	
+	public void setDefaultEncoding(String encoding) {
+		DEFAULT_ENCODING = encoding;
+	}
+	
 	public static void dump(String text, String folder, String file) throws IOException {
+		dump(text, folder, file, DEFAULT_ENCODING);
+	}
+	
+	public static void dump(String text, String folder, String file, String encoding) throws IOException {
 		String path = "";
 		if(folder!=null) {
 			if(folder.endsWith("\\"))
@@ -48,113 +61,96 @@ public class FileTools {
 			if(!folderGood.isEmpty())
 				path = folderGood+"\\";
 		}
-		String fileGood = path+file.replaceAll("\\\\|\\/|\\:|\\*|\\?", "_");
-		//System.out.println("old:"+file+", new:"+fileGood);
+		String fileGood = path+normalizeFileName(file);
 		FileOutputStream out = new FileOutputStream(new File(fileGood));
-		out.write(text.getBytes());
-		out.close();
+		OutputStreamWriter or = new OutputStreamWriter(out, encoding);
+		or.write(text);
+		or.close();
+	}
+	
+	public static void writeFile(String text, String file) throws IOException {
+		writeFile(text, file, UTF8);
+	}
+	
+	public static void writeFile(String text, String file, String encoding) throws IOException {
+		FileOutputStream out = new FileOutputStream(new File(file));
+		OutputStreamWriter or = new OutputStreamWriter(out, encoding);
+		or.write(text);
+		or.close();
 	}
 	
 	public static String normalizeFileName(String file) {
 		return file.replaceAll("\\\\|\\/|\\:|\\*|\\?", "_");
 	}
-	public static void append(String text, String file) throws IOException {
-		FileOutputStream out = new FileOutputStream(new File(file),true);
-		out.write(text.getBytes());
-		out.close();
+	
+	public static String readWikiFile(String folder, String file) throws IOException {
+		return readWikiFile(folder, file, DEFAULT_ENCODING);
 	}
-	public static String read(String folder, String file) throws IOException {
-		String fileGood = folder+"\\"+file.replaceAll("\\\\|\\/|\\:|\\*|\\?", "_");
-		FileInputStream in = new FileInputStream(new File(fileGood));
-		BufferedReader b = new BufferedReader(new InputStreamReader(in, "cp1251"));       
-
-	        // get the text
-	        String line;
-	        StringBuilder text = new StringBuilder(100000);
-	        while ((line = b.readLine()) != null)
-	        {	        	
-	            text.append(line);
-	            text.append("\n");
-	        }
-	        in.close();
+	
+	public static String readWikiFile(String folder, String file, String encoding) throws IOException {
+		File fileGood = new File(folder+"\\"+normalizeFileName(file));
+		log.debug("reading  file: "+fileGood.getPath());
+		log.debug("absolute path: "+ fileGood.getAbsolutePath());
+		
+		FileInputStream in = new FileInputStream(fileGood);
+		BufferedReader b = new BufferedReader(new InputStreamReader(in, encoding));       
+        String line;
+        StringBuilder text = new StringBuilder(100000);
+        while ((line = b.readLine()) != null)
+        {	        	
+            text.append(line);
+            text.append("\n");
+        }
+        in.close();
 	    return text.toString();
 	}
 	
 	public static String readFile(String fileName) {
+		return readFile(fileName, DEFAULT_ENCODING);
+	}
+	
+	public static String readFile(String fileName, String encoding) {
 		String text = null;
-		File file = new File(fileName);
+		File file = new File(fileName);		
+		
 		try {
-			//FileInputStream in = new FileInputStream(taskFile);
-			//String line;
 	        StringBuilder sb = new StringBuilder(10000);
-	        FileReader fr = null;
-	        fr = new FileReader(file);
-	       // BufferedReader br = new BufferedReader(fr);
-	        
-	        //fr.close();
+	        FileInputStream fis = new FileInputStream(file);
+	        InputStreamReader reader = new InputStreamReader(fis, encoding);
 	        char buf[] = new char[1000];
-	       // fr.read(buf);
-	        //log.info(new String(buf));
-	        int end = 0;
-	        while ((end=fr.read(buf))>0)
-	        {	        	
-	            sb.append(buf,0,end);	           
-	        }
-	        //sb.append(buf);
-			fr.close();
-			text = sb.toString();
+	        while (true) {
+	            int readCount = reader.read(buf);
+	            if (readCount < 0) {
+	              break;
+	            }
+	            sb.append(buf, 0, readCount);
+	          }
+	        text = sb.toString();
+			reader.close();			
 		} catch (FileNotFoundException e) {
-			log.error(e.toString());
-			return null;
+			log.error(e);	
+		} catch (UnsupportedEncodingException e) {
+			log.error(e);		
 		} catch (IOException e) {
-			log.error(e.toString());
-			e.printStackTrace();
-			return null;
+			log.error(e);
+			e.printStackTrace();			
 		}
 		return text;
 	}
 	
 	public static String [] readFileToList(String fileName) {
-		File file = new File(fileName);
-		ArrayList<String> items = new ArrayList<String>(5000);
-		try {
-			//FileInputStream in = new FileInputStream(taskFile);
-			//String line;
-	        FileReader fr = null;
-	        fr = new FileReader(file);
-	        BufferedReader br = new BufferedReader(fr);
-	        String line = "";	        
-	        while((line=br.readLine())!=null) {
-	        	items.add(line);
-	        }	        
-	        br.close();
-			fr.close();
-		} catch (FileNotFoundException e) {
-			log.error(e.toString());
-			return null;
-		} catch (IOException e) {
-			log.error(e.toString());
-			e.printStackTrace();
-			return null;
-		}
-		return items.toArray(new String[0]);
+		return readFileToList(fileName, DEFAULT_ENCODING);
 	}
 	
-	public static String [] readFileToListUTF8(String fileName) {
+	public static String [] readFileToList(String fileName, String encoding) {
 		File file = new File(fileName);
 		ArrayList<String> items = new ArrayList<String>(5000);
 		try {
-			//FileInputStream in = new FileInputStream(taskFile);
-			//String line;
-	        //FileReader fr = null;
-	        //fr = new FileReader(file);
 	        FileInputStream fis = new FileInputStream(file);
-	        InputStreamReader isr = new InputStreamReader(fis,"UTF-8");
+	        InputStreamReader isr = new InputStreamReader(fis, encoding);
 	        BufferedReader br = new BufferedReader(isr);
 	        String line = "";	        
 	        while((line=br.readLine())!=null) {
-	        	//String UTF8Str = new String(line.getBytes(),"UTF-8");
-	        	//items.add(UTF8Str);
 	        	items.add(line);
 	        }	        
 	        br.close();

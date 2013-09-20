@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaBot.java 1.3 20/10/2012
- *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
+ *  @(#)NirvanaBot.java 1.5 19/09/2013
+ *  Copyright © 2011 - 2013 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,11 +23,8 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,7 +33,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,8 +40,8 @@ import java.util.regex.Pattern;
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.PropertyConfigurator;
 import org.wikipedia.Wiki;
+import org.wikipedia.Wiki.Error504;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
@@ -72,15 +68,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static boolean TASK = false;
 	private static String TASK_LIST_FILE = "task.txt";
 	
-	//private static Properties properties = null;
-	
 	private static int START_FROM = 0;
-	
-	
-	
-	//public static org.apache.log4j.Logger log = null;
-	
-	//public static NirvanaWiki wiki;
 	
 	private static String newpagesTemplateName = null;
 	
@@ -151,8 +139,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 		ERROR
 	};
 	public static String PROGRAM_INFO = 
-			"NirvanaBot v1.4 Updates Portal/Project sections at http://ru.wikipedia.org\n" +
-			"Copyright (C) 2011-2012 Dmitry Trofimovich (KIN)\n" +
+			"NirvanaBot v1.5 Updates Portal/Project sections at http://ru.wikipedia.org\n" +
+			"Copyright (C) 2011-2013 Dmitry Trofimovich (KIN)\n" +
 			"\n";
 			
 	public void showInfo() {
@@ -166,31 +154,13 @@ public class NirvanaBot extends NirvanaBasicBot{
 		
 	}
 	
-	public static void main(String[] args) {
-		NirvanaBasicBot bot = new NirvanaBot();
-		bot.showInfo();
-		bot.showLicense();
-		System.out.print("-----------------------------------------------------------------\n");
-		String configFile = bot.getConfig(args);		
-		System.out.println("applying config file: "+configFile);
-		bot.startWithConfig(configFile);
+	public NirvanaBot(int flags) {
+		super(flags);
 	}
 	
-	protected void initLog() {
-		String log4jSettings = properties.getProperty("log4j-settings");
-		if(log4jSettings==null || log4jSettings.isEmpty() || !(new File(log4jSettings)).exists()) {
-			System.out.println("INFO: logs disabled");
-			Properties prop_no_logs = new Properties();
-			prop_no_logs.setProperty("log4j.rootLogger", "OFF");
-			PropertyConfigurator.configure(prop_no_logs);
-			log = org.apache.log4j.Logger.getLogger(NirvanaBot.class.getName());
-			//log.setLevel(Level.OFF);
-			//nologs = true;
-		} else {
-			PropertyConfigurator.configure(log4jSettings);
-			log = org.apache.log4j.Logger.getLogger(NirvanaBot.class.getName());	
-			System.out.println("INFO: using log settings : " + log4jSettings);
-		}
+	public static void main(String[] args) {
+		NirvanaBasicBot bot = new NirvanaBot(NirvanaBasicBot.FLAG_SHOW_LICENSE);
+		bot.run(args);
 	}
 	
 	protected void loadCustomProperties() {
@@ -408,26 +378,12 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}
 		java.util.Arrays.sort(portalNewPagesLists);
 		
-		ArrayList<String> tasks = null;
-		if(TASK) {
-			File taskFile = new File(TASK_LIST_FILE);
-			FileReader fr = null;
-			try {
-				fr = new FileReader(taskFile);
-				BufferedReader br = new BufferedReader(fr);
-				tasks = new ArrayList<String>();
-				String line;
-				while((line=br.readLine())!=null) {
-					tasks.add(line);
-				}
-			} catch (FileNotFoundException e) {
-				log.error(e.toString());
-				return;
-			} catch (IOException e) {
-				log.error(e.toString());
-				return;
-			}
-			
+		String [] tasks = null;
+		if(TASK) {			
+			 tasks = FileTools.readFileToList(TASK_LIST_FILE);
+			 if (tasks == null) {
+				 return;
+			 }
 		}
 		
 /*		for(String str:portalNewPagesLists) {
@@ -449,6 +405,12 @@ public class NirvanaBot extends NirvanaBasicBot{
 		//ArrayList<String> errorPortals = new ArrayList<String>();
 		ReportItem reportItem = null;
 		String portalName = null;
+		
+		// this is a workaround for bad support of keep alive feature in HttpUrlConnection
+		// without it, writing of big articles (~500KB) may hang 
+		// (when reading answer from server after writing)
+		System.setProperty("http.keepAlive", "false"); // adjust HTTP connections
+		
 		while(i < portalNewPagesLists.length) {						
 			if(retry) {
 				retry = false;
@@ -550,37 +512,43 @@ public class NirvanaBot extends NirvanaBasicBot{
 				}
 				
 			} catch (IndexOutOfBoundsException e) { // includes ArrayIndexOfBoundsException
-				log.error(e.toString());
-				log.trace("OOOOPS!!!", e);
+				log.error(e.toString()); 
 				if(retry_count<RETRY_MAX) {
 					log.info("RETRY AGAIN");
 					retry = true;
 				} else {
 					er++;
 					reportItem.status = Status.ERROR;
-					e.printStackTrace();
+					//e.printStackTrace();
+					log.error("OOOOPS!!!", e); // print stack trace
 				}	
 			} catch (NullPointerException e) {
-				log.error(e.toString());
-				log.trace("OOOOPS!!!", e);
+				log.error(e.toString()); 
 				if(retry_count<RETRY_MAX) {
 					log.info("RETRY AGAIN");
 					retry = true;
 				} else {
 					er++;
 					reportItem.status = Status.ERROR;
-					e.printStackTrace();
+					//e.printStackTrace();
+					log.error("OOOOPS!!!", e); // print stack trace
 				}	
 			} catch (java.util.zip.ZipException e) {
-				log.error(e.toString());
+				log.error(e.toString()); 
 				if(retry_count<RETRY_MAX) {
 					log.info("RETRY AGAIN");
 					retry = true;
 				} else {
 					er++;
 					reportItem.status = Status.ERROR;
-					e.printStackTrace();
-				}
+					//e.printStackTrace();
+					log.error("OOOOPS!!!", e); // print stack trace
+				}	
+			} catch (Error504 e) {				
+					log.warn(e.toString());
+					log.info("ignore error and continue ...");
+					er++;
+					reportItem.status = Status.ERROR;
 			} catch (IOException e) {
 				
 				if(retry_count<RETRY_MAX) {
@@ -591,27 +559,39 @@ public class NirvanaBot extends NirvanaBasicBot{
 					log.error(e.toString());
 					er++;
 					reportItem.status = Status.ERROR;
-					e.printStackTrace();
+					//e.printStackTrace();
+					log.error("OOOOPS!!!", e); // print stack trace
 				}
 			} catch (LoginException e) {
 				log.fatal(e.toString());
 				break;
 				//e.printStackTrace();
 			} catch (InterruptedException e) {				
-				log.fatal(e.toString());
+				log.fatal(e.toString(),e);
 				break;
-			}/* catch (Exception e) {
-				log.error(e.toString());
-				log.trace("OOOOPS!!!", e);
+			} catch (Exception e) {
+				log.error(e.toString()); 
 				if(retry_count<RETRY_MAX) {
 					log.info("RETRY AGAIN");
 					retry = true;
 				} else {
 					er++;
 					reportItem.status = Status.ERROR;
-					e.printStackTrace();
+					//e.printStackTrace();
+					log.error("OOOOPS!!!", e); // print stack trace
 				}	
-			}*/
+			} catch (Error e) {
+				log.error(e.toString()); 
+				if(retry_count<RETRY_MAX) {
+					log.info("RETRY AGAIN");
+					retry = true;
+				} else {
+					er++;
+					reportItem.status = Status.ERROR;
+					//e.printStackTrace();
+					log.error("OOOOPS!!!", e); // print stack trace
+				}	
+			}
 			reportItem.endTime = System.currentTimeMillis();
 			if(STOP_AFTER>0 && j>=STOP_AFTER) break;
 			if(!retry) i++;
@@ -635,21 +615,20 @@ public class NirvanaBot extends NirvanaBasicBot{
 		
 		if(GENERATE_REPORT) {
 			log.info("generating report . . .");
-			File rep = new File(REPORT_FILE_NAME);
+			StringBuilder sb = new StringBuilder();
+			//StringBuffer sbuf = new StringBuffer();
+			sb.append(ReportItem.getHeader()).append("\r\n");
+			for(ReportItem item : report) {
+				sb.append(item.toString());
+				sb.append("\r\n");
+			}
+			sb.append(ReportItem.getFooter());
 			try {
-				BufferedWriter out = new BufferedWriter(new FileWriter(rep));
-				out.append(ReportItem.getHeader());
-				out.newLine();
-				for(ReportItem item : report) {
-					out.append(item.toString());
-					out.newLine();
-				}
-				out.append(ReportItem.getFooter());				
-				out.close();
+				FileTools.writeFile(sb.toString(), REPORT_FILE_NAME);				
 			} catch (IOException e) {
 				log.error(e.toString());
 				e.printStackTrace();				
-			}
+			}			
 			log.info("report is generated!");
 		}
 		
@@ -781,17 +760,19 @@ public class NirvanaBot extends NirvanaBasicBot{
 		param.lang = NirvanaBot.LANGUAGE;
 		
 		String type = null;
-		if(!options.containsKey("тип") || options.get("тип").isEmpty()) {
+		key = "тип";
+		if(!options.containsKey(key) || options.get(key).isEmpty()) {
 			data.errors.add("Параметр \"тип\" не задан. Использовано значение по умолчанию ");
 			type = DEFAULT_TYPE;
 		} else {
-			type = options.get("тип").toLowerCase();
+			type = options.get(key).toLowerCase();
 		}	
 		log.debug("тип: "+type);
 		data.type = type;
 		
-		param.categories = optionToStringArray(options,"категории");
-		if (options.containsKey("категория"))
+		param.categories = optionToStringArray(options,"категории");		key = "категория";
+		key = "категория";
+		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
 			param.categories.add(options.get("категория"));
 		}		
@@ -927,9 +908,10 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}*/
 		
 		param.format = DEFAULT_FORMAT;
-		if (options.containsKey("формат элемента"))
+		key = "формат элемента";
+		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
-			param.format = options.get("формат элемента");//.replace("{", "{{").replace("}", "}}");
+			param.format = options.get(key);//.replace("{", "{{").replace("}", "}}");
 		}
 		
 		
