@@ -7,7 +7,7 @@
 <entry key="wiki-password"></entry>
 <entry key="wiki-lang">ru</entry>
 <entry key="wiki-java-loglevel">OFF</entry>
-<entry key="update-comment">Обработка архива (заголовки, нумерация, сортировка)</entry>
+<entry key="update-comment">Обработка архива (заголовки, нумерация, сортировка, удаление дубликатов)</entry>
 <entry key="default-comment">обновление</entry>
 <entry key="debug-mode">no</entry>
 <entry key="task-list-file">archive_task_hockey.txt</entry>

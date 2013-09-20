@@ -25,6 +25,7 @@ package org.wikipedia.nirvana.statistics;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -518,12 +519,18 @@ public class StatisticsBot extends NirvanaBasicBot {
 		if(purgeFunc!=null) {
 			String dump = null;
 			try {
-				dump = FileTools.read("cache",archive+".txt");
+				dump = FileTools.readWikiFile("cache", archive+".txt");
 			} catch (FileNotFoundException e) {
 				// ignore
+				log.info(e);
+				log.info("Failed to read "+archive+".txt"+" (ignored)");
+			} catch (UnsupportedEncodingException e) {
+				log.error(e);
+				log.info("Failed to read "+archive+".txt"+" (ignored)");
 			}			
 			
 			if(dump!=null) {
+				log.info("applying dump "+archive+".txt");
 				dump = dump.trim();				
 				if(addToTop && text.endsWith(dump)) {
 					String lines2[] = dump.split("\n");
@@ -538,7 +545,11 @@ public class StatisticsBot extends NirvanaBasicBot {
 				}
 			}
 		}	
+		try {
 		FileTools.dump(text,"cache",archive+".txt");
+		} catch (UnsupportedEncodingException e) {
+			log.error(e);
+		}
 		text = null;
 		/*
 		if(lines==null) {

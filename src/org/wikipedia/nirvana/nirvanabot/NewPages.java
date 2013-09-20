@@ -1,6 +1,6 @@
 /**
  *  @(#)NewPages.java 0.03 02/07/2012
- *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
+ *  Copyright © 2011 - 2013 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -225,6 +225,7 @@ public class NewPages implements PortalModule{
 	        while ((line = b.readLine()) != null)
 	        {
 	            String[] groups = line.split("\t");
+	            // то что мы ищем совпадает с тем, что нашли
 	            if (groups[NS_POS].equals(String.valueOf(namespace)))
 	            {
 	                String title = groups[TITLE_POS].replace('_', ' ');
@@ -238,8 +239,6 @@ public class NewPages implements PortalModule{
 	                	log.debug("Namespace is not 0");
 	                }	                
 	                
-	                //Calendar.getInstance().
-	                
 	                if (!pages.contains(title))
 	                {
 	                	long revId=0;
@@ -251,7 +250,7 @@ public class NewPages implements PortalModule{
 			                	continue;
 			                }
 	                	}
-	                	Revision page = wiki.new Revision(revId, Calendar.getInstance(), title, "", "",false,false,0);
+	                	Revision page = wiki.new Revision(revId, Calendar.getInstance(), title, "", "", false, false, true, 0);
 	                    pages.add(title);
 	                    log.debug("adding page to list:"+title);
 	                    pageInfoList.add(page);
@@ -275,18 +274,23 @@ public class NewPages implements PortalModule{
 	                if (ignore.contains(title))
 	                {
 	                    continue;
+	                }	                
+	                
+	                /*if(namespace!= Wiki.USER_NAMESPACE && userNamespace(title))
+	                	continue;*/
+	                
+	                // Случай когда мы ищем категории, шаблоны и т.д. чтобы отсеять обычные статьи
+	                int n = wiki.namespace(title);
+	                if(n!=namespace) {
+	                	continue;
 	                }
 	                /*
-	                if (namespace != 0)
-	                {	                	
-	                    title = wiki.namespaceIdentifier(namespace) + ":" + title;	                	
-	                	log.debug("Namespace is not 0");
-	                }*/	                
-	                
-	                //Calendar.getInstance().
-	                
-	                if(namespace!= Wiki.USER_NAMESPACE && userNamespace(title))
-	                	continue;
+	                if (namespace != 0 && !title.startsWith(wiki.namespaceIdentifier(namespace)))
+	                {	
+	                	log.debug("Namespace is other than we seek");
+	                	continue;	                	
+	                } //else if (namespace==0 && wiki.n)
+	                */
 	                
 	                if (!pages.contains(title))
 	                {   
@@ -316,6 +320,7 @@ public class NewPages implements PortalModule{
     	
     	String titleToInsert = title;
     	if(namespace!=0) {
+    		log.debug("namespace = "+wiki.namespaceIdentifier(this.namespace)+" namespace="+String.valueOf(namespace)+" title="+title);
     		titleToInsert = title.substring(wiki.namespaceIdentifier(this.namespace).length()+1);
     	}
     	if(this.format.contains("{{") && this.format.contains("}}")) {
@@ -372,7 +377,7 @@ public class NewPages implements PortalModule{
 		            //page.FirstEdit.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"));
 				String title_old = HTTPTools.removeEscape(pageInfoList.get(i).getPage());
 		    	String title_new = HTTPTools.removeEscape(page.getPage());
-		    	//log.debug("check page: "+title1+" "+title);
+		    	log.debug("check page, title old: "+title_old+", title new: "+title_new);
 		    	boolean deleted = false;
 		    	if(this.deletedFlag != PortalParam.Deleted.DONT_TOUCH) {		    		 
 	                try {
@@ -721,6 +726,7 @@ public class NewPages implements PortalModule{
     	
     	for(int i = d.archiveItems.size()-1;i>=0;i--) {
     		String item = d.archiveItems.get(i);
+    		log.debug("archiving item: "+item);
     		Calendar c = getNewPagesItemDate(wiki,item);
     		if(c==null) {
     			defaultArchive.add(item);
@@ -776,6 +782,10 @@ public class NewPages implements PortalModule{
 			String article = m.group("article");
 			if(article.startsWith(":"))
 				article = article.substring(1); // special case when title starts from : this : is not included in title
+			if(article.contains("Категория:Википедия:Списки новых статей по темам")) {
+				// foundBrackets should stay false for this case
+				continue;
+			}
 			Revision r = null;
 			try {
 				r = wiki.getFirstRevision(article,true);

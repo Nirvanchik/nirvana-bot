@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaWiki.java 0.03 02/07/2012
- *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
+ *  @(#)NirvanaWiki.java 0.04 19/09/2013
+ *  Copyright © 2011 - 2013 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -44,18 +44,17 @@ import org.wikipedia.Wiki;
 
 /**
  * @author KIN 
- * based on Wiki.java version 0.25, revision 46  
+ * based on Wiki.java version 0.28, revision 149  
  */
 public class NirvanaWiki extends Wiki {
 	
     private static final long serialVersionUID = -8745212681497644127L;
-    
-    //private HashMap<Integer,String> namespaceStrings = null;
 
 	private static org.apache.log4j.Logger log = null;	
 	
 	private boolean dumpMode = false;
 	private String dumpFolder = "dump";
+	private boolean logDomain = false;
 	/**
 	 * 
 	 */
@@ -99,9 +98,11 @@ public class NirvanaWiki extends Wiki {
     protected void log(Level level, String text, String method)
     {
         StringBuilder sb = new StringBuilder(100);
-        //sb.append('[');
-        //sb.append(domain);
-        //sb.append("] ");
+        if(logDomain) {
+        	sb.append('[');
+        	sb.append(domain);
+            sb.append("] ");
+        }
         sb.append(method);
         sb.append("() - ");
         sb.append(text);
@@ -114,9 +115,41 @@ public class NirvanaWiki extends Wiki {
         	log.info(sb.toString());
         } else if(level==Level.FINE) {
         	log.debug(sb.toString());
+        } else {
+        	log.trace(sb.toString());
         }
-        	
-     //   logger.logp(level, "Wiki", method + "()", sb.toString());
+    }
+    
+	/**
+     *  Logs a successful result.
+     *  @param text string the string to log
+     *  @param method what we are currently doing
+     *  @param level the level to log at
+     *  @since 0.06
+     */
+    protected void log(Level level, String text, String method, Exception e)
+    {
+        StringBuilder sb = new StringBuilder(100);
+        if(logDomain) {
+        	sb.append('[');
+        	sb.append(domain);
+            sb.append("] ");
+        }
+        sb.append(method);
+        sb.append("() - ");
+        sb.append(text);
+        sb.append('.');
+        if(level==Level.SEVERE) {
+        	log.error(sb.toString(), e);
+        } else if(level==Level.WARNING) {
+        	log.warn(sb.toString(), e);
+        } else if(level==Level.CONFIG || level==Level.INFO) {
+        	log.info(sb.toString(), e);
+        } else if(level==Level.FINE) {
+        	log.debug(sb.toString(), e);
+        } else {
+        	log.trace(sb.toString(), e);
+        }
     }
 
     /**
@@ -135,10 +168,11 @@ public class NirvanaWiki extends Wiki {
      *  @param Level
      *  @since 0.24
      */
-    public void setLogLevel(Level level)
+    public void setLogLevel(org.apache.log4j.Level level)
     {
-    	logger.setLevel(level);
-    	log.setLevel(org.apache.log4j.Level.OFF);
+    	//logger.setLevel(level);
+    	//log.setLevel(org.apache.log4j.Level.OFF);
+    	log.setLevel(level);
     }
 
     public static String loadPageList(String category, String language, int depth, int hours) throws IOException, InterruptedException
@@ -171,7 +205,7 @@ public class NirvanaWiki extends Wiki {
     public static String loadPageList(String category, String language, int depth) throws IOException, InterruptedException
     {
         log.debug("Downloading data for " + category);
-        String url_path = "/~magnus/catscan_rewrite.php";
+        String url_path = "/catscan2/catscan2.php";
         String url_query = 
         		String.format("language=%1$s&depth=%3$d&categories=%2$s&&sortby=title&format=tsv&doit=submit",
                 language,
@@ -179,7 +213,7 @@ public class NirvanaWiki extends Wiki {
                 depth);
         URI uri=null;
 		try {
-			uri = new URI("http","toolserver.org",url_path,url_query,null);
+			uri = new URI("http","tools.wmflabs.org",url_path,url_query,null);
 		} catch (URISyntaxException e) {			
 			log.error(e.toString());
 		}
@@ -193,13 +227,11 @@ public class NirvanaWiki extends Wiki {
 		}
 		return page;        
     }
- 
-    
     
     public synchronized void edit(String title, String text, String summary, boolean minor, boolean bot,
             int section) throws IOException, LoginException {
     	if(!this.dumpMode) {
-    		super.edit(title, text, summary, minor, bot, section);
+    		super.edit(title, text, summary, minor, bot, section, null);    		
     	} else {
     		String fileNew = title+".new.txt";
     		String fileOld = title+".old.txt";
@@ -258,15 +290,19 @@ public class NirvanaWiki extends Wiki {
     
     public void prependOrCreate(String title, String stuff, String comment, boolean minor, boolean bot) throws IOException, LoginException
     {
+    	log.debug("prependOrCreate -> "+title +" appended text size = "+stuff.length());
     	if(stuff.isEmpty()) return;
         StringBuilder text = new StringBuilder(100000);
         text.append(stuff);
         try {
+        	log.debug("prependOrCreate -> getting old text");
         	text.append(getPageText(title));
+        	log.debug("prependOrCreate -> new text size = "+text.length());
         } catch (FileNotFoundException e) {
         	log.debug("page "+title+" does not exist -> create");
         }
         this.edit(title, text.toString(), comment, minor, bot);
+        log.debug("prependOrCreate -> EXIT(OK)");
     }
     
     public void append(String title, String stuff, String comment, boolean minor, boolean bot) throws IOException, LoginException
@@ -344,154 +380,100 @@ public class NirvanaWiki extends Wiki {
 		return nobots;
 	}
 	
-	 public String [] getPageLines(String title) throws IOException
-	    {
+	public String [] getPageLines(String title) throws IOException {
 	        // pitfall check
-	        if (namespace(title) < 0)
-	            throw new UnsupportedOperationException("Cannot retrieve Special: or Media: pages!");
-
-	        // go for it
-	        String url = base + URLEncoder.encode(title, "UTF-8") + "&action=raw";
-	        String [] temp = fetchLines(url, "getPageLines");
-	        log(Level.INFO, "Successfully retrieved text of " + title, "getPageLines");
+	    if (namespace(title) < 0)
+	        throw new UnsupportedOperationException("Cannot retrieve Special: or Media: pages!");
+	
+	    // go for it
+	    String url = base + URLEncoder.encode(title, "UTF-8") + "&action=raw";
+	    String [] temp = fetchLines(url, "getPageLines");
+	    log(Level.INFO, "Successfully retrieved text of " + title, "getPageLines");
 	        return decode(temp);
-	    }
-	 
-	 protected String [] decode(String items[])
-	    {
+	}
+ 
+	protected String [] decode(String items[]) {
 	        // Remove entity references. Oddly enough, URLDecoder doesn't nuke these.
-		 	for(int i=0;i<items.length;i++) {
-		 		String item = items[i];
-		 		items[i] = item.replace("&lt;", "<").
-		 				replace("&gt;", ">").
-		 				replace("&amp;", "&").
-		 				replace("&quot;", "\"").
-		 				replace("&#039;", "'");
+	 	for(int i=0;i<items.length;i++) {
+	 		String item = items[i];
+	 		items[i] = item.replace("&lt;", "<").
+	 				replace("&gt;", ">").
+	 				replace("&amp;", "&").
+	 				replace("&quot;", "\"").
+	 				replace("&#039;", "'");
 		 	}
-	        return items;
-	    }
-	 protected String [] fetchLines(String url, String caller) throws IOException
-	    {
-	        // check the database lag
-	        logurl(url, caller);
-	        do // this is just a dummy loop
-	        {
-	            if (maxlag < 1) // disabled
-	                break;
-	            // only bother to check every 30 seconds
-	            if ((System.currentTimeMillis() - lastlagcheck) < 30000) // TODO: this really should be a preference
-	                break;
-
-	            try
-	            {
-	                // if we use this, this can block unrelated read requests while we edit a page
-	                synchronized(domain)
-	                {
-	                    // update counter. We do this before the actual check, so that only one thread does the check.
-	                    lastlagcheck = System.currentTimeMillis();
-	                    int lag = getCurrentDatabaseLag();
-	                    while (lag > maxlag)
-	                    {
-	                        log(Level.WARNING, "Sleeping for 30s as current database lag (" + lag + ")exceeds the maximum allowed value of " + maxlag + " s", caller);
-	                        Thread.sleep(30000);
-	                        lag = getCurrentDatabaseLag();
-	                    }
-	                }
-	            }
-	            catch (InterruptedException ex)
-	            {
-	                // nobody cares
-	            }
-	        }
-	        while (false);
-
-	        // connect
-	        URLConnection connection = new URL(url).openConnection();
-	        connection.setConnectTimeout(CONNECTION_CONNECT_TIMEOUT_MSEC);
-	        connection.setReadTimeout(CONNECTION_READ_TIMEOUT_MSEC);
-	        setCookies(connection);
-	        connection.connect();
-	        BufferedReader in = new BufferedReader(new InputStreamReader(
-	            zipped ? new GZIPInputStream(connection.getInputStream()) : connection.getInputStream(), "UTF-8"));
-	        grabCookies(connection);
-
-	        // get the text
-	        String line;
-	        ArrayList<String> lines = new ArrayList<String>(1000);
-	        while ((line = in.readLine()) != null)
-	        {
-	            lines.add(line);
-	            //text.append("\n");
-	        }
-	        in.close();
-	        return lines.toArray(new String[0]);
-	    }
-	 
+	 	return items;
+    }
+	
+	protected String [] fetchLines(String url, String caller) throws IOException {
+		logurl(url, caller);
+	    URLConnection connection = new URL(url).openConnection();
+	    connection.setConnectTimeout(CONNECTION_CONNECT_TIMEOUT_MSEC);
+	    connection.setReadTimeout(CONNECTION_READ_TIMEOUT_MSEC);
+	    setCookies(connection);
+	    connection.connect();
+	    grabCookies(connection);
+	
+		    // check lag
+		int lag = connection.getHeaderFieldInt("X-Database-Lag", -5);
+		if (lag > maxlag)
+		{
+		    try
+		    {
+		        synchronized(this)
+		        {
+		            int time = connection.getHeaderFieldInt("Retry-After", 10);
+		            log(Level.WARNING, "Current database lag " + lag + " s exceeds " + maxlag + " s, waiting " + time + " s.", caller);
+		            Thread.sleep(time * 1000);
+		        }
+		    }
+		    catch (InterruptedException ex)
+		    {
+		        // nobody cares
+		    }
+		    return fetchLines(url, caller); // retry the request
+		    }
+		 
+		    
+		    BufferedReader in = new BufferedReader(new InputStreamReader(
+		        zipped ? new GZIPInputStream(connection.getInputStream()) : connection.getInputStream(), "UTF-8"));
+		
+		// get the text
+		String line;
+		ArrayList<String> lines = new ArrayList<String>(1000);
+		while ((line = in.readLine()) != null)
+		{
+		    lines.add(line);
+		    //text.append("\n");
+		}
+	    in.close();
+	    return lines.toArray(new String[0]);
+	}
+ 
 	 /**
-	     *  Gets the first revision of a page.
-	     *  @param title a page
-	     *  @return the oldest revision of that page
-	     *  @throws IOException if a network error occurs
-	     *  @since 0.24
-	     */
-	    public Revision getFirstRevision(String title, boolean resolveRedirect) throws IOException
-	    {
-	        StringBuilder url = new StringBuilder(query);
-	        url.append("action=query&prop=revisions&rvlimit=1&rvdir=newer&titles=");
-	        url.append(URLEncoder.encode(title, "UTF-8"));
-	        if(resolveRedirect) {
-	        	url.append("&redirects");
-	        }
-	        url.append("&rvprop=timestamp%7Cuser%7Cids%7Cflags%7Csize%7Ccomment");
-	        String line = fetch(url.toString(), "getFirstRevision");
-	        int a = line.indexOf("<rev");
-	        if(a<0) return null;
-	        int b = line.indexOf("/>", a);
-	        return parseRevision(line.substring(a, b), title);
-	    }
+	 *  Gets the first revision of a page.
+	 *  @param title a page
+	 *  @return the oldest revision of that page
+	 *  @throws IOException if a network error occurs
+	 *  @since 0.24
+	 */
+	public Revision getFirstRevision(String title, boolean resolveRedirect) throws IOException
+	{
+	    this.setResolveRedirects(resolveRedirect);
+	    return super.getFirstRevision(title);
+	}
+	
+	/**
+	 *  Gets the most recent revision of a page.
+	 *  @param title a page
+	 *  @return the most recent revision of that page
+	 *  @throws IOException if a network error occurs
+	 *  @since 0.24
+	 */
+	public Revision getTopRevisionWithNewTitle(String title, boolean resolveRedirect) throws IOException
+	{
+	    this.setResolveRedirects(resolveRedirect);
+	    return super.getTopRevision(title);
+	}
 	    
-	    /**
-	     *  Gets the most recent revision of a page.
-	     *  @param title a page
-	     *  @return the most recent revision of that page
-	     *  @throws IOException if a network error occurs
-	     *  @since 0.24
-	     */
-	    public Revision getTopRevisionWithNewTitle(String title, boolean resolveRedirect) throws IOException
-	    {
-	        StringBuilder url = new StringBuilder(query);
-	        url.append("action=query&prop=revisions&rvlimit=1&rvtoken=rollback&titles=");
-	        url.append(URLEncoder.encode(title, "UTF-8"));
-	        if(resolveRedirect) {
-	        	url.append("&redirects");
-	        }
-	        url.append("&rvprop=timestamp%7Cuser%7Cids%7Cflags%7Csize%7Ccomment%7Ctitle");
-	        String line = fetch(url.toString(), "getTopRevision");
-	        int a = line.indexOf("<rev");
-	        int b = line.indexOf("/>", a);
-	        return parseRevision(line.substring(a, b), "");
-	    }
-	    
-	    public String resolveRedirect(String title) throws IOException
-	    {
-	        StringBuilder url = new StringBuilder(query);
-	        url.append("action=query&prop=revisions&rvlimit=1&rvtoken=rollback&titles=");
-	        url.append(URLEncoder.encode(title, "UTF-8"));
-	        	url.append("&redirects");
-	        url.append("&rvprop=timestamp%7Cuser%7Cids%7Cflags%7Csize%7Ccomment%7Ctitle");
-	        String line = fetch(url.toString(), "resolveRedirect");
-	        int a = line.indexOf("<redirects>");
-	        int b = line.indexOf("</redirects>");
-	        if(a>0 && b>0) {
-	        	String redirect = line.substring(a,b);
-	        	if(redirect.contains("to=\"")) {
-	        		a = redirect.indexOf("to=");
-	        		a = redirect.indexOf("\"",a)+1;
-	        		b = redirect.indexOf("\"",a);
-	        		if(a>=0 && b>0)
-	        			return redirect.substring(a,b);
-	        	}
-	        }
-	        return null;
-	    }
 }

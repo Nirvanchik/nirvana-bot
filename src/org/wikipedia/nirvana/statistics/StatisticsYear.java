@@ -123,6 +123,7 @@ public class StatisticsYear extends Statistics {
 	}
 	
 	void addStat(int year, int total, int articlestat[],Map<String,Integer> userstat) {
+		log.debug("adding item: year="+year+" total:"+total);
 		StatItem stat = new StatItem();
 		stat.number = items.size()+1;	
 		stat.month = 0;

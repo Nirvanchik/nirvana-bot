@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaBasicBot.java 02/07/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)
+ *  @(#)NirvanaBasicBot.java 19/09/2013
+ *  Copyright © 2012-2013 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,6 +33,10 @@ import java.util.Properties;
 
 import javax.security.auth.login.FailedLoginException;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.apache.log4j.PropertyConfigurator;
 
 /**
@@ -40,6 +44,8 @@ import org.apache.log4j.PropertyConfigurator;
  *
  */
 public class NirvanaBasicBot {
+	public static final int FLAG_SHOW_LICENSE = 0b01;
+	public static final int FLAG_CONSOLE_LOG = 0b010;
 	protected static final boolean DEBUG_BUILD = false;
 	public static org.apache.log4j.Logger log = null;
 	
@@ -52,6 +58,7 @@ public class NirvanaBasicBot {
 	protected NirvanaWiki wiki;
 	private static String LANGUAGE= "ru";
 	protected static String COMMENT = "обновление";
+	protected int flags = 0;
 	
 	public static String LICENSE = 
 			"This program is free software: you can redistribute it and/or modify\n" +
@@ -71,25 +78,47 @@ public class NirvanaBasicBot {
 		
 	}
 	public void showInfo() {
-		System.out.print("NirvanaBasicBot v1.0 Copyright (C) 2012 Dmitry Trofimovich (KIN)\n\n");
+		System.out.print("NirvanaBasicBot v1.1 Copyright (C) 2012-2013 Dmitry Trofimovich (KIN)\n\n");
 		
 	}
 	public void showLicense() {		
 		System.out.print(LICENSE);
 	}
 	
+	public NirvanaBasicBot() {
+		
+	}
+	
+	public NirvanaBasicBot(int flags) {
+		this.flags = flags;
+	}
+
+	
+	public static NirvanaBasicBot createBot() {
+		return new NirvanaBasicBot();
+	}
+	
+	public int getFlags() {
+		return flags;
+	}
+	
+	public void run(String args[]) {
+		showInfo();
+		if((flags & FLAG_SHOW_LICENSE) != 0) {
+			showLicense();
+		}
+		System.out.print("-----------------------------------------------------------------\n");
+		String configFile = getConfig(args);		
+		System.out.println("applying config file: "+configFile);
+		startWithConfig(configFile);
+	}
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		//System.out.print("This is a basic class NirvanaBasicBot. It is not useful.\n");
-		NirvanaBasicBot bot = new NirvanaBasicBot();
-		bot.showInfo();
-		bot.showLicense();
-		System.out.print("-----------------------------------------------------------------\n");
-		String configFile = bot.getConfig(args);		
-		System.out.println("applying config file: "+configFile);
-		bot.startWithConfig(configFile);
+		NirvanaBasicBot bot = createBot();
+		bot.run(args);
 	}
 	public String getConfig(String[] args) {
 		String configFile = null;
@@ -179,16 +208,30 @@ public class NirvanaBasicBot {
 	protected void initLog() {
 		String log4jSettings = properties.getProperty("log4j-settings");
 		if(log4jSettings==null || log4jSettings.isEmpty() || !(new File(log4jSettings)).exists()) {
-			System.out.println("INFO: logs disabled");
-			Properties prop_no_logs = new Properties();
-			prop_no_logs.setProperty("log4j.rootLogger", "OFF");
-			PropertyConfigurator.configure(prop_no_logs);
-			log = org.apache.log4j.Logger.getLogger(NirvanaBasicBot.class.getName());
+			Properties properties = new Properties();
+			if((flags & FLAG_CONSOLE_LOG)!=0) {
+				System.out.println("INFO: console logs enabled");			
+				ConsoleAppender console = new ConsoleAppender(); //create appender
+				  //configure the appender
+				  String PATTERN = "%d [%p|%C{1}] %m%n"; //%c will giv java path
+				  console.setLayout(new PatternLayout(PATTERN)); 
+				  console.setThreshold(Level.DEBUG);
+				  console.activateOptions();
+				  //add appender to any Logger (here is root)
+				  Logger.getRootLogger().addAppender(console);
+				  //properties.setProperty("log4j.rootLogger", "DEBUG, stdout");					
+			} else {
+				System.out.println("INFO: logs disabled");			
+				properties.setProperty("log4j.rootLogger", "OFF");
+				PropertyConfigurator.configure(properties);
+			}
+			
+			log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
 			//log.setLevel(Level.OFF);
 			//nologs = true;
 		} else {
 			PropertyConfigurator.configure(log4jSettings);
-			log = org.apache.log4j.Logger.getLogger(NirvanaBasicBot.class.getName());	
+			log = org.apache.log4j.Logger.getLogger(this.getClass().getName());	
 			System.out.println("INFO: using log settings : " + log4jSettings);
 		}
 	}

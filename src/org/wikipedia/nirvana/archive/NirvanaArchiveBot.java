@@ -44,9 +44,9 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
  *
  */
 public class NirvanaArchiveBot extends NirvanaBasicBot{
-	private static String TASK_LIST_FILE = "task.txt";
 	public static final String delimeter = "\n";	
-	
+
+	private static String TASK_LIST_FILE = "task.txt";
 	//public static String COMMENT = "ѕроставление заголовков и нумерации в архиве";
 	
 	public static final String INFO = 
@@ -57,7 +57,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 	public void showInfo() {
 		System.out.print(INFO);
 	}
-				
+	
 	/**
 	 * @param args
 	 */
