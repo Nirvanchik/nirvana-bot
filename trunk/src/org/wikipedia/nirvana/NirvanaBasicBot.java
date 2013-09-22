@@ -28,8 +28,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.security.auth.login.FailedLoginException;
 
@@ -47,7 +52,7 @@ public class NirvanaBasicBot {
 	public static final int FLAG_SHOW_LICENSE = 0b01;
 	public static final int FLAG_CONSOLE_LOG = 0b010;
 	protected static final boolean DEBUG_BUILD = false;
-	public static org.apache.log4j.Logger log = null;
+	protected static org.apache.log4j.Logger log = null;
 	
 	protected static Properties properties = null;
 	protected static boolean DEBUG_MODE = false;
@@ -203,7 +208,8 @@ public class NirvanaBasicBot {
 		log.info("This is a basic bot framework");
 		log.info("It doesn't have any practical use, but can be utilized as a basis to create a new Bot");
 	}
-	protected void loadCustomProperties() {				
+	protected boolean loadCustomProperties() {
+		return true;
 	}
 	protected void initLog() {
 		String log4jSettings = properties.getProperty("log4j-settings");
@@ -272,6 +278,130 @@ public class NirvanaBasicBot {
 		}
 		return true;
     }
+	
+	protected void logPortalSettings(Map<String, String> parameters) {
+		Set<Entry<String,String>> set = parameters.entrySet();
+		Iterator<Entry<String,String>> it = set.iterator();
+		while(it.hasNext()) {
+			Entry<String,String> next = it.next();
+			log.debug(next.getKey()+" = "+next.getValue());
+		}
+	}
 
+	protected boolean TryParseTemplate(String template, String text, Map<String, String> parameters)
+    {
+		log.debug("portal settings parse started");
+        //parameters = null;
+        //String str = "^{{"+newpagesTemplateName+".*({{.+({{.+}})?.*}})?.*}}.*$";
+        //String str = "^\\{\\{"+newpagesTemplateName+".*\\}\\}.*$"; // works
+        //String str = "^(\\{\\{"+newpagesTemplateName+".*(\\{\\{.+\\}\\})?.*\\}\\})(.*)$";
+        //String name = newpagesTemplateName.substring(0, newpagesTemplateName.length()-1);
+        //char last = newpagesTemplateName.charAt(newpagesTemplateName.length()-1);
+		String recognizeTemplate = template;
+		String ns1 = "Участник:";
+		String ns2 = "User:";
+		if(recognizeTemplate.startsWith(ns1))  {
+			recognizeTemplate = recognizeTemplate.substring(ns1.length());			
+		} else if (recognizeTemplate.startsWith(ns2)) {
+			recognizeTemplate = recognizeTemplate.substring(ns2.length());			
+		}
+		recognizeTemplate = "("+ns1+"|"+ns2+")"+recognizeTemplate;
+        String str = "^(\\{\\{"+recognizeTemplate+")(.+)$"; // GOOD
+        //String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{.+?\\}\\})*.*))+?\\}\\}";
+        //String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{[^\\{\\}]+\\}\\})*[^\\{]*))\\}\\}";
+        //log.debug("pattern:"+str);
+        Pattern pattern = Pattern.compile(str,Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+        //Regex templateRE = new Regex(@"\{\{(User):ClaymoreBot/Новые стать(и).",
+          //  RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        Matcher m = pattern.matcher(text);
+       // Match m = templateRE.Match(text);
+        /*if(!m.find())
+        	return false;
+        */
+        if (!m.matches())
+        {
+        	log.error("portal settings parse error (doesn't match pattern)");
+            return false;
+        }
+        
+        log.debug("group count = "+m.groupCount());
+        //for(int i=0;i<m.groupCount();i++) {
+        //	log.debug("group "+(i)+": "+m.group(i));
+        //}
+        
+        //text.substring(m.end(1),text.length());
+        
+        
+        int index = 1;
+        int begin = m.end(1) + 1;
+        int end = -1;
+        for (int i = begin; i < text.length() - 1; ++i)
+        {
+            if (text.charAt(i) == '{' && text.charAt(i+1) == '{')
+            {
+                ++index;
+            }
+            else if (text.charAt(i) == '}' && text.charAt(i+1) == '}')
+            {
+                --index;
+                if (index == 0)
+                {
+                    end = i;
+                    break;
+                }
+            }
+        }
 
+        if (end == -1)
+        {
+            return false;
+        }
+        Pattern commentPattern = Pattern.compile("<!--(.+?)-->");
+        
+        String parameterString = text.substring(begin, end);
+        //log.debug("parameter string: "+parameterString);
+        String[] ps = parameterString.split("\\|");
+        String lastKey = "";
+        String lastVal = "";
+        for(int i =0;i<ps.length;i++) {
+        	String p = ps[i];
+            //p.
+            //Pattern equalPattern = Pattern.compile("([^=])=");
+        	//log.debug("checking string: "+p);
+        	boolean newStringToLastVal = false;
+        	int count = StringTools.howMany(p, '=');
+        	if(count==0 && i==0) continue;
+        	if(!lastVal.isEmpty() && lastVal.endsWith("{")) { // {| означает начало таблицы
+        		newStringToLastVal = true;        		
+        	} else if(count>0) {
+        		int eq = p.indexOf('=');
+        		String first = p.substring(0,eq); 
+        		String last = p.substring(eq+1);
+        		String key = first.trim().toLowerCase();
+        		if(key.equals("align") || key.equals("style")) {
+        			newStringToLastVal = true;
+        		} else {
+	        		Matcher mComment = commentPattern.matcher(last);
+	            	String value = mComment.replaceAll("").trim();
+	        		parameters.put(key, value);
+	                lastKey = key;        	
+	                lastVal = value;
+        		}
+        	} else {
+        		if (!lastKey.isEmpty())
+                {
+        			newStringToLastVal = true;                	
+                }
+        	}  
+        	if(newStringToLastVal) {
+        		Matcher mkey = commentPattern.matcher(p);
+                String value = mkey.replaceAll("").trim();
+                //parameters[lastKey] = parameters[lastKey] + "|" + value;
+                lastVal = parameters.get(lastKey)+"|"+value;
+                parameters.put(lastKey, lastVal);
+        	}
+        }
+        log.debug("portal settings parse finished");
+        return true;
+    }
 }

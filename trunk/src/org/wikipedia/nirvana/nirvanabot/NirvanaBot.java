@@ -23,9 +23,6 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -70,7 +67,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	
 	private static int START_FROM = 0;
 	
-	private static String newpagesTemplateName = null;
+	private String newpagesTemplate = null;
 	
 	public static final String ERROR_PARSE_INTEGER_FORMAT_STRING = "Error when parsing integer parameter \"%1$s\" integer value %2$s";
 	private static final String ERROR_PARSE_INTEGER_FORMAT_STRING_RU = "Ошибка при чтении параметра \"%1$s\". Значение %2$s не распознано как число.";
@@ -102,8 +99,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static String DEFAULT_DELIMETER = "\n";
 	
 	private static int RETRY_MAX = 1;
-	
-	private static String newpagesTemplate = null;
+
 	
 	private static String overridenPropertiesPage = null;
 	
@@ -163,7 +159,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 		bot.run(args);
 	}
 	
-	protected void loadCustomProperties() {
+	@Override
+	protected boolean loadCustomProperties() {
 		newpagesTemplate = properties.getProperty("new-pages-template");
 		if(newpagesTemplate==null) {
 			if(DEBUG_BUILD)
@@ -171,7 +168,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 			else {
 				System.out.println("ABORT: properties not found");
 				log.fatal("New pages template name (new-pages-template) is not specified in settings");
-				return;
+				return false;
 			}
 		}	
 		log.info("new pages template : "+newpagesTemplate);	
@@ -219,12 +216,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 		TYPE = properties.getProperty("type",TYPE); 
 		
 		overridenPropertiesPage = properties.getProperty("overriden-properties-page",null);
-	}
-	
-	protected void go() {	
-		commons = new NirvanaWiki("commons.wikimedia.org");
-		commons.setMaxLag( 15 );
-		go(newpagesTemplate);
+		
+		return true;
 	}
 	
 	private void loadOverridenProperties() throws IOException	{
@@ -239,7 +232,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 			throw e;
 		}
 		Map<String, String> options = new HashMap<String, String>();
-		if(TryParseTemplate(overridenPropertiesText,options)) {			
+		if(TryParseTemplate(newpagesTemplate, overridenPropertiesText,options)) {			
 			if (options.containsKey("разделитель") && !options.get("разделитель").isEmpty())
 			{
 				DEFAULT_DELIMETER = options.get("разделитель").replace("\"", "").replace("\\n", "\n");
@@ -351,14 +344,15 @@ public class NirvanaBot extends NirvanaBasicBot{
 	}
 	
 	@SuppressWarnings("unused")
-	void go(String template) {
+	protected void go() {	
+		commons = new NirvanaWiki("commons.wikimedia.org");
+		commons.setMaxLag( 15 );
+
 		Calendar cStart = Calendar.getInstance();
 		long start = cStart.getTimeInMillis();
 		//Date d = cStart.getTime();
 		log.info("BOT STARTED at "+cStart.get(Calendar.HOUR_OF_DAY)+":"+cStart.get(Calendar.MINUTE));
-		log.info("template to check: "+template);
-		
-		newpagesTemplateName = template;
+		log.info("template to check: "+newpagesTemplate);
 		
 		try {
 			loadOverridenProperties();
@@ -371,7 +365,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		String []portalNewPagesLists = null;
 		//List<String>
 		try {
-			portalNewPagesLists = wiki.whatTranscludesHere(template, Wiki.ALL_NAMESPACES);
+			portalNewPagesLists = wiki.whatTranscludesHere(newpagesTemplate, Wiki.ALL_NAMESPACES);
 		} catch (IOException e) {			
 			log.fatal("failed to get portal list");
 			return;
@@ -461,14 +455,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 					FileTools.dump(portalSettingsText, "dump", portalName+".settings.txt");
 				}
 				Map<String, String> parameters = new HashMap<String, String>();
-				if(TryParseTemplate(portalSettingsText,parameters)) {
+				if(TryParseTemplate(newpagesTemplate, portalSettingsText,parameters)) {
 					log.info("validate portal settings OK");					
-					Set<Entry<String,String>> set = parameters.entrySet();
-					Iterator<Entry<String,String>> it = set.iterator();
-					while(it.hasNext()) {
-						Entry<String,String> next = it.next();
-						log.debug(next.getKey()+" = "+next.getValue());
-					}
+					logPortalSettings(parameters);
 					NewPagesData data = new NewPagesData();
 					createPortalModule(parameters,data);
 					if(TYPE.equals("all") || TYPE.equals(data.type)) {
@@ -634,123 +623,6 @@ public class NirvanaBot extends NirvanaBasicBot{
 		
 	}
 	
-	private static boolean TryParseTemplate(String text, Map<String, String> parameters)
-    {
-		log.debug("portal settings parse started");
-        //parameters = null;
-        //String str = "^{{"+newpagesTemplateName+".*({{.+({{.+}})?.*}})?.*}}.*$";
-        //String str = "^\\{\\{"+newpagesTemplateName+".*\\}\\}.*$"; // works
-        //String str = "^(\\{\\{"+newpagesTemplateName+".*(\\{\\{.+\\}\\})?.*\\}\\})(.*)$";
-        //String name = newpagesTemplateName.substring(0, newpagesTemplateName.length()-1);
-        //char last = newpagesTemplateName.charAt(newpagesTemplateName.length()-1);
-		String recognizeTemplate = newpagesTemplateName;
-		String ns1 = "Участник:";
-		String ns2 = "User:";
-		if(recognizeTemplate.startsWith(ns1))  {
-			recognizeTemplate = recognizeTemplate.substring(ns1.length());			
-		} else if (recognizeTemplate.startsWith(ns2)) {
-			recognizeTemplate = recognizeTemplate.substring(ns2.length());			
-		}
-		recognizeTemplate = "("+ns1+"|"+ns2+")"+recognizeTemplate;
-        String str = "^(\\{\\{"+recognizeTemplate+")(.+)$"; // GOOD
-        //String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{.+?\\}\\})*.*))+?\\}\\}";
-        //String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{[^\\{\\}]+\\}\\})*[^\\{]*))\\}\\}";
-        //log.debug("pattern:"+str);
-        Pattern pattern = Pattern.compile(str,Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
-        //Regex templateRE = new Regex(@"\{\{(User):ClaymoreBot/Новые стать(и).",
-          //  RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        Matcher m = pattern.matcher(text);
-       // Match m = templateRE.Match(text);
-        /*if(!m.find())
-        	return false;
-        */
-        if (!m.matches())
-        {
-        	log.error("portal settings parse error (doesn't match pattern)");
-            return false;
-        }
-        
-        log.debug("group count = "+m.groupCount());
-        //for(int i=0;i<m.groupCount();i++) {
-        //	log.debug("group "+(i)+": "+m.group(i));
-        //}
-        
-        //text.substring(m.end(1),text.length());
-        
-        
-        int index = 1;
-        int begin = m.end(1) + 1;
-        int end = -1;
-        for (int i = begin; i < text.length() - 1; ++i)
-        {
-            if (text.charAt(i) == '{' && text.charAt(i+1) == '{')
-            {
-                ++index;
-            }
-            else if (text.charAt(i) == '}' && text.charAt(i+1) == '}')
-            {
-                --index;
-                if (index == 0)
-                {
-                    end = i;
-                    break;
-                }
-            }
-        }
-
-        if (end == -1)
-        {
-            return false;
-        }
-        Pattern commentPattern = Pattern.compile("<!--(.+?)-->");
-        
-        String parameterString = text.substring(begin, end);
-        //log.debug("parameter string: "+parameterString);
-        String[] ps = parameterString.split("\\|");
-        String lastKey = "";
-        String lastVal = "";
-        for(int i =0;i<ps.length;i++) {
-        	String p = ps[i];
-            //p.
-            //Pattern equalPattern = Pattern.compile("([^=])=");
-        	//log.debug("checking string: "+p);
-        	boolean newStringToLastVal = false;
-        	int count = StringTools.howMany(p, '=');
-        	if(count==0 && i==0) continue;
-        	if(!lastVal.isEmpty() && lastVal.endsWith("{")) { // {| означает начало таблицы
-        		newStringToLastVal = true;        		
-        	} else if(count>0) {
-        		int eq = p.indexOf('=');
-        		String first = p.substring(0,eq); 
-        		String last = p.substring(eq+1);
-        		String key = first.trim().toLowerCase();
-        		if(key.equals("align") || key.equals("style")) {
-        			newStringToLastVal = true;
-        		} else {
-	        		Matcher mComment = commentPattern.matcher(last);
-	            	String value = mComment.replaceAll("").trim();
-	        		parameters.put(key, value);
-	                lastKey = key;        	
-	                lastVal = value;
-        		}
-        	} else {
-        		if (!lastKey.isEmpty())
-                {
-        			newStringToLastVal = true;                	
-                }
-        	}  
-        	if(newStringToLastVal) {
-        		Matcher mkey = commentPattern.matcher(p);
-                String value = mkey.replaceAll("").trim();
-                //parameters[lastKey] = parameters[lastKey] + "|" + value;
-                lastVal = parameters.get(lastKey)+"|"+value;
-                parameters.put(lastKey, lastVal);
-        	}
-        }
-        log.debug("portal settings parse finished");
-        return true;
-    }
-
 
 	public boolean createPortalModule(Map<String, String> options, NewPagesData data) {
 		log.debug("portal settings init started");
@@ -1197,6 +1069,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 
 		return errors;
 	}
+	
 	public static ArrayList<String> parseArchiveName(ArchiveSettings archiveSettings,
 			String name) {
 		ArrayList<String> errors = new ArrayList<String>();		

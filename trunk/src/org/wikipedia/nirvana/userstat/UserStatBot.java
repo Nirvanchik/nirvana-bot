@@ -68,10 +68,12 @@ public class UserStatBot extends NirvanaBasicBot {
 		System.out.print(INFO);
 	}
 	
-	protected void loadCustomProperties() {
+	@Override
+	protected boolean loadCustomProperties() {
 		TASK_LIST_FILE = properties.getProperty("task-list-file",TASK_LIST_FILE);
 		log.info("task list file: "+TASK_LIST_FILE);
 		//COMMENT = properties.getProperty("update-comment", COMMENT);
+		return true;
 	}
 
 	/**

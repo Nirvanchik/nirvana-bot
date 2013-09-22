@@ -31,6 +31,7 @@ import org.wikipedia.nirvana.DateTools;
  *
  */
 public class ArchiveSettings {
+	private static int START_YEAR_DEFAULT = 2003;
 	public String archive;
 	public String headerFormat;
 	public String headerHeaderFormat;
@@ -42,10 +43,17 @@ public class ArchiveSettings {
 	public boolean removeDuplicates;
 	public int parseCount;
 	public int startYear;
-	public static final int START_YEAR_DEFAULT = 2003;
 	public int startYear2;
 	public String firstArchive;
 	//public boolean supportCategory;
+	
+	public static void setDefaultStartYear(int year) {
+		START_YEAR_DEFAULT = year;
+	}
+	
+	public static int getDefaultStartYear() {
+		return START_YEAR_DEFAULT;
+	}
 	
 	public enum Enumeration {
 		NONE,
