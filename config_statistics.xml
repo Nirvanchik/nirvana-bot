@@ -6,17 +6,10 @@
 <entry key="wiki-login">NirvanaBot</entry>
 <entry key="wiki-password"></entry>
 <entry key="wiki-lang">ru</entry>
-<entry key="wiki-java-loglevel">OFF</entry>
+<entry key="stat-settings-template">Участник:NirvanaBot/Параметры статистики</entry>
 <entry key="update-comment">Обновление статистики</entry>
 <entry key="default-comment">Обновление статистики</entry>
 <entry key="debug-mode">no</entry>
-<entry key="task-list-file">statistic_task_music.txt,
-	statistic_task_Ireland.txt,
-	statistic_task_VKL.txt,
-	statistic_task_Donbass.txt,
-	statistic_task_Dinosaurus.txt,
-	statistic_task_bio.txt,
-	statistic_task_Kazakhstan.txt,
-	statistic_task_Feminizm.txt
-</entry>
+<entry key="task-list">no</entry>
+<entry key="task-list-file">statistic_task.txt</entry>
 </properties>

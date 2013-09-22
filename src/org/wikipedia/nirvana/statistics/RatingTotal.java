@@ -40,12 +40,21 @@ import org.wikipedia.nirvana.statistics.Statistics.StatItem;
  */
 public class RatingTotal extends Rating {
 	private static final int DEFAULT_SIZE = 20;
+	private static int DEFAULT_START_YEAR = 2008;
 	int size = DEFAULT_SIZE;
-	int startYear = 2008;
+	int startYear = DEFAULT_START_YEAR;
 	int endYear = 0;
 	Map<Integer,Map<String,Integer>> userstatByYear;
 	String userItemTemplate;
 	String headerItemTemplate;
+	
+	public static void setDefaultStartYear(int year) {
+		DEFAULT_START_YEAR = year;
+	}
+	
+	public static int getDefaultStartYear() {
+		return DEFAULT_START_YEAR;
+	}
 	
 	protected class StatItemRT extends StatItem {
 		public Map<Integer,Integer> userArticlesByYear;
@@ -81,7 +90,7 @@ public class RatingTotal extends Rating {
 	public RatingTotal(NirvanaWiki wiki,String type) throws FileNotFoundException,
 			BadAttributeValueExpException {
 		super(wiki,type);
-		startYear = 2008;
+		startYear = DEFAULT_START_YEAR;
 		endYear = Calendar.getInstance().get(Calendar.YEAR);
 		userstatByYear = new HashMap<Integer,Map<String,Integer>>(5);
 	}

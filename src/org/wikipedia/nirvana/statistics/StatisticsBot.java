@@ -1,6 +1,6 @@
 /**
- *  @(#)StatisticsBot.java 1.0 02/12/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)
+ *  @(#)StatisticsBot.java 1.1 22/09/2013
+ *  Copyright © 2012-2013 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang3.time.StopWatch;
+import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
@@ -52,6 +53,7 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 public class StatisticsBot extends NirvanaBasicBot {
 	boolean DEBUG = false;
 	//public static final int START_YEAR = 2008;
+	private static boolean TASK = false;
 	private static String TASK_LIST_FILE = "task.txt";
 	public static final String delimeter = "\n";
 	public static final String YES_RU = "да";
@@ -59,15 +61,17 @@ public class StatisticsBot extends NirvanaBasicBot {
 	public static final boolean SORT_DEFAULT = true;
 	private static final String STATUS_INFO_FORMAT = "%1$-40s time spent:%2$s";
 	
+	private static String statSettingsTemplate = null;
+	
 	
 	//public static String COMMENT = "Проставление заголовков и нумерации в архиве";
 	
 	public static final String INFO = 
-		"StatisticsBot v1.0 Makes statistics of new created pages and ratings\n" +
-		"Copyright (C) 2012 Dmitry Trofimovich (KIN)\n" +
+		"StatisticsBot v1.1 Makes statistics of new created pages and ratings\n" +
+		"Copyright (C) 2012-2013 Dmitry Trofimovich (KIN)\n" +
 		"\n";
-	private static final boolean USE_CACHE_ONLY = false;
-	private static final boolean USE_CACHE = true;
+	private static boolean USE_CACHE_ONLY = false;
+	private static boolean USE_CACHE = true;
 	
 	public void showInfo() {
 		System.out.print(INFO);
@@ -92,186 +96,160 @@ public class StatisticsBot extends NirvanaBasicBot {
 		bot.startWithConfig(configFile);
 	}
 	
-	protected void loadCustomProperties() {
+	@Override
+	protected boolean loadCustomProperties() {
+		statSettingsTemplate = properties.getProperty("stat-settings-template");
+		if(statSettingsTemplate==null) {
+			if(DEBUG_BUILD)
+				statSettingsTemplate = "Участник:NirvanaBot/test/Параметры статистики";
+			else {
+				System.out.println("ABORT: properties not found");
+				log.fatal("Statistics settings template name (stat-settings-template) is not specified in settings");
+				return false;
+			}
+		}	
+		log.info("new pages template : "+statSettingsTemplate);	
 		TASK_LIST_FILE = properties.getProperty("task-list-file",TASK_LIST_FILE);
 		log.info("task list file: "+TASK_LIST_FILE);
 		//COMMENT = properties.getProperty("update-comment", COMMENT);
+		
+		TASK = properties.getProperty("task-list",TASK?YES:NO).equals(YES);
+		log.info("task list : "+(TASK?YES:NO));
+		
+		USE_CACHE = properties.getProperty("use-cache",USE_CACHE?YES:NO).equals(YES);
+		log.info("use cache: "+(USE_CACHE?YES:NO));
+		
+		USE_CACHE_ONLY = properties.getProperty("use-cache-only",USE_CACHE_ONLY?YES:NO).equals(YES);
+		log.info("use cache only: "+(USE_CACHE_ONLY?YES:NO));
+		
+		ArchiveSettings.setDefaultStartYear(
+				validateIntegerSetting(properties,"archive-start-year", ArchiveSettings.getDefaultStartYear(), false));
+		
+		RatingTotal.setDefaultStartYear(
+				validateIntegerSetting(properties,"rating-total-start-year", RatingTotal.getDefaultStartYear(), false));
+		
+		return true;
 	}
 	
-	protected void showStatus(String status,StopWatch w) {
+	protected void showStatus(String status, StopWatch w) {
 		w.stop();
 		log.info(String.format(STATUS_INFO_FORMAT,status,w));
 		w.reset();w.start();
 	}
 	
 	protected void go() {
-		String tasklist = TASK_LIST_FILE; 
-		
-		if(tasklist==null)
+		String [] portalSettingsPages = null;
+		//List<String>
+		try {
+			portalSettingsPages = wiki.whatTranscludesHere(statSettingsTemplate, Wiki.ALL_NAMESPACES);
+		} catch (IOException e) {			
+			log.fatal("failed to get portal list");
 			return;
+		}
+		java.util.Arrays.sort(portalSettingsPages);
 		
-		String tasks[] = tasklist.split(",");
+		String [] tasks = null;
+		if(TASK) {			
+			 tasks = FileTools.readFileToList(TASK_LIST_FILE);
+			 if (tasks == null) {
+				 return;
+			 }
+		}
 		
-		for(String task:tasks) {
-			task = task.trim();
-			String taskSettingsTxt = FileTools.readFile(task);
-			if(taskSettingsTxt==null) {
-				log.error("Failed to read file "+task);
-				continue;
+		int i = 0;	// текущий портал
+		String portalName = null;
+		while(i < portalSettingsPages.length) {
+			portalName = portalSettingsPages[i];
+			log.info("processing portal: "+portalName);
+			if(tasks!=null) {
+				boolean skip = true;
+				for(String task : tasks) {
+					log.debug("task: "+task);
+					if(portalName.startsWith(task.trim())) {
+						skip = false;
+						break;
+					}
+				}
+				if(skip) { log.info("SKIP portal: "+portalName); i++; continue; }
 			}
 			
 			StopWatch watch = new StopWatch();
 			StopWatch wtotal = new StopWatch();
-			wtotal.start();
-			watch.start();
-		
-		
-			Map<String, String> options = new HashMap<String, String>();
-			if(!textOptionsToMap(taskSettingsTxt,options)) {
-				log.error("incorrect settings");
-				return;
-			}
-			
-			ArchiveSettings archiveSettings = new ArchiveSettings();
-			String archive = null;
-			String key = "архив";
-			if (options.containsKey(key) && !options.get(key).isEmpty())
-			{
-				archive = options.get(key);
-				NirvanaBot.parseArchiveName(archiveSettings,options.get(key));			
-			}
-			
-			String str = "";
-			key = "формат заголовка в архиве";
-			Period p1 = Period.NONE;
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				str = options.get(key);
-				p1 = ArchiveSettings.getHeaderPeriod(str);
-				if(p1==Period.NONE) {
-					log.error("В параметре \"формат заголовка в архиве\" не задан переменный параметр. Значение этого параметра не принято.");
-					return;
-				} else {
-					archiveSettings.headerFormat = str;
+						
+			try {
+				wtotal.start();
+				watch.start();
+				
+				String portalSettingsText = wiki.getPageText(portalName);
+				
+				if(DEBUG_MODE) {					
+					FileTools.dump(portalSettingsText, "dump", portalName+".settings.txt");
 				}
-			}
-			
-			key = "параметры архива";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				NirvanaBot.parseArchiveSettings(archiveSettings,options.get(key));
-				//archiveSettings.headerFormat = options.get(key); 
-			}
-			
-			List<String> reportTypes = null;
-			key = "тип";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				reportTypes = NirvanaBot.optionToStringArray(options, key);
-				//archiveSettings.headerFormat = options.get(key); 
-			}
-			
-			if(reportTypes.isEmpty()) {
-				log.info("No reports given in 'тип' parameter");
-				return;
-			}
-			
-			key = "комментарий";
-			String comment = COMMENT;
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				comment = options.get(key);
-			}
-			
-			//int startFromYear = START_YEAR;
-			key = "первый год";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				try {
-					archiveSettings.startYear = Integer.parseInt(options.get(key));
-				} catch(NumberFormatException e) {
-					log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+
+				
+				Map<String, String> options = new HashMap<String, String>();
+				if(!TryParseTemplate(statSettingsTemplate, portalSettingsText, options)) {
+					log.error("validate portal settings FAILED");
+					continue;
 				}
-			}
-			
-			//String firstArchive = null;
-			key = "первый архив";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				archiveSettings.firstArchive = options.get(key);
-			}
-			
-			//int startFromYear2 = -1;
-			key = "первый год после первого архива";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				try {
-					archiveSettings.startYear2 = Integer.parseInt(options.get(key));
-				} catch(NumberFormatException e) {
-					log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+				log.info("validate portal settings OK");
+				logPortalSettings(options);
+				
+				StatisticsParam params = new StatisticsParam();
+				if(!readPortalSettings(options, params)) {
+					log.error("Failed to read portal settings, portal ABORTED");
+					continue;
 				}
-			}
+				
+    
+    
+    			// create db
+    			String name = params.archiveSettings.archive.substring(0,params.archive.indexOf("/"));
+    			
+    			//log.info("parameter processing finished, time: "+watch.toString());
+    			showStatus("parameter processing finished",watch);
+    			
+    			// do not load from cache if archive is single -> we will rebuild db from scratch
+    			ArchiveDatabase2 db = new ArchiveDatabase2(name, params.cache /*&& !archiveSettings.isSingle()*/, "cache");
+    			
+    			//log.info("database created, time: "+watch.toString());
+    			showStatus("database created", watch);
+    			
+    			if(!params.cacheonly) {
+    				try {
+    					getData(params.archiveSettings,db,params.cache);
+    				} catch (IOException e) {			
+    					log.fatal(e);
+    					return;
+    				}
+    			}
+    			//log.info("data loaded to database, time: "+watch.toString());
+    			showStatus("data loaded to database",watch);
+    			
+    			if(!db.isSorted()) {
+    				log.warn("db is not sorted");
+    				if(params.sort) {
+    					db.sort();
+    					db.markYears();
+    					//log.info("data sorted, time: "+watch.toString());
+    					showStatus("data sorted",watch);
+    				}
+    			}
+    			
+    			
+    			if(params.cache && !params.cacheonly) 
+    				db.save();
+    			
+    			Calendar c = Calendar.getInstance();
+    			int endYear = c.get(Calendar.YEAR);
+    			
+    			Statistics.portal = name;
+    			
+    			// create statistics
 			
-			boolean sort = SORT_DEFAULT;
-			key = "сортировать";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				if(options.get(key).equalsIgnoreCase(YES_RU)) sort = true;
-				else if(options.get(key).equalsIgnoreCase(NO_RU)) sort = false;
-			}
-			
-			boolean cacheonly = USE_CACHE_ONLY;
-			key = "только кэш";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				if(options.get(key).equalsIgnoreCase(YES_RU)) cacheonly = true;
-				else if(options.get(key).equalsIgnoreCase(NO_RU)) cacheonly = false;
-			}
-			
-			boolean cache = USE_CACHE;
-			key = "кэш";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				if(options.get(key).equalsIgnoreCase(YES_RU)) cache = true;
-				else if(options.get(key).equalsIgnoreCase(NO_RU)) cache = false;
-			}
-			// create db
-			String name = archiveSettings.archive.substring(0,archive.indexOf("/"));
-			
-			//log.info("parameter processing finished, time: "+watch.toString());
-			showStatus("parameter processing finished",watch);
-			
-			// do not load from cache if archive is single -> we will rebuild db from scratch
-			ArchiveDatabase2 db = new ArchiveDatabase2(name, cache /*&& !archiveSettings.isSingle()*/, "cache");
-			
-			//log.info("database created, time: "+watch.toString());
-			showStatus("database created",watch);
-			
-			if(!cacheonly) {
-				try {
-					getData(archiveSettings,db,cache);
-				} catch (IOException e) {			
-					log.fatal(e);
-					return;
-				}
-			}
-			//log.info("data loaded to database, time: "+watch.toString());
-			showStatus("data loaded to database",watch);
-			
-			if(!db.isSorted()) {
-				log.warn("db is not sorted");
-				if(sort) {
-					db.sort();
-					db.markYears();
-					//log.info("data sorted, time: "+watch.toString());
-					showStatus("data sorted",watch);
-				}
-			}
-			
-			
-			if(cache && !cacheonly) 
-				db.save();
-			
-			Calendar c = Calendar.getInstance();
-			int endYear = c.get(Calendar.YEAR);
-			
-			Statistics.portal = name;
-			
-			// create statistics
-			try{
-				for(String type:reportTypes) {
+				for(String type:params.reportTypes) {
 					//log.info("creating statistics of type: "+type);
-					key = type;
+					String key = type;
 					String destination = null;
 					if (options.containsKey(key) && !options.get(key).isEmpty()) {
 						destination = options.get(key);
@@ -282,12 +260,12 @@ public class StatisticsBot extends NirvanaBasicBot {
 					
 					Map<String,String> suboptions = getSubOptions(options,type);
 					if(suboptions.get("первый год")==null)
-						suboptions.put("первый год",String.valueOf(archiveSettings.startYear));
+						suboptions.put("первый год",String.valueOf(params.archiveSettings.startYear));
 					
 					
 					Statistics stat = null;
 					if(destination.contains("%(год)")) {
-						for(int year=archiveSettings.startYear;year<=endYear;year++) {
+						for(int year=params.archiveSettings.startYear;year<=endYear;year++) {
 							log.info("creating report of type: "+type + " for year: "+String.valueOf(year));
 							stat = StatisticsFabric.createReporter(wiki,type,year);						
 							if(stat==null) {
@@ -303,7 +281,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 								log.info("done");
 							else
 								log.info("not changed");*/
-							editIfChanged(article, text, comment, true);
+							editIfChanged(article, text, params.comment, true);
 						}
 					} else {				
 						log.info("creating report of type: "+type);
@@ -322,21 +300,21 @@ public class StatisticsBot extends NirvanaBasicBot {
 							log.info("done");
 						else
 							log.info("not changed");*/
-						editIfChanged(article, text, comment, true);
+						editIfChanged(article, text, params.comment, true);
 					}
 					
 				}
 			} catch(IOException e) {
-				log.fatal(e);
+				log.fatal(e,e);
 				return;			
 			} catch(LoginException e) {
-				log.fatal(e);
+				log.fatal(e,e);
 				return;
 			} catch(IllegalStateException e) {
 				log.fatal(e);
 				return;
 			} catch(Exception e) {
-				log.fatal(e.toString());
+				log.fatal(e,e);
 				
 				//log.
 				e.printStackTrace();
@@ -352,9 +330,113 @@ public class StatisticsBot extends NirvanaBasicBot {
 //			showStatus("statistics generated", watch);
 //			watch.stop();		
 //			wtotal.stop();
-			//log.info("total time -> "+wtotal.toString());			
+			//log.info("total time -> "+wtotal.toString());		
+			i++;
 		}
 		
+	}
+	
+	private boolean readPortalSettings(Map<String, String> options, StatisticsParam params) {
+		params.archiveSettings = new ArchiveSettings();
+		params.archive = null;
+		String key = "архив";
+		if (options.containsKey(key) && !options.get(key).isEmpty())
+		{
+			params.archive = options.get(key);
+			NirvanaBot.parseArchiveName(params.archiveSettings,options.get(key));			
+		} else {
+			log.error("Параметр \"архив\" не найден в настройках");
+			return false;			
+		}
+		
+		String str = "";
+		key = "формат заголовка в архиве";
+		Period p1 = Period.NONE;
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			str = options.get(key);
+			p1 = ArchiveSettings.getHeaderPeriod(str);
+			if(p1==Period.NONE) {
+				log.error("В параметре \"формат заголовка в архиве\" не задан переменный параметр. Значение этого параметра не принято.");
+				return false;
+			} else {
+				params.archiveSettings.headerFormat = str;
+			}
+		}
+		
+		key = "параметры архива";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			NirvanaBot.parseArchiveSettings(params.archiveSettings,options.get(key));
+			//archiveSettings.headerFormat = options.get(key); 
+		}
+		
+		params.reportTypes = null;
+		key = "тип";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			params.reportTypes = NirvanaBot.optionToStringArray(options, key);
+			//archiveSettings.headerFormat = options.get(key); 
+		} else {
+			log.error("Параметр \"тип\" не найден в настройках");
+			return false;
+		}
+		
+		if(params.reportTypes.isEmpty()) {
+			log.error("Значение параметра 'тип' пустое");
+			return false;
+		}
+		
+		key = "комментарий";
+		params.comment = COMMENT;
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			params.comment = options.get(key);
+		}
+		
+		//int startFromYear = START_YEAR;
+		key = "первый год";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			try {
+				params.archiveSettings.startYear = Integer.parseInt(options.get(key));
+			} catch(NumberFormatException e) {
+				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+			}
+		}
+		
+		//String firstArchive = null;
+		key = "первый архив";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			params.archiveSettings.firstArchive = options.get(key);
+		}
+		
+		//int startFromYear2 = -1;
+		key = "первый год после первого архива";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			try {
+				params.archiveSettings.startYear2 = Integer.parseInt(options.get(key));
+			} catch(NumberFormatException e) {
+				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+			}
+		}
+		
+		params.sort = SORT_DEFAULT;
+		key = "сортировать";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			if(options.get(key).equalsIgnoreCase(YES_RU)) params.sort = true;
+			else if(options.get(key).equalsIgnoreCase(NO_RU)) params.sort = false;
+		}
+		
+		params.cacheonly = USE_CACHE_ONLY;
+		key = "только кэш";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			if(options.get(key).equalsIgnoreCase(YES_RU)) params.cacheonly = true;
+			else if(options.get(key).equalsIgnoreCase(NO_RU)) params.cacheonly = false;
+		}
+		
+		params.cache = USE_CACHE;
+		key = "кэш";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			if(options.get(key).equalsIgnoreCase(YES_RU)) params.cache = true;
+			else if(options.get(key).equalsIgnoreCase(NO_RU)) params.cache = false;
+		}
+		return true;
 	}
 	
 	public boolean editIfChanged(String title, String text, String summary, boolean minor) throws IOException, LoginException
