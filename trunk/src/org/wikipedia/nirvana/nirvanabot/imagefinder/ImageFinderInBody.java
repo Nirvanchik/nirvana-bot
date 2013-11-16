@@ -1,5 +1,5 @@
 /**
- *  @(#)ImageFinderUniversal.java 23/08/2012
+ *  @(#)ImageFinderInBody.java 23/08/2012
  *  Copyright © 2012 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
  * Recommended code page for this file is CP1251 (also called Windows-1251).
  * */
 
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.nirvanabot.imagefinder;
 
 import java.io.IOException;
 
@@ -31,29 +31,42 @@ import org.wikipedia.nirvana.NirvanaWiki;
  * @author kin
  *
  */
-public class ImageFinderUniversal extends ImageFinder {
-	ImageFinderInCard finder1;
-	ImageFinderInBody finder2;
+public class ImageFinderInBody extends ImageFinder {
+	private final String regexToFindImage = "\\[\\[(Image|File|Файл|Изображение):(?<filename>.+?)(\\||\\])";
 
 	/**
 	 * 
 	 */
-	public ImageFinderUniversal(String param) {
-		finder1 = new ImageFinderInCard(param);
-		finder2 = new ImageFinderInBody();
+	public ImageFinderInBody() {
+		// nothing to do
 	}
 
 	/* (non-Javadoc)
 	 * @see org.wikipedia.nirvana.nirvanabot.ImageFinder#findImage(org.wikipedia.nirvana.NirvanaWiki, java.lang.String)
-	 */
+	 *//*
 	@Override
-	public String findImage(NirvanaWiki wiki, NirvanaWiki commons, String article)
-			throws IOException {
-		String image = finder1.findImage(wiki, commons, article);
-		if(image!=null)
-			return image;
-		image = finder2.findImage(wiki, commons, article);
-		return image;
+	public String findImage(NirvanaWiki wiki, String article) throws IOException {
+		Pattern p = Pattern.compile(this.regexToFindImage);
+        Matcher m = p.matcher(article);
+        while(m.find()) {
+        	String image = m.group("filename").trim();
+        	if(image!=null && !image.isEmpty()) {
+        		String str = null;
+        		try {
+					str = wiki.getPageText(image);
+				} catch (FileNotFoundException e) {
+					// nothing
+				}
+        		if(str!=null) {
+        			return image;
+        		}
+        	}
+        }
+		return null;
+	}*/
+	public String findImage(NirvanaWiki wiki, NirvanaWiki commons, String article) throws IOException {
+		return findImageByRegex(wiki, commons, article,regexToFindImage,"filename");
 	}
+	
 
 }

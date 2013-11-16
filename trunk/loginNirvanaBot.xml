@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>no comments</comment>
+<entry key="wiki-login">ENTER_BOT_USERNAME_HERE</entry>
+<entry key="wiki-password">ENTER_PASSWORD_HERE</entry>
+</properties>

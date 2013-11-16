@@ -1,5 +1,5 @@
 /**
- *  @(#)NirvanaBot.java 1.5 19/09/2013
+ *  @(#)NirvanaBot.java 1.6 16/11/2013
  *  Copyright © 2011 - 2013 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -27,13 +27,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -42,23 +37,25 @@ import org.wikipedia.Wiki.Error504;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInBody;
+import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInCard;
+import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderUniversal;
 
 /**
  * @author kin
  *
  */
 public class NirvanaBot extends NirvanaBasicBot{
-//	private static final String TESTING_PORTAL = "Участник:NirvanaBot/test/Новые статьи";
+	public static final String SERVICE_CATSCAN = "catscan";
+	public static final String SERVICE_CATSCAN2 = "catscan2";
+	public static final String YES_RU = "да";
+	public static final String NO_RU = "нет";
 
-	//private static final boolean DEBUG_BUILD = false;
 	private static int STOP_AFTER = 0;
 	public static int UPDATE_PAUSE = 1000;
-	//private static boolean DEBUG_DESTINATION = true;
-	//private static boolean DEBUG_MODE = false;
 	
 	public static String TIME_FORMAT = "short"; // short,long
 	
@@ -77,13 +74,21 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static final String ERROR_PARAMETER_HAS_MULTIPLE_VALUES_RU = "Для параметра \"%1$s\" дано несколько значений. Использовано значение по умолчанию.";
 	private static final String ERROR_INVALID_PARAMETER = "Error in parameter \"%1$s\". Invalid value (%2$s).";
 	private static final String ERROR_INVALID_PARAMETER_RU = "Ошибка в параметре \"%1$s\". Задано неправильное значение (%2$s).";
+	private static final String ERROR_ABSENT_PARAMETER_RU = "Ошибка в параметрах. Параметр \"%1$s\" не задан";
+	//private static final String ERROR_NO_CATEGORY = "Ошибка в параметрах. Категории не заданы (см. параметр категория/категории).";
+	//private static final String ERROR_NO_ARTICLE = "Ошибка в параметрах. Параметр \"статья\" не задан.";
+	//private static final String ERROR_INVALID_SERVICE_NAME = "Ошибка в параметрах. Параметр \"статья\" не задан.";
 	
 	private static int MAX_DEPTH = 30;
 	private static int DEFAULT_DEPTH = 15;
 	private static int MAX_MAXITEMS = 5000;
 	private static int DEFAULT_MAXITEMS = 20;
 	private static int MAX_HOURS = 720;
+	private static int MAX_HOURS_CATSCAN = 720;
+	private static int MAX_HOURS_CATSCAN2 = 8760; // 1 year // 24*31*12 = 8928;
 	private static int DEFAULT_HOURS = 720;
+	private static String DEFAULT_SERVICE = SERVICE_CATSCAN;
+	private static boolean DEFAULT_USE_FAST_MODE = false;
 	private static boolean ERROR_NOTIFICATION = false;
 	private static String LANGUAGE= "ru";
 	private static String COMMENT = "обновление";
@@ -124,9 +129,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 			portalModule = null;
 		}
 	}
-	//public static final int STATUS_SKIP = 0;
-	//public static final int STATUS_PROCESSED = 1;
-	enum Status {
+
+	public enum Status {
 		NONE,
 		SKIP,
 		PROCESSED,
@@ -134,8 +138,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 		//DENIED,
 		ERROR
 	};
+	
 	public static String PROGRAM_INFO = 
-			"NirvanaBot v1.5 Updates Portal/Project sections at http://ru.wikipedia.org\n" +
+			"NirvanaBot v1.6 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
 			"Copyright (C) 2011-2013 Dmitry Trofimovich (KIN)\n" +
 			"\n";
 			
@@ -189,6 +194,10 @@ public class NirvanaBot extends NirvanaBasicBot{
 		
 		DEFAULT_PARSE_COUNT = validateIntegerSetting(properties,"parse-count",DEFAULT_PARSE_COUNT,false);
 		
+		DEFAULT_SERVICE = validateService(properties.getProperty("service",DEFAULT_SERVICE), DEFAULT_SERVICE);
+		
+		DEFAULT_USE_FAST_MODE = properties.getProperty("fast-mode",DEFAULT_USE_FAST_MODE?YES:NO).equals(YES);
+		
 		//if(UPDATE_LIMIT>0) UPDATE_LIMIT_ENABLED = true;
 		START_FROM = validateIntegerSetting(properties,"start-from",START_FROM,false);
 
@@ -218,6 +227,17 @@ public class NirvanaBot extends NirvanaBasicBot{
 		overridenPropertiesPage = properties.getProperty("overriden-properties-page",null);
 		
 		return true;
+	}
+	
+	private static boolean validateService(String service) {
+		return service.equalsIgnoreCase(SERVICE_CATSCAN) || service.equalsIgnoreCase(SERVICE_CATSCAN2);
+	}
+	    
+	private static String validateService(String service, String defaultValue) {
+		if(validateService(service)) {
+			return service;
+		}
+		return defaultValue;
 	}
 	
 	private void loadOverridenProperties() throws IOException	{
@@ -255,6 +275,21 @@ public class NirvanaBot extends NirvanaBasicBot{
 					DEFAULT_DEPTH = MAX_DEPTH;				
 				}
 			}			
+			
+			key = "сервис";
+			if (options.containsKey(key) && !options.get(key).isEmpty()) {
+				DEFAULT_SERVICE = validateService(options.get(key), DEFAULT_SERVICE);
+			}
+			if (DEFAULT_SERVICE.equals(SERVICE_CATSCAN)) {
+				MAX_HOURS = MAX_HOURS_CATSCAN;
+			} else if (DEFAULT_SERVICE.equals(SERVICE_CATSCAN2)) {
+				MAX_HOURS = MAX_HOURS_CATSCAN2;
+			}
+			
+			key = "быстрый режим";
+			if (options.containsKey(key) && !options.get(key).isEmpty()) {
+				DEFAULT_USE_FAST_MODE = options.get(key).equalsIgnoreCase(YES_RU);
+			}
 			
 			key = "часов";
 			if (options.containsKey(key) && !options.get(key).isEmpty()) {		
@@ -642,11 +677,11 @@ public class NirvanaBot extends NirvanaBasicBot{
 		log.debug("тип: "+type);
 		data.type = type;
 		
-		param.categories = optionToStringArray(options,"категории");		key = "категория";
+		param.categories = optionToStringArray(options,"категории");		
 		key = "категория";
 		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
-			param.categories.add(options.get("категория"));
+			param.categories.add(options.get(key));
 		}		
 		
 		param.categoriesToIgnore = optionToStringArray(options,"игнорировать");
@@ -657,6 +692,19 @@ public class NirvanaBot extends NirvanaBasicBot{
 		if (options.containsKey("страница"))
 		{
 			param.page = options.get("страница");
+		}
+		
+		param.service = DEFAULT_SERVICE;
+		key = "сервис";
+		if (options.containsKey(key) && !options.get(key).isEmpty())
+		{
+			String service = options.get(key);
+			if(validateService(service)) {
+				param.service = service;
+			} else {
+				log.warn(String.format(ERROR_INVALID_PARAMETER, key, service));
+			    data.errors.add(String.format(ERROR_INVALID_PARAMETER_RU, key, service));
+			}
 		}
 		
 		param.archSettings = new ArchiveSettings();
@@ -725,8 +773,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 		//boolean markEdits = true;
 		param.bot = true;
 		param.minor = true;
-		if (options.containsKey("помечать правки") && !options.get("помечать правки").isEmpty()) {
-			String mark = options.get("помечать правки").toLowerCase();
+		key = "помечать правки";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			String mark = options.get(key).toLowerCase();
 			if(mark.equalsIgnoreCase("нет")) {
 				//markEdits = false;
 				param.bot = false;
@@ -738,6 +787,12 @@ public class NirvanaBot extends NirvanaBasicBot{
 					param.minor = false;
 				}				
 			}
+		}
+		
+		param.fastMode = DEFAULT_USE_FAST_MODE;
+		key = "быстрый режим";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			param.fastMode = options.get(key).equalsIgnoreCase(YES_RU);
 		}
 		
 		param.ns = DEFAULT_NAMESPACE;
@@ -802,6 +857,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 			}
 		}
 		
+		
 		param.hours = DEFAULT_HOURS;
 		key = "часов";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {		
@@ -811,9 +867,17 @@ public class NirvanaBot extends NirvanaBasicBot{
 				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
 				data.errors.add(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING_RU, key, options.get(key)));
 			}
-			if(param.hours>MAX_HOURS) {
-				data.errors.add(String.format(ERROR_INTEGER_TOO_BIG_STRING_RU, key, options.get(key),MAX_HOURS));
-				param.hours = MAX_HOURS;				
+			int maxHours = MAX_HOURS;
+			if(!param.service.equals(DEFAULT_SERVICE)) {
+				if(param.service.equals(SERVICE_CATSCAN)) {
+					maxHours = MAX_HOURS_CATSCAN;
+				} else if (param.service.equals(SERVICE_CATSCAN2)) {
+					maxHours = MAX_HOURS_CATSCAN2;
+				}
+			}
+			if(param.hours>maxHours) {
+				data.errors.add(String.format(ERROR_INTEGER_TOO_BIG_STRING_RU, key, options.get(key),maxHours));
+				param.hours = maxHours;				
 			}
 		}
 		
@@ -904,6 +968,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 			param.imageSearchTags = options.get(key);
 		}
 		
+		if(!validateParams(param,data.errors)) {
+			return true;
+		}
 		
 		if (type.equals("список новых статей")) {
 			data.portalModule = new NewPages(param);						
@@ -980,6 +1047,22 @@ public class NirvanaBot extends NirvanaBasicBot{
 	log.debug("portal settings init finished");
 	return true;
 	}
+	
+	private boolean validateParams(PortalParam param, List<String> errors) {
+		boolean retval = true;
+		if(param.categories.isEmpty()) {
+			log.warn(String.format(ERROR_ABSENT_PARAMETER_RU, "категории"));
+			errors.add(String.format(ERROR_ABSENT_PARAMETER_RU,"категории"));
+			retval = false;
+		}
+		if(param.page.isEmpty()) {
+			log.warn(String.format(ERROR_ABSENT_PARAMETER_RU, "статья"));
+			errors.add(String.format(ERROR_ABSENT_PARAMETER_RU,"статья"));
+			retval = false;
+		}
+		return retval;
+	}
+	
 	/*
 	private static Collection<? extends String> validateArchiveFormat(
 			ArchiveSettings archiveSettings) {

@@ -23,13 +23,9 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +33,9 @@ import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinder;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
 
 /**
  * @author kin
@@ -47,19 +46,19 @@ public class NewPagesWithImages extends NewPages {
 	private ImageFinder imageFinder;
 	private NirvanaWiki commons;
 	
-	public static class RevisionWithImage extends Revision {
+	public static class RevisionWithImage extends RevisionWithId {
 		String image;
 
 		public RevisionWithImage(Wiki wiki, long revid, Calendar timestamp,
 				String title, String summary, String user, boolean minor,
-				boolean bot, boolean rvnew, int size, String image) {
-			wiki.super(revid, timestamp, title, summary, user, minor, bot, rvnew, size);
+				boolean bot, boolean rvnew, int size, long id, String image) {
+			super(wiki, revid, timestamp, title, summary, user, minor, bot, rvnew, size, id);
 			this.image = image;
 		}
 		
-		public RevisionWithImage(Wiki wiki, Revision r, String image) {
-			wiki.super(r.getRevid(), r.getTimestamp(), r.getPage(), 
-					r.getSummary(), r.getUser(), r.isMinor(), r.isBot(), r.isNew(), r.getSize());
+		public RevisionWithImage(Wiki wiki, Revision r, long id, String image) {
+			super(wiki, r.getRevid(), r.getTimestamp(), r.getPage(), 
+					r.getSummary(), r.getUser(), r.isMinor(), r.isBot(), r.isNew(), r.getSize(), id);
 			this.image = image;
 		}
 		
@@ -68,21 +67,9 @@ public class NewPagesWithImages extends NewPages {
 		
 	}
 	/**
-	 * @param lang
-	 * @param categories
-	 * @param categoriesToIgnore
-	 * @param usersToIgnore
-	 * @param page
-	 * @param archive
-	 * @param ns
-	 * @param depth
-	 * @param hours
-	 * @param maxItems
-	 * @param format
-	 * @param delimeter
-	 * @param header
-	 * @param footer
-	 * @param markEdits
+	 * @param param
+	 * @param commons
+	 * @param imageFinder
 	 */
 	public NewPagesWithImages(PortalParam param, NirvanaWiki commons, ImageFinder imageFinder) {
 		super(param);
@@ -99,101 +86,61 @@ public class NewPagesWithImages extends NewPages {
 		}*/
 	}
 	
-	public Data processData(NirvanaWiki wiki, String text) throws IOException {
+	public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException {
 		log.info("Processing data for [[" + this.pageName+"]]");
-		HashSet<String> ignore = getIgnorePages(wiki,null);
-		//Revision r = wiki.getFirstRevision("Кай Юлий Цезарь");
-		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
-		HashSet<String> pages = new HashSet<String>();
+		
 		/*for (String category : categories) {
 			log.info("Processing data of " + category);
 		}*/
-		for(String category : categories) {		
-			log.info("Processing data of " + category);
-			String line;
-			String pageList = pageLists.get(category);
-			StringReader r = new StringReader(pageList);
-			BufferedReader b = new BufferedReader(r);
-	        while ((line = b.readLine()) != null)
-	        {
-	            String[] groups = line.split("\t");
-	            if (groups[0].equals(String.valueOf(namespace)))
-	            {
-	                String title = groups[1].replace('_', ' ');
-	                if (ignore.contains(title))
-	                {
-	                    continue;
-	                }
-	                if (namespace != 0)
-	                {	                	
-	                    title = wiki.namespaceIdentifier(namespace) + ":" + title;	                	
-	                	continue;
-	                }	                
-	                
-	                //Calendar.getInstance().
-	                
-	                if (!pages.contains(title))
-	                {
-	                	long revId;
-		                try {
-		                	revId = Long.parseLong(groups[5]);
-		                } catch(NumberFormatException e) {
-		                	log.error(e.toString());
-		                	continue;
-		                }		               
-		                //log.debug("title = "+title);
-		                String article = "";
-		                try {
-		                	article = wiki.getPageText(title);
-		                } catch(java.io.FileNotFoundException e) {
-		                	log.warn(e.toString()+" "+title); // page was created and renamed or deleted after that
-		                	continue;
-		                }
-		                //FileTools.dump(article, "dump", title);
-		                Revision page = null;
-		                if(NirvanaWiki.isRedirect(article)) {
-		                	
-		                	page = new RevisionWithImage(wiki,wiki.getRevision(revId),null); 
-		                	//log.debug("REDIRECT to: "+page.getPage());
-		                	try {
-			                	article = wiki.getPageText(page.getPage());
-			                } catch(java.io.FileNotFoundException e) {
-			                	log.warn(e.toString()+" "+page.getPage()); // page was created and renamed or deleted after that
-			                	continue;
-			                }
-		                	//FileTools.dump(article, "dump", page.getPage());
-		                }
-		                
-		                //Pattern p = Pattern.compile(this.regexToFindImage);
-		                //Matcher m = p.matcher(article);
-		               // FileTools.dump(article, "dump", title+".txt");
-		                String image = imageFinder.findImage(wiki, commons, article);
-		                if(image!=null) {	
-		                	//log.debug("found pattern");
-		                	//String image = m.group("filename").trim();	                	
-		                	log.debug("image found = "+image);
-		                	
-		                		if(page==null) {
-		                			page = new RevisionWithImage(wiki, revId, Calendar.getInstance(), title, "", "",false,false, true, 0,image);
-		                		} else {
-		                			((RevisionWithImage)page).setImage(image);
-		                		}
-		                		pages.add(title);
-		                		pageInfoList.add(page);
-		                		log.debug("adding page to list: "+title);
-		                }
-	                }
-	            }
-	        }//while		    
-		}//for
-		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
-
-			@Override
-			public int compare(Revision r1, Revision r2) {				
-				return (int)(r2.getRevid() - r1.getRevid());
-			}		
-			
-		});
+		
+		PageListFetcher pageListFetcher = createPageListFetcher();
+		ArrayList<Revision> pageInfoListNotFiltered = pageListFetcher.getNewPages(wiki);
+		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
+		
+		for(Revision r: pageInfoListNotFiltered) {
+			String article = "";
+			long revId = r.getRevid();
+			long id = ((RevisionWithId)r).getId();
+			String title = r.getPage();
+			Revision page = null;
+            try {
+            	article = wiki.getPageText(r.getPage());
+            } catch(java.io.FileNotFoundException e) {
+            	log.warn(e.toString()+" "+r.getPage()); // page was created and renamed or deleted after that
+            	continue;
+            }
+            if(NirvanaWiki.isRedirect(article)) {            
+            	if(pageListFetcher.revisionAvailable()) {
+            		page = new RevisionWithImage(wiki,wiki.getRevision(revId),id, null);
+            	} else {
+            		page = new RevisionWithImage(wiki, wiki.getFirstRevision(title, true), id, null); 
+            	}
+            	//log.debug("REDIRECT to: "+page.getPage());
+            	try {
+                	article = wiki.getPageText(page.getPage());
+                } catch(java.io.FileNotFoundException e) {
+                	log.warn(e.toString()+" "+page.getPage()); // page was created and renamed or deleted after that
+                	continue;
+                }
+            	//FileTools.dump(article, "dump", page.getPage());
+            }
+            String image = imageFinder.findImage(wiki, commons, article);
+            if(image!=null) {	
+            	//log.debug("found pattern");
+            	//String image = m.group("filename").trim();	                	
+            	log.debug("image found = "+image);
+            	
+            		if(page==null) {
+            			page = new RevisionWithImage(wiki, revId, Calendar.getInstance(), title, "", "",false,false, true, 0, id, image);
+            		} else {
+            			((RevisionWithImage)page).setImage(image);
+            		}            		
+            		pageInfoList.add(page);
+            		log.debug("adding page to list: "+title);
+            }
+		}
+		
+		sortPages(pageInfoList, pageListFetcher.revisionAvailable());
 		
 	
 		List<String> subset = new ArrayList<String>();
@@ -204,9 +151,14 @@ public class NewPagesWithImages extends NewPages {
 		for (int i = 0; i < count ; ++i)
 		{
 			
-			RevisionWithImage page = new RevisionWithImage(wiki,
-		    		wiki.getRevision(pageInfoList.get(i).getRevid()),
-		    		((RevisionWithImage)pageInfoList.get(i)).getImage()); 
+			RevisionWithImage page = (RevisionWithImage)pageInfoList.get(i);
+			if(page.getSize()==0) {
+				if(pageListFetcher.revisionAvailable()) {
+            		page = new RevisionWithImage(wiki, wiki.getRevision(page.getRevid()), page.getId(), page.getImage());
+            	} else {
+            		page = new RevisionWithImage(wiki, wiki.getFirstRevision(page.getPage()), page.getId(), page.getImage()); 
+            	}
+			}
 		    
 		    if (page != null && !usersToIgnore.contains(HTTPTools.removeEscape(page.getUser())))
 		    {		    	

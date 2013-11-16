@@ -23,9 +23,7 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -55,13 +53,19 @@ import org.wikipedia.nirvana.archive.ArchiveSimple;
 import org.wikipedia.nirvana.archive.ArchiveWithEnumeration;
 import org.wikipedia.nirvana.archive.ArchiveWithHeaders;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherOBOCatScan;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherOBOCatScan2;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherOneReqCatScan2;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
 
 /**
  * @author kin
  *
  */
 public class NewPages implements PortalModule{
-
+	public static final String PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE = "\\[\\[(?<article>[^\\]|]+)(|[^\\]]+)?\\]\\]";
+	public static final String PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM = "\\{\\{(?<template>.+)\\}\\}";
 	private static final String COMMENT_DELETED = "<span style=\"color:#966963\"> — '''Статья удалена'''</span>";
 	protected String language;
 	protected List<String> categories;
@@ -76,12 +80,14 @@ public class NewPages implements PortalModule{
     protected String middle;
     protected int maxItems;
     protected int hours;
+    protected String service;
     protected String delimeter;    
     protected int depth;
     protected int namespace;
     //protected boolean markEdits;
     protected boolean minor;
     protected boolean bot;
+    protected boolean fastMode;
     protected PortalParam.Deleted deletedFlag;
     protected int renamedFlag;
     
@@ -90,12 +96,18 @@ public class NewPages implements PortalModule{
     
     protected static org.apache.log4j.Logger log = null;	
     
-    protected boolean GET_FIRST_REV = false;
+    protected GetRevisionMethod getRevisionMethod = GetRevisionMethod.GET_REV;
+    
     protected boolean UPDATE_FROM_OLD = true;
-    protected int SKIP_LINES = 0;
-    protected int NS_POS = 0;
-    protected int TITLE_POS = 1;
-    protected int REVID_POS = 5;
+    
+    protected enum GetRevisionMethod {
+    	GET_FIRST_REV,
+    	GET_FIRST_REV_IF_NEED,
+    	GET_REV,
+    	GET_TOP_REV
+    	//,
+    	//GET_LAST_REV_BY_PAGE_NAME
+    }
     
     //protected boolean botsAllow = false;
     protected String botsAllowString = null;
@@ -130,8 +142,10 @@ public class NewPages implements PortalModule{
     	this.bot = param.bot;
     	this.deletedFlag = param.deletedFlag;
     	this.renamedFlag = param.renamedFlag;
+    	this.service = param.service;
+    	this.fastMode = param.fastMode;
     	
-    	log = org.apache.log4j.Logger.getLogger(NewPages.class.getName());
+    	log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
     	log.debug("Portal module created for portal subpage [["+this.pageName+"]]");
 	}
     
@@ -143,26 +157,7 @@ public class NewPages implements PortalModule{
 			return "";
 		}
     }
-	
-	public void getData(Wiki wiki) throws IOException, InterruptedException {
-		
-		log.info("Getting data for [[" + this.pageName+"]]");
-		pageLists = new HashMap<String,String>();
-		for(String category : this.categories)
-		{
-		    String text = NirvanaWiki.loadPageList(category, language, depth, hours);
-		    pageLists.put(category, text);
-		}
-		pageListsToIgnore = new HashMap<String,String>();
-		for(String category : this.categoriesToIgnore)
-		{
-		    String text = NirvanaWiki.loadPageList(category, language, depth, hours);
-		    pageListsToIgnore.put(category, text);
-		}
-		
-		return ;
-	}
-	
+
 	public static class Data {		
 		String newText;
 		String archiveText;
@@ -172,138 +167,32 @@ public class NewPages implements PortalModule{
 		int deletedCount;
 	}
 	
-
-	public HashSet<String> getIgnorePages(NirvanaWiki wiki, HashSet<String> ignorePages) throws IOException {
-		HashSet<String> ignore = ignorePages;
-		if(ignore==null)
-			ignore = new HashSet<String>();
-		for(String category : categoriesToIgnore) {		
-			//log.info("Processing data of " + category);
-	        String line;
-	        String pageList = this.pageListsToIgnore.get(category);
-	        BufferedReader br = new BufferedReader(new StringReader(pageList));
-        	for(int j=0;j<SKIP_LINES;j++) br.readLine();
-	        while ((line = br.readLine()) != null)
-	        {
-	            String[] groups = line.split("\t");
-	            if (groups[NS_POS].equals(String.valueOf(this.namespace)))
-	            {
-	                String title = groups[TITLE_POS].replace('_', ' ');
-	                ignore.add(title);
-	            } else if (groups[NS_POS].equals(String.valueOf(Wiki.USER_NAMESPACE)) &&
-	            		namespace!= Wiki.USER_NAMESPACE) {
-	            	long revId=0;
-                	if(REVID_POS>0) {
-		                try {
-		                	revId = Long.parseLong(groups[REVID_POS]);
-		                } catch(NumberFormatException e) {
-		                	log.error(e.toString());
-		                	continue;
-		                }
-                	}
-                	Revision r = wiki.getRevision(revId);
-                	String title = r.getPage();
-                	ignore.add(title);
-	            }
-	        }		    
-		}
-		return ignore;
-	}
 	
+	/*
 	public void getNewPages(NirvanaWiki wiki, 
 			ArrayList<Revision> pageInfoList,
-			HashSet<String> pages,
-			HashSet<String> ignore) throws IOException {
-		for(String category : categories) {		
-			log.info("Processing data of " + category);
-			String line;
-			String pageList = pageLists.get(category);
-			//FileTools.dump(pageList, "dump", "pageList_"+category+".txt");
-			StringReader sr = new StringReader(pageList);
-			BufferedReader b = new BufferedReader(sr);
-			for(int j=0;j<SKIP_LINES;j++) b.readLine();
-	        while ((line = b.readLine()) != null)
-	        {
-	            String[] groups = line.split("\t");
-	            // то что мы ищем совпадает с тем, что нашли
-	            if (groups[NS_POS].equals(String.valueOf(namespace)))
-	            {
-	                String title = groups[TITLE_POS].replace('_', ' ');
-	                if (ignore.contains(title))
-	                {
-	                    continue;
-	                }
-	                if (namespace != 0)
-	                {	                	
-	                    title = wiki.namespaceIdentifier(namespace) + ":" + title;	                	
-	                	log.debug("Namespace is not 0");
-	                }	                
-	                
-	                if (!pages.contains(title))
-	                {
-	                	long revId=0;
-	                	if(REVID_POS>0) {
-			                try {
-			                	revId = Long.parseLong(groups[REVID_POS]);
-			                } catch(NumberFormatException e) {
-			                	log.error(e.toString());
-			                	continue;
-			                }
-	                	}
-	                	Revision page = wiki.new Revision(revId, Calendar.getInstance(), title, "", "", false, false, true, 0);
-	                    pages.add(title);
-	                    log.debug("adding page to list:"+title);
-	                    pageInfoList.add(page);
-	                }
-	            } else if(groups[NS_POS].equals(String.valueOf(Wiki.USER_NAMESPACE)) &&
-	            		namespace!= Wiki.USER_NAMESPACE) {
-	            	// Здесь мы обрабатываем случаи, когда статьи сначала проходят через личное пространство
-	            	// а потом переименовываются в основное пространство
-	            	//String title = groups[TITLE_POS].replace('_', ' ');
-	            	long revId=0;
-	            	if(REVID_POS>0) {
-		                try {
-		                	revId = Long.parseLong(groups[REVID_POS]);
-		                } catch(NumberFormatException e) {
-		                	log.error(e.toString());
-		                	continue;
-		                }
-                	}
-	            	Revision r = wiki.getRevision(revId);
-	            	String title = r.getPage();
-	                if (ignore.contains(title))
-	                {
-	                    continue;
-	                }	                
-	                
-	                /*if(namespace!= Wiki.USER_NAMESPACE && userNamespace(title))
-	                	continue;*/
-	                
-	                // Случай когда мы ищем категории, шаблоны и т.д. чтобы отсеять обычные статьи
-	                int n = wiki.namespace(title);
-	                if(n!=namespace) {
-	                	continue;
-	                }
-	                /*
-	                if (namespace != 0 && !title.startsWith(wiki.namespaceIdentifier(namespace)))
-	                {	
-	                	log.debug("Namespace is other than we seek");
-	                	continue;	                	
-	                } //else if (namespace==0 && wiki.n)
-	                */
-	                
-	                if (!pages.contains(title))
-	                {   
-	                	pages.add(title);
-	                    log.debug("adding page to list:"+title);
-	                    pageInfoList.add(r);
-	                }
-	            }
-	        }//while		    
-		}//for
+			HashSet<String> pages) throws IOException {
+		PageListFetcher pageListFetcher = createPageListFetcher();
+		
+	}*/
+	
+	PageListFetcher createPageListFetcher() {
+		//return new NewPagesFetcherOBOCatScan(categories, categoriesToIgnore, language, depth, hours, namespace);
+		if(service.equalsIgnoreCase(NirvanaBot.SERVICE_CATSCAN)) {
+			return new NewPagesFetcherOBOCatScan(categories, categoriesToIgnore, language, depth, hours, namespace);
+		} else if (service.equalsIgnoreCase(NirvanaBot.SERVICE_CATSCAN2)) {
+			if (fastMode) {
+				return new NewPagesFetcherOneReqCatScan2(categories, categoriesToIgnore, language, depth, hours, namespace);
+			} else {
+				return new NewPagesFetcherOBOCatScan2(categories, categoriesToIgnore, language, depth, hours, namespace);
+			}
+		}
+		throw new Error("Unsupported service name");
+		//*/		
+	//return new NewPagesFetcherOBOCatScan2(categories, categoriesToIgnore, language, depth, hours, namespace);
 	}
 	
-	public void sortPages(ArrayList<Revision> pageInfoList) {
+	public void sortPagesByRevision(ArrayList<Revision> pageInfoList) {
 		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
 			@Override
@@ -312,6 +201,25 @@ public class NewPages implements PortalModule{
 			}		
 			
 		});
+	}
+
+	public void sortPagesById(ArrayList<Revision> pageInfoList) {
+		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
+
+			@Override
+			public int compare(Revision r1, Revision r2) {				
+				return (int)(((RevisionWithId)r2).getId() - ((RevisionWithId)r1).getId());
+			}		
+			
+		});
+	}
+	
+	public void sortPages(ArrayList<Revision> pageInfoList, boolean byRevision) {
+		if(byRevision) {
+			sortPagesByRevision(pageInfoList);
+		} else {
+			sortPagesById(pageInfoList);
+		}
 	}
 	
 	protected void addNewItem(NirvanaWiki wiki, String title, boolean deleted, String time, String user, 
@@ -342,19 +250,24 @@ public class NewPages implements PortalModule{
         }
 	}
 	
-	public Data processData(NirvanaWiki wiki, String text) throws IOException {
-		log.info("Processing data for [[" + this.pageName+"]]");
-		HashSet<String> ignore = getIgnorePages(wiki, null);
+	public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException {
+		log.info("Get data for [[" + this.pageName+"]]");
+		
 		//Revision r = wiki.getFirstRevision("Кай Юлий Цезарь");
-		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
-		HashSet<String> pages = new HashSet<String>();
+		//HashSet<String> pages = new HashSet<String>();
 		/*for (String category : categories) {
 			log.info("Processing data of " + category);
 		}*/		
-		getNewPages(wiki,pageInfoList,pages,ignore);
+		PageListFetcher pageListFetcher = createPageListFetcher();
+		log.info("Using pagelist fetcher: "+pageListFetcher);
+		if (pageListFetcher.revisionAvailable()) {
+			getRevisionMethod = GetRevisionMethod.GET_REV;
+		} else {
+			getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
+		}
+		ArrayList<Revision> pageInfoList = pageListFetcher.getNewPages(wiki);
 		
-		sortPages(pageInfoList);
-		
+		sortPages(pageInfoList, pageListFetcher.revisionAvailable());		
 	
 		List<String> subset = new ArrayList<String>();
 		List<String> includedPages = new ArrayList<String>();
@@ -363,10 +276,26 @@ public class NewPages implements PortalModule{
 		for (int i = 0; i < count ; ++i)
 		{
 		    Revision page = null;
-		    if(GET_FIRST_REV)
-		    	page = wiki.getFirstRevision(pageInfoList.get(i).getPage()); 
-		    else
-		    	page = wiki.getRevision(pageInfoList.get(i).getRevid()); 
+		    switch(getRevisionMethod) {
+		    	case GET_FIRST_REV:
+		    		page = wiki.getFirstRevision(pageInfoList.get(i).getPage());
+		    		break;
+		    	case GET_REV:
+		    		page = wiki.getRevision(pageInfoList.get(i).getRevid());
+		    		break;
+		    	case GET_TOP_REV:
+		    		page = wiki.getTopRevision(pageInfoList.get(i).getPage());
+		    		break;
+		    	case GET_FIRST_REV_IF_NEED:
+		    		if(usersToIgnore.size()==0) {
+		    			page = pageInfoList.get(i);
+		    		} else {
+		    			page = wiki.getFirstRevision(pageInfoList.get(i).getPage());
+		    		}
+		    		break;
+		    	default:
+		    		throw new Error("not supported mode");
+		    }
 		    
 		    if (page != null && !usersToIgnore.contains(HTTPTools.removeEscape(page.getUser())))
 		    {
@@ -380,11 +309,8 @@ public class NewPages implements PortalModule{
 		    	log.debug("check page, title old: "+title_old+", title new: "+title_new);
 		    	boolean deleted = false;
 		    	if(this.deletedFlag != PortalParam.Deleted.DONT_TOUCH) {		    		 
-	                try {
-	                	@SuppressWarnings("unused")
-						String article = wiki.getPageText(title_new);
-	                } catch(java.io.FileNotFoundException e) {
-	                	log.warn(e.toString()+" "+title_new); // page was created and renamed or deleted after that
+	                if(!wiki.exists(title_new)) {	                
+	                	log.warn("page " +title_new+" deleted"); // page was created and renamed or deleted after that
 	                	deleted = true;
 	                	if(this.deletedFlag==PortalParam.Deleted.REMOVE) 
 	                		continue;
@@ -525,9 +451,7 @@ public class NewPages implements PortalModule{
 		        		
 		        		if(this.deletedFlag==PortalParam.Deleted.REMOVE || this.deletedFlag==PortalParam.Deleted.MARK) {
 	        				String title = pageTitleEscapedToNormal(getNewPagesItemArticle(oldItems[i]));
-	        				try {
-	        					wiki.getPageText(title);
-	        				} catch(java.io.FileNotFoundException e) {
+	        				if(!wiki.exists(title)) {
 	    	                	//log.warn(e.toString()+" "+title); // page was created and renamed or deleted after that
 	    	                	if(this.deletedFlag==PortalParam.Deleted.REMOVE) {
 	    	                		log.debug("REMOVE old line: \t"+oldItems[i]);
@@ -648,8 +572,8 @@ public class NewPages implements PortalModule{
 			return false;
 		}
 		//this.botsAllowString = NirvanaWiki.getAllowBotsString(text);
-		getData(wiki);		
-		Data d = processData(wiki, text);
+		//getData(wiki);		
+		Data d = getData(wiki, text);
 		reportData.pagesArchived = d.archiveCount;
 		reportData.newPagesFound = d.newPagesCount;
 		
@@ -775,7 +699,7 @@ public class NewPages implements PortalModule{
 	public static Calendar getNewPagesItemDate(NirvanaWiki wiki, String item) {
 		Calendar c = null;
 		//NewPagesItem itemData = null;
-		Pattern p = Pattern.compile("\\[\\[(?<article>.+)\\]\\]");
+		Pattern p = Pattern.compile(PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
 		Matcher m = p.matcher(item);
 		boolean foundBrackets = false;
 		while(m.find()) {
@@ -800,7 +724,7 @@ public class NewPages implements PortalModule{
 		}
 		if(foundBrackets) return null;
 		// если не нашли по [[]] скобочкам, продолжаем искать по {{}}
-		p = Pattern.compile("\\{\\{(?<template>.+)\\}\\}");
+		p = Pattern.compile(PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM);
 		m = p.matcher(item);
 		if(m.find()) {
 			String templateString = m.group("template");			
@@ -844,16 +768,19 @@ public class NewPages implements PortalModule{
 
 	// TODO протестировать эту функцию на другие пространства имён!!!
 	public static String getNewPagesItemArticle(String item) {
-		Pattern p = Pattern.compile("\\[\\[(?<article>.+)\\]\\]");
+		Pattern p = Pattern.compile(PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
 		Matcher m = p.matcher(item);
 		while(m.find()) {
 			String article = m.group("article");
 			if(article.startsWith(":"))
 				article = article.substring(1); // special case when title starts from : this : is not included in title
+			if(article.contains("Категория:Википедия:Списки новых статей по темам")) {				
+				continue;			
+			}
 			if(!userNamespace(article))
 				return article;
 		}
-		p = Pattern.compile("\\{\\{(?<template>.+)\\}\\}");
+		p = Pattern.compile(PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM);
 		m = p.matcher(item);
 		if(m.find()) {
 			String templateString = m.group("template");			

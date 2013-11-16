@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -40,18 +41,25 @@ public class HTTPTools {
     private static final int CONNECTION_READ_TIMEOUT_MSEC = 260000; // 260 seconds
     
     public static String fetch(String url) throws IOException {
-    	return fetch(url,false);
+    	return fetch(url, false);
     }
     
-	public static String fetch(String url, boolean removeEscape) throws IOException
+    public static String fetch(String url, boolean removeEscape) throws IOException {
+    	return fetch(url, false);
+    }
+    
+	public static String fetch(String url, boolean removeEscape, boolean customUserAgent) throws IOException
     {
 		if(log==null) log = org.apache.log4j.Logger.getLogger(HTTPTools.class.getName());
 		log.debug("fetching url="+url);
 		log.trace("remove escape="+removeEscape);
         // connect
-        URLConnection connection = new URL(url).openConnection();
+        HttpURLConnection connection = (HttpURLConnection)new URL(url).openConnection();
         connection.setConnectTimeout(CONNECTION_CONNECT_TIMEOUT_MSEC);
         connection.setReadTimeout(CONNECTION_READ_TIMEOUT_MSEC);
+        if(customUserAgent) {
+        	connection.setRequestProperty("User-Agent", "NirvanaBot");
+        }
         //setCookies(connection, cookies);
         connection.connect();
         BufferedReader in = new BufferedReader(new InputStreamReader(

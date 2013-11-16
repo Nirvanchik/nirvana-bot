@@ -1,5 +1,5 @@
 /**
- *  @(#)NirvanaWiki.java 0.04 19/09/2013
+ *  @(#)NirvanaWiki.java 0.06 16/11/2013
  *  Copyright © 2011 - 2013 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -27,12 +27,11 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,13 +43,13 @@ import org.wikipedia.Wiki;
 
 /**
  * @author KIN 
- * based on Wiki.java version 0.28, revision 149  
+ * based on Wiki.java version 0.28, revision 166  
  */
 public class NirvanaWiki extends Wiki {
 	
     private static final long serialVersionUID = -8745212681497644127L;
 
-	private static org.apache.log4j.Logger log = null;	
+	private static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(NirvanaWiki.class.getName());	
 	
 	private boolean dumpMode = false;
 	private String dumpFolder = "dump";
@@ -59,7 +58,6 @@ public class NirvanaWiki extends Wiki {
 	 * 
 	 */
 	public NirvanaWiki() {
-		log = org.apache.log4j.Logger.getLogger(Wiki.class.getName());
 	}
 
 	/**
@@ -67,7 +65,6 @@ public class NirvanaWiki extends Wiki {
 	 */
 	public NirvanaWiki(String domain) {
 		super(domain);
-		log = org.apache.log4j.Logger.getLogger(Wiki.class.getName());
 	}
 
 	/**
@@ -76,7 +73,6 @@ public class NirvanaWiki extends Wiki {
 	 */
 	public NirvanaWiki(String domain, String scriptPath) {
 		super(domain, scriptPath);
-		log = org.apache.log4j.Logger.getLogger(Wiki.class.getName());
 	}
 	
 	public void setDumpMode(String folder) {
@@ -95,7 +91,7 @@ public class NirvanaWiki extends Wiki {
      *  @param level the level to log at
      *  @since 0.06
      */
-    protected void log(Level level, String text, String method)
+    protected void log(Level level, String method, String text)
     {
         StringBuilder sb = new StringBuilder(100);
         if(logDomain) {
@@ -127,7 +123,7 @@ public class NirvanaWiki extends Wiki {
      *  @param level the level to log at
      *  @since 0.06
      */
-    protected void log(Level level, String text, String method, Exception e)
+    protected void log(Level level, String method, String text, Exception e)
     {
         StringBuilder sb = new StringBuilder(100);
         if(logDomain) {
@@ -174,59 +170,6 @@ public class NirvanaWiki extends Wiki {
     	//log.setLevel(org.apache.log4j.Level.OFF);
     	log.setLevel(level);
     }
-
-    public static String loadPageList(String category, String language, int depth, int hours) throws IOException, InterruptedException
-    {
-		log.debug("Downloading data for category " + category);
-		String url_path = "/~daniel/WikiSense/CategoryIntersect.php";
-        String url_query = 
-        		String.format("wikilang=%1$s&wikifam=.wikipedia.org&basecat=%2$s&basedeep=%3$d&mode=rc&hours=%4$d&onlynew=on&go=Сканировать&format=csv&userlang=ru",
-                language,
-                category,
-                depth,
-                hours);
-        URI uri=null;
-		try {
-			uri = new URI("http","toolserver.org",url_path,url_query,null);
-		} catch (URISyntaxException e) {			
-			log.error(e.toString());
-		}
-		String page = null;
-		try {
-			page = HTTPTools.fetch(uri.toASCIIString(),true);
-		} catch (java.net.SocketTimeoutException e) {
-			log.warn(e.toString()+", retry again ...");
-			Thread.sleep(10000);
-			page = HTTPTools.fetch(uri.toASCIIString(),true);
-		}
-		return page;
-    }
-    
-    public static String loadPageList(String category, String language, int depth) throws IOException, InterruptedException
-    {
-        log.debug("Downloading data for " + category);
-        String url_path = "/catscan2/catscan2.php";
-        String url_query = 
-        		String.format("language=%1$s&depth=%3$d&categories=%2$s&&sortby=title&format=tsv&doit=submit",
-                language,
-                category,
-                depth);
-        URI uri=null;
-		try {
-			uri = new URI("http","tools.wmflabs.org",url_path,url_query,null);
-		} catch (URISyntaxException e) {			
-			log.error(e.toString());
-		}
-		String page = null;
-		try {
-			page = HTTPTools.fetch(uri.toASCIIString(),true);
-		} catch (java.net.SocketTimeoutException e) {
-			log.warn(e.toString()+", retry again ...");
-			Thread.sleep(10000);
-			page = HTTPTools.fetch(uri.toASCIIString(),true);
-		}
-		return page;        
-    }
     
     public synchronized void edit(String title, String text, String summary, boolean minor, boolean bot,
             int section) throws IOException, LoginException {
@@ -264,14 +207,6 @@ public class NirvanaWiki extends Wiki {
     	return false;
     }
 
-    
-    /*
-    public void editIfNotDuplicate(String title, String text, String summary) throws IOException, LoginException
-    {
-    	this.edit(title, text, summary, minor, bot, -2);
-    }*/
-
-    
     public void prepend(String title, String stuff, boolean minor, boolean bot) throws IOException, LoginException
     {
         StringBuilder text = new StringBuilder(100000);
@@ -388,7 +323,7 @@ public class NirvanaWiki extends Wiki {
 	    // go for it
 	    String url = base + URLEncoder.encode(title, "UTF-8") + "&action=raw";
 	    String [] temp = fetchLines(url, "getPageLines");
-	    log(Level.INFO, "Successfully retrieved text of " + title, "getPageLines");
+	    log(Level.INFO, "getPageLines", "Successfully retrieved text of " + title);
 	        return decode(temp);
 	}
  
@@ -423,7 +358,7 @@ public class NirvanaWiki extends Wiki {
 		        synchronized(this)
 		        {
 		            int time = connection.getHeaderFieldInt("Retry-After", 10);
-		            log(Level.WARNING, "Current database lag " + lag + " s exceeds " + maxlag + " s, waiting " + time + " s.", caller);
+		            log(Level.WARNING, caller, "Current database lag " + lag + " s exceeds " + maxlag + " s, waiting " + time + " s.");
 		            Thread.sleep(time * 1000);
 		        }
 		    }
@@ -459,8 +394,11 @@ public class NirvanaWiki extends Wiki {
 	 */
 	public Revision getFirstRevision(String title, boolean resolveRedirect) throws IOException
 	{
+		boolean was = isResolvingRedirects();
 	    this.setResolveRedirects(resolveRedirect);
-	    return super.getFirstRevision(title);
+	    this.setResolveRedirects(resolveRedirect);
+	    Revision r = super.getFirstRevision(title);
+	    return r;
 	}
 	
 	/**
@@ -472,8 +410,42 @@ public class NirvanaWiki extends Wiki {
 	 */
 	public Revision getTopRevisionWithNewTitle(String title, boolean resolveRedirect) throws IOException
 	{
+		boolean was = isResolvingRedirects();
 	    this.setResolveRedirects(resolveRedirect);
-	    return super.getTopRevision(title);
+	    Revision r = super.getTopRevision(title);
+	    setResolveRedirects(was);
+	    return r;
 	}
-	    
+	
+	private class ContribsIterator implements Iterator<Revision[]> {
+    	private boolean endReached = false;
+    	private String user;
+
+		@Override
+        public boolean hasNext() {
+	        return !endReached;
+        }
+
+		@Override
+        public Revision[] next() {
+	        // TODO Auto-generated method stub
+	        return null;
+        }
+
+		@Override
+        public void remove() {
+	        //throw new OperationNotSupportedException();	        
+        }
+		
+		public ContribsIterator(String user) {
+			this.user = user;
+		}
+    	
+    }
+
+    public boolean exists(String title) throws IOException
+    {
+        return exists(new String[] { title })[0];
+    }
+
 }

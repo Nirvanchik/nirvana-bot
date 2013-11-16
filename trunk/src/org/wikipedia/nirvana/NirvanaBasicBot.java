@@ -1,5 +1,5 @@
 /**
- *  @(#)NirvanaBasicBot.java 19/09/2013
+ *  @(#)NirvanaBasicBot.java 16/11/2013
  *  Copyright © 2012-2013 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -83,7 +83,7 @@ public class NirvanaBasicBot {
 		
 	}
 	public void showInfo() {
-		System.out.print("NirvanaBasicBot v1.1 Copyright (C) 2012-2013 Dmitry Trofimovich (KIN)\n\n");
+		System.out.print("NirvanaBasicBot v1.2 Copyright (C) 2012-2013 Dmitry Trofimovich (KIN)\n\n");
 		
 	}
 	public void showLicense() {		
@@ -160,11 +160,40 @@ public class NirvanaBasicBot {
 		
 		String login = properties.getProperty("wiki-login");
 		String pw = properties.getProperty("wiki-password");
-		if(login==null || pw==null) {
-			System.out.println("ABORT: properties not found");
-			log.fatal("login (wiki-login) or password(wiki-password) is not specified in settings");
-			return;
+		if(login==null || pw==null || login.isEmpty() || pw.isEmpty()) {
+			String accountFile = properties.getProperty("wiki-account-file");
+			if(accountFile==null || accountFile.isEmpty()) {
+				System.out.println("ABORT: login info not found in properties");
+				log.fatal("wiki-login or wiki-password or wiki-account-file is not specified in settings");
+				return;
+			}
+			Properties loginProp = new Properties();
+			try {
+				InputStream in = new FileInputStream(accountFile);
+				if(accountFile.endsWith(".xml")) {
+					loginProp.loadFromXML(in);			
+				} else {
+					loginProp.load(in);		
+				}
+				in.close();
+			} catch (FileNotFoundException e) {
+				System.out.println("ABORT: file "+accountFile+" not found");
+				log.fatal("ABORT: file "+accountFile+" not found");
+				return;
+			} catch (IOException e) {	
+				System.out.println("ABORT: failed to read "+accountFile);
+				log.fatal("failed to read "+accountFile+" : "+e);
+				return;
+			}
+			login = loginProp.getProperty("wiki-login");
+			pw = properties.getProperty("wiki-password");
+			if(login==null || pw==null || login.isEmpty() || pw.isEmpty()) {
+				System.out.println("ABORT: login info not found in file "+accountFile);
+				log.fatal("wiki-login or wiki-password or wiki-account-file is not found in file "+accountFile);
+				return;
+			}
 		}
+		
 		log.info("login="+login+",password=(not shown)");
 		
 		LANGUAGE = properties.getProperty("wiki-lang",LANGUAGE);
