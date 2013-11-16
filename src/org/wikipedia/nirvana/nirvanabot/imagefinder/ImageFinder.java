@@ -21,7 +21,7 @@
  * Recommended code page for this file is CP1251 (also called Windows-1251).
  * */
 
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.nirvanabot.imagefinder;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

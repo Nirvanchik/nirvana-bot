@@ -68,6 +68,23 @@ public class FileTools {
 		or.close();
 	}
 	
+	public static void append(String text, String file) throws IOException {
+		append(text,file,UTF8);
+	}
+	
+	public static void append(String text, String file, String encoding) throws IOException {
+		FileOutputStream out = new FileOutputStream(new File(file),true);
+		OutputStreamWriter or = new OutputStreamWriter(out, encoding);
+		or.write(text);
+		or.close();
+	}
+	
+	public static void appendOld(String text, String file) throws IOException {
+		FileOutputStream out = new FileOutputStream(new File(file),true);
+		out.write(text.getBytes());
+		out.close();
+	}
+	
 	public static void writeFile(String text, String file) throws IOException {
 		writeFile(text, file, UTF8);
 	}

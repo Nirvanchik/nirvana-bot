@@ -1,0 +1,37 @@
+NirvanaBot 
+Copyright 2011-2012 Dmitry Trofimovich
+
+This product includes Apache Commons Lang, Apache Commons Collections and Apache log4j 
+software developed by The Apache Software Foundation (http://www.apache.org/) and 
+available under the Apache License 2.0.
+
+This product includes Jackson JSON processor software (http://jackson.codehaus.org/) 
+developed by  Jackson Java JSON Processor Members (Tatu Saloranta, Mike Eastey, 
+Ryan Heaton, Paul Brown) and available under the the Apache License 2.0.
+
+This product contains modified version of Wiki.java framework developed by MER-C 
+and contributors and available under the terms of the GNU General Public License 
+(either version 3 of the License, or any later version). The original software 
+is available from http://code.google.com/p/wiki-java/
+
+-----------------------------------------------------------
+Apache Commons Lang
+Copyright 2001-2011 The Apache Software Foundation
+
+This product includes software developed by
+The Apache Software Foundation (http://www.apache.org/).
+
+This product includes software from the Spring Framework,
+under the Apache License 2.0 (see: StringUtils.containsWhitespace())
+-----------------------------------------------------------
+Apache log4j
+Copyright 2007 The Apache Software Foundation
+
+This product includes software developed by
+The Apache Software Foundation (http://www.apache.org/).
+--------------------------------------------------------------
+Apache Commons Collections
+Copyright 2001-2008 The Apache Software Foundation
+
+This product includes software developed by
+The Apache Software Foundation (http://www.apache.org/).

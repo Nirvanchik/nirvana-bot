@@ -5,6 +5,7 @@
 <entry key="log4j-settings">config/log4j-log-stat-debug-eclipse.cfg</entry>
 <entry key="wiki-login">NirvanaBot</entry>
 <entry key="wiki-password"></entry>
+<entry key="wiki-account-file">loginNirvanaBot.xml</entry>
 <entry key="wiki-lang">ru</entry>
 <entry key="stat-settings-template">Участник:NirvanaBot/test/Параметры статистики</entry>
 <entry key="update-comment">Обновление статистики</entry>

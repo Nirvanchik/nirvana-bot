@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
+import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
@@ -137,28 +138,46 @@ public class UserStatBot extends NirvanaBasicBot {
 			log.info("analyze user: "+user);
 			List<String> contribs = getUserContribs(user);
 			log.info("user articles: "+String.valueOf(contribs.size()));
+			
+			log.info("creating database");
+			UserDisambigDatabase db = new UserDisambigDatabase(user, true, UserDisambigDatabase.DEFAULT_CACHE_FOLDER);
+			
 			int counter = 0;
 			c1000 = 0;
 			int errors = 0;
 			for(String article:contribs) {
 				log.debug("check article: "+article);
-				try {
-				if(isDisambig(article)) {
-					log.debug("disambig found: "+article);
-					counter++;
-				}
-				} catch (IOException e) {
-					log.error(e + " (error ignored)");
-					errors++;
-					if(errors>=5) {
-						throw e;
-					}
+				UserArticleInfo infoFromDb = db.get(article);
+				boolean disambig;
+				if(infoFromDb == null) {
+    				try {    					
+    					disambig = isDisambig(article);
+        				if(disambig) {
+        					log.debug("disambig found: "+article);
+        					counter++;    					
+        				}
+        				int namespace = wiki.namespace(article);
+        				Wiki.Revision last = wiki.getTopRevision(article);        				
+        				db.add(article, disambig, namespace, last.getTimestamp().getTimeInMillis());
+    				} catch (IOException e) {
+    					log.error(e + " (error ignored)");
+    					errors++;
+    					if(errors>=5) {
+    						throw e;
+    					}
+    				}
+				} else {					
+					if(infoFromDb.isDisambig) {
+    					log.debug("disambig found in db: "+article);
+    					counter++;    					
+    				} 
 				}
 				c1000++;
 				if(c1000%1000==0) {
 					log.info(String.valueOf(c1000)+" articles checked");
 				}
 			}
+			db.save();
 			log.info("user disambigs: "+String.valueOf(counter));
 			data.put(user, counter);
 		}
@@ -179,6 +198,11 @@ public class UserStatBot extends NirvanaBasicBot {
 		
 	}
 	
+	private List<String> getUserContribsV2(String user) throws IOException, InterruptedException {
+		ArrayList<String> contribs = new ArrayList<String>(5000);
+		Wiki.Revision [] revs = wiki.getUser(user).contribs(0);
+		return contribs;
+	}
 	private List<String> getUserContribs(String user) throws IOException, InterruptedException {
 		ArrayList<String> contribs = new ArrayList<String>(5000);
 		String url_query = String.format("name=%1$s&lang=ru&wiki=wikipedia&namespace=0&redirects=noredirects&getall=1",user);

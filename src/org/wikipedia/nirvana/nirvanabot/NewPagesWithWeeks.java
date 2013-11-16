@@ -23,14 +23,11 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +41,7 @@ import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
 
 /**
  * @author kin
@@ -53,90 +51,22 @@ public class NewPagesWithWeeks extends NewPages {
 
 	public static final int HOURS = 192;
 	/**
-	 * @param lang
-	 * @param categories
-	 * @param categoriesToIgnore
-	 * @param usersToIgnore
-	 * @param page
-	 * @param archive
-	 * @param ns
-	 * @param depth
-	 * @param hours
-	 * @param maxItems
-	 * @param format
-	 * @param delimeter
-	 * @param header
-	 * @param footer
-	 * @param minor
-	 * @param bot
+	 * @param param	 
 	 */
 	public NewPagesWithWeeks(PortalParam param) {
-		super(param);/*
-		if(this.archiveSettings!=null) {
-			this.archiveSettings = null;
-		}		*/
+		super(param);
 	}
 	
-	public void getNewPages(NirvanaWiki wiki, 
-			ArrayList<Revision> pageInfoList,
-			HashSet<String> pages,
-			HashSet<String> ignore) throws IOException {
-		for(String category : categories) {		
-			log.info("Processing data of " + category);
-			String line;
-			String pageList = pageLists.get(category);
-			StringReader r = new StringReader(pageList);
-			BufferedReader b = new BufferedReader(r);
-	        while ((line = b.readLine()) != null)
-	        {
-	            String[] groups = line.split("\t");
-	            if (groups[0].equals(String.valueOf(namespace)))
-	            {
-	                String title = groups[1].replace('_', ' ');
-	                if (ignore.contains(title))
-	                {
-	                    continue;
-	                }
-	                if (namespace != 0)
-	                {	                	
-	                    title = wiki.namespaceIdentifier(namespace) + ":" + title;	                	
-	                	log.debug("Namespace is not 0");
-	                }	                
-	                
-	                //Calendar.getInstance().
-	                
-	                if (!pages.contains(title))
-	                {
-	                	long revId;
-		                try {
-		                	revId = Long.parseLong(groups[5]);
-		                } catch(NumberFormatException e) {
-		                	log.error(e.toString());
-		                	continue;
-		                }
-		                Revision page = wiki.getRevision(revId); 
-	                	if(page!=null) {
-	                		pages.add(title);
-	                		pageInfoList.add(page);
-	                	} else {
-	                		log.warn("revision not found: " + revId+ ", title: "+title);
-	                	}
-	                }
-	            }
-	        }//while		    
-		}//for
-	}
-	
-	public Map<String,Data> processData(NirvanaWiki wiki) throws IOException {
+		
+	public Map<String,Data> getData(NirvanaWiki wiki) throws IOException, InterruptedException {
 		log.info("Processing data for [[" + this.pageName+"]]");
-		HashSet<String> ignore = getIgnorePages(wiki,null);
-		//Revision r = wiki.getFirstRevision("Кай Юлий Цезарь");
-		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
-		HashSet<String> pages = new HashSet<String>();
+		
+		
 		/*for (String category : categories) {
 			log.info("Processing data of " + category);
 		}*/		
-		getNewPages(wiki,pageInfoList,pages,ignore);
+		PageListFetcher pageListFetcher = createPageListFetcher();
+		ArrayList<Revision> pageInfoList = pageListFetcher.getNewPages(wiki);
 		
 		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 			@Override
@@ -225,8 +155,8 @@ public class NewPagesWithWeeks extends NewPages {
 	@Override
 	public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment) throws IOException, LoginException, InterruptedException {
 		boolean updated = false;
-		getData(wiki);
-		Map<String,Data> d = processData(wiki);
+		
+		Map<String,Data> d = getData(wiki);
 		reportData.pagesArchived = 0;
 		reportData.newPagesFound = 0;
 		
@@ -247,40 +177,5 @@ public class NewPagesWithWeeks extends NewPages {
 		//reportData.newPagesFound = count;	    
 		return updated;
 	}
-	/*
-	@Override
-	public boolean dump(NirvanaWiki wiki, ReportItem reportData, String folder,String file) throws IOException, LoginException, InterruptedException {
-		boolean updated = false;
-		String text = getData(wiki);
-		String fileNew;
-		String fileOld;
-		fileOld = file+".old.txt";
-		
-		if(fileOld!=null) {
-			FileTools.dump(text, folder, fileOld);
-		}
-		
-		Map<String,Data> d = processData(wiki);
-		reportData.pagesArchived = 0;
-		reportData.newPagesFound = 0;
-		
-		Set<Entry<String,Data>> set = d.entrySet();
-		Iterator<Entry<String,Data>> it = set.iterator();
-		
-		while(it.hasNext()) {
-			Entry<String,Data> next = it.next();
-			String str = "+"+String.valueOf(next.getValue().newPagesCount)+" новых";
-			log.info("Dumping [[" + next.getKey() +"]] " + str);		
-			fileOld = next.getKey()+".old.txt";
-			FileTools.dump(next.getValue().archiveText, folder, fileOld);
-			fileNew = next.getKey()+".new.txt";
-			FileTools.dump(next.getValue().newText, folder, fileNew);
-			updated = true;
-			reportData.updated = updated;
-			reportData.newPagesFound += next.getValue().newPagesCount;
-		}	
-		
-		return updated;
-	}
-*/
+	
 }

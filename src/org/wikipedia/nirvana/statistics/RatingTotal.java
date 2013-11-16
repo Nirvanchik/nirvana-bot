@@ -32,7 +32,6 @@ import javax.management.BadAttributeValueExpException;
 
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
-import org.wikipedia.nirvana.statistics.Statistics.StatItem;
 
 /**
  * @author kin

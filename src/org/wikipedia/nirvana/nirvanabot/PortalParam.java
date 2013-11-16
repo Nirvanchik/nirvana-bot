@@ -37,6 +37,7 @@ public class PortalParam {
 	public List<String> categoriesToIgnore;
 	public List<String> usersToIgnore;
 	public String page;
+	public String service;
 	public String archive;
 	public ArchiveSettings archSettings;
 	public int ns;
@@ -50,6 +51,7 @@ public class PortalParam {
 	public String middle;
 	public boolean minor;
 	public boolean bot;
+	public boolean fastMode;
 	Deleted deletedFlag;
 	public int renamedFlag;
 	public String imageSearchTags;

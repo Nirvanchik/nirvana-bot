@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -679,10 +678,12 @@ public class StatisticsBot extends NirvanaBasicBot {
 	
 	ArchiveItem parseLine(String line) throws IOException {
 		ArchiveItem item = null;
-		Pattern p = Pattern.compile("\\[\\[(?<article>.+)\\]\\]");
+		Pattern p = Pattern.compile(NewPages.PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
 		Matcher m = p.matcher(line);
 		while(m.find()) {
 			String article = m.group("article");
+			if(article.contains("Категория:Википедия:Списки новых статей по темам")) 				
+				continue;	
 			if(	NewPages.userNamespace(article) || NewPages.categoryNamespace(article))
 				continue;
 			Revision r = null;
@@ -706,7 +707,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 				
 			}
 		}
-		p = Pattern.compile("\\{\\{(?<template>.+)\\}\\}");
+		p = Pattern.compile(NewPages.PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM);
 		m = p.matcher(line);
 		if(m.find()) {
 			String templateString = m.group("template");			

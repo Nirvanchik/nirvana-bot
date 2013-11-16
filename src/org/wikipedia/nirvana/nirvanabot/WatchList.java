@@ -1,5 +1,5 @@
 /**
- *  @(#)WatchList.java 02/07/2012
+ *  @(#)WatchList.java 16/11/2013
  *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -25,13 +25,12 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-
 import javax.security.auth.login.LoginException;
 
-import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PagesFetcherOBOCatScan2;
 
 /**
  * @author kin
@@ -40,55 +39,23 @@ import org.wikipedia.nirvana.NirvanaWiki;
 public class WatchList extends NewPages {
 
 	/**
-	 * @param lang
-	 * @param categories
-	 * @param categoriesToIgnore
-	 * @param usersToIgnore
-	 * @param page
-	 * @param archive
-	 * @param ns
-	 * @param depth
-	 * @param hours
-	 * @param maxItems
-	 * @param format
-	 * @param delimeter
-	 * @param header
-	 * @param footer
-	 * @param minor
-	 * @param bot
+	 * @param param	 
 	 */
 	public WatchList(PortalParam param) {
 		super(param);
 		if(this.archiveSettings!=null) {
 			this.archiveSettings = null;
 		}
-		GET_FIRST_REV = true;
+		//GET_FIRST_REV = true;
+		getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED;
 		UPDATE_FROM_OLD = false;
-		SKIP_LINES = 2;
-	    NS_POS = 2;
-	    TITLE_POS = 0;
-	    REVID_POS = -1;
-		
+				
 	}
 	
-	public void getData(Wiki wiki) throws IOException, InterruptedException {
-		log.info("Getting data for [[" + this.pageName+"]]");
-		pageLists = new HashMap<String,String>();
-		for(String category : this.categories)
-		{
-		    String text = NirvanaWiki.loadPageList(category, language, depth);
-		    pageLists.put(category, text);
-		}
-		pageListsToIgnore = new HashMap<String,String>();
-		for(String category : this.categoriesToIgnore)
-		{
-		    String text = NirvanaWiki.loadPageList(category, language, depth);
-		    pageListsToIgnore.put(category, text);
-		}
-		
-		return;
+	@Override
+	PageListFetcher createPageListFetcher() {
+		return new PagesFetcherOBOCatScan2(categories, categoriesToIgnore, language, depth, namespace);
 	}
-	
 	
 	public void sortPages(ArrayList<Revision> pageInfoList){
 		
