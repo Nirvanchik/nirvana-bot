@@ -1,5 +1,5 @@
 /**
- *  @(#)NirvanaBot.java 1.6 16/11/2013
+ *  @(#)NirvanaBot.java 1.7 01/12/2013
  *  Copyright © 2011 - 2013 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -49,6 +49,9 @@ import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderUniversal;
  *
  */
 public class NirvanaBot extends NirvanaBasicBot{
+	public static final String DEPTH_SEPARATOR = "|";
+    public static final String ADDITIONAL_SEPARATOR = "#";
+    
 	public static final String SERVICE_CATSCAN = "catscan";
 	public static final String SERVICE_CATSCAN2 = "catscan2";
 	public static final String YES_RU = "да";
@@ -80,15 +83,15 @@ public class NirvanaBot extends NirvanaBasicBot{
 	//private static final String ERROR_INVALID_SERVICE_NAME = "Ошибка в параметрах. Параметр \"статья\" не задан.";
 	
 	private static int MAX_DEPTH = 30;
-	private static int DEFAULT_DEPTH = 15;
+	private static int DEFAULT_DEPTH = 7;
 	private static int MAX_MAXITEMS = 5000;
 	private static int DEFAULT_MAXITEMS = 20;
 	private static int MAX_HOURS = 720;
 	private static int MAX_HOURS_CATSCAN = 720;
 	private static int MAX_HOURS_CATSCAN2 = 8760; // 1 year // 24*31*12 = 8928;
 	private static int DEFAULT_HOURS = 720;
-	private static String DEFAULT_SERVICE = SERVICE_CATSCAN;
-	private static boolean DEFAULT_USE_FAST_MODE = false;
+	private static String DEFAULT_SERVICE = SERVICE_CATSCAN2;
+	private static boolean DEFAULT_USE_FAST_MODE = true;
 	private static boolean ERROR_NOTIFICATION = false;
 	private static String LANGUAGE= "ru";
 	private static String COMMENT = "обновление";
@@ -139,8 +142,19 @@ public class NirvanaBot extends NirvanaBasicBot{
 		ERROR
 	};
 	
+	public static String getDefaultFooter() {
+		return DEFAULT_FOOTER;
+	}
+	
+	public static String getDefaultHeader() {
+		return DEFAULT_HEADER;
+	}
+	
+	public static String getDefaultMiddle() {
+		return DEFAULT_MIDDLE;
+	}
 	public static String PROGRAM_INFO = 
-			"NirvanaBot v1.6 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
+			"NirvanaBot v1.7 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
 			"Copyright (C) 2011-2013 Dmitry Trofimovich (KIN)\n" +
 			"\n";
 			
@@ -440,6 +454,13 @@ public class NirvanaBot extends NirvanaBasicBot{
 		// (when reading answer from server after writing)
 		System.setProperty("http.keepAlive", "false"); // adjust HTTP connections
 		
+		// show task list
+		if(tasks!=null) {
+			for(String task : tasks) {
+				log.debug("task: "+task);
+			}
+		}
+		
 		while(i < portalNewPagesLists.length) {						
 			if(retry) {
 				retry = false;
@@ -457,7 +478,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 						i+1,portalNewPagesLists.length,percent));
 				log.info("processing portal: "+portalName);
 				//Calendar startPortalTime = Calendar.getInstance();
-				reportItem = new ReportItem(portalName);
+				reportItem = new ReportItem(newpagesTemplate, portalName);
 				if(report!=null) report.add(reportItem);
 				reportItem.startTime = System.currentTimeMillis();
 			}
@@ -468,9 +489,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 			
 			if(tasks!=null) {
 				boolean skip = true;
-				for(String task : tasks) {
-					log.debug("task: "+task);
+				for(String task : tasks) {					
 					if(portalName.startsWith(task)) {
+						log.debug("task detected: "+task);
 						skip = false;
 						break;
 					}
@@ -490,14 +511,14 @@ public class NirvanaBot extends NirvanaBasicBot{
 					FileTools.dump(portalSettingsText, "dump", portalName+".settings.txt");
 				}
 				Map<String, String> parameters = new HashMap<String, String>();
-				if(TryParseTemplate(newpagesTemplate, portalSettingsText,parameters)) {
+				if(TryParseTemplate(newpagesTemplate, portalSettingsText, parameters)) {
 					log.info("validate portal settings OK");					
 					logPortalSettings(parameters);
 					NewPagesData data = new NewPagesData();
-					createPortalModule(parameters,data);
+					createPortalModule(parameters, data);
 					if(TYPE.equals("all") || TYPE.equals(data.type)) {
 						if(data.portalModule!=null) {							
-								if(DEBUG_MODE || !DEBUG_BUILD || !portalName.contains("ValidParam") /*&& !portalName.contains("Testing")*/) {
+								if(DEBUG_MODE || !DEBUG_BUILD || !portalName.contains("ValidParam") /*&& !portalName.contains("Testing")*/) {									
 									if(data.portalModule.update(wiki, reportItem, COMMENT)) {
 										l++;
 										reportItem.status = Status.UPDATED;
@@ -1173,27 +1194,14 @@ public class NirvanaBot extends NirvanaBasicBot{
 	}
 	
 
-	public static ArrayList<String> optionToStringArray(Map<String, String> options, String key) {
+	protected static ArrayList<String> optionToStringArray(Map<String, String> options, String key) {
 		ArrayList<String> list = new ArrayList<String>();
-		if (options.containsKey(key)) {
-			String separator;
-			String str = options.get(key);
-			if (str.contains("\"")) {
-				separator = "\",";
-			} else {
-				separator = ",";
-			}
-			String[] items = str.split(separator);
-			for (int i = 0; i < items.length; ++i) {
-				String cat = items[i].replace("\"", "").trim();
-				if (!cat.isEmpty()) {
-					list.add(cat);
-				}
-			}
+		if (options.containsKey(key)) {			
+			String option = options.get(key);
+			option = option.replace(ADDITIONAL_SEPARATOR, DEPTH_SEPARATOR);
+			return optionToStringArray(option, true);
 		}
 		return list;
 	}
-	
-	
 	
 }

@@ -18,5 +18,7 @@
 <entry key="statistics-file">report/report.NirvanaBot-%(date).txt</entry>
 <entry key="statistics-format">txt</entry>
 <entry key="start-from">0</entry>
+<entry key="service">catscan2</entry>
+<entry key="fast-mode">yes</entry>
 
 </properties>

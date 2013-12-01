@@ -9,7 +9,7 @@
 <entry key="new-pages-template">Участник:NirvanaBot/Новые статьи</entry>
 <entry key="overriden-properties-page">Участник:NirvanaBot/Новые статьи/Настройки по умолчанию</entry>
 <entry key="wiki-lang">ru</entry>
-<entry key="default-depth">15</entry>
+<entry key="default-depth">7</entry>
 <entry key="default-hours">720</entry>
 <entry key="default-maxitems">20</entry>
 <entry key="error-notification">no</entry>
@@ -22,5 +22,7 @@
 <entry key="statistics-format">txt</entry>
 <entry key="task-list">yes</entry>
 <entry key="task-list-file">nirvanatask.txt</entry>
+<entry key="service">catscan2</entry>
+<entry key="fast-mode">yes</entry>
 
 </properties>
