@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -186,7 +187,7 @@ public class NirvanaBasicBot {
 				return;
 			}
 			login = loginProp.getProperty("wiki-login");
-			pw = properties.getProperty("wiki-password");
+			pw = loginProp.getProperty("wiki-password");
 			if(login==null || pw==null || login.isEmpty() || pw.isEmpty()) {
 				System.out.println("ABORT: login info not found in file "+accountFile);
 				log.fatal("wiki-login or wiki-password or wiki-account-file is not found in file "+accountFile);
@@ -316,8 +317,26 @@ public class NirvanaBasicBot {
 			log.debug(next.getKey()+" = "+next.getValue());
 		}
 	}
+	
+	protected static ArrayList<String> optionToStringArray(String option, boolean withDQuotes) {
+		ArrayList<String> list = new ArrayList<String>();
+		String separator;
+		if (withDQuotes && option.contains("\"")) {
+			separator = "(\"\\s*,\\s*\"|^\\s*\"|\"\\s*$)";// old separator = "\","
+		} else {
+			separator = ",";
+		}
+		String[] items = option.split(separator);
+		for (int i = 0; i < items.length; ++i) {
+			String cat = items[i].trim();
+			if (!cat.isEmpty()) {
+				list.add(cat);
+			}
+		}
+		return list;
+	}
 
-	protected boolean TryParseTemplate(String template, String text, Map<String, String> parameters)
+	public static boolean TryParseTemplate(String template, String text, Map<String, String> parameters)
     {
 		log.debug("portal settings parse started");
         //parameters = null;

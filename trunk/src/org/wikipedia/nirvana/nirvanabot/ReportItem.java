@@ -32,6 +32,7 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot.Status;
  *
  */
 public class ReportItem {
+	String template;
 	String portal;
 	Status status;
 	long startTime;
@@ -43,8 +44,9 @@ public class ReportItem {
 	int newPagesFound;
 	int pagesArchived;
 	
-	ReportItem(String name) {
-		portal = name;
+	ReportItem(String template, String name) {
+		this.template = template;
+		this.portal = name;
 		startTime = 0;
 		endTime = 0;
 		errors = 0;

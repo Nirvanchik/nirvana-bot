@@ -11,7 +11,7 @@
 <entry key="wiki-lang">ru</entry>
 <entry key="wiki-java-loglevel">OFF</entry>
 <entry key="update-comment">обновление</entry>
-<entry key="default-depth">15</entry>
+<entry key="default-depth">7</entry>
 <entry key="default-hours">720</entry>
 <entry key="default-maxitems">20</entry>
 <entry key="default-comment">обновление</entry>
@@ -19,7 +19,7 @@
 <entry key="default-comment-new-archive">обновление</entry>
 <entry key="picture-search-tags">image file,Фото,портрет,Изображение</entry>
 <entry key="error-notification">no</entry>
-<entry key="debug-mode">yes</entry>
+<entry key="debug-mode">no</entry>
 <entry key="stop-after">0</entry>
 <entry key="start-from">0</entry>
 <entry key="update-pause">2000</entry>
@@ -30,5 +30,7 @@
 <entry key="statistics-file">report-%(date).txt</entry>
 <entry key="statistics-format">txt</entry>
 <entry key="type">all</entry>
+<entry key="service">catscan2</entry>
+<entry key="fast-mode">yes</entry>
 
 </properties>

@@ -44,6 +44,7 @@ import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.HTTPTools;
+import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.archive.Archive;
@@ -91,6 +92,10 @@ public class NewPages implements PortalModule{
     protected PortalParam.Deleted deletedFlag;
     protected int renamedFlag;
     
+	protected String headerLastUsed;
+	protected String footerLastUsed;
+	protected String middleLastUsed;
+	
     protected Map<String,String> pageLists;
     protected Map<String,String> pageListsToIgnore;
     
@@ -133,10 +138,13 @@ public class NewPages implements PortalModule{
     	this.depth = param.depth;
     	this.header = param.header;
     	if(header==null) this.header = "";
+    	this.headerLastUsed = this.header;
     	this.footer = param.footer;
     	if(footer==null) this.footer = "";
+    	this.footerLastUsed = this.footer;
     	this.middle = param.middle;
     	if(middle==null) this.middle = "";
+    	this.middleLastUsed = this.middle;
     	this.namespace = param.ns;
     	this.minor = param.minor;
     	this.bot = param.bot;
@@ -368,26 +376,26 @@ public class NewPages implements PortalModule{
 			//text.matches("(?si).*\\{\\{(nobots|bots\\|(allow=none|deny=(.*?" + user + ".*?|all)|optout=all))\\}\\}.*");
 			
 			
-			if (!footer.isEmpty() && oldText.endsWith(footer)) {				
-				oldText = oldText.substring(0, oldText.length() - footer.length());
+			if (!footerLastUsed.isEmpty() && oldText.endsWith(footerLastUsed)) {				
+				oldText = oldText.substring(0, oldText.length() - footerLastUsed.length());
 				oldText = StringTools.trimRight(oldText);
 			} else {
 				oldText = StringTools.trimRight(oldText);
-				if (!footer.isEmpty() && oldText.endsWith(footer)) {				
-					oldText = oldText.substring(0, oldText.length() - footer.length());
+				if (!footerLastUsed.isEmpty() && oldText.endsWith(footerLastUsed)) {				
+					oldText = oldText.substring(0, oldText.length() - footerLastUsed.length());
 					oldText = StringTools.trimRight(oldText);
 				}
 			} 		    	    
 			
-		    if (!header.isEmpty() && oldText.startsWith(header))
+		    if (!headerLastUsed.isEmpty() && oldText.startsWith(headerLastUsed))
 		    {
-		        oldText = oldText.substring(header.length());
+		        oldText = oldText.substring(headerLastUsed.length());
 		        oldText = StringTools.trimLeft(oldText);
 		    } else {
 		    	oldText = StringTools.trimLeft(oldText);
-		    	if (!header.isEmpty() && oldText.startsWith(header))
+		    	if (!headerLastUsed.isEmpty() && oldText.startsWith(headerLastUsed))
 			    {
-			        oldText = oldText.substring(header.length());
+			        oldText = oldText.substring(headerLastUsed.length());
 			        oldText = StringTools.trimLeft(oldText);
 			    }
 		    }
@@ -572,7 +580,10 @@ public class NewPages implements PortalModule{
 			return false;
 		}
 		//this.botsAllowString = NirvanaWiki.getAllowBotsString(text);
-		//getData(wiki);		
+		//getData(wiki);	
+				
+		getHeaderFooterChanges(wiki, reportData.template, reportData.portal);
+				
 		Data d = getData(wiki, text);
 		reportData.pagesArchived = d.archiveCount;
 		reportData.newPagesFound = d.newPagesCount;
@@ -621,6 +632,66 @@ public class NewPages implements PortalModule{
 		return updated;
 	}
 	
+	/**
+	 * @throws IOException 
+     * 
+     */
+    private void getHeaderFooterChanges(NirvanaWiki wiki, String template, String portalSettingsPage) throws IOException {
+	    Revision rNewPages = wiki.getTopRevision(pageName);
+	    if(rNewPages == null) {
+	    	return;
+	    }
+	    
+	    Revision []revs = wiki.getPageHistory(portalSettingsPage, Calendar.getInstance(), rNewPages.getTimestamp());
+	    if(revs.length==0) {
+	    	return;
+	    }
+	    
+	    Revision r = revs[revs.length-1].getPrevious();
+	    
+	    if(r==null) {
+	    	return;
+	    }
+	    // get last used header/footer
+	    log.info("portal params were changed after last use");
+	    
+	    String settingsText = r.getText();
+	    Map<String, String> options = new HashMap<String,String>();
+	    if(NirvanaBasicBot.TryParseTemplate(template, settingsText, options)) {
+	    	headerLastUsed = NirvanaBot.getDefaultHeader();
+	    	footerLastUsed = NirvanaBot.getDefaultFooter();
+	    	middleLastUsed = NirvanaBot.getDefaultMiddle();
+	    	String key = "шапка";
+	    	if (options.containsKey(key) && !options.get(key).isEmpty())
+			{
+	    		headerLastUsed = options.get(key).replace("\\n", "\n");
+			}
+						
+			key = "подвал";
+			if (options.containsKey(key) && !options.get(key).isEmpty())
+			{
+				footerLastUsed = options.get(key).replace("\\n", "\n");
+			}
+			key = "середина";
+			if (options.containsKey(key) && !options.get(key).isEmpty())
+			{
+				middleLastUsed = options.get(key).replace("\\n", "\n");
+			}
+			
+			if(headerLastUsed == null) {
+				headerLastUsed = "";
+			}
+			
+			if(footerLastUsed == null) {
+				footerLastUsed = "";
+			}
+			
+			if(middleLastUsed == null) {
+				middleLastUsed = "";
+			}
+	    }
+    }
+
 	public void updateArchive(NirvanaWiki wiki, Data d, ReportItem reportData) throws LoginException, IOException {
     	if(archiveSettings==null || archiveSettings.isSimple()) {	
     		log.debug("archive has simple format");

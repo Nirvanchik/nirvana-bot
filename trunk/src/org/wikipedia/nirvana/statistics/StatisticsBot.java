@@ -26,6 +26,7 @@ package org.wikipedia.nirvana.statistics;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -335,6 +336,15 @@ public class StatisticsBot extends NirvanaBasicBot {
 		
 	}
 	
+	private static ArrayList<String> optionToStringArray(Map<String, String> options, String key) {
+		ArrayList<String> list = new ArrayList<String>();
+		if (options.containsKey(key)) {			
+			return NirvanaBasicBot.optionToStringArray(options.get(key), false);
+		}
+		return list;
+	}
+
+	
 	private boolean readPortalSettings(Map<String, String> options, StatisticsParam params) {
 		params.archiveSettings = new ArchiveSettings();
 		params.archive = null;
@@ -371,7 +381,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 		params.reportTypes = null;
 		key = "тип";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
-			params.reportTypes = NirvanaBot.optionToStringArray(options, key);
+			params.reportTypes = optionToStringArray(options, key);
 			//archiveSettings.headerFormat = options.get(key); 
 		} else {
 			log.error("Параметр \"тип\" не найден в настройках");

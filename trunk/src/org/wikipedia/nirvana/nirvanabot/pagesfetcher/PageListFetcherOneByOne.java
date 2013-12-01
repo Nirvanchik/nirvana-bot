@@ -32,9 +32,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
 /**
  * @author kin
@@ -81,19 +84,33 @@ public abstract class PageListFetcherOneByOne extends PageListFetcher {
 	public void getData(Wiki wiki) throws IOException, InterruptedException {
 		
 		//log.info("Getting data for [[" + this.pageName+"]]");
-		pageLists = new HashMap<String,String>();
-		for(String category : this.categories)
-		{
-		    String text = getNewPagesForCat(category, language, depth, hours);
-		    pageLists.put(category, text);
+		pageLists = getNewPagesForCategories(categories);		
+		pageListsToIgnore = getNewPagesForCategories(categoriesToIgnore);		
+	}
+	
+	private Map<String,String> getNewPagesForCategories(List<String> categoriList) throws IOException, InterruptedException {
+		Map<String,String> result = new HashMap<String,String>();
+		for(String category : categoriList)
+		{			
+			Pair<Integer, String> pair = PageListFetcherOneByOne.extractDepthFromCat(category);			
+		    String text = getNewPagesForCat(pair.getRight(), language, (pair.getLeft() >= 0)? pair.getLeft(): depth, hours);
+		    result.put(category, text);
 		}
-		pageListsToIgnore = new HashMap<String,String>();
-		for(String category : this.categoriesToIgnore)
-		{
-		    String text = getNewPagesForCat(category, language, depth, hours);
-		    pageListsToIgnore.put(category, text);
-		}	
-		
+		return result;
+	}
+	
+	protected static Pair<Integer, String> extractDepthFromCat(String category) {    	
+		int depth = -1;
+		int depthIndex = category.indexOf(NirvanaBot.DEPTH_SEPARATOR);
+		if (depthIndex > 0) {
+			try {
+				depth = Integer.parseInt(category.substring(depthIndex + NirvanaBot.DEPTH_SEPARATOR.length()));
+			} catch (NumberFormatException e) {
+				// ignore
+			}
+			category = category.substring(0, depthIndex);			
+		}
+		return new ImmutablePair<Integer, String>(depth, category);
 	}
 	
 	protected abstract String getNewPagesForCat(String category, String language, int depth, int hours) throws IOException, InterruptedException;
