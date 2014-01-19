@@ -50,6 +50,8 @@ public class NewPagesFetcherOBOCatScan extends PageListFetcherOneByOne {
 	    TITLE_POS = 1;
 	    REVID_POS = 5;
 	    ID_POS = 4;
+	    filteredByNamespace = false;
+	    hasSuffix = false;
 	}
 
 	/* (non-Javadoc)

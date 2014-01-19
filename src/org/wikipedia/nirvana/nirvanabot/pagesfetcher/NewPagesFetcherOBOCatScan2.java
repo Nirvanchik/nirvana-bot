@@ -50,6 +50,8 @@ public class NewPagesFetcherOBOCatScan2 extends PageListFetcherOneByOne {
 	    TITLE_POS = 0;
 	    REVID_POS = -1;
 	    ID_POS = 1;
+	    filteredByNamespace = true;
+	    hasSuffix = true;
 	}
 
 	/* (non-Javadoc)
@@ -58,7 +60,7 @@ public class NewPagesFetcherOBOCatScan2 extends PageListFetcherOneByOne {
 	@Override
 	protected String getNewPagesForCat(String category, String language,
 	        int depth, int hours) throws IOException, InterruptedException {		
-		return WikiTools.loadNewPagesForCatWithCatScan2(category, language, depth, hours);
+		return WikiTools.loadNewPagesForCatWithCatScan2(category, language, depth, hours, namespace);
 	}
 	
 	public boolean revisionAvailable() {

@@ -11,6 +11,7 @@
 <entry key="default-depth">7</entry>
 <entry key="default-hours">720</entry>
 <entry key="default-maxitems">20</entry>
+<entry key="debug-mode">no</entry>
 <entry key="error-notification">no</entry>
 <entry key="update-pause">1000</entry>
 <entry key="statistics">yes</entry>
