@@ -55,6 +55,8 @@ public class NewPagesFetcherOneReqCatScan2 extends PageListFetcher {
 	    TITLE_POS = 0;
 	    REVID_POS = -1;
 	    ID_POS = 1;
+	    filteredByNamespace = true;
+	    hasSuffix = true;
 	}
 
 	/* (non-Javadoc)
@@ -65,7 +67,7 @@ public class NewPagesFetcherOneReqCatScan2 extends PageListFetcher {
 	        throws IOException, InterruptedException {
 		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
 		HashSet<String> pages = new HashSet<String>();
-		String text = WikiTools.loadNewPagesForCatListAndIgnoreWithCatScan2(categories, categoriesToIgnore, language, depth, hours);
+		String text = WikiTools.loadNewPagesForCatListAndIgnoreWithCatScan2(categories, categoriesToIgnore, language, depth, hours, namespace);
 		parsePageList(wiki, pages, pageInfoList, null, text);	
 		return pageInfoList;
 	}

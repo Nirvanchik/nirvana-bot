@@ -83,14 +83,16 @@ public class WikiTools {
 		return fetchUriWithTimeoutRetry(uri);    
     }
 	
-	public static String loadNewPagesForCatWithCatScan2(String category, String language, int depth, int hours) throws IOException, InterruptedException
+	public static String loadNewPagesForCatWithCatScan2(String category, String language, int depth, int hours, int namespace) throws IOException, InterruptedException
     {
         log.debug("Downloading data for " + category);
+        
         String url_query = 
-        		String.format("language=%1$s&depth=%3$d&categories=%2$s&max_age=%4$d&only_new=1&sortby=title&format=tsv&doit=submit",
+        		String.format("language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=submit",
                 language,
-                category,
                 depth,
+                category,
+                namespace,
                 hours);
         URI uri=null;
 		try {
@@ -102,16 +104,17 @@ public class WikiTools {
 		return fetchUriWithTimeoutRetry(uri);
     }
 	
-	public static String loadNewPagesForCatListAndIgnoreWithCatScan2(List<String> cats, List<String> ignore, String language, int depth, int hours) throws IOException, InterruptedException
+	public static String loadNewPagesForCatListAndIgnoreWithCatScan2(List<String> cats, List<String> ignore, String language, int depth, int hours, int namespace) throws IOException, InterruptedException
     {
         log.debug("Downloading data for categories: " + Arrays.toString(cats.toArray()));
         log.debug("and ignore categories: " + Arrays.toString(ignore.toArray()));
         String url_query = 
-        		String.format("language=%1$s&depth=%4$d&categories=%2$s&negcats=%3$s&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=1",
+        		String.format("language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%5$d]=1&comb[union]=1&max_age=%6$d&only_new=1&sortby=title&format=tsv&doit=1",
                 language,
+                depth,
                 StringUtils.join(cats, "\r\n"),
                 StringUtils.join(ignore, "\r\n"),
-                depth,
+                namespace,
                 hours);
         URI uri=null;
 		try {

@@ -53,6 +53,9 @@ public abstract class PageListFetcher {
     protected int TITLE_POS;
     protected int REVID_POS;
     protected int ID_POS;
+    
+    protected boolean filteredByNamespace;
+    protected boolean hasSuffix;
 
 	/**
 	 * 
@@ -83,15 +86,23 @@ public abstract class PageListFetcher {
         while ((line = b.readLine()) != null)
         {
             String[] groups = line.split("\t");
+            int thisNS = 0; // articles by default
+            if (!filteredByNamespace) {
+            	try {
+            		thisNS = Integer.parseInt(groups[NS_POS]);
+            	} catch (NumberFormatException e) {
+            		log.warn("invalid namespace detected", e);
+            	}
+            }
             // то что мы ищем совпадает с тем, что нашли
-            if (groups[NS_POS].equals(String.valueOf(namespace)))
+            if (filteredByNamespace || thisNS == namespace)
             {
                 String title = groups[TITLE_POS].replace('_', ' ');
                 if (ignore != null && ignore.contains(title))
                 {
                     continue;
                 }
-                if (namespace != 0)
+                if (!hasSuffix && namespace != 0)
                 {	                	
                     title = wiki.namespaceIdentifier(namespace) + ":" + title;	                	
                 	log.debug("Namespace is not 0");
@@ -122,7 +133,7 @@ public abstract class PageListFetcher {
                     log.debug("adding page to list:"+title);
                     pageInfoList.add(page);
                 }
-            } else if(groups[NS_POS].equals(String.valueOf(Wiki.USER_NAMESPACE)) &&
+            } else if(thisNS == Wiki.USER_NAMESPACE &&
             		namespace!= Wiki.USER_NAMESPACE) {
             	// Здесь мы обрабатываем случаи, когда статьи сначала проходят через личное пространство
             	// а потом переименовываются в основное пространство

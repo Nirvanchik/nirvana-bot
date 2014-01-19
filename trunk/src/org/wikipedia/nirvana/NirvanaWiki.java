@@ -199,6 +199,7 @@ public class NirvanaWiki extends Wiki {
     		// ignore. all job is done not here :)
     	}
     	if(old==null || old.length()!=text.length() || !old.equals(text)) { // to compare lengths is faster than comparing 5k chars
+    		log.debug("editing "+title);
     		edit(title, text, summary, minor, true, -2);
     		return true;
     	} else {
