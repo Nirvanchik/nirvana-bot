@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>no comments</comment>
+<entry key="log4j-settings">config/log4j-log-def.cfg</entry>
+<entry key="wiki-login">NirvanaBot</entry>
+<entry key="wiki-password"></entry>
+<entry key="wiki-account-file">loginNirvanaBot.xml</entry>
+<entry key="new-pages-template">User:NirvanaBot/Новыя артыкулы</entry>
+<entry key="overriden-properties-page">User:NirvanaBot/Новыя артыкулы/Налады па змаўчанні</entry>
+<entry key="wiki-lang">be</entry>
+<entry key="default-depth">7</entry>
+<entry key="default-hours">720</entry>
+<entry key="default-maxitems">20</entry>
+<entry key="error-notification">no</entry>
+<entry key="debug-mode">yes</entry>
+<entry key="stop-after">0</entry>
+<entry key="start-from">0</entry>
+<entry key="update-pause">1000</entry>
+<entry key="statistics">yes</entry>
+<entry key="statistics-file">report/report.NirvanaBotBe.task-%(date).txt</entry>
+<entry key="statistics-format">txt</entry>
+<entry key="task-list">yes</entry>
+<entry key="task-list-file">nirvanataskbe.txt</entry>
+<entry key="service">catscan2</entry>
+<entry key="fast-mode">yes</entry>
+
+</properties>

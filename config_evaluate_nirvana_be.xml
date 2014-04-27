@@ -2,34 +2,31 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>no comments</comment>
-<entry key="log4j-settings">config/log4j-log-debug-eclipse.cfg</entry>
+<entry key="log4j-settings">config/log4j-log-fulldebug.cfg</entry>
 <entry key="wiki-login">NirvanaBot</entry>
 <entry key="wiki-password"></entry>
 <entry key="wiki-account-file">loginNirvanaBot.xml</entry>
-<entry key="new-pages-template">Участник:NirvanaBot/test/Новые статьи</entry>
-<entry key="overriden-properties-page">Участник:NirvanaBot/test/Новые статьи/Настройки по умолчанию</entry>
-<entry key="wiki-lang">ru</entry>
+<entry key="new-pages-template">User:NirvanaBot/Новыя артыкулы</entry>
+<entry key="overriden-properties-page">User:NirvanaBot/Новыя артыкулы/Налады па змаўчанні</entry>
+<entry key="wiki-lang">be</entry>
 <entry key="wiki-java-loglevel">OFF</entry>
 <entry key="update-comment">обновление</entry>
 <entry key="default-depth">7</entry>
 <entry key="default-hours">720</entry>
 <entry key="default-maxitems">20</entry>
 <entry key="default-comment">обновление</entry>
-<entry key="default-comment-new">обновление</entry>
-<entry key="default-comment-new-archive">обновление</entry>
 <entry key="picture-search-tags">image file,Фото,портрет,Изображение</entry>
 <entry key="error-notification">no</entry>
 <entry key="debug-mode">yes</entry>
-<entry key="stop-after">0</entry>
+<entry key="update-limit">0</entry>
 <entry key="start-from">0</entry>
-<entry key="update-pause">2000</entry>
-<entry key="time-format">short</entry>
-<entry key="task-list">yes</entry>
-<entry key="task-list-file">task.txt</entry>
-<entry key="statistics">yes</entry>
-<entry key="statistics-file">report-%(date).txt</entry>
-<entry key="statistics-format">txt</entry>
+<entry key="update-pause">1000</entry>
 <entry key="type">all</entry>
+<entry key="statistics">yes</entry>
+<entry key="statistics-file">report/report-%(date).txt</entry>
+<entry key="statistics-format">txt</entry>
+<entry key="task-list">yes</entry>
+<entry key="task-list-file">task_eval_nirvana_be.txt</entry>
 <entry key="service">catscan2</entry>
 <entry key="fast-mode">yes</entry>
 

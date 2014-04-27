@@ -7,10 +7,10 @@
 <entry key="wiki-password"></entry>
 <entry key="wiki-account-file">loginNirvanaBot.xml</entry>
 <entry key="wiki-lang">ru</entry>
-<entry key="stat-settings-template">Участник:NirvanaBot/test/Параметры статистики</entry>
+<entry key="stat-settings-template">Участник:NirvanaBot/Параметры статистики</entry>
 <entry key="update-comment">Обновление статистики</entry>
 <entry key="default-comment">Обновление статистики</entry>
 <entry key="debug-mode">yes</entry>
-<entry key="task-list">no</entry>
+<entry key="task-list">yes</entry>
 <entry key="task-list-file">statistic_task.txt</entry>
 </properties>
