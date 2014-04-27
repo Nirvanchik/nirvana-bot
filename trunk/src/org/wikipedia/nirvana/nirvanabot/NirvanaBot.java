@@ -93,7 +93,6 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static String DEFAULT_SERVICE = SERVICE_CATSCAN2;
 	private static boolean DEFAULT_USE_FAST_MODE = true;
 	private static boolean ERROR_NOTIFICATION = false;
-	private static String LANGUAGE= "ru";
 	private static String COMMENT = "обновление";
 	
 	private static boolean GENERATE_REPORT = false;
@@ -685,7 +684,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		String key;
 		
 		PortalParam param = new PortalParam();
-		param.lang = NirvanaBot.LANGUAGE;
+		param.lang = NirvanaBasicBot.LANGUAGE;
 		
 		String type = null;
 		key = "тип";

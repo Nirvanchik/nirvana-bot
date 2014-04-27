@@ -62,7 +62,7 @@ public class NirvanaBasicBot {
 	public static final String NO = "no";
 	
 	protected NirvanaWiki wiki;
-	private static String LANGUAGE= "ru";
+	protected static String LANGUAGE= "ru";
 	protected static String COMMENT = "обновление";
 	protected int flags = 0;
 	
@@ -339,6 +339,8 @@ public class NirvanaBasicBot {
 	public static boolean TryParseTemplate(String template, String text, Map<String, String> parameters)
     {
 		log.debug("portal settings parse started");
+		log.debug("template = "+template);
+		log.debug("text = "+(text.length()>100?text.substring(0,100):text));
         //parameters = null;
         //String str = "^{{"+newpagesTemplateName+".*({{.+({{.+}})?.*}})?.*}}.*$";
         //String str = "^\\{\\{"+newpagesTemplateName+".*\\}\\}.*$"; // works
@@ -355,7 +357,8 @@ public class NirvanaBasicBot {
 		}
 		recognizeTemplate = "("+ns1+"|"+ns2+")"+recognizeTemplate;
         String str = "^(\\{\\{"+recognizeTemplate+")(.+)$"; // GOOD
-        //String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{.+?\\}\\})*.*))+?\\}\\}";
+        log.debug("pattern = "+str);
+		//String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{.+?\\}\\})*.*))+?\\}\\}";
         //String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{[^\\{\\}]+\\}\\})*[^\\{]*))\\}\\}";
         //log.debug("pattern:"+str);
         Pattern pattern = Pattern.compile(str,Pattern.DOTALL|Pattern.CASE_INSENSITIVE);

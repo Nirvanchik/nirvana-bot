@@ -31,6 +31,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -40,6 +41,7 @@ import java.util.zip.GZIPInputStream;
 import javax.security.auth.login.LoginException;
 
 import org.wikipedia.Wiki;
+import org.wikipedia.Wiki.Revision;
 
 /**
  * @author KIN 
@@ -447,6 +449,10 @@ public class NirvanaWiki extends Wiki {
     public boolean exists(String title) throws IOException
     {
         return exists(new String[] { title })[0];
+    }
+    
+    public Revision[] getPageHistory(String title, Calendar start, Calendar end) throws IOException {
+    	return getPageHistory(title, start, end, false);
     }
 
 }
