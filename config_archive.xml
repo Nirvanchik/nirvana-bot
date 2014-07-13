@@ -11,5 +11,5 @@
 <entry key="update-comment">Обработка архива (заголовки, нумерация, сортировка, удаление дубликатов)</entry>
 <entry key="default-comment">обновление</entry>
 <entry key="debug-mode">no</entry>
-<entry key="task-list-file">archive_task_feminizm.txt</entry>
+<entry key="task-list-file">archive_task.txt</entry>
 </properties>

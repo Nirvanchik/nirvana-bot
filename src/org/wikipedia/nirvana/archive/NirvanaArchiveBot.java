@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaArchiveBot.java 1.3 20/10/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)
+ *  @(#)NirvanaArchiveBot.java 1.3 13.07.2014
+ *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 	
 	public static final String INFO = 
 		"NirvanaArchiveBot v1.3 Updates archives of new articles lists at http://ru.wikipedia.org\n" +
-		"Copyright (C) 2011-2013 Dmitry Trofimovich (KIN)\n" +		
+		"Copyright (C) 2014 Dmitry Trofimovich (KIN)\n" +		
 		"\n";
 	
 	public void showInfo() {
@@ -63,12 +63,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 	 */
 	public static void main(String[] args) {
 		NirvanaBasicBot bot = new NirvanaArchiveBot();
-		bot.showInfo();
-		//bot.showLicense();
-		System.out.print("-----------------------------------------------------------------\n");
-		String configFile = bot.getConfig(args);		
-		System.out.println("applying config file: "+configFile);
-		bot.startWithConfig(configFile);
+		bot.run(args);
 	}
 	
 	
@@ -329,7 +324,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 	//protected void
 	
 	@Override
-	protected boolean loadCustomProperties() {
+	protected boolean loadCustomProperties(Map<String,String> launch_params) {
 		TASK_LIST_FILE = properties.getProperty("task-list-file",TASK_LIST_FILE);
 		log.info("task list file: "+TASK_LIST_FILE);
 		//COMMENT = properties.getProperty("update-comment", COMMENT);

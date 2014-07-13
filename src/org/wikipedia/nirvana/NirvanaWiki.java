@@ -1,6 +1,6 @@
 /**
  *  @(#)NirvanaWiki.java 0.06 16/11/2013
- *  Copyright © 2011 - 2013 Dmitry Trofimovich (KIN)
+ *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,7 +41,6 @@ import java.util.zip.GZIPInputStream;
 import javax.security.auth.login.LoginException;
 
 import org.wikipedia.Wiki;
-import org.wikipedia.Wiki.Revision;
 
 /**
  * @author KIN 
@@ -399,8 +398,8 @@ public class NirvanaWiki extends Wiki {
 	{
 		boolean was = isResolvingRedirects();
 	    this.setResolveRedirects(resolveRedirect);
-	    this.setResolveRedirects(resolveRedirect);
 	    Revision r = super.getFirstRevision(title);
+	    setResolveRedirects(was);
 	    return r;
 	}
 	

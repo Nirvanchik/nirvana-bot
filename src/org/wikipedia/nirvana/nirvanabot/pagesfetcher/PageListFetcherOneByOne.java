@@ -1,6 +1,6 @@
 /**
- *  @(#)PageListFetcherOneByOne.java 28.10.2013
- *  Copyright © 2013 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)PageListFetcherOneByOne.java 13.07.2014
+ *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
  * @author kin
  *
  */
-public abstract class PageListFetcherOneByOne extends PageListFetcher {
+public abstract class PageListFetcherOneByOne extends BasicFetcher {
 
     protected Map<String,String> pageLists;
     protected Map<String,String> pageListsToIgnore;
@@ -153,4 +153,11 @@ public abstract class PageListFetcherOneByOne extends PageListFetcher {
 		return ignore;
 	}
 
+	/* (non-Javadoc)
+     * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher#mayHaveDuplicates()
+     */
+    @Override
+    public boolean mayHaveDuplicates() {	    
+	    return false;
+    }
 }

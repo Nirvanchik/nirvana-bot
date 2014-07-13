@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaBasicBot.java 16/11/2013
- *  Copyright © 2012-2013 Dmitry Trofimovich (KIN)
+ *  @(#)NirvanaBasicBot.java 13.07.2014
+ *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -116,9 +117,28 @@ public class NirvanaBasicBot {
 		System.out.print("-----------------------------------------------------------------\n");
 		String configFile = getConfig(args);		
 		System.out.println("applying config file: "+configFile);
-		startWithConfig(configFile);
+		Map<String,String> launch_params = getLaunchArgs(args);
+		startWithConfig(configFile, launch_params);
 	}
 	
+	/**
+     * @param args
+     * @return
+     */
+    private Map<String, String> getLaunchArgs(String[] args) {
+	    HashMap<String,String> params = new HashMap<String,String>();
+	    for(int i=1;i<args.length;i++) {
+	    	if(!args[i].startsWith("-")) continue;
+	    	String [] parts = args[i].substring(1).split("=",2);
+	    	String left = parts[0];
+	    	String right = "1";
+	    	if(parts.length == 2) {
+	    		right = parts[1];
+	    	}
+	    	params.put(left, right);
+	    }
+	    return params;
+    }
 	/**
 	 * @param args
 	 */
@@ -140,7 +160,7 @@ public class NirvanaBasicBot {
 		return configFile;
 	}
 	
-	public void startWithConfig(String cfg) {
+	public void startWithConfig(String cfg, Map<String,String> launch_params) {
 		properties = new Properties();
 		try {
 			InputStream in = new FileInputStream(cfg);
@@ -205,7 +225,7 @@ public class NirvanaBasicBot {
 		log.info("DEBUG_MODE="+DEBUG_MODE);
 		
 		
-		loadCustomProperties();
+		loadCustomProperties(launch_params);
 		
 		wiki = new NirvanaWiki( LANGUAGE + ".wikipedia.org" );
 		wiki.setMaxLag( 15 );
@@ -238,7 +258,7 @@ public class NirvanaBasicBot {
 		log.info("This is a basic bot framework");
 		log.info("It doesn't have any practical use, but can be utilized as a basis to create a new Bot");
 	}
-	protected boolean loadCustomProperties() {
+	protected boolean loadCustomProperties(Map<String,String> launch_params) {
 		return true;
 	}
 	protected void initLog() {

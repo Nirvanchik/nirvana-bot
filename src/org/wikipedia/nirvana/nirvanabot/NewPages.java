@@ -1,6 +1,6 @@
 /**
- *  @(#)NewPages.java 0.03 02/07/2012
- *  Copyright © 2011 - 2013 Dmitry Trofimovich (KIN)
+ *  @(#)NewPages.java 13.07.2014
+ *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -50,10 +50,11 @@ import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveFactory;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSimple;
 import org.wikipedia.nirvana.archive.ArchiveWithEnumeration;
 import org.wikipedia.nirvana.archive.ArchiveWithHeaders;
-import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherCombinator;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherOBOCatScan;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherOBOCatScan2;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherOneReqCatScan2;
@@ -71,6 +72,8 @@ public class NewPages implements PortalModule{
 	protected String language;
 	protected List<String> categories;
 	protected List<String> categoriesToIgnore;
+	protected List<List<String>> categoryGroups;
+	protected List<List<String>> categoryToIgnoreGroups;
 	protected Set<String> usersToIgnore;
 	protected String pageName;
     protected String archive;
@@ -99,7 +102,7 @@ public class NewPages implements PortalModule{
     protected Map<String,String> pageLists;
     protected Map<String,String> pageListsToIgnore;
     
-    protected static org.apache.log4j.Logger log = null;	
+    protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(NewPages.class);;	
     
     protected GetRevisionMethod getRevisionMethod = GetRevisionMethod.GET_REV;
     
@@ -123,6 +126,8 @@ public class NewPages implements PortalModule{
     	this.language = param.lang;
     	this.categories = param.categories;
     	this.categoriesToIgnore = param.categoriesToIgnore;
+    	categoryGroups = param.categoryGroups;
+    	categoryToIgnoreGroups = param.categoryToIgnoreGroups;
     	this.usersToIgnore = new HashSet<String>(param.usersToIgnore);
     	this.pageName = param.page;
     	this.archive = param.archive;
@@ -180,12 +185,10 @@ public class NewPages implements PortalModule{
 	public void getNewPages(NirvanaWiki wiki, 
 			ArrayList<Revision> pageInfoList,
 			HashSet<String> pages) throws IOException {
-		PageListFetcher pageListFetcher = createPageListFetcher();
+		BasicFetcher pageListFetcher = createPageListFetcher();
 		
 	}*/
-	
-	PageListFetcher createPageListFetcher() {
-		//return new NewPagesFetcherOBOCatScan(categories, categoriesToIgnore, language, depth, hours, namespace);
+	PageListFetcher createPageListFetcherForGroup(List<String> categories, List<String> categoriesToIgnore) {
 		if(service.equalsIgnoreCase(NirvanaBot.SERVICE_CATSCAN)) {
 			return new NewPagesFetcherOBOCatScan(categories, categoriesToIgnore, language, depth, hours, namespace);
 		} else if (service.equalsIgnoreCase(NirvanaBot.SERVICE_CATSCAN2)) {
@@ -196,8 +199,20 @@ public class NewPages implements PortalModule{
 			}
 		}
 		throw new Error("Unsupported service name");
-		//*/		
-	//return new NewPagesFetcherOBOCatScan2(categories, categoriesToIgnore, language, depth, hours, namespace);
+	}
+	
+	PageListFetcher createPageListFetcher() {
+		List<PageListFetcher> fetchers = new ArrayList<PageListFetcher>(3);
+		fetchers.add(createPageListFetcherForGroup(this.categories, this.categoriesToIgnore));
+		for(int i = 0;i<categoryGroups.size();i++) {
+			if (categoryGroups.get(i).size()>0) {
+				fetchers.add(createPageListFetcherForGroup(categoryGroups.get(i), categoryToIgnoreGroups.get(i)));
+			}
+		}
+		if(fetchers.size()>1)
+			return new FetcherCombinator(fetchers);
+		else
+			return fetchers.get(0);
 	}
 	
 	public void sortPagesByRevision(ArrayList<Revision> pageInfoList) {
@@ -277,6 +292,10 @@ public class NewPages implements PortalModule{
 		
 		sortPages(pageInfoList, pageListFetcher.revisionAvailable());		
 	
+		if(pageListFetcher.mayHaveDuplicates()) {
+			removeDuplicatesInSortedList(pageInfoList);
+		}
+		
 		List<String> subset = new ArrayList<String>();
 		List<String> includedPages = new ArrayList<String>();
 		int count = pageInfoList.size();
@@ -550,6 +569,21 @@ public class NewPages implements PortalModule{
 	}
 	
 	
+
+	/**
+     * @param pageInfoList
+     */
+    private void removeDuplicatesInSortedList(ArrayList<Revision> list) {
+    	log.debug("removing duplicates from list");
+	    int i = 1;
+	    while(i<list.size()) {
+	    	if (list.get(i).getPage().equals(list.get(i-1).getPage())) {
+	    		list.remove(i);
+	    	} else {
+	    		i++;
+	    	}
+	    }
+    }
 
 	public void enumerateWithHash(ArrayList<String> list) {
 		for(int i =0; i<list.size();i++) {

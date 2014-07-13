@@ -11,5 +11,5 @@
 <entry key="update-comment">обработка архива (заголовки, нумерация, сортировка)</entry>
 <entry key="default-comment">обновление</entry>
 <entry key="debug-mode">yes</entry>
-<entry key="task-list-file">archive_task2.txt</entry>
+<entry key="task-list-file">archive_task.txt</entry>
 </properties>

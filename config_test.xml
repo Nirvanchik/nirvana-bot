@@ -32,5 +32,6 @@
 <entry key="type">all</entry>
 <entry key="service">catscan2</entry>
 <entry key="fast-mode">yes</entry>
+<entry key="starts-per-day">2</entry>
 
 </properties>
