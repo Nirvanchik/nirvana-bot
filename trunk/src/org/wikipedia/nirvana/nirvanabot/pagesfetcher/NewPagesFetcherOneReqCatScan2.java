@@ -1,6 +1,6 @@
 /**
- *  @(#)NewPagesFetcherOneReqCatScan2.java 03.11.2013
- *  Copyright © 2013 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)NewPagesFetcherOneReqCatScan2.java 13.07.2014
+ *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ import org.wikipedia.nirvana.WikiTools;
  * @author kin
  *
  */
-public class NewPagesFetcherOneReqCatScan2 extends PageListFetcher {
+public class NewPagesFetcherOneReqCatScan2 extends BasicFetcher {
 
 	/**
 	 * @param cats
@@ -60,7 +60,7 @@ public class NewPagesFetcherOneReqCatScan2 extends PageListFetcher {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher#getNewPages(org.wikipedia.nirvana.NirvanaWiki)
+	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicFetcher#getNewPages(org.wikipedia.nirvana.NirvanaWiki)
 	 */
 	@Override
 	public ArrayList<Revision> getNewPages(NirvanaWiki wiki)
@@ -73,11 +73,19 @@ public class NewPagesFetcherOneReqCatScan2 extends PageListFetcher {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher#revisionAvailable()
+	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicFetcher#revisionAvailable()
 	 */
 	@Override
 	public boolean revisionAvailable() {		
 		return false;
 	}
+
+	/* (non-Javadoc)
+     * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher#mayHaveDuplicates()
+     */
+    @Override
+    public boolean mayHaveDuplicates() {	    
+	    return false;
+    }
 
 }

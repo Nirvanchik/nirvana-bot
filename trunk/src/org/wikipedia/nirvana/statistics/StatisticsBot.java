@@ -88,16 +88,11 @@ public class StatisticsBot extends NirvanaBasicBot {
 	 */
 	public static void main(String[] args) {
 		NirvanaBasicBot bot = new StatisticsBot();
-		bot.showInfo();
-		//bot.showLicense();
-		System.out.print("-----------------------------------------------------------------\n");
-		String configFile = bot.getConfig(args);		
-		System.out.println("applying config file: "+configFile);
-		bot.startWithConfig(configFile);
+		bot.run(args);
 	}
 	
 	@Override
-	protected boolean loadCustomProperties() {
+	protected boolean loadCustomProperties(Map<String,String> launch_params) {
 		statSettingsTemplate = properties.getProperty("stat-settings-template");
 		if(statSettingsTemplate==null) {
 			if(DEBUG_BUILD)

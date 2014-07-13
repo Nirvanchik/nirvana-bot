@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaBot.java 1.7 01/12/2013
- *  Copyright © 2011 - 2013 Dmitry Trofimovich (KIN)
+ *  @(#)NirvanaBot.java 1.8 13.07.2014
+ *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -120,6 +121,14 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static PortalParam.Deleted DEFAULT_DELETED_FLAG = PortalParam.Deleted.DONT_TOUCH;
 	private static int DEFAULT_RENAMED_FLAG = PortalParam.RENAMED_NEW;
 	private static int DEFAULT_PARSE_COUNT = -1;
+	
+	private static int DEFAULT_UPDATES_PER_DAY = 1;
+	private static int MAX_UPDATES_PER_DAY = 4;
+	
+	private static int DEFAULT_STARTS_PER_DAY = 1;
+	
+	private int startNumber = 1;
+	
 	private NirvanaWiki commons = null;
 	
 	private static class NewPagesData {
@@ -153,8 +162,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 		return DEFAULT_MIDDLE;
 	}
 	public static String PROGRAM_INFO = 
-			"NirvanaBot v1.7 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
-			"Copyright (C) 2011-2013 Dmitry Trofimovich (KIN)\n" +
+			"NirvanaBot v1.8 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
+			"Copyright (C) 2011-2014 Dmitry Trofimovich (KIN)\n" +
 			"\n";
 			
 	public void showInfo() {
@@ -178,7 +187,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	}
 	
 	@Override
-	protected boolean loadCustomProperties() {
+	protected boolean loadCustomProperties(Map<String,String> launch_params) {
 		newpagesTemplate = properties.getProperty("new-pages-template");
 		if(newpagesTemplate==null) {
 			if(DEBUG_BUILD)
@@ -204,6 +213,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 		log.info("maxitems="+DEFAULT_MAXITEMS);		
 		STOP_AFTER = validateIntegerSetting(properties,"stop-after",STOP_AFTER,false);		
 		UPDATE_PAUSE = validateIntegerSetting(properties,"update-pause",UPDATE_PAUSE,false);
+		
+		DEFAULT_STARTS_PER_DAY = validateIntegerSetting(properties,"starts-per-day", DEFAULT_STARTS_PER_DAY, false);
 		
 		DEFAULT_PARSE_COUNT = validateIntegerSetting(properties,"parse-count",DEFAULT_PARSE_COUNT,false);
 		
@@ -238,6 +249,14 @@ public class NirvanaBot extends NirvanaBasicBot{
 		TYPE = properties.getProperty("type",TYPE); 
 		
 		overridenPropertiesPage = properties.getProperty("overriden-properties-page",null);
+		
+		if (launch_params.containsKey("start_number")) {
+			try {
+			    startNumber = Integer.parseInt(launch_params.get("start_number"));
+			} catch(NumberFormatException e){
+				// ignore
+			}
+		}
 		
 		return true;
 	}
@@ -679,7 +698,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 	}
 	
 
-	public boolean createPortalModule(Map<String, String> options, NewPagesData data) {
+	public boolean createPortalModule(Map<String, String> options, NewPagesData data) throws 
+			NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		log.debug("portal settings init started");
 		String key;
 		
@@ -705,6 +725,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}		
 		
 		param.categoriesToIgnore = optionToStringArray(options,"игнорировать");
+		
+		param.categoryGroups = multiOptionToArray(options, "категории", 1, PortalParam.MAX_CAT_GROUPS);
+		param.categoryToIgnoreGroups = multiOptionToArray(options, "игнорировать", 1, PortalParam.MAX_CAT_GROUPS);
 				
 		param.usersToIgnore = optionToStringArray(options,"игнорировать авторов");
 		
@@ -933,6 +956,24 @@ public class NirvanaBot extends NirvanaBasicBot{
 			param.renamedFlag = parseRenamed(options.get(key),param.renamedFlag,data.errors);
 		}
 		
+		//param.updatesPerDay = DEFAULT_UPDATES_PER_DAY;
+		/*key = "частота обновлений";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {	
+			try {
+				param.updatesPerDay = Integer.parseInt(options.get(key));
+			} catch(NumberFormatException e) {
+				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+				data.errors.add(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING_RU, key, options.get(key)));
+			}
+			if(param.updatesPerDay>MAX_UPDATES_PER_DAY) {
+				data.errors.add(String.format(ERROR_INTEGER_TOO_BIG_STRING_RU, key, options.get(key),MAX_UPDATES_PER_DAY));
+				param.updatesPerDay = MAX_UPDATES_PER_DAY;				
+			}
+			//Object o = param;
+			//o.getClass().getf
+		}*/
+		parseIntegerKeyWithMaxVal(options, "частота обновлений",param,data,"updatesPerDay",DEFAULT_UPDATES_PER_DAY, MAX_UPDATES_PER_DAY);
+		
 		/*
 		int normalSize = 40 * 1000;
 		key = "нормальная";
@@ -1068,6 +1109,27 @@ public class NirvanaBot extends NirvanaBasicBot{
 	return true;
 	}
 	
+	private void parseIntegerKeyWithMaxVal(Map<String, String> options, String key, PortalParam params, 
+			NewPagesData data, String paramName, int DEF_VAL, int MAX_VAL) throws NoSuchFieldException, 
+			SecurityException, IllegalArgumentException, IllegalAccessException {
+		Field field = params.getClass().getField(paramName);
+		//param.updatesPerDay = DEFAULT_UPDATES_PER_DAY;
+		int val = DEF_VAL;
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {	
+			try {
+				val = Integer.parseInt(options.get(key));
+			} catch(NumberFormatException e) {
+				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+				data.errors.add(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING_RU, key, options.get(key)));
+			}
+			if(val>MAX_VAL) {
+				data.errors.add(String.format(ERROR_INTEGER_TOO_BIG_STRING_RU, key, options.get(key),MAX_VAL));
+				val = MAX_VAL;				
+			}
+		}
+		field.set(params, val);		
+	}
+	
 	private boolean validateParams(PortalParam param, List<String> errors) {
 		boolean retval = true;
 		if(param.categories.isEmpty()) {
@@ -1079,6 +1141,16 @@ public class NirvanaBot extends NirvanaBasicBot{
 			log.warn(String.format(ERROR_ABSENT_PARAMETER_RU, "статья"));
 			errors.add(String.format(ERROR_ABSENT_PARAMETER_RU,"статья"));
 			retval = false;
+		}
+		if(param.updatesPerDay>DEFAULT_STARTS_PER_DAY) {
+			param.updatesPerDay = DEFAULT_STARTS_PER_DAY;
+		}
+		
+		if (startNumber != 1) {
+			int freq = DEFAULT_STARTS_PER_DAY / param.updatesPerDay;
+			if ((startNumber-1)%freq != 0) {
+				retval = false;
+			}
 		}
 		return retval;
 	}
@@ -1201,6 +1273,17 @@ public class NirvanaBot extends NirvanaBasicBot{
 			return optionToStringArray(option, true);
 		}
 		return list;
+	}
+	
+	protected static ArrayList<List<String>> multiOptionToArray(Map<String, String> options, String key, int start, int end) {
+		ArrayList<List<String>> listlist = new ArrayList<List<String>>(end-start+1);
+		String keyNumbered;
+		for(int i=start;i<=end;i++) {
+			keyNumbered = key + String.valueOf(i);
+			List<String> list = optionToStringArray(options, keyNumbered);
+			listlist.add(list);
+		}
+		return listlist;
 	}
 	
 }

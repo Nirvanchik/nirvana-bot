@@ -1,6 +1,6 @@
 /**
- *  @(#)WatchList.java 16/11/2013
- *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
+ *  @(#)WatchList.java 13.07.2014
+ *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ import javax.security.auth.login.LoginException;
 
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicFetcher;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PagesFetcherOBOCatScan2;
 
 /**
@@ -53,7 +53,7 @@ public class WatchList extends NewPages {
 	}
 	
 	@Override
-	PageListFetcher createPageListFetcher() {
+	BasicFetcher createPageListFetcher() {
 		return new PagesFetcherOBOCatScan2(categories, categoriesToIgnore, language, depth, namespace);
 	}
 	

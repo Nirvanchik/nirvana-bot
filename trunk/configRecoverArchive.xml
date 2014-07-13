@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>no comments</comment>
+<entry key="log4j-settings">config/log4j-log-def.cfg</entry>
+<entry key="wiki-login">NirvanaBot</entry>
+<entry key="wiki-password"></entry>
+<entry key="wiki-account-file">loginNirvanaBot.xml</entry>
+<entry key="new-pages-template">Участник:NirvanaBot/Новые статьи</entry>
+<entry key="wiki-lang">ru</entry>
+<entry key="default-depth">15</entry>
+<entry key="default-hours">720</entry>
+<entry key="default-maxitems">1</entry>
+<entry key="error-notification">no</entry>
+<entry key="debug-mode">no</entry>
+<entry key="stop-after">0</entry>
+<entry key="start-from">0</entry>
+<entry key="update-pause">1000</entry>
+<entry key="parse-count">100000</entry>
+<entry key="statistics">no</entry>
+<entry key="statistics-file">report.NirvanaBot.rec-%(date).txt</entry>
+<entry key="statistics-format">txt</entry>
+<entry key="task-list">yes</entry>
+<entry key="task-list-file">recover_archive_task.txt</entry>
+
+</properties>

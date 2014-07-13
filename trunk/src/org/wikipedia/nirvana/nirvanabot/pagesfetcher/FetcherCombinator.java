@@ -1,5 +1,5 @@
 /**
- *  @(#)NewPagesFetcherOBOCatScan.java 28.10.2013
+ *  @(#)FetcherCombinator.java 29.04.2014
  *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -24,15 +24,19 @@
 package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.wikipedia.nirvana.WikiTools;
+import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.NirvanaWiki;
 
 /**
  * @author kin
  *
  */
-public class NewPagesFetcherOBOCatScan extends PageListFetcherOneByOne {
+public class FetcherCombinator implements PageListFetcher {
+	protected static org.apache.log4j.Logger log = null;
+	private List<PageListFetcher> fetchers;
 
 	/**
 	 * @param cats
@@ -42,29 +46,32 @@ public class NewPagesFetcherOBOCatScan extends PageListFetcherOneByOne {
 	 * @param hours
 	 * @param namespace
 	 */
-	public NewPagesFetcherOBOCatScan(List<String> cats, List<String> ignore,
-	        String lang, int depth, int hours, int namespace) {
-		super(cats, ignore, lang, depth, hours, namespace);
-		SKIP_LINES = 0;
-	    NS_POS = 0;
-	    TITLE_POS = 1;
-	    REVID_POS = 5;
-	    ID_POS = 4;
-	    filteredByNamespace = false;
-	    hasSuffix = false;
+	public FetcherCombinator(List<PageListFetcher> fetchers) {
+		this.fetchers = fetchers;
+		log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
 	}
 
 	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.PageListFetcherOneByOne#getNewPagesForCat(java.lang.String, java.lang.String, int, int)
+	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicFetcher#getNewPages(org.wikipedia.nirvana.NirvanaWiki)
 	 */
 	@Override
-	protected String getNewPagesForCat(String category, String language,
-	        int depth, int hours) throws IOException, InterruptedException {		
-		return WikiTools.loadNewPagesForCatWithCatScan(category, language, depth, hours);
+	public ArrayList<Revision> getNewPages(NirvanaWiki wiki)
+	        throws IOException, InterruptedException {
+		ArrayList<Revision> list;
+		list = fetchers.get(0).getNewPages(wiki);
+		for(int i=1;i<fetchers.size();i++) {
+			log.debug("adding results from another fetcher: "+i);
+			list.addAll(fetchers.get(i).getNewPages(wiki));
+		}
+		return list;
 	}
 
-	public boolean revisionAvailable() {
-		return true;
+	/* (non-Javadoc)
+	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicFetcher#revisionAvailable()
+	 */
+	@Override
+	public boolean revisionAvailable() {		
+		return fetchers.get(0).revisionAvailable();
 	}
 
 	/* (non-Javadoc)
@@ -72,6 +79,7 @@ public class NewPagesFetcherOBOCatScan extends PageListFetcherOneByOne {
      */
     @Override
     public boolean mayHaveDuplicates() {	    
-	    return false;
+	    return fetchers.size()>1;
     }
+
 }

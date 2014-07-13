@@ -1,6 +1,6 @@
 /**
  *  @(#)PortalParam.java 23/08/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)
+ *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -55,6 +55,13 @@ public class PortalParam {
 	Deleted deletedFlag;
 	public int renamedFlag;
 	public String imageSearchTags;
+	public int updatesPerDay;
+	
+	public static final int MAX_CAT_GROUPS = 20;
+	
+	//public List<Pair<List<String>,List<String>>> categoryPairs;
+	public List<List<String>> categoryGroups;
+	public List<List<String>> categoryToIgnoreGroups;
 	
 	public enum Deleted{
 		DONT_TOUCH,
@@ -72,5 +79,6 @@ public class PortalParam {
 		bot = true;
 		deletedFlag = Deleted.DONT_TOUCH;
 		imageSearchTags = null;
+		updatesPerDay = 1;
 	}
 }
