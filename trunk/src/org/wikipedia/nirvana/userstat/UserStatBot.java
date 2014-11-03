@@ -1,6 +1,6 @@
 /**
  *  @(#)UserStatBot.java 19/09/2013
- *  Copyright © 2013 Dmitry Trofimovich (KIN)
+ *  Copyright © 2013 - 2014 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ public class UserStatBot extends NirvanaBasicBot {
 	protected void go() {
 		//log.info("Bot");
 		
-		String tasks[] = FileTools.readFileToList(TASK_LIST_FILE);
+		String tasks[] = FileTools.readFileToList(TASK_LIST_FILE, true);
 		
 		if(tasks==null) {
 			return;

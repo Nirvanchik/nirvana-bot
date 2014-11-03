@@ -50,6 +50,8 @@ public class Statistics {
 	public static String portal = "";
 	String header;
 	String footer;
+	String customHeader = "";
+	String customFooter = "";
 	String totalTemplate;
 	String itemTemplate;
 	//String ini;
@@ -152,8 +154,15 @@ public class Statistics {
 		init();
 	}
 	
-	public void setOptions(Map<String,String> options) {
-		// no default options
+	public void setOptions(Map<String,String> options) {		
+		String key = "шапка";
+		if(options.containsKey(key) && !options.get(key).isEmpty()) {
+			customHeader = options.get(key).replace("\\n", "\n");
+		}
+		key = "подвал";
+		if(options.containsKey(key) && !options.get(key).isEmpty()) {
+			customFooter = options.get(key).replace("\\n", "\n");
+		}
 	}
 	
 	protected void init() throws FileNotFoundException, BadAttributeValueExpException {
@@ -236,6 +245,7 @@ public class Statistics {
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
+		sb.append(customHeader);
 		sb.append(header);
 		sb.append(DELIMETER);
 		for(StatItem item:items) {
@@ -247,6 +257,7 @@ public class Statistics {
 			sb.append(DELIMETER);
 		}
 		sb.append(footer);
+		sb.append(customFooter);
 		return sb.toString();
 	}
 	

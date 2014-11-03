@@ -1,6 +1,6 @@
 /**
  *  @(#)PortalModule.java 07/04/2012
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,10 +24,12 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import java.io.IOException;
+import java.rmi.ServerError;
 
 import javax.security.auth.login.LoginException;
 
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
 
 /**
  * @author kin
@@ -35,6 +37,6 @@ import org.wikipedia.nirvana.NirvanaWiki;
  */
 public interface PortalModule {
 	public boolean update(NirvanaWiki wiki, ReportItem reportData, 
-			String comment) throws IOException, LoginException, InterruptedException;	
+			String comment) throws IOException, LoginException, InterruptedException, ServiceError;	
 }
 

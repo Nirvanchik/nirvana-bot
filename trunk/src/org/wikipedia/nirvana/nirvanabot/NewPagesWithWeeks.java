@@ -1,6 +1,6 @@
 /**
- *  @(#)NewPagesWithWeeks.java 13.07.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)NewPagesWithWeeks.java
+ *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
 
 /**
@@ -58,7 +59,7 @@ public class NewPagesWithWeeks extends NewPages {
 	}
 	
 		
-	public Map<String,Data> getData(NirvanaWiki wiki) throws IOException, InterruptedException {
+	public Map<String,Data> getData(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError {
 		log.info("Processing data for [[" + this.pageName+"]]");
 		
 		
@@ -153,7 +154,7 @@ public class NewPagesWithWeeks extends NewPages {
 
 	
 	@Override
-	public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment) throws IOException, LoginException, InterruptedException {
+	public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment) throws IOException, LoginException, InterruptedException, ServiceError {
 		boolean updated = false;
 		
 		Map<String,Data> d = getData(wiki);

@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaBot.java 1.8 13.07.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)NirvanaBot.java 1.9 19.10.2014
+ *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@ import org.wikipedia.Wiki.Error504;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
@@ -50,14 +52,16 @@ import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderUniversal;
  *
  */
 public class NirvanaBot extends NirvanaBasicBot{
+	private String userNamespace;
 	public static final String DEPTH_SEPARATOR = "|";
     public static final String ADDITIONAL_SEPARATOR = "#";
     
-	public static final String SERVICE_CATSCAN = "catscan";
-	public static final String SERVICE_CATSCAN2 = "catscan2";
+//	public static final String SERVICE_CATSCAN = "catscan";
+//	public static final String SERVICE_CATSCAN2 = "catscan2";
 	public static final String YES_RU = "да";
 	public static final String NO_RU = "нет";
 
+	private static int START_FROM = 0;
 	private static int STOP_AFTER = 0;
 	public static int UPDATE_PAUSE = 1000;
 	
@@ -66,9 +70,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static boolean TASK = false;
 	private static String TASK_LIST_FILE = "task.txt";
 	
-	private static int START_FROM = 0;
 	
-	private String newpagesTemplate = null;
+	//private String newpagesTemplate = null;
+	private String newpagesTemplates[] = null;
 	
 	public static final String ERROR_PARSE_INTEGER_FORMAT_STRING = "Error when parsing integer parameter \"%1$s\" integer value %2$s";
 	private static final String ERROR_PARSE_INTEGER_FORMAT_STRING_RU = "Ошибка при чтении параметра \"%1$s\". Значение %2$s не распознано как число.";
@@ -87,17 +91,19 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static int DEFAULT_DEPTH = 7;
 	private static int MAX_MAXITEMS = 5000;
 	private static int DEFAULT_MAXITEMS = 20;
-	private static int MAX_HOURS = 720;
-	private static int MAX_HOURS_CATSCAN = 720;
-	private static int MAX_HOURS_CATSCAN2 = 8760; // 1 year // 24*31*12 = 8928;
-	private static int DEFAULT_HOURS = 720;
-	private static String DEFAULT_SERVICE = SERVICE_CATSCAN2;
+	private static int DEFAULT_HOURS = 500;
+	private static WikiTools.Service DEFAULT_SERVICE = WikiTools.Service.CATSCAN2;
+	private static String DEFAULT_SERVICE_NAME = DEFAULT_SERVICE.name();
 	private static boolean DEFAULT_USE_FAST_MODE = true;
 	private static boolean ERROR_NOTIFICATION = false;
 	private static String COMMENT = "обновление";
 	
 	private static boolean GENERATE_REPORT = false;
+	private static boolean UPDATE_STATUS = false;
 	private static String REPORT_FILE_NAME = "report.txt";
+	private static String REPORT_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Отчёт";
+	private static String STATUS_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Статус";
+	private static String STATUS_WIKI_TEMPLATE = "Участник:NirvanaBot/Новые статьи/Отображение статуса";
 	private static String REPORT_FORMAT = "txt";
 	private static String DEFAULT_FORMAT = "* [[%(название)]]";
 	private static String DEFAULT_TYPE = "список новых статей";
@@ -111,7 +117,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	
 	private static String overridenPropertiesPage = null;
 	
-	private static String PICTURE_SEARCH_TAGS = "image file,Фото,портрет,Изображение";
+	private static String PICTURE_SEARCH_TAGS = "image file,Фото,портрет,Изображение,Файл,File";
 	
 	private static int DEFAULT_NAMESPACE = 0;
 	
@@ -150,6 +156,14 @@ public class NirvanaBot extends NirvanaBasicBot{
 		ERROR
 	};
 	
+	public enum BotError {
+		NONE,
+		UNKNOWN_ERROR,
+		BOT_ERROR,
+		SERVICE_ERROR,		
+		IO_ERROR,
+	};
+	
 	public static String getDefaultFooter() {
 		return DEFAULT_FOOTER;
 	}
@@ -162,7 +176,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		return DEFAULT_MIDDLE;
 	}
 	public static String PROGRAM_INFO = 
-			"NirvanaBot v1.8 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
+			"NirvanaBot v1.9 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
 			"Copyright (C) 2011-2014 Dmitry Trofimovich (KIN)\n" +
 			"\n";
 			
@@ -188,17 +202,18 @@ public class NirvanaBot extends NirvanaBasicBot{
 	
 	@Override
 	protected boolean loadCustomProperties(Map<String,String> launch_params) {
-		newpagesTemplate = properties.getProperty("new-pages-template");
-		if(newpagesTemplate==null) {
+		String str = properties.getProperty("new-pages-template");
+		newpagesTemplates = str.trim().split("\\s*,\\s*");
+		if(newpagesTemplates==null || newpagesTemplates.length==0) {
 			if(DEBUG_BUILD)
-				newpagesTemplate = "Участник:NirvanaBot/test/Новые статьи";
+				newpagesTemplates = new String[]{"Участник:NirvanaBot/test/Новые статьи"};
 			else {
 				System.out.println("ABORT: properties not found");
 				log.fatal("New pages template name (new-pages-template) is not specified in settings");
 				return false;
 			}
 		}	
-		log.info("new pages template : "+newpagesTemplate);	
+		log.info("new pages templates : "+newpagesTemplates.toString());	
 		
 		
 		ERROR_NOTIFICATION = properties.getProperty("error-notification",ERROR_NOTIFICATION?YES:NO).equals(YES);
@@ -211,6 +226,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		log.info("hours="+DEFAULT_HOURS);
 		DEFAULT_MAXITEMS = validateIntegerSetting(properties,"default-maxitems",DEFAULT_MAXITEMS,true);
 		log.info("maxitems="+DEFAULT_MAXITEMS);		
+		START_FROM = validateIntegerSetting(properties,"start-from",START_FROM,false);
 		STOP_AFTER = validateIntegerSetting(properties,"stop-after",STOP_AFTER,false);		
 		UPDATE_PAUSE = validateIntegerSetting(properties,"update-pause",UPDATE_PAUSE,false);
 		
@@ -218,12 +234,12 @@ public class NirvanaBot extends NirvanaBasicBot{
 		
 		DEFAULT_PARSE_COUNT = validateIntegerSetting(properties,"parse-count",DEFAULT_PARSE_COUNT,false);
 		
-		DEFAULT_SERVICE = validateService(properties.getProperty("service",DEFAULT_SERVICE), DEFAULT_SERVICE);
+		DEFAULT_SERVICE_NAME = validateService(properties.getProperty("service",DEFAULT_SERVICE_NAME), DEFAULT_SERVICE_NAME);
+		DEFAULT_SERVICE = WikiTools.Service.getServiceByName(DEFAULT_SERVICE_NAME, DEFAULT_SERVICE);
 		
 		DEFAULT_USE_FAST_MODE = properties.getProperty("fast-mode",DEFAULT_USE_FAST_MODE?YES:NO).equals(YES);
 		
 		//if(UPDATE_LIMIT>0) UPDATE_LIMIT_ENABLED = true;
-		START_FROM = validateIntegerSetting(properties,"start-from",START_FROM,false);
 
 		TIME_FORMAT = properties.getProperty("time-format",TIME_FORMAT);
 		if(!TIME_FORMAT.equalsIgnoreCase("short") && !TIME_FORMAT.equalsIgnoreCase("long") )
@@ -233,14 +249,34 @@ public class NirvanaBot extends NirvanaBasicBot{
 		log.info("task list : "+(TASK?YES:NO));
 		TASK_LIST_FILE = properties.getProperty("task-list-file",TASK_LIST_FILE);
 		log.info("task list file: "+TASK_LIST_FILE);
+
+		if (launch_params.containsKey("start_number")) {
+			try {
+			    startNumber = Integer.parseInt(launch_params.get("start_number"));
+			} catch(NumberFormatException e){
+				// ignore
+			}
+		}
 		
 		GENERATE_REPORT = properties.getProperty("statistics",GENERATE_REPORT?YES:NO).equals(YES);
+		UPDATE_STATUS = properties.getProperty("update-status",GENERATE_REPORT?YES:NO).equals(YES);
 		REPORT_FILE_NAME = properties.getProperty("statistics-file",REPORT_FILE_NAME);
+		REPORT_WIKI_PAGE = properties.getProperty("statistics-wiki",REPORT_WIKI_PAGE);
+		STATUS_WIKI_PAGE = properties.getProperty("status-wiki",STATUS_WIKI_PAGE);
+		STATUS_WIKI_TEMPLATE = properties.getProperty("status-wiki-template",STATUS_WIKI_TEMPLATE);
 		REPORT_FORMAT = properties.getProperty("statistics-format",REPORT_FORMAT);
-		if(REPORT_FILE_NAME.contains("%(date)")) {
+		if (REPORT_FILE_NAME.contains("%(date)")) {
 			//Calendar c = Calendar.getInstance();
 			String date = String.format("%1$tF", Calendar.getInstance());
 			REPORT_FILE_NAME = REPORT_FILE_NAME.replace("%(date)", date);
+		}
+		if (REPORT_FILE_NAME.contains("%(time)")) {
+			//Calendar c = Calendar.getInstance();
+			String time = String.format("%1$tT", Calendar.getInstance());
+			REPORT_FILE_NAME = REPORT_FILE_NAME.replace("%(time)", time).replace(':', '-');
+		}
+		if (REPORT_FILE_NAME.contains("%(launch_number)")) {
+			REPORT_FILE_NAME = REPORT_FILE_NAME.replace("%(launch_number)", String.valueOf(startNumber));
 		}
 		
 		PICTURE_SEARCH_TAGS = properties.getProperty("picture-search-tags",PICTURE_SEARCH_TAGS);
@@ -250,19 +286,11 @@ public class NirvanaBot extends NirvanaBasicBot{
 		
 		overridenPropertiesPage = properties.getProperty("overriden-properties-page",null);
 		
-		if (launch_params.containsKey("start_number")) {
-			try {
-			    startNumber = Integer.parseInt(launch_params.get("start_number"));
-			} catch(NumberFormatException e){
-				// ignore
-			}
-		}
-		
 		return true;
 	}
 	
 	private static boolean validateService(String service) {
-		return service.equalsIgnoreCase(SERVICE_CATSCAN) || service.equalsIgnoreCase(SERVICE_CATSCAN2);
+		return service.equalsIgnoreCase(WikiTools.Service.CATSCAN.name()) || service.equalsIgnoreCase(WikiTools.Service.CATSCAN2.name());
 	}
 	    
 	private static String validateService(String service, String defaultValue) {
@@ -272,7 +300,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		return defaultValue;
 	}
 	
-	private void loadOverridenProperties() throws IOException	{
+	private void loadOverridenProperties(String newpagesTemplate) throws IOException	{
 		if(overridenPropertiesPage==null || overridenPropertiesPage.isEmpty())
 			return;
 		log.info("loading overriden properties from page "+overridenPropertiesPage);
@@ -283,114 +311,112 @@ public class NirvanaBot extends NirvanaBasicBot{
 			log.fatal("Failed to read overriden properties page: "+overridenPropertiesPage);
 			throw e;
 		}
-		Map<String, String> options = new HashMap<String, String>();
-		if(TryParseTemplate(newpagesTemplate, overridenPropertiesText,options)) {			
-			if (options.containsKey("разделитель") && !options.get("разделитель").isEmpty())
-			{
-				DEFAULT_DELIMETER = options.get("разделитель").replace("\"", "").replace("\\n", "\n");
+		Map<String, String> options = new HashMap<String, String>();		
+		if(!TryParseTemplate(newpagesTemplate, userNamespace, overridenPropertiesText,options)) {
+			log.info("no default settings for this template: "+newpagesTemplate);
+			return;
+		}
+		if (options.containsKey("разделитель") && !options.get("разделитель").isEmpty())
+		{
+			DEFAULT_DELIMETER = options.get("разделитель").replace("\"", "").replace("\\n", "\n");
+		}
+		
+		String key = "формат элемента";
+		if (options.containsKey(key) && !options.get(key).isEmpty())
+		{
+			DEFAULT_FORMAT = options.get(key);//.replace("{", "{{").replace("}", "}}");
+		}			
+		
+		key = "глубина";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {			
+			try {
+				DEFAULT_DEPTH = Integer.parseInt(options.get(key));
+			} catch(NumberFormatException e) {
+				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));					
 			}
-			
-			String key = "формат элемента";
-			if (options.containsKey(key) && !options.get(key).isEmpty())
-			{
-				DEFAULT_FORMAT = options.get(key);//.replace("{", "{{").replace("}", "}}");
-			}			
-			
-			key = "глубина";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {			
-				try {
-					DEFAULT_DEPTH = Integer.parseInt(options.get(key));
-				} catch(NumberFormatException e) {
-					log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));					
-				}
-				if(DEFAULT_DEPTH>MAX_DEPTH) {					
-					DEFAULT_DEPTH = MAX_DEPTH;				
-				}
-			}			
-			
-			key = "сервис";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				DEFAULT_SERVICE = validateService(options.get(key), DEFAULT_SERVICE);
+			if(DEFAULT_DEPTH>MAX_DEPTH) {					
+				DEFAULT_DEPTH = MAX_DEPTH;				
 			}
-			if (DEFAULT_SERVICE.equals(SERVICE_CATSCAN)) {
-				MAX_HOURS = MAX_HOURS_CATSCAN;
-			} else if (DEFAULT_SERVICE.equals(SERVICE_CATSCAN2)) {
-				MAX_HOURS = MAX_HOURS_CATSCAN2;
+		}			
+		
+		key = "сервис";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			DEFAULT_SERVICE_NAME = validateService(options.get(key), DEFAULT_SERVICE_NAME);
+			DEFAULT_SERVICE = WikiTools.Service.getServiceByName(DEFAULT_SERVICE_NAME, DEFAULT_SERVICE);			
+		}
+		
+		key = "быстрый режим";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			DEFAULT_USE_FAST_MODE = options.get(key).equalsIgnoreCase(YES_RU);
+		}
+		
+		key = "часов";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {		
+			try {
+				DEFAULT_HOURS = Integer.parseInt(options.get(key));
+			} catch(NumberFormatException e) {
+				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
 			}
-			
-			key = "быстрый режим";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				DEFAULT_USE_FAST_MODE = options.get(key).equalsIgnoreCase(YES_RU);
-			}
-			
-			key = "часов";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {		
-				try {
-					DEFAULT_HOURS = Integer.parseInt(options.get(key));
-				} catch(NumberFormatException e) {
-					log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
-				}
-				if(DEFAULT_HOURS>MAX_HOURS) {
-					DEFAULT_HOURS = MAX_HOURS;				
-				}
-			}
-			
-			key = "элементов";
-			if (options.containsKey(key) && !options.get(key).isEmpty())
-			{		
-				try {
-					DEFAULT_MAXITEMS = Integer.parseInt(options.get(key));
-				} catch(NumberFormatException e) {
-					log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
-				}
-				if(DEFAULT_MAXITEMS>MAX_MAXITEMS) {
-					DEFAULT_MAXITEMS = MAX_MAXITEMS;
-				}
-			}
-			
-			key = "пространство имён";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {			
-				try {
-					DEFAULT_NAMESPACE = Integer.parseInt(options.get(key));
-				} catch(NumberFormatException e) {
-					log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
-				}
-			}			
-			
-			if (options.containsKey("шапка") && !options.get("шапка").isEmpty())
-			{
-				DEFAULT_HEADER = options.get("шапка").replace("\\n", "\n");
-			}			
-			
-			if (options.containsKey("середина") && !options.get("середина").isEmpty())
-			{
-				DEFAULT_MIDDLE = options.get("середина").replace("\\n", "\n");
-			}
-			
-			if (options.containsKey("подвал") && !options.get("подвал").isEmpty())
-			{
-				DEFAULT_FOOTER = options.get("подвал").replace("\\n", "\n");
-			}
-			
-			if(options.containsKey("тип") && !options.get("тип").isEmpty()) {				
-				DEFAULT_TYPE = options.get("тип").toLowerCase();
-			}	
-			
-			key = "удаленные статьи";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				DEFAULT_DELETED_FLAG = parseDeleted(options.get(key),DEFAULT_DELETED_FLAG,null);
-			}
-			
-			key = "переименованные статьи";			
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				DEFAULT_RENAMED_FLAG = parseRenamed(options.get(key),DEFAULT_RENAMED_FLAG,null);
-			}
-			
-			key = "поиск картинки";
-			if (options.containsKey(key) && !options.get(key).isEmpty()) {
-				PICTURE_SEARCH_TAGS = options.get(key);
+			if(DEFAULT_HOURS>DEFAULT_SERVICE.MAX_HOURS) {
+				DEFAULT_HOURS = DEFAULT_SERVICE.MAX_HOURS;				
 			}
 		}
+		
+		key = "элементов";
+		if (options.containsKey(key) && !options.get(key).isEmpty())
+		{		
+			try {
+				DEFAULT_MAXITEMS = Integer.parseInt(options.get(key));
+			} catch(NumberFormatException e) {
+				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+			}
+			if(DEFAULT_MAXITEMS>MAX_MAXITEMS) {
+				DEFAULT_MAXITEMS = MAX_MAXITEMS;
+			}
+		}
+		
+		key = "пространство имён";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {			
+			try {
+				DEFAULT_NAMESPACE = Integer.parseInt(options.get(key));
+			} catch(NumberFormatException e) {
+				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+			}
+		}			
+		
+		if (options.containsKey("шапка") && !options.get("шапка").isEmpty())
+		{
+			DEFAULT_HEADER = options.get("шапка").replace("\\n", "\n");
+		}			
+		
+		if (options.containsKey("середина") && !options.get("середина").isEmpty())
+		{
+			DEFAULT_MIDDLE = options.get("середина").replace("\\n", "\n");
+		}
+		
+		if (options.containsKey("подвал") && !options.get("подвал").isEmpty())
+		{
+			DEFAULT_FOOTER = options.get("подвал").replace("\\n", "\n");
+		}
+		
+		if(options.containsKey("тип") && !options.get("тип").isEmpty()) {				
+			DEFAULT_TYPE = options.get("тип").toLowerCase();
+		}	
+		
+		key = "удаленные статьи";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			DEFAULT_DELETED_FLAG = parseDeleted(options.get(key),DEFAULT_DELETED_FLAG,null);
+		}
+		
+		key = "переименованные статьи";			
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			DEFAULT_RENAMED_FLAG = parseRenamed(options.get(key),DEFAULT_RENAMED_FLAG,null);
+		}
+		
+		key = "поиск картинки";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			PICTURE_SEARCH_TAGS = options.get(key);
+		}		
 	}
 	
 	protected static PortalParam.Deleted parseDeleted(String value, PortalParam.Deleted defaultValue,ArrayList<String> errors) {
@@ -418,282 +444,284 @@ public class NirvanaBot extends NirvanaBasicBot{
 		Calendar cStart = Calendar.getInstance();
 		long start = cStart.getTimeInMillis();
 		//Date d = cStart.getTime();
-		log.info("BOT STARTED at "+cStart.get(Calendar.HOUR_OF_DAY)+":"+cStart.get(Calendar.MINUTE));
-		log.info("template to check: "+newpagesTemplate);
+		//log.info("BOT STARTED at "+cStart.get(Calendar.HOUR_OF_DAY)+":"+cStart.get(Calendar.MINUTE));
+
+		//ArrayList<ReportItem> report = null;
+        BotReporter reporter;
+        reporter = new BotReporter(wiki, 700, true);
+        //reporter.botStarted(true);
+        if (UPDATE_STATUS) {
+        	try {
+	            reporter.updateStartStatus(STATUS_WIKI_PAGE, STATUS_WIKI_TEMPLATE);
+            } catch (LoginException | IOException e) {
+            	log.error(e);	            
+            }
+        }
 		
-		try {
-			loadOverridenProperties();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
+        try {
+	        userNamespace = wiki.namespaceIdentifier(Wiki.USER_NAMESPACE);
+        } catch (IOException e) {
+	        log.fatal("Failed to retrieve user namespace");
+	        return;
+        }
+        
+        for (String newpagesTemplate: newpagesTemplates) {
+        	long startT = Calendar.getInstance().getTimeInMillis();
+    		log.info("template to check: "+newpagesTemplate);
+    		
+    		try {
+    			loadOverridenProperties(newpagesTemplate);
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    			return;
+    		}
+    		
+    		// 1 extract portal list
+    		String []portalNewPagesLists = null;
+    		//List<String>
+    		try {
+    			portalNewPagesLists = wiki.whatTranscludesHere(newpagesTemplate, Wiki.ALL_NAMESPACES);
+    		} catch (IOException e) {			
+    			log.fatal("failed to get portal list");
+    			return;
+    		}
+    		log.info("loaded portal settings: "+portalNewPagesLists.length);
+    		java.util.Arrays.sort(portalNewPagesLists);
+    		
+    		String [] tasks = null;
+    		if(TASK) {	
+    			log.info("reading tasks from file: "+TASK_LIST_FILE);
+    			tasks = FileTools.readFileToList(TASK_LIST_FILE, true);
+    			if (tasks == null) {
+    				return;
+    			}
+    			log.info("loaded tasks: "+tasks.length+" total");
+    		}
+    		
+    		int i = 0;	// текущий портал
+    		int t = 0;	// количество проверенных порталов
+    		int retry_count = 0;
+    		boolean retry = false;
+    		ReportItem reportItem = null;
+    		String portalName = null;
+    		
+    		// this is a workaround for bad support of keep alive feature in HttpUrlConnection
+    		// without it, writing of big articles (~500KB) may hang 
+    		// (when reading answer from server after writing)
+    		System.setProperty("http.keepAlive", "false"); // adjust HTTP connections
+    		
+    		// show task list
+    		if(tasks!=null) {
+    			for(String task : tasks) {
+    				log.debug("task: "+task);
+    			}
+    		}
+    		
+    		while(i < portalNewPagesLists.length) {	
+    			log.debug("start processing portal No: "+i);
+    			if(retry) {
+    				retry = false;
+    				log.info("retrying portal: "+portalName);		
+    				retry_count++;
+    				//reportItem = report.get(report.size()-1);
+    			} else {
+    				retry_count = 0;
+    				portalName = portalNewPagesLists[i];
+    						
+    				//i++;	
+    				int percent = (i*100)/portalNewPagesLists.length;
+    				log.info(String.format(
+    						"=[ %1$d/%2$d: %3$d%% ]===================================================================",
+    						i+1,portalNewPagesLists.length,percent));
+    				log.info("processing portal: "+portalName);
+    				//Calendar startPortalTime = Calendar.getInstance();
+    				reportItem = new ReportItem(newpagesTemplate, portalName);
+    				if(reporter!=null) reporter.add(reportItem);
+    				reportItem.startTime = System.currentTimeMillis();
+    			}
+    			
+    			
+    			
+    			//if(DEBUG_BUILD && !portalName.endsWith(TESTING_PORTAL)) {log.info("SKIP portal: "+portalName);	continue;}
+    			
+    			if(tasks!=null) {
+    				boolean skip = true;
+    				for(String task : tasks) {					
+    					if(portalName.startsWith(task)) {
+    						log.debug("task detected: "+task);
+    						skip = false;
+    						break;
+    					}
+    				}
+    				if(skip) { log.info("SKIP portal: "+portalName); reportItem.skip(); i++; continue; }
+    			}
+    			if(retry_count==0) t++;
+    			if(t<START_FROM) {log.info("SKIP portal: "+portalName);	reportItem.skip(); i++; continue;}
+    			
+    			if(retry_count==0) reporter.portalChecked();
+    			
+    			try {				
+    				
+    				String portalSettingsText = wiki.getPageText(portalName);
+    				
+    				if(DEBUG_MODE) {					
+    					FileTools.dump(portalSettingsText, "dump", portalName+".settings.txt");
+    				}
+    				Map<String, String> parameters = new HashMap<String, String>();
+    				if(TryParseTemplate(newpagesTemplate, userNamespace, portalSettingsText, parameters)) {
+    					log.info("validate portal settings OK");					
+    					logPortalSettings(parameters);
+    					NewPagesData data = new NewPagesData();
+    					createPortalModule(parameters, data);
+    					if(TYPE.equals("all") || TYPE.equals(data.type)) {
+    						if(data.portalModule!=null) {							
+    								if(DEBUG_MODE || !DEBUG_BUILD || !portalName.contains("ValidParam") /*&& !portalName.contains("Testing")*/) {
+    									reporter.portalProcessed();
+    									if(data.portalModule.update(wiki, reportItem, COMMENT)) {
+    										reporter.portalUpdated();
+    										reportItem.status = Status.UPDATED;
+    									} else {
+    										reportItem.status = Status.PROCESSED;
+    									}   									
+    									
+    									if(UPDATE_PAUSE>0) Thread.sleep(UPDATE_PAUSE);
+    								}
+    							
+    						} else {
+    							log.warn("portal module not created");
+    						}
+    					} else {
+    						reportItem.skip();						
+    						log.info("SKIP portal: "+portalName); 
+    					}
+    					if(!data.errors.isEmpty()) {
+    						log.warn("errors occured during checking settings");
+    						for(String str:data.errors) {
+    							log.info(str);
+    						}
+    						reportItem.errors = data.errors.size();
+    						String errorText = StringUtils.join(data.errors, "\n");
+    						FileTools.dump(errorText, "dump", portalName+".err");
+    						if(ERROR_NOTIFICATION) {
+    							for(String err:data.errors) {
+    								log.info(err);
+    							}
+    						}
+    					}
+    				} else {
+    					reportItem.settingsValid = false;
+    					log.error("validate portal settings FAILED");
+    				}
+    				
+    			} catch (IllegalArgumentException | IndexOutOfBoundsException | NullPointerException | java.util.zip.ZipException e) { 
+    				// includes ArrayIndexOfBoundsException
+    				log.error(e.toString()); 
+    				if(retry_count<RETRY_MAX) {
+    					log.info("RETRY AGAIN");
+    					retry = true;
+    				} else {
+    					reporter.portalError();
+    					reportItem.status = Status.ERROR;
+    					reportItem.error = BotError.BOT_ERROR;
+    					//e.printStackTrace();
+    					log.error("OOOOPS!!!", e); // print stack trace
+    				}	
+    			} catch (ServiceError e) {
+    				log.error(e.toString());
+    				if(retry_count<RETRY_MAX) {
+    					log.info("RETRY AGAIN");
+    					retry = true;
+    				} else {
+    					reporter.portalError();
+    					reportItem.status = Status.ERROR;
+    					reportItem.error = BotError.SERVICE_ERROR;
+    					//e.printStackTrace();
+    					log.error("OOOOPS!!!", e); // print stack trace
+    				}
+    			} catch (Error504 e) {				
+    					log.warn(e.toString());
+    					log.info("ignore error and continue ...");
+    					reporter.portalError();
+    					reportItem.status = Status.ERROR;
+    					reportItem.error = BotError.SERVICE_ERROR;
+    			} catch (IOException e) {
+    				
+    				if(retry_count<RETRY_MAX) {
+    					log.warn(e.toString());
+    					log.info("RETRY AGAIN");
+    					retry = true;
+    				} else {
+    					log.error(e.toString());
+    					reporter.portalError();
+    					reportItem.status = Status.ERROR;
+    					reportItem.error = BotError.IO_ERROR;
+    					//e.printStackTrace();
+    					log.error("OOOOPS!!!", e); // print stack trace
+    				}
+    			} catch (LoginException e) {
+    				log.fatal(e.toString());
+    				break;
+    				//e.printStackTrace();
+    			} catch (InterruptedException e) {				
+    				log.fatal(e.toString(),e);
+    				break;
+    			} catch (Exception e) {
+    				log.error(e.toString()); 
+    				if(retry_count<RETRY_MAX) {
+    					log.info("RETRY AGAIN");
+    					retry = true;
+    				} else {
+    					reporter.portalError();
+    					reportItem.status = Status.ERROR;
+    					//e.printStackTrace();
+    					log.error("OOOOPS!!!", e); // print stack trace
+    				}	
+    			} catch (Error e) {
+    				log.error(e.toString()); 
+    				if(retry_count<RETRY_MAX) {
+    					log.info("RETRY AGAIN");
+    					retry = true;
+    				} else {
+    					reporter.portalError();
+    					reportItem.status = Status.ERROR;
+    					//e.printStackTrace();
+    					log.error("OOOOPS!!!", e); // print stack trace
+    				}	
+    			}
+    			reportItem.endTime = System.currentTimeMillis();
+    			if(STOP_AFTER>0 && t>=STOP_AFTER) break;
+    			if(!retry) i++;
+    		}
+    		//wiki.n
+    		Calendar cEnd = Calendar.getInstance();
+    		long endT = cEnd.getTimeInMillis();
+    		//long start = cStart.getTimeInMillis();
+    		//log.debug("start "+start+" end "+end);
+    		reporter.addToTotal(portalNewPagesLists.length);
+    		
+    		log.info("TEMPLATE FINISHED at "+String.format("%1$tT", cEnd));
+    		log.info("WORK TIME for TEMPLATE: "+BotReporter.printTimeDiff(endT-startT));
+    		
+//    		log.info("portals: "+String.valueOf(portalNewPagesLists.length)
+//    				+", checked: "+String.valueOf(k)
+//    				+", processed: "+String.valueOf(j)
+//    				+", updated: "+String.valueOf(l)
+//    				+", errors: "+String.valueOf(er));
+    		
+    	}
+        reporter.logStatus();
+        if (GENERATE_REPORT) {
+			reporter.reportTXT(REPORT_FILE_NAME);
 		}
-		
-		// 1 extract portal list
-		String []portalNewPagesLists = null;
-		//List<String>
-		try {
-			portalNewPagesLists = wiki.whatTranscludesHere(newpagesTemplate, Wiki.ALL_NAMESPACES);
-		} catch (IOException e) {			
-			log.fatal("failed to get portal list");
-			return;
-		}
-		java.util.Arrays.sort(portalNewPagesLists);
-		
-		String [] tasks = null;
-		if(TASK) {			
-			 tasks = FileTools.readFileToList(TASK_LIST_FILE);
-			 if (tasks == null) {
-				 return;
-			 }
-		}
-		
-/*		for(String str:portalNewPagesLists) {
-			log.debug(str);
-		}*/
-		int i = 0;	// текущий портал
-		int t = 0;	// количество проверенных порталов
-		int j = 0;  // количество обработанных порталов
-		int k = 0;  // количество на самом деле проверенных порталов
-		int l = 0;	// количество обновленных порталов
-		//int max = 10;
-		int er = 0;
-		int retry_count = 0;
-		boolean retry = false;
-		ArrayList<ReportItem> report = null;
-		if(GENERATE_REPORT) {
-			report = new ArrayList<ReportItem>();
-		}
-		//ArrayList<String> errorPortals = new ArrayList<String>();
-		ReportItem reportItem = null;
-		String portalName = null;
-		
-		// this is a workaround for bad support of keep alive feature in HttpUrlConnection
-		// without it, writing of big articles (~500KB) may hang 
-		// (when reading answer from server after writing)
-		System.setProperty("http.keepAlive", "false"); // adjust HTTP connections
-		
-		// show task list
-		if(tasks!=null) {
-			for(String task : tasks) {
-				log.debug("task: "+task);
-			}
-		}
-		
-		while(i < portalNewPagesLists.length) {						
-			if(retry) {
-				retry = false;
-				log.info("retrying portal: "+portalName);		
-				retry_count++;
-				//reportItem = report.get(report.size()-1);
-			} else {
-				retry_count = 0;
-				portalName = portalNewPagesLists[i];
-						
-				//i++;	
-				int percent = (i*100)/portalNewPagesLists.length;
-				log.info(String.format(
-						"=[ %1$d/%2$d: %3$d%% ]===================================================================",
-						i+1,portalNewPagesLists.length,percent));
-				log.info("processing portal: "+portalName);
-				//Calendar startPortalTime = Calendar.getInstance();
-				reportItem = new ReportItem(newpagesTemplate, portalName);
-				if(report!=null) report.add(reportItem);
-				reportItem.startTime = System.currentTimeMillis();
-			}
-			
-			
-			
-			//if(DEBUG_BUILD && !portalName.endsWith(TESTING_PORTAL)) {log.info("SKIP portal: "+portalName);	continue;}
-			
-			if(tasks!=null) {
-				boolean skip = true;
-				for(String task : tasks) {					
-					if(portalName.startsWith(task)) {
-						log.debug("task detected: "+task);
-						skip = false;
-						break;
-					}
-				}
-				if(skip) { log.info("SKIP portal: "+portalName); reportItem.skip(); i++; continue; }
-			}
-			if(retry_count==0) t++;
-			if(t<START_FROM) {log.info("SKIP portal: "+portalName);	reportItem.skip(); i++; continue;}
-			
-			if(retry_count==0) k++;
-			
-			try {				
-				
-				String portalSettingsText = wiki.getPageText(portalName);
-				
-				if(DEBUG_MODE) {					
-					FileTools.dump(portalSettingsText, "dump", portalName+".settings.txt");
-				}
-				Map<String, String> parameters = new HashMap<String, String>();
-				if(TryParseTemplate(newpagesTemplate, portalSettingsText, parameters)) {
-					log.info("validate portal settings OK");					
-					logPortalSettings(parameters);
-					NewPagesData data = new NewPagesData();
-					createPortalModule(parameters, data);
-					if(TYPE.equals("all") || TYPE.equals(data.type)) {
-						if(data.portalModule!=null) {							
-								if(DEBUG_MODE || !DEBUG_BUILD || !portalName.contains("ValidParam") /*&& !portalName.contains("Testing")*/) {									
-									if(data.portalModule.update(wiki, reportItem, COMMENT)) {
-										l++;
-										reportItem.status = Status.UPDATED;
-									} else {
-										reportItem.status = Status.PROCESSED;
-									}
-									
-									j++;
-									if(UPDATE_PAUSE>0) Thread.sleep(UPDATE_PAUSE);
-								}
-							
-						} else {
-							log.warn("portal module not created");
-						}
-					} else {
-						reportItem.skip();						
-						log.info("SKIP portal: "+portalName); 
-					}
-					if(!data.errors.isEmpty()) {
-						log.warn("errors occured during checking settings");
-						for(String str:data.errors) {
-							log.info(str);
-						}
-						reportItem.errors = data.errors.size();
-						String errorText = StringUtils.join(data.errors, "\n");
-						FileTools.dump(errorText, "dump", portalName+".err");
-						if(ERROR_NOTIFICATION) {
-							for(String err:data.errors) {
-								log.info(err);
-							}
-						}
-					}
-				} else {
-					reportItem.settingsValid = false;
-					log.error("validate portal settings FAILED");
-				}
-				
-			} catch (IndexOutOfBoundsException e) { // includes ArrayIndexOfBoundsException
-				log.error(e.toString()); 
-				if(retry_count<RETRY_MAX) {
-					log.info("RETRY AGAIN");
-					retry = true;
-				} else {
-					er++;
-					reportItem.status = Status.ERROR;
-					//e.printStackTrace();
-					log.error("OOOOPS!!!", e); // print stack trace
-				}	
-			} catch (NullPointerException e) {
-				log.error(e.toString()); 
-				if(retry_count<RETRY_MAX) {
-					log.info("RETRY AGAIN");
-					retry = true;
-				} else {
-					er++;
-					reportItem.status = Status.ERROR;
-					//e.printStackTrace();
-					log.error("OOOOPS!!!", e); // print stack trace
-				}	
-			} catch (java.util.zip.ZipException e) {
-				log.error(e.toString()); 
-				if(retry_count<RETRY_MAX) {
-					log.info("RETRY AGAIN");
-					retry = true;
-				} else {
-					er++;
-					reportItem.status = Status.ERROR;
-					//e.printStackTrace();
-					log.error("OOOOPS!!!", e); // print stack trace
-				}	
-			} catch (Error504 e) {				
-					log.warn(e.toString());
-					log.info("ignore error and continue ...");
-					er++;
-					reportItem.status = Status.ERROR;
-			} catch (IOException e) {
-				
-				if(retry_count<RETRY_MAX) {
-					log.warn(e.toString());
-					log.info("RETRY AGAIN");
-					retry = true;
-				} else {
-					log.error(e.toString());
-					er++;
-					reportItem.status = Status.ERROR;
-					//e.printStackTrace();
-					log.error("OOOOPS!!!", e); // print stack trace
-				}
-			} catch (LoginException e) {
-				log.fatal(e.toString());
-				break;
-				//e.printStackTrace();
-			} catch (InterruptedException e) {				
-				log.fatal(e.toString(),e);
-				break;
-			} catch (Exception e) {
-				log.error(e.toString()); 
-				if(retry_count<RETRY_MAX) {
-					log.info("RETRY AGAIN");
-					retry = true;
-				} else {
-					er++;
-					reportItem.status = Status.ERROR;
-					//e.printStackTrace();
-					log.error("OOOOPS!!!", e); // print stack trace
-				}	
-			} catch (Error e) {
-				log.error(e.toString()); 
-				if(retry_count<RETRY_MAX) {
-					log.info("RETRY AGAIN");
-					retry = true;
-				} else {
-					er++;
-					reportItem.status = Status.ERROR;
-					//e.printStackTrace();
-					log.error("OOOOPS!!!", e); // print stack trace
-				}	
-			}
-			reportItem.endTime = System.currentTimeMillis();
-			if(STOP_AFTER>0 && j>=STOP_AFTER) break;
-			if(!retry) i++;
-		}
-		//wiki.n
-		Calendar cEnd = Calendar.getInstance();
-		long end = cEnd.getTimeInMillis();
-		//long start = cStart.getTimeInMillis();
-		//log.debug("start "+start+" end "+end);
-		int hours = (int) ((end-start)/(60L*60L*1000L));
-		int min = (int) ((end-start)/(60L*1000L) - (long)hours*60L);
-		int sec = (int) ((end-start)/(1000L) - (long)hours*60L*60L - (long)min*60L);
-		
-		log.info("BOT FINISHED at "+String.format("%1$tT", cEnd));
-		log.info("WORK TIME: "+String.valueOf(hours)+" h "+String.valueOf(min)+" m "+sec+" s");
-		log.info("portals: "+String.valueOf(portalNewPagesLists.length)
-				+", checked: "+String.valueOf(k)
-				+", processed: "+String.valueOf(j)
-				+", updated: "+String.valueOf(l)
-				+", errors: "+String.valueOf(er));
-		
-		if(GENERATE_REPORT) {
-			log.info("generating report . . .");
-			StringBuilder sb = new StringBuilder();
-			//StringBuffer sbuf = new StringBuffer();
-			sb.append(ReportItem.getHeader()).append("\r\n");
-			for(ReportItem item : report) {
-				sb.append(item.toString());
-				sb.append("\r\n");
-			}
-			sb.append(ReportItem.getFooter());
-			try {
-				FileTools.writeFile(sb.toString(), REPORT_FILE_NAME);				
-			} catch (IOException e) {
-				log.error(e.toString());
-				e.printStackTrace();				
-			}			
-			log.info("report is generated!");
-		}
+        if (UPDATE_STATUS) {
+        	try {
+	            reporter.updateEndStatus(STATUS_WIKI_PAGE, STATUS_WIKI_TEMPLATE);
+            } catch (LoginException | IOException e) {
+            	log.error(e);	            
+            }
+        }
+        reporter.botFinished(true);
+        
 		
 	}
 	
@@ -742,9 +770,12 @@ public class NirvanaBot extends NirvanaBasicBot{
 		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
 			String service = options.get(key);
-			if(validateService(service)) {
-				param.service = service;
-			} else {
+			if (service.equals("по умолчанию") || service.equals("default") || service.equals("auto") || service.equals("авто")) {
+				// nothing
+			} 
+			param.service = WikiTools.Service.getServiceByName(service); 
+			if (param.service == null) {
+				param.service = DEFAULT_SERVICE;
 				log.warn(String.format(ERROR_INVALID_PARAMETER, key, service));
 			    data.errors.add(String.format(ERROR_INVALID_PARAMETER_RU, key, service));
 			}
@@ -910,17 +941,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
 				data.errors.add(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING_RU, key, options.get(key)));
 			}
-			int maxHours = MAX_HOURS;
-			if(!param.service.equals(DEFAULT_SERVICE)) {
-				if(param.service.equals(SERVICE_CATSCAN)) {
-					maxHours = MAX_HOURS_CATSCAN;
-				} else if (param.service.equals(SERVICE_CATSCAN2)) {
-					maxHours = MAX_HOURS_CATSCAN2;
-				}
-			}
-			if(param.hours>maxHours) {
-				data.errors.add(String.format(ERROR_INTEGER_TOO_BIG_STRING_RU, key, options.get(key),maxHours));
-				param.hours = maxHours;				
+			if(param.hours>param.service.MAX_HOURS) {
+				data.errors.add(String.format(ERROR_INTEGER_TOO_BIG_STRING_RU, key, options.get(key),param.service.MAX_HOURS));
+				param.hours = param.service.MAX_HOURS;				
 			}
 		}
 		

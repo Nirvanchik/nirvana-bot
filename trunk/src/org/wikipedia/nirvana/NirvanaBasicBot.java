@@ -1,6 +1,6 @@
 /**
  *  @(#)NirvanaBasicBot.java 13.07.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2012-2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -356,7 +356,7 @@ public class NirvanaBasicBot {
 		return list;
 	}
 
-	public static boolean TryParseTemplate(String template, String text, Map<String, String> parameters)
+	public static boolean TryParseTemplate(String template, String userNamespace, String text, Map<String, String> parameters)
     {
 		log.debug("portal settings parse started");
 		log.debug("template = "+template);
@@ -368,15 +368,16 @@ public class NirvanaBasicBot {
         //String name = newpagesTemplateName.substring(0, newpagesTemplateName.length()-1);
         //char last = newpagesTemplateName.charAt(newpagesTemplateName.length()-1);
 		String recognizeTemplate = template;
-		String ns1 = "Участник:";
-		String ns2 = "User:";
-		if(recognizeTemplate.startsWith(ns1))  {
-			recognizeTemplate = recognizeTemplate.substring(ns1.length());			
-		} else if (recognizeTemplate.startsWith(ns2)) {
-			recognizeTemplate = recognizeTemplate.substring(ns2.length());			
+		String userEn = "User:";
+		String userLc = userNamespace+":";
+		if(recognizeTemplate.startsWith(userEn))  {
+			recognizeTemplate = recognizeTemplate.substring(userEn.length());			
+		} else if (recognizeTemplate.startsWith(userLc)) {
+			recognizeTemplate = recognizeTemplate.substring(userLc.length());			
 		}
-		recognizeTemplate = "("+ns1+"|"+ns2+")"+recognizeTemplate;
-        String str = "^(\\{\\{"+recognizeTemplate+")(.+)$"; // GOOD
+		recognizeTemplate = "("+userEn+"|"+userLc+")"+recognizeTemplate.replace("(", "\\(").replace(")", "\\)");
+		// We don't start from ^ because we allow any text before template
+        String str = "(\\{\\{"+recognizeTemplate+")(.+)$"; // GOOD
         log.debug("pattern = "+str);
 		//String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{.+?\\}\\})*.*))+?\\}\\}";
         //String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{[^\\{\\}]+\\}\\})*[^\\{]*))\\}\\}";
@@ -389,7 +390,7 @@ public class NirvanaBasicBot {
         /*if(!m.find())
         	return false;
         */
-        if (!m.matches())
+        if (!m.find())
         {
         	log.error("portal settings parse error (doesn't match pattern)");
             return false;
@@ -403,19 +404,19 @@ public class NirvanaBasicBot {
         //text.substring(m.end(1),text.length());
         
         
-        int index = 1;
+        int level = 1;
         int begin = m.end(1) + 1;
         int end = -1;
         for (int i = begin; i < text.length() - 1; ++i)
         {
             if (text.charAt(i) == '{' && text.charAt(i+1) == '{')
             {
-                ++index;
+                ++level;
             }
             else if (text.charAt(i) == '}' && text.charAt(i+1) == '}')
             {
-                --index;
-                if (index == 0)
+                --level;
+                if (level == 0)
                 {
                     end = i;
                     break;

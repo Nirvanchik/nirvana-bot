@@ -1,6 +1,6 @@
 /**
  *  @(#)NewPages.java 13.07.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,7 +46,9 @@ import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.StringTools;
+import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveFactory;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
@@ -55,9 +57,8 @@ import org.wikipedia.nirvana.archive.ArchiveSimple;
 import org.wikipedia.nirvana.archive.ArchiveWithEnumeration;
 import org.wikipedia.nirvana.archive.ArchiveWithHeaders;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherCombinator;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherOBOCatScan;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherOBOCatScan2;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherOneReqCatScan2;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherFastWithService;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherOBOWithService;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
 
@@ -84,7 +85,7 @@ public class NewPages implements PortalModule{
     protected String middle;
     protected int maxItems;
     protected int hours;
-    protected String service;
+    protected WikiTools.Service service;
     protected String delimeter;    
     protected int depth;
     protected int namespace;
@@ -189,16 +190,12 @@ public class NewPages implements PortalModule{
 		
 	}*/
 	PageListFetcher createPageListFetcherForGroup(List<String> categories, List<String> categoriesToIgnore) {
-		if(service.equalsIgnoreCase(NirvanaBot.SERVICE_CATSCAN)) {
-			return new NewPagesFetcherOBOCatScan(categories, categoriesToIgnore, language, depth, hours, namespace);
-		} else if (service.equalsIgnoreCase(NirvanaBot.SERVICE_CATSCAN2)) {
-			if (fastMode) {
-				return new NewPagesFetcherOneReqCatScan2(categories, categoriesToIgnore, language, depth, hours, namespace);
-			} else {
-				return new NewPagesFetcherOBOCatScan2(categories, categoriesToIgnore, language, depth, hours, namespace);
-			}
+		if(service.supportsNewPagesManyCats() && fastMode) {
+			return new NewPagesFetcherFastWithService(service, categories, categoriesToIgnore, language, depth, hours, namespace);
+		} else {
+			return new NewPagesFetcherOBOWithService(service, categories, categoriesToIgnore, language, depth, hours, namespace);			
 		}
-		throw new Error("Unsupported service name");
+		//throw new Error("Unsupported service name");
 	}
 	
 	PageListFetcher createPageListFetcher() {
@@ -273,7 +270,7 @@ public class NewPages implements PortalModule{
         }
 	}
 	
-	public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException {
+	public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException, ServiceError {
 		log.info("Get data for [[" + this.pageName+"]]");
 		
 		//Revision r = wiki.getFirstRevision("Кай Юлий Цезарь");
@@ -601,7 +598,7 @@ public class NewPages implements PortalModule{
 	}
 		
 	@Override
-	public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment) throws IOException, LoginException, InterruptedException {
+	public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment) throws IOException, LoginException, InterruptedException, ServiceError {
 		log.debug("=> update()");
 		boolean updated = false;
 		String text = getOldText(wiki);
@@ -691,7 +688,8 @@ public class NewPages implements PortalModule{
 	    
 	    String settingsText = r.getText();
 	    Map<String, String> options = new HashMap<String,String>();
-	    if(NirvanaBasicBot.TryParseTemplate(template, settingsText, options)) {
+	    String userNamespace = wiki.namespaceIdentifier(Wiki.USER_NAMESPACE);
+	    if(NirvanaBasicBot.TryParseTemplate(template, userNamespace, settingsText, options)) {
 	    	headerLastUsed = NirvanaBot.getDefaultHeader();
 	    	footerLastUsed = NirvanaBot.getDefaultFooter();
 	    	middleLastUsed = NirvanaBot.getDefaultMiddle();

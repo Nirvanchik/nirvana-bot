@@ -6,7 +6,10 @@
 <entry key="wiki-login">NirvanaBot</entry>
 <entry key="wiki-password"></entry>
 <entry key="wiki-account-file">loginNirvanaBot.xml</entry>
-<entry key="new-pages-template">Участник:NirvanaBot/test/Новые статьи</entry>
+<entry key="new-pages-template">
+	Участник:NirvanaBot/test/Новые статьи, 
+	Участник:NirvanaBot/test/Новые статьи 2
+</entry>
 <entry key="overriden-properties-page">Участник:NirvanaBot/test/Новые статьи/Настройки по умолчанию</entry>
 <entry key="wiki-lang">ru</entry>
 <entry key="wiki-java-loglevel">OFF</entry>
@@ -27,7 +30,12 @@
 <entry key="task-list">yes</entry>
 <entry key="task-list-file">task.txt</entry>
 <entry key="statistics">yes</entry>
-<entry key="statistics-file">report-%(date).txt</entry>
+<entry key="update-status">yes</entry>
+<entry key="statistics-file">report_%(date)_%(launch_number).txt</entry>
+<entry key="statistics-wiki">Участник:NirvanaBot/test/Новые статьи/Отчёт</entry>
+<entry key="status-wiki">Участник:NirvanaBot/test/Новые статьи/Статус</entry>
+<entry key="status-wiki-template">Участник:NirvanaBot/Новые статьи/Отображение статуса</entry>
+<!--<entry key="status-wiki-format">Участник:NirvanaBot/test/Новые статьи/Отображение статуса</entry>-->
 <entry key="statistics-format">txt</entry>
 <entry key="type">all</entry>
 <entry key="service">catscan2</entry>

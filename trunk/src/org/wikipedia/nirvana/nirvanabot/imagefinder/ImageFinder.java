@@ -1,6 +1,6 @@
 /**
  *  @(#)ImageFinder.java 23/08/2012
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2013 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -40,9 +40,20 @@ public abstract class ImageFinder {
 	
 	public static String findImageByRegex(NirvanaWiki wiki, NirvanaWiki commons, String article, String regex, String tag) throws IOException {
 		Pattern p = Pattern.compile(regex);
-        Matcher m = p.matcher(article);
+		Pattern p1 = Pattern.compile("\\|\\s*изобр\\s*=\\s*(?<image>[^\\|\\}]+)");
+		Matcher m = p.matcher(article);
         while(m.find()) {
         	String image = m.group(tag).trim();
+        	// иногда вставляют не просто изображение а шаблон {{часть изображения}}
+    		if (image.contains("{{часть изображения")) {
+    		// {{часть изображения|изобр=UC1755381 Subularia aquatica var. americana.jpg|позиция=center|ширина=280|общая=800|верх=470|низ=400|лево=60|рамка=нет|помехи=да}}
+    			Matcher m1 = p1.matcher(image);
+    			if (m1.find()) {
+    				image = m1.group("image");
+    			} else {
+    				image = null;
+    			}
+    		}
         	log.debug("image: "+image);
         	if(image!=null && !image.isEmpty() && !image.contains(">") && !image.contains("<")) {
         		// некоторые товарищи умудряются вставлять изображение с | например: Equisetum.palustre.jpg|Equisetum.palustre

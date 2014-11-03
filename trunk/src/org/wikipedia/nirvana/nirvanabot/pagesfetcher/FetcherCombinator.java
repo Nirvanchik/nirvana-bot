@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
 
 /**
  * @author kin
@@ -56,7 +57,7 @@ public class FetcherCombinator implements PageListFetcher {
 	 */
 	@Override
 	public ArrayList<Revision> getNewPages(NirvanaWiki wiki)
-	        throws IOException, InterruptedException {
+	        throws IOException, InterruptedException, ServiceError {
 		ArrayList<Revision> list;
 		list = fetchers.get(0).getNewPages(wiki);
 		for(int i=1;i<fetchers.size();i++) {

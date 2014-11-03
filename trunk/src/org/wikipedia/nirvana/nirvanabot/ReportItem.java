@@ -1,6 +1,6 @@
 /**
- *  @(#)ReportItem.java 07/04/2012
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)ReportItem.java 
+ *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import java.util.TimeZone;
 
+import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.Status;
 
 /**
@@ -32,9 +33,11 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot.Status;
  *
  */
 public class ReportItem {
+	private static final int MAX_LEN = 90;
 	String template;
 	String portal;
 	Status status;
+	BotError error;
 	long startTime;
 	long endTime;
 	int errors;
@@ -54,59 +57,49 @@ public class ReportItem {
 		newPagesFound = 0;
 		pagesArchived = 0;
 		status = Status.NONE;
+		error = BotError.NONE;
 		settingsValid = true;
 	}
 	
-	public static String getHeader() {
+	public static String getHeaderTXT() {
 		String header = String.format("%1$-90s %2$-9s %3$-9s %4$s %5$s  %6$s", 
 				"portal settings page","status","time","new p.","arch.p.","errors");
 		header += "\r\n";
-		header += String.format("%1$114s %2$s  %3$s"," ", "updated","archived");
+		header += String.format("%1$114s %2$s     %3$s  %4$s"," ", "upd.","arch.","Error");
 		return header;
 	}
-	public static String getFooter() {
+	
+	public static String getFooterTXT() {
 		return "";
 	}
 	
-	@Override
-	public String toString() {
+	public String toStringTXT() {
 		String line ="";
 		long time = 0;
 		String timeString = "N/A";
-		if(endTime!=0) {
+		if (endTime != 0) {
 			time = endTime - startTime;
-			//Date t = new Date(time);
-			//Calendar c = Calendar.getInstance();
-			//c.setTimeInMillis(time);
-			
 			timeString = String.format("%1$tT", time - TimeZone.getDefault().getRawOffset());
-			/*
-			time = time/1000;
-			int hours = (int)time/(60*60);
-			int min = (int)time/60 - hours*60;
-			int sec = (int)(time - hours*60*60 - min*60); 
-			timeString = String.format("%1$2d:%2$2d:%3$2d", hours, min, sec);
-			*/
 		}
-		int max = 90;
 		String name2 = portal;
 		
 		String name1 = "";
-		if (name2.length() > max) {
+		if (name2.length() > MAX_LEN) {
 			//int separator = max;
-			int n = name2.lastIndexOf(' ', max);
-			if(n<max-20 || n<0)
-				n = max;
+			int n = name2.lastIndexOf(' ', MAX_LEN);
+			if(n<MAX_LEN-20 || n<0) {
+				n = MAX_LEN;
+			}
 			name1 = name2.substring(0, n);
 			name2 = name2.substring(n+1);
 		}
 		String upd = this.updated?NirvanaBot.YES:NirvanaBot.NO;
 		String arch = this.archived?NirvanaBot.YES:NirvanaBot.NO;
-		line = String.format("%1$-90s %2$-9s %3$9s %4$3d %5$-3s  %6$3d %7$-3s %8$2d", 
+		line = String.format("%1$-90s %2$-9s %3$9s %4$3d %5$-3s  %6$3d %7$-3s %8$2d %9$-13s", 
 				name2, status, timeString,
 				this.newPagesFound, upd, 
 				this.pagesArchived, arch,
-				this.errors);
+				this.errors, this.error.toString());
 		if(!name1.isEmpty()) {
 			line = name1+"\r\n"+line;
 		}

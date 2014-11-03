@@ -1,6 +1,6 @@
 /**
  *  @(#)PortalParam.java 23/08/2012
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2012 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import java.util.List;
 
+import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 
 /**
@@ -37,7 +38,7 @@ public class PortalParam {
 	public List<String> categoriesToIgnore;
 	public List<String> usersToIgnore;
 	public String page;
-	public String service;
+	public WikiTools.Service service;
 	public String archive;
 	public ArchiveSettings archSettings;
 	public int ns;

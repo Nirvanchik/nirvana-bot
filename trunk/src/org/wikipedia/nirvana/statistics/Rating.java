@@ -1,6 +1,6 @@
 /**
  *  @(#)Rating.java 20/10/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)
+ *  Copyright © 2012 - 2014 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Map;
@@ -45,6 +47,7 @@ import javax.management.BadAttributeValueExpException;
 
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.NumberTools;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -61,6 +64,8 @@ public class Rating extends Statistics {
 	protected static final int RESERVE_PERCENT_FOR_RENAMED_USERS = 30;
 	int year;	
 	int size = DEFAULT_SIZE;
+	boolean filterBySize = true;
+	public int minSize = 0;
 
 	/**
 	 * @param type
@@ -84,12 +89,8 @@ public class Rating extends Statistics {
 		this.year = year;		
 	}
 	
-	/*
-	public String toString() {
-		
-	}*/
-	
 	public void setOptions(Map<String,String> options) {
+		super.setOptions(options);
 		String key = "размер";
 		if(options.containsKey(key) && !options.get(key).isEmpty()) {
 			try {
@@ -98,21 +99,30 @@ public class Rating extends Statistics {
 				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
 			}					
 		}
+		key = "статьи от";
+		if(options.containsKey(key) && !options.get(key).isEmpty()) {
+			this.filterBySize = true;
+			try {
+				this.minSize = NumberTools.parseFileSize(options.get(key));
+			} catch(NumberFormatException e) {
+				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+			}
+		}
 	}
 	public void put(ArchiveDatabase2 db) throws IllegalStateException {
 		Statistics reporter = null;
-		if(year==0) reporter = StatisticsFabric.getReporterWithUserData(this);
-		else 		reporter = StatisticsFabric.getReporterWithUserData(this,year);		
-		if(reporter==null) {
-			putFromDb(db);
-		} else {
+		if (!this.filterBySize) {
+			if(year==0) reporter = StatisticsFabric.getReporterWithUserData(this);
+			else 		reporter = StatisticsFabric.getReporterWithUserData(this,year);
+		}
+		if (reporter != null) {
 			this.totalUserStat = reporter.getUserStat();
+		} else {			
+			putFromDb(db);
 		}
 		analyze();
 	}
-//	public void putFromReporter() {
-//		Map<String,Integer>
-//	}
+
 	public void putFromDb(ArchiveDatabase2 db) throws IllegalStateException {
 		totalUserStat.clear();
 		ListIterator<ArchiveItem> it = null;
@@ -123,29 +133,37 @@ public class Rating extends Statistics {
 			item = it.next();
 			if(this.year!=0 && item.year!=this.year) 
 				throw new IllegalStateException("year processing: "+this.year+", item's year: "+item.year+", item: "+item.article);
-			this.totalUserStat.put(item.user, 1);
+			if (!(this.filterBySize && item.size<this.minSize))
+				this.totalUserStat.put(item.user, 1);		
 		}
 		while(it.hasNext()) {
 			item = it.next();
 			if(this.year!=0 && item.year!=this.year) 
 				throw new IllegalStateException("year processing: "+this.year+", item's year: "+item.year+", item: "+item.article);
+			if (this.filterBySize && item.size<this.minSize)
+				continue;
 			Integer n = totalUserStat.get(item.user);
-			if(n==null) totalUserStat.put(item.user, 1);
-			else totalUserStat.put(item.user, n+1);			
+			if (n==null) this.totalUserStat.put(item.user, 1);
+			else this.totalUserStat.put(item.user, n+1);			
 		}
 	}
+	
+//	private void incrementUserCnt()
+	
 	
 	protected void additionalProcessing() {
 		
 	}
 	
 	protected void analyze() {
-		for(Map.Entry<String,Integer> entry:totalUserStat.entrySet()) {
+		// Заполняем таблицу items (список строк отчёта)
+		for (Map.Entry<String,Integer> entry:totalUserStat.entrySet()) {
 			StatItem stat = new StatItem();
 			stat.user = entry.getKey();
 			stat.userArticles = entry.getValue();
 			this.items.add(stat);
 		}
+		// Сортируем таблицу в нужном порядке (в порядке убывания количества статей)
 		Collections.sort(this.items, 
 			new Comparator<StatItem>(){
 				@Override
@@ -154,6 +172,7 @@ public class Rating extends Statistics {
 				}					
 			});
 		
+		// Подрезаем "лишние" строки в таблице, но оставляя резерв на случай дубликатов
 		int maxsize = this.size + this.size*RESERVE_PERCENT_FOR_RENAMED_USERS/100;
 				
 		//this.totalUserStat.clear();
@@ -161,12 +180,15 @@ public class Rating extends Statistics {
 			//this.items = new ArrayList<StatItem>(this.items.subList(0, size));
 			this.items.subList(maxsize, this.items.size()).clear();					
 		}
-		
+
+		// Дополнительный процессинг
 		additionalProcessing();
-		
+
+		// Удаляем дубликаты
 		boolean duplicates = removeDuplicates();
 		
-		if(duplicates) {
+		// Опять сортируем, так как мёрж дубликатов мог сломать сортировку
+		if (duplicates) {
 			Collections.sort(this.items, 
 				new Comparator<StatItem>(){
 					@Override
@@ -176,12 +198,13 @@ public class Rating extends Statistics {
 				});
 		}
 		
+		// Обрезаем, на этот раз до строго указанного числа элементов
 		if(items.size()>this.size) {			
 			//this.items = new ArrayList<StatItem>(this.items.subList(0, size));
 			this.items.subList(this.size, this.items.size()).clear();					
 		}
 		
-		// assign rating position
+		// Назначаем позицию участников в рейтинге
 		int num = 1;
 		//int pos = 1;
 		int a = 0;
@@ -198,7 +221,8 @@ public class Rating extends Statistics {
 			stat.number = num;
 		}
 		
-		if(this.itemTemplate.contains("%(прогресс)")) calcProgress();
+		// Подсчитываем прогресс (рост/стабильность/падение)
+		if (this.itemTemplate.contains("%(прогресс)")) calcProgress();
 	}
 	
 		
@@ -237,6 +261,12 @@ public class Rating extends Statistics {
 		return duplicates;
 	}
 	
+	/**
+	 * Смерживает двух юзеров, указанных по индексам
+	 * Используется при удалении дубликатов (дубликаты возникают, когда юзер меняет имя)
+	 * @param srcIndex индекс юзера-дубликата (откуда мёржить)
+	 * @param destIndex индекс оригинального юзера (куда мёржить)
+	 */
 	protected void merge(int srcIndex, int destIndex) {
 		StatItem src = items.get(srcIndex);
 		StatItem dest = items.get(destIndex);
@@ -250,7 +280,7 @@ public class Rating extends Statistics {
         Finder finder = new Finder(pattern);
         //Files.w
         try {
-			Files.walkFileTree(startingDir, finder);
+			Files.walkFileTree(startingDir,EnumSet.noneOf(FileVisitOption.class), 1, finder);
 		} catch (IOException e) {
 			log.error(e.toString());
 			e.printStackTrace();

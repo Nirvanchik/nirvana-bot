@@ -1,6 +1,6 @@
 /**
  *  @(#)PageListFetcherOneByOne.java 13.07.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2013 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,6 +37,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
 /**
@@ -44,8 +46,7 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
  *
  */
 public abstract class PageListFetcherOneByOne extends BasicFetcher {
-
-    protected Map<String,String> pageLists;
+	protected Map<String,String> pageLists;
     protected Map<String,String> pageListsToIgnore;
     
 	/**
@@ -56,16 +57,16 @@ public abstract class PageListFetcherOneByOne extends BasicFetcher {
 	 * @param hours
 	 * @param namespace
 	 */
-	public PageListFetcherOneByOne(List<String> cats, List<String> ignore, String lang,
+	public PageListFetcherOneByOne(WikiTools.Service service, List<String> cats, List<String> ignore, String lang,
 	        int depth, int hours, int namespace) {
-		super(cats, ignore, lang, depth, hours, namespace);		
+		super(service, cats, ignore, lang, depth, hours, namespace);		
 	}
 
 	/* (non-Javadoc)
 	 * @see org.wikipedia.nirvana.nirvanabot.PageListFetcher#getNewPages(org.wikipedia.nirvana.NirvanaWiki, java.util.ArrayList, java.util.HashSet)
 	 */
 	@Override
-	public ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException {
+	public ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError {
 //	public void getNewPages(NirvanaWiki wiki, ArrayList<Revision> pageInfoList,
 //	        HashSet<String> pages) throws IOException, InterruptedException {
 		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
@@ -124,20 +125,20 @@ public abstract class PageListFetcherOneByOne extends BasicFetcher {
 	        String line;
 	        String pageList = this.pageListsToIgnore.get(category);
 	        BufferedReader br = new BufferedReader(new StringReader(pageList));
-        	for(int j=0;j<SKIP_LINES;j++) br.readLine();
+        	for(int j=0;j<service.SKIP_LINES;j++) br.readLine();
 	        while ((line = br.readLine()) != null)
 	        {
 	            String[] groups = line.split("\t");
-	            if (groups[NS_POS].equals(String.valueOf(this.namespace)))
+	            if (groups[service.NS_POS].equals(String.valueOf(this.namespace)))
 	            {
-	                String title = groups[TITLE_POS].replace('_', ' ');
+	                String title = groups[service.TITLE_POS].replace('_', ' ');
 	                ignore.add(title);
-	            } else if (groups[NS_POS].equals(String.valueOf(Wiki.USER_NAMESPACE)) &&
+	            } else if (groups[service.NS_POS].equals(String.valueOf(Wiki.USER_NAMESPACE)) &&
 	            		namespace!= Wiki.USER_NAMESPACE) {
 	            	long revId=0;
-                	if(REVID_POS>=0) {
+                	if(service.REVID_POS>=0) {
 		                try {
-		                	revId = Long.parseLong(groups[REVID_POS]);
+		                	revId = Long.parseLong(groups[service.REVID_POS]);
 		                } catch(NumberFormatException e) {
 		                	log.error(e.toString());
 		                	continue;
