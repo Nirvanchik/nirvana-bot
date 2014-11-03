@@ -1,6 +1,6 @@
 /**
- *  @(#)StatisticsBot.java 1.1 22/09/2013
- *  Copyright © 2012-2013 Dmitry Trofimovich (KIN)
+ *  @(#)StatisticsBot.java 1.2 19.10.2014
+ *  Copyright © 2012-2014 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,25 +25,20 @@ package org.wikipedia.nirvana.statistics;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.wikipedia.Wiki;
-import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.NumberTools;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
-import org.wikipedia.nirvana.nirvanabot.NewPages;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
 /**
@@ -60,6 +55,9 @@ public class StatisticsBot extends NirvanaBasicBot {
 	public static final String NO_RU = "нет";
 	public static final boolean SORT_DEFAULT = true;
 	private static final String STATUS_INFO_FORMAT = "%1$-40s time spent:%2$s";
+	private static final String DEFAULT_HEADER = "";
+	private static final String DEFAULT_FOOTER = "";
+	private static final int MIN_SIZE = 14 * 1024;  // 14 Kb
 	
 	private static String statSettingsTemplate = null;
 	
@@ -67,8 +65,8 @@ public class StatisticsBot extends NirvanaBasicBot {
 	//public static String COMMENT = "Проставление заголовков и нумерации в архиве";
 	
 	public static final String INFO = 
-		"StatisticsBot v1.1 Makes statistics of new created pages and ratings\n" +
-		"Copyright (C) 2012-2013 Dmitry Trofimovich (KIN)\n" +
+		"StatisticsBot v1.2 Makes statistics of new created pages and ratings\n" +
+		"Copyright (C) 2012-2014 Dmitry Trofimovich (KIN)\n" +
 		"\n";
 	private static boolean USE_CACHE_ONLY = false;
 	private static boolean USE_CACHE = true;
@@ -134,6 +132,13 @@ public class StatisticsBot extends NirvanaBasicBot {
 	
 	protected void go() {
 		String [] portalSettingsPages = null;
+		String userNamespace;
+        try {
+	        userNamespace = wiki.namespaceIdentifier(Wiki.USER_NAMESPACE);
+        } catch (IOException e1) {
+	        log.fatal("failed to get user namespace");
+	        return;
+        }
 		//List<String>
 		try {
 			portalSettingsPages = wiki.whatTranscludesHere(statSettingsTemplate, Wiki.ALL_NAMESPACES);
@@ -145,7 +150,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 		
 		String [] tasks = null;
 		if(TASK) {			
-			 tasks = FileTools.readFileToList(TASK_LIST_FILE);
+			 tasks = FileTools.readFileToList(TASK_LIST_FILE,true);
 			 if (tasks == null) {
 				 return;
 			 }
@@ -183,7 +188,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 
 				
 				Map<String, String> options = new HashMap<String, String>();
-				if(!TryParseTemplate(statSettingsTemplate, portalSettingsText, options)) {
+				if(!TryParseTemplate(statSettingsTemplate, userNamespace, portalSettingsText, options)) {
 					log.error("validate portal settings FAILED");
 					continue;
 				}
@@ -205,14 +210,15 @@ public class StatisticsBot extends NirvanaBasicBot {
     			showStatus("parameter processing finished",watch);
     			
     			// do not load from cache if archive is single -> we will rebuild db from scratch
-    			ArchiveDatabase2 db = new ArchiveDatabase2(name, params.cache /*&& !archiveSettings.isSingle()*/, "cache");
+    			ArchiveDatabase2 db = new ArchiveDatabase2(name, params.cache /*&& !archiveSettings.isSingle()*/, "cache", params.filterBySize);
     			
     			//log.info("database created, time: "+watch.toString());
     			showStatus("database created", watch);
     			
     			if(!params.cacheonly) {
+    				ArchiveParser parser = new ArchiveParser(params.archiveSettings, db, wiki);
     				try {
-    					getData(params.archiveSettings,db,params.cache);
+    					parser.getData(params.cache);
     				} catch (IOException e) {			
     					log.fatal(e);
     					return;
@@ -256,6 +262,15 @@ public class StatisticsBot extends NirvanaBasicBot {
 					Map<String,String> suboptions = getSubOptions(options,type);
 					if(suboptions.get("первый год")==null)
 						suboptions.put("первый год",String.valueOf(params.archiveSettings.startYear));
+					if(params.header != null && suboptions.get("шапка") == null) {
+						suboptions.put("шапка", params.header);
+					}
+					if(params.footer != null && suboptions.get("подвал") == null) {
+						suboptions.put("подвал", params.footer);
+					}
+					if(params.filterBySize && suboptions.get("статьи от")==null) {
+						suboptions.put("статьи от", String.valueOf(params.minSize));
+					}
 					
 					
 					Statistics stat = null;
@@ -440,6 +455,33 @@ public class StatisticsBot extends NirvanaBasicBot {
 			if(options.get(key).equalsIgnoreCase(YES_RU)) params.cache = true;
 			else if(options.get(key).equalsIgnoreCase(NO_RU)) params.cache = false;
 		}
+		
+		params.filterBySize = false;
+		params.minSize = MIN_SIZE;
+		key = "статьи от";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			params.filterBySize = true;
+			try {
+				params.minSize = NumberTools.parseFileSize(options.get(key));
+			} catch(NumberFormatException e) {
+				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+			}
+		}
+		
+		params.header = DEFAULT_HEADER;
+		key = "шапка";
+		if (options.containsKey(key) && !options.get(key).isEmpty())
+		{
+			params.header = options.get(key).replace("\\n", "\n");
+		}
+		
+		params.footer = DEFAULT_FOOTER;
+		key = "подвал";
+		if (options.containsKey(key) && !options.get(key).isEmpty())
+		{
+			params.footer = options.get(key).replace("\\n", "\n");
+		}
+		
 		return true;
 	}
 	
@@ -461,332 +503,6 @@ public class StatisticsBot extends NirvanaBasicBot {
     	return false;
     }
 	
-	private interface PurgeDatabase{
-		public void purge(ArchiveDatabase2 db);
-	};
-	
-	void getData(ArchiveSettings archiveSettings, ArchiveDatabase2 db, boolean cache) throws IOException {
-		if(archiveSettings.isSingle()) {
-			PurgeDatabase purge = null;
-			if(!db.isEmpty()) {
-				purge = new PurgeDatabase() {
-					@Override
-					public void purge(ArchiveDatabase2 db) {
-						db.removeAllItems();
-					}
-				};
-			}
-			getDataFromArchive(archiveSettings.archive,db,purge,archiveSettings.addToTop,true/*,true*/);
-			if(cache) db.save();
-			db.markEnd();
-		} else {
-			boolean markAll = db.isEmpty();
-			int startYear = archiveSettings.startYear;
-			Calendar c = Calendar.getInstance();
-			int endYear = c.get(Calendar.YEAR);
-			int curQ = c.get(Calendar.MONTH)/3+1;
-			ArchiveItem last = db.getLastFromCache();
-			//boolean checkLast = false;
-			if(last!=null && last.year>startYear) {
-				startYear = last.year; 
-				log.info("db already contains data. scanning data from " + String.valueOf(startYear)+" year");
-			}
-			int year_offset = 1;
-			for(int year=startYear;year<=endYear;year+=year_offset) {				
-				String archiveThisYear = null;
-				
-				if (archiveSettings.firstArchive != null && year<archiveSettings.startYear2) {
-					archiveThisYear = archiveSettings.firstArchive;
-					year_offset = archiveSettings.startYear2-archiveSettings.startYear;
-				} else {
-					archiveThisYear = archiveSettings.archive.replace(
-							ArchiveSettings.Period.YEAR.template(), String.valueOf(year));
-					year_offset = 1;
-				}
-				if(archiveSettings.archivePeriod==Period.YEAR || 
-						archiveThisYear==archiveSettings.firstArchive || 
-						archiveThisYear.equals(archiveSettings.firstArchive)) {
-					PurgeDatabase purge = null;
-					if(last!=null && last.year==year) {
-						// db.removeItemsFromLastYear(); disabled because of new method
-						//checkLast = true;
-						purge = new PurgeDatabase(){
-							@Override
-							public void purge(ArchiveDatabase2 db) {
-								db.removeItemsFromLastYear();
-								//db.markYearBegin(year);
-							}
-						};
-					} else {
-						//checkLast = false;
-						//db.markYearBegin(year);
-					}		
-					//db.markYearBegin(year);
-					getDataFromArchive(archiveThisYear,db,purge,archiveSettings.addToTop,false/*year_offset>1*//*,checkLast*/);
-					if(cache) db.save();
-				} else {
-					int qStart = 1;
-					int qEnd = 4;
-					// skip archives of old quarters, which we have loaded to db already from cache
-					if(last!=null && year==last.year) {
-						int lq = last.getQuarter();
-						if(lq>qStart) {
-							qStart = lq;
-						}
-					}
-					// skip future quarters
-					if(year==endYear) {
-						qEnd = curQ; 
-					}
-					if(DEBUG) {qStart = 2;qEnd=2;endYear=2010;}
-					//db.markYearBegin(year);
-					for(int q=qStart;q<=qEnd;q++) {
-						String archive = archiveThisYear.replace(
-								Period.QUARTER.template(), String.valueOf(q));
-						archive = archive.replace(
-								Period.SEASON.template(), DateTools.russianSeasons[q-1]);
-						PurgeDatabase purge = null;
-						if(last!=null && year==last.year && q==last.getQuarter()) {
-							//checkLast = true;
-							//db.removeItemsFromLastQuarter();
-							purge = new PurgeDatabase(){
-								@Override
-								public void purge(ArchiveDatabase2 db) {
-									db.removeItemsFromLastQuarter();
-								}
-							};
-						} else {
-							//checkLast = false;
-						}
-						getDataFromArchive(archive,db,purge,archiveSettings.addToTop,false/*,checkLast*/);
-						if(cache) db.save();
-					}
-				}
-			}
-			if(markAll) {
-				db.markYears();
-			} else {
-				db.markYearsWhichNotMarked();
-			}
-		}
-	}
-	
-	void getDataFromArchive(String archive, 
-			ArchiveDatabase2 db, 
-			PurgeDatabase purgeFunc, 
-			boolean addToTop, 
-			boolean markYear/*, boolean checkLast*/) throws IOException {
-		log.info("scanning archive [["+archive+"]]");
-		//int startFrom = 0;
-		String lines[] = null;
-		String text = null;
-		try {
-			text = wiki.getPageText(archive).trim();
-		} catch (FileNotFoundException e) {
-			log.warn("Archive "+archive + " not found (skiped)");
-			return;
-		}
-		lines = text.split("\n"); 
-		
-		if(lines.length==0) {
-			log.warn("archive "+archive+" is empty");
-			return;
-		}
-		log.info(String.valueOf(lines.length)+" lines found");
-		
-		int i;
-		int year = 0;
-		if(addToTop) i = lines.length-1;
-		else i = 0;
-		int end;
-		if(addToTop) end = -1;
-		else end = lines.length;
-		
-		if(purgeFunc!=null) {
-			String dump = null;
-			try {
-				dump = FileTools.readWikiFile("cache", archive+".txt");
-			} catch (FileNotFoundException e) {
-				// ignore
-				log.info(e);
-				log.info("Failed to read "+archive+".txt"+" (ignored)");
-			} catch (UnsupportedEncodingException e) {
-				log.error(e);
-				log.info("Failed to read "+archive+".txt"+" (ignored)");
-			}			
-			
-			if(dump!=null) {
-				log.info("applying dump "+archive+".txt");
-				dump = dump.trim();				
-				if(addToTop && text.endsWith(dump)) {
-					String lines2[] = dump.split("\n");
-					i -= lines2.length;
-					log.info("Skipping last "+String.valueOf(lines2.length)+" lines");
-				} else if(!addToTop && text.startsWith(dump)) {
-					String lines2[] = dump.split("\n");
-					i += lines2.length;					
-					log.info("Skipping first "+String.valueOf(lines2.length)+" lines");
-				} else {
-					purgeFunc.purge(db);
-				}
-			}
-		}	
-		try {
-		FileTools.dump(text,"cache",archive+".txt");
-		} catch (UnsupportedEncodingException e) {
-			log.error(e);
-		}
-		text = null;
-		/*
-		if(lines==null) {
-			try {
-				lines = wiki.getPageLines(archive);
-			} catch (FileNotFoundException e) {
-				log.warn("Archive "+archive + " not found (skiped)");
-				return;
-			}
-		}*/
-		
-		
-		//ArchiveItem last = db.getLastFromCache();
-//		boolean foundLast = true;
-//		if(checkLast && last!=null) {
-//			foundLast = false;
-//		}
-		//true;
-		//if(DEBUG) i = 900;
-		for(;i!=end;) {			
-			String line = lines[i];			
-			ArchiveItem item = parseLine(line);
-			if(item==null) {
-				log.trace("parse line: "+line+ "  NO ARTICLE");				
-			} else {
-				log.trace("parse line: "+line+ "  FOUND -> "+item.article);
-				if(markYear && item.year!=year) {
-					year = item.year;
-					db.markYearBegin(year);
-				}
-//				if(foundLast)
-					db.add(item);
-//				else {
-//					if(item.equals(last)) 
-//						foundLast = true; 
-//					else if(item.getDateAsInt()>last.getDateAsInt()) {
-//						foundLast = true;
-//						db.add(item);
-//					} if some article was deleted and recreated, it will breake our db and a lot of duplicates will occur
-//				}
-			}
-			if(addToTop)i--; else i++;
-		}
-	}
-	
-	ArchiveItem parseLine(String line) throws IOException {
-		ArchiveItem item = null;
-		Pattern p = Pattern.compile(NewPages.PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
-		Matcher m = p.matcher(line);
-		while(m.find()) {
-			String article = m.group("article");
-			if(article.contains("Категория:Википедия:Списки новых статей по темам")) 				
-				continue;	
-			if(	NewPages.userNamespace(article) || NewPages.categoryNamespace(article))
-				continue;
-			Revision r = null;
-			r = wiki.getFirstRevision(article,true);
-			if(r!=null) {
-				/** sometimes shit happens, for instance check this page history 
-				 *  http://ru.wikipedia.org/wiki/%D0%9B%D1%91%D0%B2%D0%B0_%D0%91%D0%B8-2
-				 *  where 2 first revisions are blank 
-				 *  (no user, no revision id, not possible to diff or something)
-				 */
-				if(r.getUser()==null) { 
-					r = tryFindAnotherRev(article, r);
-					if(r!=null) {
-						item = new ArchiveItem(r);
-						return item;
-					}
-				} else {
-					item = new ArchiveItem(r);
-					return item;
-				}
-				
-			}
-		}
-		p = Pattern.compile(NewPages.PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM);
-		m = p.matcher(line);
-		if(m.find()) {
-			String templateString = m.group("template");			
-			String []items = templateString.split("\\|");
-			if(items[0].trim().equals("u")) return null; // ignore "u" template
-			Calendar c = null;			
-			String article = null;
-			String user = null;
-			for(int i=1;i<items.length;i++) {
-				String s = items[i];
-				if(c==null) {
-					c = DateTools.parseDate(s);
-					if(c!=null) continue;
-				}
-				if(article==null && !NewPages.userNamespace(s)) {
-					article = s;
-					continue;
-				} else if(user==null) {
-					user = s;
-				}				
-			}
-			if(c!=null && article!=null && user!=null) {
-				item = new ArchiveItem(article,user,c);
-				return item;
-			} else if(article!=null) {
-				Revision r = null;
-				r = wiki.getFirstRevision(article,true);
-				if(r!=null) {
-					/** sometimes shit happens, for instance check this page history 
-					 *  http://ru.wikipedia.org/wiki/%D0%9B%D1%91%D0%B2%D0%B0_%D0%91%D0%B8-2
-					 *  where 2 first revisions are blank 
-					 *  (no user, no revision id, not possible to diff or something)
-					 */
-					if(r.getUser()==null) { 
-						r = tryFindAnotherRev(article, r);
-						if(r!=null) {
-							item = new ArchiveItem(r);
-							return item;
-						}
-					} else {
-						item = new ArchiveItem(r);
-						return item;
-					}
-					
-				}
-			}
-		}		
-		return null;
-	}
-	
-	Revision tryFindAnotherRev(String article, Revision r) throws IOException {
-		Revision []revs = null;
-		//HashMap<String,Object> info = null;
-		String redirect = null;
-			//r = m_wiki.getTopRevisionWithNewTitle(article,true);
-			//info = m_wiki.getPageInfo(article);
-		redirect = wiki.resolveRedirect(article);
-		String realPage = (redirect==null)?article:redirect;
-		Calendar c1 = r.getTimestamp();
-		Calendar c2 = Calendar.getInstance();
-		c2.set(c1.get(Calendar.YEAR)+2, 0, 1); // we give 2 years chance to find next rev
-		r = null;
-		revs = wiki.getPageHistory(realPage, c2, c1);
-		if(revs!=null) {
-			for(int i=revs.length-1;i>=0;i--) {
-				Revision rev = revs[i];
-				if(rev.getUser()!=null) {
-					return rev;
-				}
-			}
-		}
-		return null;
-	}
-
 	Map<String,String> getSubOptions(Map<String,String> options,String option) {
 		Map<String,String> suboptions = new HashMap<String,String>();
 		for(Map.Entry<String,String> entry:options.entrySet()) {

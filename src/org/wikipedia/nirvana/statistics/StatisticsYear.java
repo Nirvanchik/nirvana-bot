@@ -53,6 +53,7 @@ public class StatisticsYear extends Statistics {
 	}
 	
 	public void setOptions(Map<String,String> options) {
+		super.setOptions(options);
 		String key = "מעקוע";
 		if(options.containsKey(key) && !options.get(key).isEmpty()) {
 			this.reportTemplate = options.get(key);
@@ -166,6 +167,7 @@ public class StatisticsYear extends Statistics {
 	
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
+		sb.append(customHeader);
 		sb.append(header);
 		sb.append(DELIMETER);
 		for(StatItem item:items) {
@@ -176,12 +178,11 @@ public class StatisticsYear extends Statistics {
 			sb.append(DELIMETER);
 		}		
 		if(this.totalTemplate!=null && !totalTemplate.isEmpty()) {
-//			@SuppressWarnings("unused")
-//			String str = total.toString(totalTemplate);
 			sb.append(total.toString(totalTemplate));
 			sb.append(DELIMETER);
 		}
 		sb.append(footer);
+		sb.append(customFooter);
 		return sb.toString();
 	}
 

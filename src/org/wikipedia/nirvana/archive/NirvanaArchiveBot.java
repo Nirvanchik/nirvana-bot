@@ -1,6 +1,6 @@
 /**
  *  @(#)NirvanaArchiveBot.java 1.3 13.07.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 	
 	public static final String INFO = 
 		"NirvanaArchiveBot v1.3 Updates archives of new articles lists at http://ru.wikipedia.org\n" +
-		"Copyright (C) 2014 Dmitry Trofimovich (KIN)\n" +		
+		"Copyright (C) 2011-2014 Dmitry Trofimovich (KIN)\n" +		
 		"\n";
 	
 	public void showInfo() {

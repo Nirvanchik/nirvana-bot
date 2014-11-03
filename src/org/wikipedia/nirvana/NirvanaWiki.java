@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaWiki.java 0.06 16/11/2013
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)NirvanaWiki.java 0.07 04.11.2014
+ *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -189,6 +189,11 @@ public class NirvanaWiki extends Wiki {
     public void edit(String title, String text, String summary, boolean minor, boolean bot) throws IOException, LoginException
     {
     	this.edit(title, text, summary, minor, bot, -2);
+    }
+    
+    public void edit(String title, String text, String summary) throws IOException, LoginException
+    {
+    	this.edit(title, text, summary, false, true, -2);
     }
     
     public boolean editIfChanged(String title, String text, String summary, boolean minor) throws IOException, LoginException

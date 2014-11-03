@@ -1,6 +1,6 @@
 /**
- *  @(#)ArchiveItem.java 20/10/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)
+ *  @(#)ArchiveItem.java
+ *  Copyright © 2012 - 2014 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ public class ArchiveItem {
 	public int year;
 	public int month;
 	public int day;
-	//public long rev;
+	public int size;
 	
 	public ArchiveItem(String article, String user, int year, int month, int day) {
 		this.article = article;
@@ -59,6 +59,17 @@ public class ArchiveItem {
 		this.year = c.get(Calendar.YEAR);
 		this.month = c.get(Calendar.MONTH);
 		this.day = c.get(Calendar.DAY_OF_MONTH);
+		this.size = r.getSize();
+	}
+	
+	public ArchiveItem(Revision r, int size) {
+		this.article = HTTPTools.removeEscape(r.getPage());
+		this.user = HTTPTools.removeEscape(r.getUser());
+		Calendar c = r.getTimestamp();
+		this.year = c.get(Calendar.YEAR);
+		this.month = c.get(Calendar.MONTH);
+		this.day = c.get(Calendar.DAY_OF_MONTH);
+		this.size = size;
 	}
 
 	public ArchiveItem(String article, String user, Calendar c) {

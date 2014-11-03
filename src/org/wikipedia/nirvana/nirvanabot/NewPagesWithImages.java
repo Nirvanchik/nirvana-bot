@@ -1,6 +1,6 @@
 /**
- *  @(#)NewPagesWithImages.java 13.07.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)NewPagesWithImages.java
+ *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinder;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
@@ -86,7 +87,7 @@ public class NewPagesWithImages extends NewPages {
 		}*/
 	}
 	
-	public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException {
+	public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException, ServiceError {
 		log.info("Processing data for [[" + this.pageName+"]]");
 		
 		/*for (String category : categories) {

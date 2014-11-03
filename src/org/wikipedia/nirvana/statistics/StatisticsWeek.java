@@ -185,6 +185,7 @@ public class StatisticsWeek extends Statistics {
 	
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
+		sb.append(customHeader);
 		sb.append(header);
 		sb.append(DELIMETER);
 		for(int i=0;i<items.size();i++) {
@@ -198,6 +199,7 @@ public class StatisticsWeek extends Statistics {
 			sb.append(DELIMETER);
 		}
 		sb.append(footer);
+		sb.append(customFooter);
 		return sb.toString();
 	}
 	

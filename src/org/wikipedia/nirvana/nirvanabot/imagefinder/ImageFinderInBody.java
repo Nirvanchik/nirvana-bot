@@ -1,6 +1,6 @@
 /**
  *  @(#)ImageFinderInBody.java 23/08/2012
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2013 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,29 +41,6 @@ public class ImageFinderInBody extends ImageFinder {
 		// nothing to do
 	}
 
-	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.ImageFinder#findImage(org.wikipedia.nirvana.NirvanaWiki, java.lang.String)
-	 *//*
-	@Override
-	public String findImage(NirvanaWiki wiki, String article) throws IOException {
-		Pattern p = Pattern.compile(this.regexToFindImage);
-        Matcher m = p.matcher(article);
-        while(m.find()) {
-        	String image = m.group("filename").trim();
-        	if(image!=null && !image.isEmpty()) {
-        		String str = null;
-        		try {
-					str = wiki.getPageText(image);
-				} catch (FileNotFoundException e) {
-					// nothing
-				}
-        		if(str!=null) {
-        			return image;
-        		}
-        	}
-        }
-		return null;
-	}*/
 	public String findImage(NirvanaWiki wiki, NirvanaWiki commons, String article) throws IOException {
 		return findImageByRegex(wiki, commons, article,regexToFindImage,"filename");
 	}

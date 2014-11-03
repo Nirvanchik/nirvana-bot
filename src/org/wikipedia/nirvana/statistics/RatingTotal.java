@@ -1,6 +1,6 @@
 /**
  *  @(#)RatingTotal.java 20/10/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)
+ *  Copyright © 2012 - 2014 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -107,35 +107,33 @@ public class RatingTotal extends Rating {
 	}
 	
 	public void put(ArchiveDatabase2 db) throws IllegalStateException {
-		Statistics totalReporter = StatisticsFabric.getReporterWithUserData(this);
-		Map<Integer,Statistics> reporterByYear = new HashMap<Integer,Statistics>(5);
-		int years = endYear - startYear + 1;
-		for(int year = startYear;year<=endYear;year++) {
-			Statistics rep = StatisticsFabric.getReporterWithUserData(this,year);
-			if(rep!=null) reporterByYear.put(year, rep);
+		if (!this.filterBySize) {
+    		Statistics totalReporter = StatisticsFabric.getReporterWithUserData(this);
+    		Map<Integer,Statistics> reporterByYear = new HashMap<Integer,Statistics>(5);
+    		int years = endYear - startYear + 1;
+    		for(int year = startYear;year<=endYear;year++) {
+    			Statistics rep = StatisticsFabric.getReporterWithUserData(this,year);
+    			if(rep!=null) reporterByYear.put(year, rep);
+    		}
+    		
+    		if(totalReporter!=null) {
+    			this.totalUserStat = totalReporter.getUserStat();
+    		}
+    		
+    		if(reporterByYear.size()==years) {
+    			for(int year = startYear;year<=endYear;year++) {
+    				Statistics rep = reporterByYear.get(year);				 
+    				userstatByYear.put(year, rep.getUserStat());
+    			}
+    		}
 		}
 		
-		if(totalReporter!=null) {
-			this.totalUserStat = totalReporter.getUserStat();
-		}
-		
-		if(reporterByYear.size()==years) {
-			for(int year = startYear;year<=endYear;year++) {
-				Statistics rep = reporterByYear.get(year);				 
-				userstatByYear.put(year, rep.getUserStat());
-			}
-		}
-		
-		
-		if(totalUserStat.isEmpty() && userstatByYear.isEmpty()) {
+		if (userstatByYear.isEmpty()) {
 			putFromDb(db); 
 		} else if(totalUserStat.isEmpty()) {
 			super.putFromDb(db); 
-		} else if(userstatByYear.isEmpty()) {
-			putFromDb(db); 
-		} else {
-			
-		}
+		} 
+		
 		analyze(); // here user rating is prepared
 		//analyze2(); // here user rating is extended with articles by year
 		
@@ -151,9 +149,11 @@ public class RatingTotal extends Rating {
 		Map<String,Integer> userstat = new HashMap<String,Integer>(100);
 		if(it.hasNext()) {
 			item = it.next();
-			this.totalUserStat.put(item.user, 1);
 			y = item.year;
-			userstat.put(item.user, 1);
+			if (!(this.filterBySize && item.size<this.minSize)) {
+				this.totalUserStat.put(item.user, 1);
+				userstat.put(item.user, 1);
+			}
 		}
 		while(it.hasNext()) {
 			item = it.next();
@@ -162,16 +162,24 @@ public class RatingTotal extends Rating {
 				y = item.year;
 				userstat = new HashMap<String,Integer>(100);				
 			}
+			if (this.filterBySize && item.size<this.minSize)
+				continue;
 			Integer n = totalUserStat.get(item.user);
-			if(n==null) totalUserStat.put(item.user, 1);
-			else totalUserStat.put(item.user, n+1);	
+			if (n==null) totalUserStat.put(item.user, 1);
+			else 		 totalUserStat.put(item.user, n+1);	
+			
 			n = userstat.get(item.user);
-			if(n==null) userstat.put(item.user, 1);
-			else userstat.put(item.user, n+1);	
+			if (n==null) userstat.put(item.user, 1);
+			else 		 userstat.put(item.user, n+1);	
 		}
 		this.userstatByYear.put(y, userstat);
 	}
 	
+	/**
+	 *  Задача здесь подменить два набора items + userstatByYear
+	 *  одним набором items, в котором лежат StatItemRT вместо StatItem
+	 *  StatItemRT - содержат статистику по годам
+	 */
 	protected void additionalProcessing() {
 		for(int i = 0;i<this.items.size();i++) {
 			StatItem item = items.get(i);
@@ -207,25 +215,6 @@ public class RatingTotal extends Rating {
 			throw new BadAttributeValueExpException(this.type);
 		}
 	}
-	/*
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		
-		for(int year=startYear;year<=endYear;year++)
-			sb.append(this.headerItemTemplate.replace("%(год)", String.valueOf(year)));
-		sb.append(DELIMETER);
-		
-		for(StatItem item:items) {
-			sb.append(item.toString());			
-			sb.append(DELIMETER);
-		}		
-		if(this.totalTemplate!=null && !totalTemplate.isEmpty()) {
-			sb.append(total.toString(totalTemplate));
-			sb.append(DELIMETER);
-		}
-		sb.append(footer);
-		return sb.toString();
-	}*/
 	public String toString() {
 		StringBuffer sb = new StringBuffer();		
 		for(int year=startYear;year<=endYear;year++)

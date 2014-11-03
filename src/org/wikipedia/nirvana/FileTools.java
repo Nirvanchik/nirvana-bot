@@ -1,6 +1,6 @@
 /**
  *  @(#)FileTools.java 07/04/2012
- *  Copyright © 2011 - 2013 Dmitry Trofimovich (KIN)
+ *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 /**
  * @author kin
@@ -38,7 +39,15 @@ public class FileTools {
 	public static final String CP1251 = "CP1251";
 	public static String DEFAULT_ENCODING = UTF8;
 	
-	protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(FileTools.class.getName());
+	protected static org.apache.log4j.Logger log4j;
+	protected static Logger logger;
+	static {
+		try {
+			log4j = org.apache.log4j.Logger.getLogger(FileTools.class.getName());
+		} catch (java.lang.NoClassDefFoundError e) {
+			logger = Logger.getLogger("FileTools");
+		}
+	}
 	
 	public void setDefaultEncoding(String encoding) {
 		DEFAULT_ENCODING = encoding;
@@ -46,6 +55,22 @@ public class FileTools {
 	
 	public static void dump(String text, String folder, String file) throws IOException {
 		dump(text, folder, file, DEFAULT_ENCODING);
+	}
+	
+	private static void logD(Object ob) {
+		if (log4j!=null) {
+			log4j.debug(ob);
+		} else {
+			logger.fine(ob.toString());
+		}
+	}
+	
+	private static void logE(Object ob) {
+		if (log4j!=null) {
+			log4j.error(ob);
+		} else {
+			logger.severe(ob.toString());
+		}
 	}
 	
 	public static void dump(String text, String folder, String file, String encoding) throws IOException {
@@ -106,8 +131,8 @@ public class FileTools {
 	
 	public static String readWikiFile(String folder, String file, String encoding) throws IOException {
 		File fileGood = new File(folder+"\\"+normalizeFileName(file));
-		log.debug("reading  file: "+fileGood.getPath());
-		log.debug("absolute path: "+ fileGood.getAbsolutePath());
+		logD("reading  file: "+fileGood.getPath());
+		logD("absolute path: "+ fileGood.getAbsolutePath());
 		
 		FileInputStream in = new FileInputStream(fileGood);
 		BufferedReader b = new BufferedReader(new InputStreamReader(in, encoding));       
@@ -145,21 +170,21 @@ public class FileTools {
 	        text = sb.toString();
 			reader.close();			
 		} catch (FileNotFoundException e) {
-			log.error(e);	
+			logE(e);	
 		} catch (UnsupportedEncodingException e) {
-			log.error(e);		
+			logE(e);		
 		} catch (IOException e) {
-			log.error(e);
+			logE(e);
 			e.printStackTrace();			
 		}
 		return text;
 	}
 	
-	public static String [] readFileToList(String fileName) {
-		return readFileToList(fileName, DEFAULT_ENCODING);
+	public static String [] readFileToList(String fileName, boolean removeEmpty) {
+		return readFileToList(fileName, DEFAULT_ENCODING, removeEmpty);
 	}
 	
-	public static String [] readFileToList(String fileName, String encoding) {
+	public static String [] readFileToList(String fileName, String encoding, boolean removeEmpty) {
 		File file = new File(fileName);
 		ArrayList<String> items = new ArrayList<String>(5000);
 		try {
@@ -168,16 +193,17 @@ public class FileTools {
 	        BufferedReader br = new BufferedReader(isr);
 	        String line = "";	        
 	        while((line=br.readLine())!=null) {
-	        	items.add(line);
+	        	if (!(removeEmpty && line.trim().length() == 0))
+	        		items.add(line);
 	        }	        
 	        br.close();
 			isr.close();
 			fis.close();
 		} catch (FileNotFoundException e) {
-			log.error(e.toString());
+			logE(e.toString());
 			return null;
 		} catch (IOException e) {
-			log.error(e.toString());
+			logE(e.toString());
 			e.printStackTrace();
 			return null;
 		}

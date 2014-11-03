@@ -1,6 +1,6 @@
 /**
- *  @(#)ArchiveDatabase.java 20/10/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)
+ *  @(#)ArchiveDatabase.java
+ *  Copyright © 2012 - 2014 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -47,7 +47,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * must be marked by calling markYearBegin()
  */
 public class ArchiveDatabase2 {
-
+//	public static enum Version {
+//		V1,
+//		V2
+//	};
+	private static final String V1_JS_READ_ERROR_MESSAGE = 
+			"Can not deserialize instance of org.wikipedia.nirvana.statistics.ArchiveDatabase2$JsonDb out of START_ARRAY token";
+	/**
+	 * First version
+	 */
+	public static final int V1 = 1;
+	/**
+	 * Second version: 
+	 * - added version number
+	 * - added size to ArchiveItem
+	 */
+	public static final int V2 = 2;
 	public static final String DEFAULT_CACHE_FOLDER = "cache";
 	String cacheFolder = DEFAULT_CACHE_FOLDER;
 	String name;
@@ -58,8 +73,29 @@ public class ArchiveDatabase2 {
 	Map<Integer,Integer> yearIndexes = null;
 	//boolean indexed = false;
 	boolean sorted = true;
+	private int version = V1;
+	//boolean withSize = false;
 	///int lastYearFound = 0;
 	private Logger log;
+	
+	public static class JsonDb {
+		public int version;
+		public ArrayList<ArchiveItem> items;
+		
+		public JsonDb(int version, ArrayList<ArchiveItem> items) {
+			this.version = version;
+			this.items = items;
+		}
+		
+		public JsonDb(int version, List<ArchiveItem> items) {
+			this.version = version;
+			this.items = new ArrayList<ArchiveItem>(items.size());
+			this.items.addAll(items);
+		}
+		public JsonDb() {
+			
+		}
+	}
 	
 	/*
 	 * this class is not year-safe
@@ -142,47 +178,79 @@ public class ArchiveDatabase2 {
 				
 	};
 	
-	ArchiveDatabase2(String name, boolean loadFromCache, String cache) {
+	ArchiveDatabase2(String name, boolean loadFromCache, String cache, boolean withSize) {
 		this.name = name;
 		this.cacheFolder = cache;		
+		//this.withSize = withSize;
 		dbPath = cacheFolder+"\\"+FileTools.normalizeFileName(name)+".js";
 		log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
 		items = new ArrayList<ArchiveItem>(50000);
 		yearIndexes = new HashMap<Integer,Integer>(5);
+		if (withSize)
+			version = V2;
 		if(loadFromCache) {
 			load();
 			markYears();
 		}
+		
+	}
+	
+	public boolean withSize() {
+		return (version==V2);
 	}
 	
 	public void load()	{
 		ObjectMapper mapper = new ObjectMapper();
-		List<ArchiveItem> list = null;
 		File file = new File(dbPath);
 		if(!file.exists()) {
 			log.warn("cache file "+dbPath+" does not exist");
 			return;
 		}
+		JsonDb jsonDb = null;
 		try {
-			list = mapper.readValue(
-					new File(dbPath), 
-					new TypeReference<List<ArchiveItem>>() { });
+			jsonDb = mapper.readValue(
+					file, 
+					new TypeReference<JsonDb>() { });
 		} catch (JsonParseException e) {
 			log.error(e);
 			return;
 		} catch (JsonMappingException e) {
-			log.error(e);
-			return;
+			if (e.getMessage().contains(V1_JS_READ_ERROR_MESSAGE)) {
+				// Читаем первую версию, которая не содержит номера версии и самой структуры JsonDb
+				List<ArchiveItem> list = null;
+				try {
+					list = mapper.readValue(
+							file, 
+							new TypeReference<List<ArchiveItem>>() { });
+				} catch(IOException e1) {
+					log.error(e1);
+					return;
+				}
+				jsonDb = new JsonDb(V1, list);				
+			} else {
+    			log.error(e);
+    			return;
+			}
 		} catch (IOException e) {
 			log.error(e);
 			return;
 		}
-		if(!list.isEmpty()) {
-			log.info(String.valueOf(list.size())+" items loaded from "+dbPath);
-			this.items.addAll(list);
-			lastItemFromCache = this.items.get(items.size()-1);
-			log.info("db loaded successfully. db size: "+items.size()+" items");
+		if (jsonDb.version < this.version) {
+			log.warn(String.format("Error: archive outdated! \r\n"
+					+"Archive %s has version %d but we need version %d",
+					dbPath, jsonDb.version, this.version));
+			log.info("db loading skipped");
+			return;
+		}		
+		
+		if(jsonDb.items.isEmpty()) {
+			log.warn(String.format("Archive db %s is empty", dbPath));
+			return;
 		}
+		log.info(String.valueOf(jsonDb.items.size())+" items loaded from "+dbPath);
+		this.items.addAll(jsonDb.items);
+		lastItemFromCache = this.items.get(items.size()-1);
+		log.info("db loaded successfully. db size: "+items.size()+" items");		
 	}
 	
 	public ArchiveItem getLast() {
@@ -195,8 +263,9 @@ public class ArchiveDatabase2 {
 	
 	public void save() {
 		ObjectMapper mapper = new ObjectMapper();
+		JsonDb db = new ArchiveDatabase2.JsonDb(version, items);
 		try {
-			mapper.writeValue(new File(dbPath), items);
+			mapper.writeValue(new File(dbPath), db);
 		} catch (JsonParseException e) {
 			log.error(e);
 			return;

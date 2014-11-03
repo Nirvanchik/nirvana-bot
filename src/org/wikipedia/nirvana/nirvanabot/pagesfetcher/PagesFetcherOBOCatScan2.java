@@ -1,6 +1,6 @@
 /**
  *  @(#)PagesFetcherOBOCatScan2.java 13.07.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2013 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -44,14 +44,9 @@ public class PagesFetcherOBOCatScan2 extends PageListFetcherOneByOne {
 	 * @param hours
 	 * @param namespace
 	 */
-	public PagesFetcherOBOCatScan2(List<String> cats, List<String> ignore,
+	public PagesFetcherOBOCatScan2(WikiTools.Service service, List<String> cats, List<String> ignore,
 	        String lang, int depth, int namespace) {
-		super(cats, ignore, lang, depth, 0, namespace);
-		SKIP_LINES = 2;
-	    NS_POS = 2;
-	    TITLE_POS = 0;
-	    REVID_POS = -1;
-	    ID_POS = 1;
+		super(service, cats, ignore, lang, depth, 0, namespace);
 	}
 	/* (non-Javadoc)
 	 * @see org.wikipedia.nirvana.nirvanabot.PageListFetcherOneByOne#getNewPagesForCat(java.lang.String, java.lang.String, int, int)

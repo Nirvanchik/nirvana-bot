@@ -1257,12 +1257,14 @@ public class Wiki implements Serializable
                     tempmap.put("lastpurged", timestampToCalendar(parseAttribute(item, "touched", 0), true));
                     tempmap.put("lastrevid", Long.parseLong(parseAttribute(item, "lastrevid", 0)));
                     tempmap.put("size", Integer.parseInt(parseAttribute(item, "length", 0)));
+                    tempmap.put("pageid", Long.parseLong(parseAttribute(item, "pageid", 0)));
                 }
                 else
                 {
                     tempmap.put("lastedited", null);
                     tempmap.put("lastrevid", -1L);
                     tempmap.put("size", -1);
+                    tempmap.put("pageid", -1);
                 }
 
                 // parse protection level
@@ -1299,6 +1301,7 @@ public class Wiki implements Serializable
                 tempmap.put("displaytitle", parseAttribute(item, "displaytitle", 0));
                 tempmap.put("token", parseAttribute(item, "edittoken", 0));
                 tempmap.put("timestamp", makeCalendar());
+                
 
                 // watchlist token
                 if (user != null)
