@@ -1,6 +1,6 @@
 /**
- *  @(#)StringTools.java 02/07/2012
- *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
+ *  @(#)StringTools.java
+ *  Copyright © 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -108,6 +108,10 @@ public class StringTools {
         	list.add(0,str.substring(i+1, start));
         }
         return list.toArray(new String[list.size()]);
+    }
+    
+    public static String trancateTo(String text, int len) {
+    	return text.length()>len?text.substring(0,len):text;
     }
     
 }

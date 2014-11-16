@@ -1,6 +1,6 @@
 /**
- *  @(#)HTTPTools.java 07/04/2012
- *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
+ *  @(#)HTTPTools.java 
+ *  Copyright © 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -40,6 +40,10 @@ public class HTTPTools {
     // and the data volume is large!)
     private static final int CONNECTION_READ_TIMEOUT_MSEC = 260000; // 260 seconds
     
+    static {
+    	log = org.apache.log4j.Logger.getLogger(HTTPTools.class.getName());		
+    }
+    
     public static String fetch(String url) throws IOException {
     	return fetch(url, false);
     }
@@ -50,7 +54,6 @@ public class HTTPTools {
     
 	public static String fetch(String url, boolean removeEscape, boolean customUserAgent) throws IOException
     {
-		if(log==null) log = org.apache.log4j.Logger.getLogger(HTTPTools.class.getName());
 		log.debug("fetching url="+url);
 		log.trace("remove escape="+removeEscape);
         // connect
@@ -81,7 +84,6 @@ public class HTTPTools {
     }
 	
 	public static void download(String url, File file) throws IOException {
-		if(log==null) log = org.apache.log4j.Logger.getLogger(HTTPTools.class.getName());
 		log.debug("downloading url="+url);
 		// connect
         URLConnection connection = new URL(url).openConnection();
@@ -96,9 +98,6 @@ public class HTTPTools {
         String line;
         
         BufferedWriter out = new BufferedWriter(new FileWriter(file));
-        
-        //new FileOutputStream(file));
-        
         while ((line = in.readLine()) != null)
         {
         	out.append(line);

@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaWiki.java 0.07 04.11.2014
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)NirvanaWiki.java 0.08 16.11.2014
+ *  Copyright © 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ import org.wikipedia.Wiki;
 
 /**
  * @author KIN 
- * based on Wiki.java version 0.28, revision 166  
+ * based on Wiki.java version 0.30, revision 208  
  */
 public class NirvanaWiki extends Wiki {
 	
@@ -196,7 +196,7 @@ public class NirvanaWiki extends Wiki {
     	this.edit(title, text, summary, false, true, -2);
     }
     
-    public boolean editIfChanged(String title, String text, String summary, boolean minor) throws IOException, LoginException
+    public boolean editIfChanged(String title, String text, String summary, boolean minor, boolean bot) throws IOException, LoginException
     {
     	String old = null;
     	try {
@@ -206,7 +206,7 @@ public class NirvanaWiki extends Wiki {
     	}
     	if(old==null || old.length()!=text.length() || !old.equals(text)) { // to compare lengths is faster than comparing 5k chars
     		log.debug("editing "+title);
-    		edit(title, text, summary, minor, true, -2);
+    		edit(title, text, summary, minor, bot, -2);
     		return true;
     	} else {
     		log.debug("skip updating "+title+ " (no changes)");
@@ -275,12 +275,9 @@ public class NirvanaWiki extends Wiki {
     	return m.matches();
     }
     
-    /* this is implementation from http://en.wikipedia.org/wiki/Template:Bots#Java
-     * Does not work for {{bots|allow=OtherBot}} case
-    public static boolean allowBots(String text, String user)
-    {
-    	return !text.matches("(?si).*\\{\\{(nobots|bots\\|(allow=none|deny=(.*?" + user + ".*?|all)|optout=all))\\}\\}.*");
-    }*/
+    public boolean allowEditsByCurrentBot(String text) {
+    	return NirvanaWiki.allowBots(text, this.getCurrentUser().getUsername());
+    }
     
 	public static boolean allowBots(String text, String user)
     {
@@ -310,13 +307,11 @@ public class NirvanaWiki extends Wiki {
     }
 	
 	public static String getAllowBotsString(String text) {
-		String nobots = null;
+		String nobots = "";
 		String pattern = "(\\{\\{(nobots|bots\\|([^\\}]+))\\}\\})";
     	Pattern p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
     	Matcher m = p.matcher(text);
-    	//boolean b1 = m.matches();
     	if(m.find()) {
-    		//log("matches");
     		nobots = m.group(1);
     	}
 		return nobots;
@@ -434,8 +429,7 @@ public class NirvanaWiki extends Wiki {
         }
 
 		@Override
-        public Revision[] next() {
-	        // TODO Auto-generated method stub
+        public Revision[] next() {	        
 	        return null;
         }
 

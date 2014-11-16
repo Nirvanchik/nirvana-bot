@@ -1,5 +1,5 @@
 /**
- *  @(#)NewPagesFetcherOneReqCatScan2.java 13.07.2014
+ *  @(#)NewPagesFetcherFastWithService.java 26.10.2014
  *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -30,14 +30,14 @@ import java.util.List;
 
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.WikiTools;
 
 /**
  * @author kin
  *
  */
-public class NewPagesFetcherOneReqCatScan2 extends BasicFetcher {
-
+public class NewPagesFetcherFastWithService extends BasicFetcher {
 	/**
 	 * @param cats
 	 * @param ignore
@@ -46,46 +46,34 @@ public class NewPagesFetcherOneReqCatScan2 extends BasicFetcher {
 	 * @param hours
 	 * @param namespace
 	 */
-	public NewPagesFetcherOneReqCatScan2(List<String> cats,
+	public NewPagesFetcherFastWithService(
+			WikiTools.Service service,
+			List<String> cats,
 	        List<String> ignore, String lang, int depth, int hours,
 	        int namespace) {
-		super(cats, ignore, lang, depth, hours, namespace);
-		SKIP_LINES = 2;
-	    NS_POS = 2;
-	    TITLE_POS = 0;
-	    REVID_POS = -1;
-	    ID_POS = 1;
-	    filteredByNamespace = true;
-	    hasSuffix = true;
+		super(service, cats, ignore, lang, depth, hours, namespace);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicFetcher#getNewPages(org.wikipedia.nirvana.NirvanaWiki)
+	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher#getNewPages(org.wikipedia.nirvana.NirvanaWiki)
 	 */
 	@Override
 	public ArrayList<Revision> getNewPages(NirvanaWiki wiki)
-	        throws IOException, InterruptedException {
-		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
+	        throws IOException, InterruptedException, ServiceError {
+		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(50);
 		HashSet<String> pages = new HashSet<String>();
-		String text = WikiTools.loadNewPagesForCatListAndIgnoreWithCatScan2(categories, categoriesToIgnore, language, depth, hours, namespace);
+		String text = WikiTools.loadNewPagesForCatListAndIgnoreWithService(service, categories, categoriesToIgnore, language, depth, hours, namespace);
 		parsePageList(wiki, pages, pageInfoList, null, text);	
 		return pageInfoList;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicFetcher#revisionAvailable()
+	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher#mayHaveDuplicates()
 	 */
 	@Override
-	public boolean revisionAvailable() {		
+	public boolean mayHaveDuplicates() {
+		// TODO Auto-generated method stub
 		return false;
 	}
-
-	/* (non-Javadoc)
-     * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher#mayHaveDuplicates()
-     */
-    @Override
-    public boolean mayHaveDuplicates() {	    
-	    return false;
-    }
 
 }

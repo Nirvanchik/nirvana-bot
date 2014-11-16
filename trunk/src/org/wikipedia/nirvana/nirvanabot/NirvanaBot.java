@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaBot.java 1.9 19.10.2014
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)NirvanaBot.java 1.10 16.11.2014
+ *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -56,8 +56,6 @@ public class NirvanaBot extends NirvanaBasicBot{
 	public static final String DEPTH_SEPARATOR = "|";
     public static final String ADDITIONAL_SEPARATOR = "#";
     
-//	public static final String SERVICE_CATSCAN = "catscan";
-//	public static final String SERVICE_CATSCAN2 = "catscan2";
 	public static final String YES_RU = "да";
 	public static final String NO_RU = "нет";
 
@@ -70,8 +68,6 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static boolean TASK = false;
 	private static String TASK_LIST_FILE = "task.txt";
 	
-	
-	//private String newpagesTemplate = null;
 	private String newpagesTemplates[] = null;
 	
 	public static final String ERROR_PARSE_INTEGER_FORMAT_STRING = "Error when parsing integer parameter \"%1$s\" integer value %2$s";
@@ -132,6 +128,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static int MAX_UPDATES_PER_DAY = 4;
 	
 	private static int DEFAULT_STARTS_PER_DAY = 1;
+		
 	
 	private int startNumber = 1;
 	
@@ -175,9 +172,11 @@ public class NirvanaBot extends NirvanaBasicBot{
 	public static String getDefaultMiddle() {
 		return DEFAULT_MIDDLE;
 	}
+	
 	public static String PROGRAM_INFO = 
-			"NirvanaBot v1.9 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
-			"Copyright (C) 2011-2014 Dmitry Trofimovich (KIN)\n" +
+			"NirvanaBot v1.10 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
+			"See also http://ru.wikipedia.org/User:NirvanaBot\n" +
+			"Copyright (C) 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)\n" +
 			"\n";
 			
 	public void showInfo() {
@@ -185,12 +184,10 @@ public class NirvanaBot extends NirvanaBasicBot{
 	}
 		
 	/**
+	 * Constructor with flags
 	 * 
+	 * @param flags
 	 */
-	public NirvanaBot() {
-		
-	}
-	
 	public NirvanaBot(int flags) {
 		super(flags);
 	}
@@ -259,7 +256,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}
 		
 		GENERATE_REPORT = properties.getProperty("statistics",GENERATE_REPORT?YES:NO).equals(YES);
-		UPDATE_STATUS = properties.getProperty("update-status",GENERATE_REPORT?YES:NO).equals(YES);
+		UPDATE_STATUS = properties.getProperty("update-status",UPDATE_STATUS?YES:NO).equals(YES);
 		REPORT_FILE_NAME = properties.getProperty("statistics-file",REPORT_FILE_NAME);
 		REPORT_WIKI_PAGE = properties.getProperty("statistics-wiki",REPORT_WIKI_PAGE);
 		STATUS_WIKI_PAGE = properties.getProperty("status-wiki",STATUS_WIKI_PAGE);
@@ -312,7 +309,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 			throw e;
 		}
 		Map<String, String> options = new HashMap<String, String>();		
-		if(!TryParseTemplate(newpagesTemplate, userNamespace, overridenPropertiesText,options)) {
+		if(!TryParseTemplate(newpagesTemplate, userNamespace, overridenPropertiesText,options, true)) {
 			log.info("no default settings for this template: "+newpagesTemplate);
 			return;
 		}
@@ -439,15 +436,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 	@SuppressWarnings("unused")
 	protected void go() {	
 		commons = new NirvanaWiki("commons.wikimedia.org");
-		commons.setMaxLag( 15 );
+		commons.setMaxLag( MAX_LAG );
 
-		Calendar cStart = Calendar.getInstance();
-		long start = cStart.getTimeInMillis();
-		//Date d = cStart.getTime();
-		//log.info("BOT STARTED at "+cStart.get(Calendar.HOUR_OF_DAY)+":"+cStart.get(Calendar.MINUTE));
-
-		//ArrayList<ReportItem> report = null;
-        BotReporter reporter;
+		BotReporter reporter;
         reporter = new BotReporter(wiki, 700, true);
         //reporter.botStarted(true);
         if (UPDATE_STATUS) {
@@ -478,7 +469,6 @@ public class NirvanaBot extends NirvanaBasicBot{
     		
     		// 1 extract portal list
     		String []portalNewPagesLists = null;
-    		//List<String>
     		try {
     			portalNewPagesLists = wiki.whatTranscludesHere(newpagesTemplate, Wiki.ALL_NAMESPACES);
     		} catch (IOException e) {			
@@ -567,8 +557,13 @@ public class NirvanaBot extends NirvanaBasicBot{
     				if(DEBUG_MODE) {					
     					FileTools.dump(portalSettingsText, "dump", portalName+".settings.txt");
     				}
+    				
+    				if (!wiki.allowEditsByCurrentBot(portalSettingsText)) {
+    					log.info("SKIP portal: "+portalName);	reportItem.skip(); i++; continue;
+    				}
+    				
     				Map<String, String> parameters = new HashMap<String, String>();
-    				if(TryParseTemplate(newpagesTemplate, userNamespace, portalSettingsText, parameters)) {
+    				if(TryParseTemplate(newpagesTemplate, userNamespace, portalSettingsText, parameters, true)) {
     					log.info("validate portal settings OK");					
     					logPortalSettings(parameters);
     					NewPagesData data = new NewPagesData();
@@ -655,7 +650,6 @@ public class NirvanaBot extends NirvanaBasicBot{
     					reporter.portalError();
     					reportItem.status = Status.ERROR;
     					reportItem.error = BotError.IO_ERROR;
-    					//e.printStackTrace();
     					log.error("OOOOPS!!!", e); // print stack trace
     				}
     			} catch (LoginException e) {
@@ -692,22 +686,12 @@ public class NirvanaBot extends NirvanaBasicBot{
     			if(STOP_AFTER>0 && t>=STOP_AFTER) break;
     			if(!retry) i++;
     		}
-    		//wiki.n
     		Calendar cEnd = Calendar.getInstance();
     		long endT = cEnd.getTimeInMillis();
-    		//long start = cStart.getTimeInMillis();
-    		//log.debug("start "+start+" end "+end);
     		reporter.addToTotal(portalNewPagesLists.length);
     		
     		log.info("TEMPLATE FINISHED at "+String.format("%1$tT", cEnd));
     		log.info("WORK TIME for TEMPLATE: "+BotReporter.printTimeDiff(endT-startT));
-    		
-//    		log.info("portals: "+String.valueOf(portalNewPagesLists.length)
-//    				+", checked: "+String.valueOf(k)
-//    				+", processed: "+String.valueOf(j)
-//    				+", updated: "+String.valueOf(l)
-//    				+", errors: "+String.valueOf(er));
-    		
     	}
         reporter.logStatus();
         if (GENERATE_REPORT) {
@@ -721,8 +705,6 @@ public class NirvanaBot extends NirvanaBasicBot{
             }
         }
         reporter.botFinished(true);
-        
-		
 	}
 	
 
@@ -732,7 +714,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		String key;
 		
 		PortalParam param = new PortalParam();
-		param.lang = NirvanaBasicBot.LANGUAGE;
+		param.lang = LANGUAGE;
 		
 		String type = null;
 		key = "тип";
@@ -978,23 +960,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {			
 			param.renamedFlag = parseRenamed(options.get(key),param.renamedFlag,data.errors);
 		}
-		
-		//param.updatesPerDay = DEFAULT_UPDATES_PER_DAY;
-		/*key = "частота обновлений";
-		if (options.containsKey(key) && !options.get(key).isEmpty()) {	
-			try {
-				param.updatesPerDay = Integer.parseInt(options.get(key));
-			} catch(NumberFormatException e) {
-				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
-				data.errors.add(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING_RU, key, options.get(key)));
-			}
-			if(param.updatesPerDay>MAX_UPDATES_PER_DAY) {
-				data.errors.add(String.format(ERROR_INTEGER_TOO_BIG_STRING_RU, key, options.get(key),MAX_UPDATES_PER_DAY));
-				param.updatesPerDay = MAX_UPDATES_PER_DAY;				
-			}
-			//Object o = param;
-			//o.getClass().getf
-		}*/
+				
 		parseIntegerKeyWithMaxVal(options, "частота обновлений",param,data,"updatesPerDay",DEFAULT_UPDATES_PER_DAY, MAX_UPDATES_PER_DAY);
 		
 		/*
@@ -1056,7 +1022,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 			return true;
 		}
 		
-		if (type.equals("список новых статей")) {
+		if (type.equals("список новых статей") || type.equals("новые статьи")) {
 			data.portalModule = new NewPages(param);						
 		}
 		else if (type.equals("список наблюдения")) {
@@ -1071,24 +1037,17 @@ public class NirvanaBot extends NirvanaBasicBot{
 			normalColor,
 			longColor);*/
 			}//"Монета:Аверс,Реверс,Изображение аверса,Изображение реверса;image file,Фото,портрет,Изображение"
-		else if (type.equals("список новых статей с изображениями в карточке")) {
+		else if (type.equals("список новых статей с изображениями в карточке") || type.equals("новые статьи с изображениями в карточке")) {
 			data.portalModule = new NewPagesWithImages(param, commons, new ImageFinderInCard(param.imageSearchTags));
 		}
-		else if (type.equals("список новых статей с изображениями в тексте") ) {
+		else if (type.equals("список новых статей с изображениями в тексте") || type.equals("новые статьи с изображениями в тексте") ) {
 			data.portalModule = new NewPagesWithImages(param, commons, new ImageFinderInBody());
 		} 
-		else if (type.equals("список новых статей с изображениями")) {
+		else if (type.equals("список новых статей с изображениями") || type.equals("новые статьи с изображениями")) {
 			data.portalModule = new NewPagesWithImages(param, commons, new ImageFinderUniversal(param.imageSearchTags));
 		}
-		else if (type.equals("списки новых статей по дням")) {
-			/*data.portalModule = new NewPagesWithWeeks(LANGUAGE,
-				    categories,
-				    categoriesToIgnore,
-				    usersToIgnore,
-				    title, archive, 
-				    ns, depth, hours, maxItems,
-				    format, delimeter, header, footer,
-				    minor, bot);*/
+		else if (type.equals("списки новых статей по дням") || type.equals("новые статьи по дням")) {
+			data.portalModule = new NewPagesWeek(param);
 		}
 		else if (type.equals("список страниц с заданными категориями и шаблонами")) {
 			/*
@@ -1178,22 +1137,6 @@ public class NirvanaBot extends NirvanaBasicBot{
 		return retval;
 	}
 	
-	/*
-	private static Collection<? extends String> validateArchiveFormat(
-			ArchiveSettings archiveSettings) {
-		ArrayList<String> errors = new ArrayList<String>();
-		
-		if(archiveSettings.headerHeaderFormat!=null) {
-			ArchiveSettings.Period p1 = ArchiveSettings.getHeaderPeriod(archiveSettings.headerHeaderFormat);
-			if(p1==Period.NONE) {
-				errors.add("")
-			}
-		}
-		return errors;
-	}*/
-	
-	
-
 	private int parseRenamed(String string, int defaultValue,
 			ArrayList<String> errors) {
 		int flag = 0;
@@ -1256,15 +1199,6 @@ public class NirvanaBot extends NirvanaBasicBot{
 			archiveSettings.enumeration = Enumeration.NONE;
 			errors.add(String.format(ERROR_PARAMETER_HAS_MULTIPLE_VALUES_RU, "параметры архива -> нумерация"));
 		}
-		
-		/*if(itemsVector.contains("категории")) {
-			archiveSettings.supportCategory = true;
-		}*/
-		
-		//boolean byYear = false,byQarter=false,byMonth=false,byWeek=false,byDay=false;
-		
-		
-
 		return errors;
 	}
 	

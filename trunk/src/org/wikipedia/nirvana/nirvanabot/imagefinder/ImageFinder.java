@@ -53,6 +53,8 @@ public abstract class ImageFinder {
     			} else {
     				image = null;
     			}
+    		} else if (image.contains("{{") || image.contains("}}")) {
+    			image = null;
     		}
         	log.debug("image: "+image);
         	if(image!=null && !image.isEmpty() && !image.contains(">") && !image.contains("<")) {

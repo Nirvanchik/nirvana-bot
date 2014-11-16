@@ -10,8 +10,8 @@
 <entry key="wiki-lang">ru</entry>
 <entry key="wiki-java-loglevel">OFF</entry>
 <entry key="update-comment">обновление</entry>
-<entry key="default-depth">7</entry>
-<entry key="default-hours">720</entry>
+<entry key="default-depth">6</entry>
+<entry key="default-hours">350</entry>
 <entry key="default-maxitems">20</entry>
 <entry key="default-comment">обновление</entry>
 <entry key="error-notification">no</entry>

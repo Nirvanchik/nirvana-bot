@@ -9,13 +9,13 @@
 <entry key="new-pages-template">User:NirvanaBot/Новыя артыкулы</entry>
 <entry key="overriden-properties-page">User:NirvanaBot/Новыя артыкулы/Налады па змаўчанні</entry>
 <entry key="wiki-lang">be</entry>
-<entry key="default-depth">7</entry>
-<entry key="default-hours">720</entry>
+<entry key="default-depth">6</entry>
+<entry key="default-hours">350</entry>
 <entry key="default-maxitems">20</entry>
 <entry key="error-notification">no</entry>
 <entry key="update-pause">1000</entry>
 <entry key="statistics">yes</entry>
-<entry key="statistics-file">report/report.NirvanaBotBe-%(date).txt</entry>
+<entry key="statistics-file">report/report.NirvanaBot.be-%(date).txt</entry>
 <entry key="statistics-format">txt</entry>
 <entry key="start-from">0</entry>
 <entry key="service">catscan2</entry>

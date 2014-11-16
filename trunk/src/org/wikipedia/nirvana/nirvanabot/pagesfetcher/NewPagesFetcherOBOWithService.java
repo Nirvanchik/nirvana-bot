@@ -1,5 +1,5 @@
 /**
- *  @(#)NewPagesFetcherOBOCatScan.java 28.10.2013
+ *  @(#)NewPagesFetcherOBOWithService.java 26.10.2014
  *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -32,7 +32,7 @@ import org.wikipedia.nirvana.WikiTools;
  * @author kin
  *
  */
-public class NewPagesFetcherOBOCatScan extends PageListFetcherOneByOne {
+public class NewPagesFetcherOBOWithService extends PageListFetcherOneByOne {
 
 	/**
 	 * @param cats
@@ -42,36 +42,20 @@ public class NewPagesFetcherOBOCatScan extends PageListFetcherOneByOne {
 	 * @param hours
 	 * @param namespace
 	 */
-	public NewPagesFetcherOBOCatScan(List<String> cats, List<String> ignore,
-	        String lang, int depth, int hours, int namespace) {
-		super(cats, ignore, lang, depth, hours, namespace);
-		SKIP_LINES = 0;
-	    NS_POS = 0;
-	    TITLE_POS = 1;
-	    REVID_POS = 5;
-	    ID_POS = 4;
-	    filteredByNamespace = false;
-	    hasSuffix = false;
+	public NewPagesFetcherOBOWithService(WikiTools.Service service,
+			List<String> cats,
+	        List<String> ignore, String lang, int depth, int hours,
+	        int namespace) {
+		super(service, cats, ignore, lang, depth, hours, namespace);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.PageListFetcherOneByOne#getNewPagesForCat(java.lang.String, java.lang.String, int, int)
+	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcherOneByOne#getNewPagesForCat(java.lang.String, java.lang.String, int, int)
 	 */
 	@Override
 	protected String getNewPagesForCat(String category, String language,
 	        int depth, int hours) throws IOException, InterruptedException {		
-		return WikiTools.loadNewPagesForCatWithCatScan(category, language, depth, hours);
+		return WikiTools.loadNewPagesForCatWithService(service, category, language, depth, hours, namespace);
 	}
 
-	public boolean revisionAvailable() {
-		return true;
-	}
-
-	/* (non-Javadoc)
-     * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher#mayHaveDuplicates()
-     */
-    @Override
-    public boolean mayHaveDuplicates() {	    
-	    return false;
-    }
 }

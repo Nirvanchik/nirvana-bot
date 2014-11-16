@@ -16,15 +16,15 @@
 <entry key="default-hours">350</entry>
 <entry key="default-maxitems">20</entry>
 <entry key="error-notification">no</entry>
-<entry key="debug-mode">no</entry>
-<entry key="stop-after">0</entry>
-<entry key="start-from">0</entry>
 <entry key="update-pause">1000</entry>
 <entry key="statistics">yes</entry>
-<entry key="statistics-file">report/report.NirvanaBot.task-%(date).txt</entry>
+<entry key="statistics-file">report/report.NirvanaBot.ru_%(date)_%(launch_number).txt</entry>
 <entry key="statistics-format">txt</entry>
-<entry key="task-list">yes</entry>
-<entry key="task-list-file">nirvanatask.txt</entry>
+<entry key="update-status">yes</entry>
+<entry key="statistics-wiki">Участник:NirvanaBot/Новые статьи/Отчёт</entry>
+<entry key="status-wiki">Участник:NirvanaBot/Новые статьи/Статус</entry>
+<entry key="status-wiki-template">Участник:NirvanaBot/Новые статьи/Отображение статуса</entry>
+<entry key="start-from">0</entry>
 <entry key="service">catscan2</entry>
 <entry key="fast-mode">yes</entry>
 
