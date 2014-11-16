@@ -108,6 +108,7 @@ public class NewPages implements PortalModule{
     protected GetRevisionMethod getRevisionMethod = GetRevisionMethod.GET_REV;
     
     protected boolean UPDATE_FROM_OLD = true;
+    protected boolean UPDATE_ARCHIVE = true;
     
     protected String currentUser = null;
     
@@ -212,16 +213,19 @@ public class NewPages implements PortalModule{
 	}
 	
 	protected String substParams(String item, boolean constantOnly) {
+		if (item.isEmpty()) return item;
 		String portal = getPortalName();
 		Calendar c = Calendar.getInstance();
-		String archive = archiveSettings.getArchiveForDate(c);
 		String date = DateTools.printDateDayMonthYearGenitiveRussian(c);
 		String str = item.replace("%(бот)", getCurrentUser())
 				.replace("%(проект)", portal)
 				.replace("%(портал)", portal)
 				.replace("%(страница)", pageName);
-		if (archive != null) {
-			str = str.replace("%(архив)", archive);
+		if (archiveSettings != null) {
+    		String archive = archiveSettings.getArchiveForDate(c);
+    		if (archive != null) {
+    			str = str.replace("%(архив)", archive);
+    		}
 		}
 		if (!constantOnly) {
 			str = str.replace("%(дата)", date);
@@ -332,16 +336,11 @@ public class NewPages implements PortalModule{
 		    
 		    if (page != null && !usersToIgnore.contains(HTTPTools.removeEscape(page.getUser())))
 		    {
-		    	//if(namespace!=0) {log.warn("namespace is not 0"); continue;}
-		      //  String element = String.format(format,
-		        //    Namespace != 0 ? page.Title.Substring(wiki.GetNamespace(Namespace).Length + 1) : page.Title,
-		          //  page.Author,
-		            //page.FirstEdit.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"));
 				String title_old = HTTPTools.removeEscape(pageInfo.getPage());
 		    	String title_new = HTTPTools.removeEscape(page.getPage());
 		    	log.debug("check page, title old: "+title_old+", title new: "+title_new);
 		    	boolean deleted = false;
-		    	if(deletedFlag != PortalParam.Deleted.DONT_TOUCH) {		    		 
+		    	if (deletedFlag != PortalParam.Deleted.DONT_TOUCH && service.hasDeleted) {		    		 
 	                if(!wiki.exists(title_new)) {	                
 	                	log.warn("page " +title_new+" deleted"); // page was created and renamed or deleted after that
 	                	deleted = true;
@@ -423,6 +422,17 @@ public class NewPages implements PortalModule{
 		});
 	}
 	
+	public void sortPagesByName(ArrayList<Revision> pageInfoList) {
+		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
+
+			@Override
+			public int compare(Revision r1, Revision r2) {				
+				return r1.getPage().compareTo(r2.getPage());
+			}		
+			
+		});
+	}
+	
 	public void sortPages(ArrayList<Revision> pageInfoList, boolean byRevision) {
 		if(byRevision) {
 			sortPagesByRevision(pageInfoList);
@@ -437,10 +447,12 @@ public class NewPages implements PortalModule{
 	protected ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError {
 		PageListFetcher pageListFetcher = createPageListFetcher();
 		log.info("Using pagelist fetcher: "+pageListFetcher);
-		if (pageListFetcher.revisionAvailable()) {
-			getRevisionMethod = GetRevisionMethod.GET_REV;
-		} else {
-			getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
+		if (getRevisionMethod == GetRevisionMethod.GET_REV) {
+    		if (pageListFetcher.revisionAvailable()) {
+    			getRevisionMethod = GetRevisionMethod.GET_REV;
+    		} else {
+    			getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
+    		}
 		}
 		ArrayList<Revision> pageInfoList = pageListFetcher.getNewPages(wiki);
 		
@@ -555,47 +567,48 @@ public class NewPages implements PortalModule{
 	    	if(skip) continue;
 	        if (buffer.size() < maxItems)  {
 	        	if(!buffer.contains(oldItems[i])) {
-	        		boolean deleted = false;
-	        		boolean mark_deleted = false;
-	        		
-	        		if (this.deletedFlag==PortalParam.Deleted.REMOVE || this.deletedFlag==PortalParam.Deleted.MARK) {
-        				String title = getNewPagesItemArticle(oldItems[i]);
-        				if (title != null) title = pageTitleEscapedToNormal(title);
-        				if (title != null && !wiki.exists(title)) {
-    	                	//log.warn(e.toString()+" "+title); // page was created and renamed or deleted after that
-    	                	if(this.deletedFlag==PortalParam.Deleted.REMOVE) {
-    	                		log.debug("REMOVE old line: \t"+oldItems[i]);
-    	                		deleted = true;
-    	                		d.deletedCount++;
-    	                	}
-    	                	if(this.deletedFlag==PortalParam.Deleted.MARK) {
-    	                		mark_deleted = true;
-    	                		item = markDeleted(item);
-    	                	}
-        				}
-        			} 
-	        		if(this.deletedFlag==PortalParam.Deleted.MARK && !mark_deleted) {
-	        			item = unmarkDeleted(item);
+	        		if(UPDATE_FROM_OLD) {
+    	        		boolean deleted = false;
+    	        		boolean mark_deleted = false;
+    	        		
+    	        		if (this.deletedFlag==PortalParam.Deleted.REMOVE || this.deletedFlag==PortalParam.Deleted.MARK) {
+            				String title = getNewPagesItemArticle(oldItems[i]);
+            				if (title != null) title = pageTitleEscapedToNormal(title);
+            				if (title != null && !wiki.exists(title)) {
+        	                	//log.warn(e.toString()+" "+title); // page was created and renamed or deleted after that
+        	                	if(this.deletedFlag==PortalParam.Deleted.REMOVE) {
+        	                		log.debug("REMOVE old line: \t"+oldItems[i]);
+        	                		deleted = true;
+        	                		d.deletedCount++;
+        	                	}
+        	                	if(this.deletedFlag==PortalParam.Deleted.MARK) {
+        	                		mark_deleted = true;
+        	                		item = markDeleted(item);
+        	                	}
+            				}
+            			} 
+    	        		if(this.deletedFlag==PortalParam.Deleted.MARK && !mark_deleted) {
+    	        			item = unmarkDeleted(item);
+    	        		}
+    	        		if(!deleted) {
+   	        				log.debug("ADD old line: \t"+item);
+   	        				buffer.addOldItem(item);
+   		        		}
+	        		} else {
+	        			log.debug("ARCHIVE old line: \t"+item);
+	        			if(UPDATE_ARCHIVE && archive!=null) {		        		
+			        		d.archiveItems.add(item);
+			        	}
+			        	d.archiveCount++;		        		
 	        		}
-	        		if(!deleted) {
-		        		if(UPDATE_FROM_OLD) {
-	        				log.debug("ADD old line: \t"+item);
-	        				buffer.addOldItem(item);
-		        		} else {
-		        			log.debug("ARCHIVE old line: \t"+item);
-		        			if(archive!=null) {		        		
-				        		d.archiveItems.add(item);
-				        	}
-				        	d.archiveCount++;		        		
-		        		}
-		        	} 
+    		        	
 	        		
 	        	} else {
 	        		log.debug("SKIP old line: \t"+oldItems[i]);
 	        	}
 	        } else {
 	        	log.debug("ARCHIVE old line: \t"+oldItems[i]);
-	        	if(archive!=null) {		        		
+	        	if(UPDATE_ARCHIVE && archive!=null) {		        		
 	        		d.archiveItems.add(oldItems[i]);
 	        	}
 	        	d.archiveCount++;
@@ -636,7 +649,7 @@ public class NewPages implements PortalModule{
 		//String bots = if(botsAllowString!=null)
 		
 			
-		d.makeArchiveText();
+		if (UPDATE_ARCHIVE) d.makeArchiveText();
 		
 		//archiveItems.i
 		d.newPagesCount = buffer.size() - (d.oldCount - d.archiveCount - d.deletedCount);
@@ -740,7 +753,7 @@ public class NewPages implements PortalModule{
 		{
 		    
 		    String str = "+"+String.valueOf(d.newPagesCount)+" новых";
-		    if(archive!=null && d.archiveCount>0) {
+		    if(UPDATE_ARCHIVE && archive!=null && d.archiveCount>0) {
 		    	str = str + ", -"+d.archiveCount+" в архив";
 		    }
 		    if(this.deletedFlag == PortalParam.Deleted.REMOVE && d.deletedCount>0) {
@@ -751,7 +764,7 @@ public class NewPages implements PortalModule{
 		    updated = true;
 		    reportData.updated = updated;
 		    //wiki.Save(Page, newText, Module.UpdateComment, !MarkEdits ? MinorFlags.NotMinor : MinorFlags.None, MarkEdits);
-		    if(archive!=null && (d.archiveText!=null || d.archiveItems.size()>0)) {		    	
+		    if(UPDATE_ARCHIVE && archive!=null && (d.archiveText!=null || d.archiveItems.size()>0)) {		    	
 		    	waitPauseIfNeed();
 		    	log.info("Updating archive");
 	    		updateArchive(wiki, d, reportData);
@@ -1005,7 +1018,7 @@ public class NewPages implements PortalModule{
 			// 2012-02-26T16:10:36Z
 			//p = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z");
 			for(int i=1;i<items.length;i++) {
-				String s = items[i];
+				String s = items[i].trim();
 				String article = s;
 				if(!userNamespace(article))
 					return article;

@@ -1,6 +1,6 @@
 /**
  *  @(#)WatchList.java
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,12 +23,9 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import javax.security.auth.login.LoginException;
 
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicFetcher;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PagesFetcherOBOCatScan2;
@@ -50,6 +47,7 @@ public class WatchList extends NewPages {
 		//GET_FIRST_REV = true;
 		getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED;
 		UPDATE_FROM_OLD = false;
+		UPDATE_ARCHIVE = false;
 				
 	}
 	
@@ -58,17 +56,11 @@ public class WatchList extends NewPages {
 		return new PagesFetcherOBOCatScan2(WikiTools.Service.CATSCAN2, categories, categoriesToIgnore, language, depth, namespace);
 	}
 	
-	public void sortPages(ArrayList<Revision> pageInfoList){
-		
-	}
+	@Override
+	public void sortPages(ArrayList<Revision> pageInfoList, boolean byRevision) {
+		// no sort (sorted by default)
+		// In CATSCAN2 sort is disabled so we have to sort actually until it's fixed on catscan2
+		sortPagesByName(pageInfoList);
+	}	
 	
-	
-	public void updateArchive(NirvanaWiki wiki, Data d, ReportItem reportData) throws LoginException, IOException {
-		String str = "";
-		if(archive!=null && !archive.isEmpty()) {
-			str = archive+" is not updated";
-		}
-		log.info("updateArchive-> WatchList doesn't support archives, skip, "+str);
-
-	}
 }

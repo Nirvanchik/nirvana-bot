@@ -1,6 +1,6 @@
 /**
  *  @(#)WikiTools.java 
- *  Copyright © 2013 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2013-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -48,12 +48,12 @@ public class WikiTools {
 	
 	public enum Service {
 		CATSCAN ("catscan", CATSCAN_DOMAIN, "/~daniel/WikiSense/CategoryIntersect.php", 
-				true, true, false, 0, 0, 1, 5, 4, false, false, 720,
+				true, true, false, 0, 0, 1, 5, 4, false, false, true, 720,
 				"wikilang=%1$s&wikifam=.wikipedia.org&basecat=%2$s&basedeep=%3$d&mode=rc&hours=%4$d&onlynew=on&go=Сканировать&format=csv&userlang=ru",
 				null,
 				null),
 		CATSCAN2 ("catscan2", CATSCAN2_DOMAIN, "/catscan2/catscan2.php", 
-				true, true, true, 2, 2, 0, -1, 1, true, false, 8928, ////	8760 = 1 year = 24*31*12 = 8928;
+				true, true, true, 2, 2, 0, -1, 1, true, false, false, 8928, ////	8760 = 1 year = 24*31*12 = 8928;
 				"language=%1$s&depth=%3$d&categories=%2$s&ns[%5$d]=1&max_age=%4$d&only_new=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=1",
 				"^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\S+$"); 
@@ -71,6 +71,7 @@ public class WikiTools {
 		public final int ID_POS;
 		public final boolean filteredByNamespace;
 		public final boolean hasSuffix;
+		public final boolean hasDeleted;
 		public final int MAX_HOURS;
 		public final String GET_NEW_PAGES_FORMAT;
 		public final String GET_NEW_PAGES_FORMAT_MANY_CATS;
@@ -78,7 +79,7 @@ public class WikiTools {
 
 		Service(String name, String domain, String path, boolean pages, boolean newPages, boolean newPagesManyCats,
 				int skipLines, int namespacePos, int titlePos, int revidPos, int idPos,
-				boolean filteredByNamespace, boolean hasSuffix, int maxHours, 
+				boolean filteredByNamespace, boolean hasSuffix, boolean hasDeleted, int maxHours, 
 				String getNewPagesFormat,
 				String getNewPagesFormatManyCats,
 				String lineRule) {
@@ -95,6 +96,7 @@ public class WikiTools {
 			this.ID_POS = idPos;
 			this.filteredByNamespace = filteredByNamespace;
 			this.hasSuffix = hasSuffix;
+			this.hasDeleted = hasDeleted;
 			this.MAX_HOURS = maxHours;
 			this.GET_NEW_PAGES_FORMAT = getNewPagesFormat;
 			this.GET_NEW_PAGES_FORMAT_MANY_CATS = getNewPagesFormatManyCats;
