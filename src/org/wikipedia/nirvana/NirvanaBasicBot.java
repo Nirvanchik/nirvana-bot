@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaBasicBot.java 13.07.2014
- *  Copyright © 2012-2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)NirvanaBasicBot.java 16.11.2014
+ *  Copyright © 2012-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -57,14 +57,16 @@ public class NirvanaBasicBot {
 	protected static org.apache.log4j.Logger log = null;
 	
 	protected static Properties properties = null;
-	protected static boolean DEBUG_MODE = false;
+	protected boolean DEBUG_MODE = false;
 	
 	public static final String YES = "yes";
 	public static final String NO = "no";
 	
+	protected int MAX_LAG = 15;
+	
 	protected NirvanaWiki wiki;
-	protected static String LANGUAGE= "ru";
-	protected static String COMMENT = "обновление";
+	protected String LANGUAGE= "ru";
+	protected String COMMENT = "обновление";
 	protected int flags = 0;
 	
 	public static String LICENSE = 
@@ -172,9 +174,10 @@ public class NirvanaBasicBot {
 			in.close();
 		} catch (FileNotFoundException e) {
 			System.out.println("ABORT: file "+cfg+" not found");
-			//e.printStackTrace();
+			return;
 		} catch (IOException e) {			
-			e.printStackTrace();
+			System.out.println("ABORT: Error reading config: "+cfg);
+			return;
 		}
 		
 		initLog();
@@ -228,7 +231,7 @@ public class NirvanaBasicBot {
 		loadCustomProperties(launch_params);
 		
 		wiki = new NirvanaWiki( LANGUAGE + ".wikipedia.org" );
-		wiki.setMaxLag( 15 );
+		wiki.setMaxLag( MAX_LAG );
 		log.info("login to "+LANGUAGE+ ".wikipedia.org, login: "+login+", password: (not shown)");
 		try {
 			wiki.login(login, pw.toCharArray());
@@ -241,7 +244,7 @@ public class NirvanaBasicBot {
 			return;
 		}
 		
-		if(NirvanaBasicBot.DEBUG_MODE) {
+		if(DEBUG_MODE) {
 			wiki.setDumpMode("dump");
 		}	
 		
@@ -250,7 +253,6 @@ public class NirvanaBasicBot {
 		go();		
 		
 		wiki.logout();		
-		//print( "db lag (seconds): " + m_wiki.getCurrentDatabaseLag() );
 		log.warn("EXIT");
 	}
 	
@@ -258,9 +260,11 @@ public class NirvanaBasicBot {
 		log.info("This is a basic bot framework");
 		log.info("It doesn't have any practical use, but can be utilized as a basis to create a new Bot");
 	}
+	
 	protected boolean loadCustomProperties(Map<String,String> launch_params) {
 		return true;
 	}
+	
 	protected void initLog() {
 		String log4jSettings = properties.getProperty("log4j-settings");
 		if(log4jSettings==null || log4jSettings.isEmpty() || !(new File(log4jSettings)).exists()) {
@@ -283,8 +287,6 @@ public class NirvanaBasicBot {
 			}
 			
 			log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
-			//log.setLevel(Level.OFF);
-			//nologs = true;
 		} else {
 			PropertyConfigurator.configure(log4jSettings);
 			log = org.apache.log4j.Logger.getLogger(this.getClass().getName());	
@@ -296,21 +298,19 @@ public class NirvanaBasicBot {
 		int val = def;
 		try {
 			String str = properties.getProperty(name);
-			if(str==null) {
-				if(notifyNotFound) { 
+			if (str == null) {
+				if (notifyNotFound) { 
 					log.info("settings: integer value not found in settings ("+name+")");
 				}
 				return val;
 			}
 			val = Integer.parseInt(str);				
-		}catch(NumberFormatException e){
+		} catch (NumberFormatException e){
 			log.error("invalid settings: error when parsing integer values of "+name);
-			//properties.setProperty(name, String.valueOf(def));
-		} catch(NullPointerException e){
-			if(notifyNotFound) {
+		} catch (NullPointerException e){
+			if (notifyNotFound) {
 				log.info("settings: integer value not found in settings ("+name+"), using default");
 			}
-			//properties.setProperty(name, String.valueOf(def));
 		}
 		return val;
 	}
@@ -356,17 +356,17 @@ public class NirvanaBasicBot {
 		return list;
 	}
 
-	public static boolean TryParseTemplate(String template, String userNamespace, String text, Map<String, String> parameters)
+	public static boolean TryParseTemplate(String template, 
+										   String userNamespace, 
+										   String text, 
+										   Map<String, String> parameters, 
+										   boolean splitByNewLine)
     {
 		log.debug("portal settings parse started");
 		log.debug("template = "+template);
-		log.debug("text = "+(text.length()>100?text.substring(0,100):text));
-        //parameters = null;
-        //String str = "^{{"+newpagesTemplateName+".*({{.+({{.+}})?.*}})?.*}}.*$";
+		log.debug("text = "+StringTools.trancateTo(text, 100));
         //String str = "^\\{\\{"+newpagesTemplateName+".*\\}\\}.*$"; // works
         //String str = "^(\\{\\{"+newpagesTemplateName+".*(\\{\\{.+\\}\\})?.*\\}\\})(.*)$";
-        //String name = newpagesTemplateName.substring(0, newpagesTemplateName.length()-1);
-        //char last = newpagesTemplateName.charAt(newpagesTemplateName.length()-1);
 		String recognizeTemplate = template;
 		String userEn = "User:";
 		String userLc = userNamespace+":";
@@ -379,17 +379,8 @@ public class NirvanaBasicBot {
 		// We don't start from ^ because we allow any text before template
         String str = "(\\{\\{"+recognizeTemplate+")(.+)$"; // GOOD
         log.debug("pattern = "+str);
-		//String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{.+?\\}\\})*.*))+?\\}\\}";
-        //String str = "(\\{\\{"+newpagesTemplateName+"(.*(\\{\\{[^\\{\\}]+\\}\\})*[^\\{]*))\\}\\}";
-        //log.debug("pattern:"+str);
         Pattern pattern = Pattern.compile(str,Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
-        //Regex templateRE = new Regex(@"\{\{(User):ClaymoreBot/Новые стать(и).",
-          //  RegexOptions.IgnoreCase | RegexOptions.Singleline);
         Matcher m = pattern.matcher(text);
-       // Match m = templateRE.Match(text);
-        /*if(!m.find())
-        	return false;
-        */
         if (!m.find())
         {
         	log.error("portal settings parse error (doesn't match pattern)");
@@ -397,15 +388,9 @@ public class NirvanaBasicBot {
         }
         
         log.debug("group count = "+m.groupCount());
-        //for(int i=0;i<m.groupCount();i++) {
-        //	log.debug("group "+(i)+": "+m.group(i));
-        //}
-        
-        //text.substring(m.end(1),text.length());
-        
         
         int level = 1;
-        int begin = m.end(1) + 1;
+        int begin = m.end(1);
         int end = -1;
         for (int i = begin; i < text.length() - 1; ++i)
         {
@@ -431,12 +416,21 @@ public class NirvanaBasicBot {
         Pattern commentPattern = Pattern.compile("<!--(.+?)-->");
         
         String parameterString = text.substring(begin, end);
-        //log.debug("parameter string: "+parameterString);
-        String[] ps = parameterString.split("\\|");
+        String splitParam = "\\|";
+        if (splitByNewLine) {
+        	splitParam = "\\n\\s*\\|";
+        }
+        String[] ps = parameterString.split(splitParam);
+        
         String lastKey = "";
         String lastVal = "";
         for(int i =0;i<ps.length;i++) {
-        	String p = ps[i];
+        	String p = ps[i];//.replace(rareWord, "|");
+        	/*
+        	if (p.endsWith("\\")) {
+        		ps[i]= ps[i]+ps[i+1];
+        		ps[i].replace("\\|", "|");
+        	}*/
             //p.
             //Pattern equalPattern = Pattern.compile("([^=])=");
         	//log.debug("checking string: "+p);

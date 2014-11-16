@@ -1,6 +1,6 @@
 /**
- *  @(#)ArchiveWithHeadersWithItemsCount.java 02/07/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)ArchiveWithHeadersWithItemsCount.java
+ *  Copyright © 2012-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,7 +36,17 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 	public static final String template = "%(количество)";
 	//protected String headerFormat;
 	public HeaderFormatItem patternOfHeader[] = null;
-	//protected Matcher matcher;
+
+	public class HeaderFormatItem {		
+		public Period period = Period.NONE;
+		public String string = "";
+		HeaderFormatItem(String str) {
+			string = str;
+		}
+		HeaderFormatItem(Period p) {
+			period = p;
+		}
+	}
 	/**
 	 * @param text
 	 * @param addToTop
@@ -114,8 +124,6 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 	public String headerVariableToConstant(String header,IntAndString data) {
 		String str = header;
 		int pos = 0;
-//		if(this.patternOfHeader==null) 
-//			initPattern(headerFormat);
 		for(HeaderFormatItem item : patternOfHeader) {
 			if(item.period==Period.NONE) {
 				if(item.string.equals(template)) {
@@ -146,17 +154,6 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 			}
 		}
 		return str;
-	}
-	
-	public class HeaderFormatItem{		
-		public Period period = Period.NONE;
-		public String string = "";
-		HeaderFormatItem(String str) {
-			string = str;
-		}
-		HeaderFormatItem(Period p) {
-			period = p;
-		}
 	}
 	
 	
@@ -203,8 +200,6 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 		}
 		
 	};
-	
-	
 	
 	protected Section createSection(Enumeration enumeration, boolean old) {
 		return new SectionWithItemsCount(enumeration,old);		

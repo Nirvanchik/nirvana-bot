@@ -18,7 +18,7 @@
 <entry key="update-pause">1000</entry>
 <entry key="parse-count">100000</entry>
 <entry key="statistics">no</entry>
-<entry key="statistics-file">report.NirvanaBot.rec-%(date).txt</entry>
+<entry key="statistics-file">report/report.NirvanaBot.rec-%(date).txt</entry>
 <entry key="statistics-format">txt</entry>
 <entry key="task-list">yes</entry>
 <entry key="task-list-file">recover_archive_task.txt</entry>

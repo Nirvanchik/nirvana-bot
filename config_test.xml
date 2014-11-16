@@ -7,8 +7,7 @@
 <entry key="wiki-password"></entry>
 <entry key="wiki-account-file">loginNirvanaBot.xml</entry>
 <entry key="new-pages-template">
-	Участник:NirvanaBot/test/Новые статьи, 
-	Участник:NirvanaBot/test/Новые статьи 2
+	Участник:NirvanaBot/test/Новые статьи
 </entry>
 <entry key="overriden-properties-page">Участник:NirvanaBot/test/Новые статьи/Настройки по умолчанию</entry>
 <entry key="wiki-lang">ru</entry>
@@ -30,7 +29,7 @@
 <entry key="task-list">yes</entry>
 <entry key="task-list-file">task.txt</entry>
 <entry key="statistics">yes</entry>
-<entry key="update-status">yes</entry>
+<entry key="update-status">no</entry>
 <entry key="statistics-file">report_%(date)_%(launch_number).txt</entry>
 <entry key="statistics-wiki">Участник:NirvanaBot/test/Новые статьи/Отчёт</entry>
 <entry key="status-wiki">Участник:NirvanaBot/test/Новые статьи/Статус</entry>

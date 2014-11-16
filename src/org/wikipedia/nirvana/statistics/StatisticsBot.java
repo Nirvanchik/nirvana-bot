@@ -1,6 +1,6 @@
 /**
  *  @(#)StatisticsBot.java 1.2 19.10.2014
- *  Copyright © 2012-2014 Dmitry Trofimovich (KIN)
+ *  Copyright © 2012-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -188,7 +188,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 
 				
 				Map<String, String> options = new HashMap<String, String>();
-				if(!TryParseTemplate(statSettingsTemplate, userNamespace, portalSettingsText, options)) {
+				if(!TryParseTemplate(statSettingsTemplate, userNamespace, portalSettingsText, options, true)) {
 					log.error("validate portal settings FAILED");
 					continue;
 				}

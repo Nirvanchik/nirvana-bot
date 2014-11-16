@@ -1,6 +1,6 @@
 /**
- *  @(#)NewPages.java 13.07.2014
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)NewPages.java 16.11.2014
+ *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -103,25 +103,28 @@ public class NewPages implements PortalModule{
     protected Map<String,String> pageLists;
     protected Map<String,String> pageListsToIgnore;
     
-    protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(NewPages.class);;	
+    protected static org.apache.log4j.Logger log;
     
     protected GetRevisionMethod getRevisionMethod = GetRevisionMethod.GET_REV;
     
     protected boolean UPDATE_FROM_OLD = true;
+    
+    protected String currentUser = null;
+    
+    static {
+    	log = org.apache.log4j.Logger.getLogger(NewPages.class);
+    }
     
     protected enum GetRevisionMethod {
     	GET_FIRST_REV,
     	GET_FIRST_REV_IF_NEED,
     	GET_REV,
     	GET_TOP_REV
-    	//,
     	//GET_LAST_REV_BY_PAGE_NAME
     }
     
-    //protected boolean botsAllow = false;
-    protected String botsAllowString = null;
 	/**
-	 * 
+	 *  Constructor
 	 */
     public NewPages(PortalParam param) {
     	this.language = param.lang;
@@ -172,13 +175,199 @@ public class NewPages implements PortalModule{
 		}
     }
 
-	public static class Data {		
+	public class Data {		
 		String newText;
 		String archiveText;
 		List<String> archiveItems = null;
-		int newPagesCount;
-		int archiveCount;
-		int deletedCount;
+		int newPagesCount = 0;
+		int archiveCount = 0;
+		int deletedCount = 0;
+		int oldCount = 0;
+		public Data() {
+			if (archive != null) {
+				archiveItems = new ArrayList<String>();
+			}
+		}
+		public void makeArchiveText() {
+			if(archive!=null && archiveItems!=null && archiveItems.size()>0) {
+				if(archiveSettings.enumeration==Enumeration.HASH) {
+					enumerateWithHash(archiveItems);
+				}
+				archiveText = StringUtils.join(archiveItems.iterator(),delimeter) + "\n";
+			}
+		}
+	}
+			
+	private String getPortalName() {
+		String str = pageName;
+		int colon = str.indexOf(':');
+		if (colon>=0) {
+			str = str.substring(colon+1);
+		}
+		int slash = str.indexOf('/');
+		if (slash > 0) {
+			str = str.substring(slash);
+		}
+		return str;
+	}
+	
+	protected String substParams(String item, boolean constantOnly) {
+		String portal = getPortalName();
+		Calendar c = Calendar.getInstance();
+		String archive = archiveSettings.getArchiveForDate(c);
+		String date = DateTools.printDateDayMonthYearGenitiveRussian(c);
+		String str = item.replace("%(бот)", getCurrentUser())
+				.replace("%(проект)", portal)
+				.replace("%(портал)", portal)
+				.replace("%(страница)", pageName);
+		if (archive != null) {
+			str = str.replace("%(архив)", archive);
+		}
+		if (!constantOnly) {
+			str = str.replace("%(дата)", date);
+		}
+		return str;
+	}
+	
+	protected class NewPagesBuffer {
+		protected NirvanaWiki wiki;
+		protected String header;
+		protected String middle;
+		protected String footer;
+		protected List<String> subset = new ArrayList<String>();
+		List<String> includedPages = new ArrayList<String>();
+		public NewPagesBuffer(NirvanaWiki wiki) {
+			this.wiki = wiki;
+			this.header = substParams(NewPages.this.header, false);
+			this.middle = NewPages.this.middle;
+			this.footer = substParams(NewPages.this.footer, false);
+		}
+		
+		public boolean contains(String item) {
+			return subset.contains(item);
+		}
+		
+		public int size() {
+			return subset.size();
+		}
+		
+		public String getNewText(String bots) {
+			String text;
+			if (middle.isEmpty()) {
+				text = bots + header + StringUtils.join(subset.toArray(), delimeter) + footer;
+			} else if (subset.size()>1) {
+				int m = (subset.size()+1)/2; // 2->1, 3->2, 4->2
+				text = bots + header + 
+						StringUtils.join(subset.subList(0, m), delimeter) + 
+						middle +
+						StringUtils.join(subset.subList(m, subset.size()), delimeter) +
+						footer;
+			} else {
+				text = bots + header + StringUtils.join(subset, delimeter) + middle + footer;
+			}
+			return text;
+		}
+		
+		protected void addOldItem(String item) {
+			subset.add(item);
+		}
+		
+		protected void addNewItem(String title, boolean deleted, Revision rev) throws IOException {
+			String element = null;    	
+			String user = rev.getUser();
+			String time = null;
+	    	if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) 
+	    		time = rev.getTimestamp().getTime().toString();
+	    	else {
+	    		time = String.format("%1$tFT%1$tTZ",rev.getTimestamp());
+	    	}
+			
+	    	String titleToInsert = title;
+	    	if(namespace!=0) {
+	    		log.debug("namespace = "+wiki.namespaceIdentifier(namespace)+" namespace="+String.valueOf(namespace)+" title="+title);
+	    		titleToInsert = title.substring(wiki.namespaceIdentifier(namespace).length()+1);
+	    	}
+	    	if(format.contains("{{") && format.contains("}}")) {
+	    		titleToInsert = pageTitleNormalToEscaped(titleToInsert); // replaces '=' equal-sign by escape-code
+	    	}
+	    	element = String.format(format,
+	    			titleToInsert,
+	    			HTTPTools.removeEscape(user), 
+	    			time);
+	    	if(deletedFlag==PortalParam.Deleted.MARK && deleted) {
+	    		element = markDeleted(element);
+	    	} 
+	    	
+	        if (!subset.contains(element))
+	        {
+	            subset.add(element);
+	            if (includedPages != null) {
+	            	includedPages.add(title);
+	            }
+	            log.debug("ADD new line: \t"+element);
+	        }
+		}
+		protected void addNewPage(NirvanaWiki wiki, Revision pageInfo) throws IOException {
+			Revision page = null;
+		    switch(getRevisionMethod) {
+		    	case GET_FIRST_REV:
+		    		page = wiki.getFirstRevision(pageInfo.getPage());
+		    		break;
+		    	case GET_REV:
+		    		page = wiki.getRevision(pageInfo.getRevid());
+		    		break;
+		    	case GET_TOP_REV:
+		    		page = wiki.getTopRevision(pageInfo.getPage());
+		    		break;
+		    	case GET_FIRST_REV_IF_NEED:
+		    		if(usersToIgnore.size()==0) {
+		    			page = pageInfo;
+		    		} else {
+		    			page = wiki.getFirstRevision(pageInfo.getPage());
+		    		}
+		    		break;
+		    	default:
+		    		throw new Error("not supported mode");
+		    }
+		    
+		    if (page != null && !usersToIgnore.contains(HTTPTools.removeEscape(page.getUser())))
+		    {
+		    	//if(namespace!=0) {log.warn("namespace is not 0"); continue;}
+		      //  String element = String.format(format,
+		        //    Namespace != 0 ? page.Title.Substring(wiki.GetNamespace(Namespace).Length + 1) : page.Title,
+		          //  page.Author,
+		            //page.FirstEdit.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"));
+				String title_old = HTTPTools.removeEscape(pageInfo.getPage());
+		    	String title_new = HTTPTools.removeEscape(page.getPage());
+		    	log.debug("check page, title old: "+title_old+", title new: "+title_new);
+		    	boolean deleted = false;
+		    	if(deletedFlag != PortalParam.Deleted.DONT_TOUCH) {		    		 
+	                if(!wiki.exists(title_new)) {	                
+	                	log.warn("page " +title_new+" deleted"); // page was created and renamed or deleted after that
+	                	deleted = true;
+	                	if (deletedFlag==PortalParam.Deleted.REMOVE) 
+	                		return;
+	                }
+		    	}   	
+		    	
+		    	boolean renamed = !title_new.equals(title_old);
+		    	
+		    	if(renamed) {
+			    	if((renamedFlag & PortalParam.RENAMED_NEW) != 0 ) {
+			    		addNewItem(title_new,deleted,page);
+			    	} 
+			    	if((renamedFlag & PortalParam.RENAMED_OLD) != 0) {
+			    		addNewItem(title_old,deleted,page);
+			    	} else {
+			    		if (includedPages != null) {
+			    			includedPages.add(title_old);
+			    		}
+			    	}		    	
+		    	} else {
+		    		addNewItem(title_new,deleted,page);
+		    	}
+		    }
+		}	
 	}
 	
 	
@@ -242,42 +431,10 @@ public class NewPages implements PortalModule{
 		}
 	}
 	
-	protected void addNewItem(NirvanaWiki wiki, String title, boolean deleted, String time, String user, 
-			List<String> subset, List<String> includedPages) throws IOException {
-		String element = null;    	
-    	
-    	String titleToInsert = title;
-    	if(namespace!=0) {
-    		log.debug("namespace = "+wiki.namespaceIdentifier(this.namespace)+" namespace="+String.valueOf(namespace)+" title="+title);
-    		titleToInsert = title.substring(wiki.namespaceIdentifier(this.namespace).length()+1);
-    	}
-    	if(this.format.contains("{{") && this.format.contains("}}")) {
-    		titleToInsert = pageTitleNormalToEscaped(titleToInsert); // replaces '=' equal-sign by escape-code
-    	}
-    	element = String.format(this.format,
-    			titleToInsert,
-    			HTTPTools.removeEscape(user), 
-    			time);
-    	if(deletedFlag==PortalParam.Deleted.MARK && deleted) {
-    		element = markDeleted(element);
-    	} 
-    	
-        if (!subset.contains(element))
-        {
-            subset.add(element);
-            includedPages.add(title);
-            log.debug("ADD new line: \t"+element);
-        }
-	}
+
+
 	
-	public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException, ServiceError {
-		log.info("Get data for [[" + this.pageName+"]]");
-		
-		//Revision r = wiki.getFirstRevision("Кай Юлий Цезарь");
-		//HashSet<String> pages = new HashSet<String>();
-		/*for (String category : categories) {
-			log.info("Processing data of " + category);
-		}*/		
+	protected ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError {
 		PageListFetcher pageListFetcher = createPageListFetcher();
 		log.info("Using pagelist fetcher: "+pageListFetcher);
 		if (pageListFetcher.revisionAvailable()) {
@@ -292,274 +449,202 @@ public class NewPages implements PortalModule{
 		if(pageListFetcher.mayHaveDuplicates()) {
 			removeDuplicatesInSortedList(pageInfoList);
 		}
+		return pageInfoList;
+	}
+	
+	protected String trimRight(String text, String right) {
+		String textTrimmed = text;
+		if (!right.isEmpty() && textTrimmed.endsWith(right)) {				
+			textTrimmed = text.substring(0, textTrimmed.length() - right.length());
+			textTrimmed = StringTools.trimRight(textTrimmed);
+		} else {
+			textTrimmed = StringTools.trimRight(textTrimmed);
+			if (!right.isEmpty() && textTrimmed.endsWith(right)) {				
+				textTrimmed = text.substring(0, textTrimmed.length() - right.length());
+				textTrimmed = StringTools.trimRight(textTrimmed);
+			}
+		} 
+		return textTrimmed;
+	}
+	
+	protected String trimLeft(String text, String left) {
+		String textTrimmed = text;
+		if (!left.isEmpty() && textTrimmed.startsWith(left))
+	    {
+			textTrimmed = text.substring(left.length());
+			textTrimmed = StringTools.trimLeft(textTrimmed);
+	    } else {
+	    	textTrimmed = StringTools.trimLeft(textTrimmed);
+	    	if (!left.isEmpty() && textTrimmed.startsWith(left))
+		    {
+	    		textTrimmed = textTrimmed.substring(left.length());
+	    		textTrimmed = StringTools.trimLeft(textTrimmed);
+		    }
+	    }
+		return textTrimmed;
+	}
+	
+	protected String trimMiddle(String text, String middle) {
+		String textTrimmed = text;
+		if(!middle.isEmpty()) {
+	    	if (textTrimmed.contains(middle)) {
+	    		textTrimmed = textTrimmed.replace(middle, delimeter);
+	    	} else if(!middle.trim().isEmpty() && textTrimmed.contains(middle.trim())) {
+	    		textTrimmed = textTrimmed.replace(middle.trim(), delimeter);
+	    	}
+	    }
+		return textTrimmed;
+	}
+	
+	protected String extractBotsAllowString(String text, String botsAllowString) {
+		if (botsAllowString != null) {
+			int pos = text.indexOf(botsAllowString);
+			text = text.substring(0, pos) + text.substring(pos+botsAllowString.length());
+		}
+		return text;
+	}
+	
+	public void analyzeOldText(NirvanaWiki wiki, String text, Data d, NewPagesBuffer buffer) throws IOException {
+		log.debug("analyzing old text");
+		String oldText = text;
+		String[] oldItems;
 		
-		List<String> subset = new ArrayList<String>();
-		List<String> includedPages = new ArrayList<String>();
+		// remove {{bots|allow=}} record
+		String botsAllowString = NirvanaWiki.getAllowBotsString(text);
+		//log.debug("bot allow string: "+botsAllowString);
+		
+		log.debug("analyzing old text -> trancate header/footer/middle");
+		oldText = extractBotsAllowString(oldText, botsAllowString);
+		oldText = trimRight(oldText, footerLastUsed);		    	    
+		oldText = trimLeft(oldText, headerLastUsed);	
+		oldText = trimMiddle(oldText, middleLastUsed);
+	    
+	    
+	    //FileTools.dump(footer, "dump", this.pageName +".footer.txt");
+	   
+	    //oldItems = oldText.split(delimeter); // this includes empty lines, and incorrect result calculation
+	    oldItems = StringUtils.splitByWholeSeparator(oldText, delimeter); // removes empty items
+	    if(delimeter.equals("\n")) log.debug("delimeter is \\n");
+	    else if(delimeter.equals("\r")) log.debug("delimeter is \\r");
+	    else log.debug("delimeter is \""+delimeter+"\"");
+	    
+    
+	    log.debug("analyzing old text -> parse items, len = "+oldItems.length);
+	    
+		d.oldCount = oldItems.length;
+	    for (int i = 0; i < oldItems.length; ++i)
+	    {
+	    	String item = oldItems[i];
+	    	log.trace("check old line: \t"+item+"");
+	    	boolean skip = false;
+	    	if(oldItems[i].isEmpty()) continue;
+	    	for(String title:buffer.includedPages) {
+	    		String variant1 = "[["+title+"]]";		        		
+	    		String variant2 = "|"+
+	    				pageTitleNormalToEscaped(
+	    						title.substring((namespace==0)?0:wiki.namespaceIdentifier(this.namespace).length()+1)
+	    						)+
+	    				"|";
+	    		if(oldItems[i].contains(variant1) ||
+	    				oldItems[i].contains(variant2)) {
+	    			skip = true;
+	    			log.debug("SKIP old line: \t"+oldItems[i]);
+	    			break;
+	    		}
+	    	}
+	    	if(skip) continue;
+	        if (buffer.size() < maxItems)  {
+	        	if(!buffer.contains(oldItems[i])) {
+	        		boolean deleted = false;
+	        		boolean mark_deleted = false;
+	        		
+	        		if (this.deletedFlag==PortalParam.Deleted.REMOVE || this.deletedFlag==PortalParam.Deleted.MARK) {
+        				String title = getNewPagesItemArticle(oldItems[i]);
+        				if (title != null) title = pageTitleEscapedToNormal(title);
+        				if (title != null && !wiki.exists(title)) {
+    	                	//log.warn(e.toString()+" "+title); // page was created and renamed or deleted after that
+    	                	if(this.deletedFlag==PortalParam.Deleted.REMOVE) {
+    	                		log.debug("REMOVE old line: \t"+oldItems[i]);
+    	                		deleted = true;
+    	                		d.deletedCount++;
+    	                	}
+    	                	if(this.deletedFlag==PortalParam.Deleted.MARK) {
+    	                		mark_deleted = true;
+    	                		item = markDeleted(item);
+    	                	}
+        				}
+        			} 
+	        		if(this.deletedFlag==PortalParam.Deleted.MARK && !mark_deleted) {
+	        			item = unmarkDeleted(item);
+	        		}
+	        		if(!deleted) {
+		        		if(UPDATE_FROM_OLD) {
+	        				log.debug("ADD old line: \t"+item);
+	        				buffer.addOldItem(item);
+		        		} else {
+		        			log.debug("ARCHIVE old line: \t"+item);
+		        			if(archive!=null) {		        		
+				        		d.archiveItems.add(item);
+				        	}
+				        	d.archiveCount++;		        		
+		        		}
+		        	} 
+	        		
+	        	} else {
+	        		log.debug("SKIP old line: \t"+oldItems[i]);
+	        	}
+	        } else {
+	        	log.debug("ARCHIVE old line: \t"+oldItems[i]);
+	        	if(archive!=null) {		        		
+	        		d.archiveItems.add(oldItems[i]);
+	        	}
+	        	d.archiveCount++;
+	        }
+	    }
+	    log.debug("bots allow string: "+botsAllowString);
+		if (!botsAllowString.isEmpty()) {
+			botsAllowString = botsAllowString+"\n";
+		} 
+		d.newText = buffer.getNewText(botsAllowString);
+	}
+	
+	public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException, ServiceError {
+		log.info("Get data for [[" + this.pageName+"]]");
+		
+		ArrayList<Revision> pageInfoList = getNewPages(wiki);
+		
+		NewPagesBuffer buffer = new NewPagesBuffer(wiki);
 		int count = pageInfoList.size();
 		count = count<maxItems?count:maxItems;
 		for (int i = 0; i < count ; ++i)
 		{
-		    Revision page = null;
-		    switch(getRevisionMethod) {
-		    	case GET_FIRST_REV:
-		    		page = wiki.getFirstRevision(pageInfoList.get(i).getPage());
-		    		break;
-		    	case GET_REV:
-		    		page = wiki.getRevision(pageInfoList.get(i).getRevid());
-		    		break;
-		    	case GET_TOP_REV:
-		    		page = wiki.getTopRevision(pageInfoList.get(i).getPage());
-		    		break;
-		    	case GET_FIRST_REV_IF_NEED:
-		    		if(usersToIgnore.size()==0) {
-		    			page = pageInfoList.get(i);
-		    		} else {
-		    			page = wiki.getFirstRevision(pageInfoList.get(i).getPage());
-		    		}
-		    		break;
-		    	default:
-		    		throw new Error("not supported mode");
-		    }
-		    
-		    if (page != null && !usersToIgnore.contains(HTTPTools.removeEscape(page.getUser())))
-		    {
-		    	//if(namespace!=0) {log.warn("namespace is not 0"); continue;}
-		      //  String element = String.format(format,
-		        //    Namespace != 0 ? page.Title.Substring(wiki.GetNamespace(Namespace).Length + 1) : page.Title,
-		          //  page.Author,
-		            //page.FirstEdit.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"));
-				String title_old = HTTPTools.removeEscape(pageInfoList.get(i).getPage());
-		    	String title_new = HTTPTools.removeEscape(page.getPage());
-		    	log.debug("check page, title old: "+title_old+", title new: "+title_new);
-		    	boolean deleted = false;
-		    	if(this.deletedFlag != PortalParam.Deleted.DONT_TOUCH) {		    		 
-	                if(!wiki.exists(title_new)) {	                
-	                	log.warn("page " +title_new+" deleted"); // page was created and renamed or deleted after that
-	                	deleted = true;
-	                	if(this.deletedFlag==PortalParam.Deleted.REMOVE) 
-	                		continue;
-	                }
-		    	}
-		    	String time = null;
-		    	if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) 
-		    		time = page.getTimestamp().getTime().toString();
-		    	else {
-		    		time = String.format("%1$tFT%1$tTZ",page.getTimestamp());
-		    	}
-		    	
-		    	boolean renamed = !title_new.equals(title_old);
-		    	
-		    	String user = page.getUser();
-		    	
-		    	if(renamed) {
-			    	if((this.renamedFlag & PortalParam.RENAMED_NEW) != 0 ) {
-			    		addNewItem(wiki,title_new,deleted,time,user,subset,includedPages);
-			    	} 
-			    	if((this.renamedFlag & PortalParam.RENAMED_OLD) != 0) {
-			    		addNewItem(wiki,title_old,deleted,time,user,subset,includedPages);
-			    	} else {
-			    		includedPages.add(title_old); 
-			    	}
-			    	///if(!includedPages.contains(title_old)) {
-			    	//	includedPages.add(title_old); 
-			    	//}
-			    	
-		    	} else {
-		    		addNewItem(wiki,title_new,deleted,time,user,subset,includedPages);
-		    	}
-		    }
+		    buffer.addNewPage(wiki, pageInfoList.get(i));
 		}
 		
-		ArrayList<String> archiveItems = new ArrayList<String>();
-		int oldCount = 0;
-		int archiveCount = 0;
-		int deletedCount = 0;
 	
 		// Add elements from old page
+		Data d = new Data();
+				
+	    
 		if (true/*count < maxItems /*|| archive!=null*/) { 
-			String oldText = text;
-			String[] oldItems;
-			
-			// remove {{bots|allow=}} record
-			this.botsAllowString = NirvanaWiki.getAllowBotsString(text);
-			//log.debug("bot allow string: "+botsAllowString);
-			if(botsAllowString!=null) {
-				int pos = oldText.indexOf(botsAllowString);
-				oldText = oldText.substring(0, pos) + oldText.substring(pos+botsAllowString.length());
-			}
-			/*if(archive!=null)*/ /*archiveItems = new ArrayList<String>();*/
-			
-			//text.matches("(?si).*\\{\\{(nobots|bots\\|(allow=none|deny=(.*?" + user + ".*?|all)|optout=all))\\}\\}.*");
-			
-			
-			if (!footerLastUsed.isEmpty() && oldText.endsWith(footerLastUsed)) {				
-				oldText = oldText.substring(0, oldText.length() - footerLastUsed.length());
-				oldText = StringTools.trimRight(oldText);
-			} else {
-				oldText = StringTools.trimRight(oldText);
-				if (!footerLastUsed.isEmpty() && oldText.endsWith(footerLastUsed)) {				
-					oldText = oldText.substring(0, oldText.length() - footerLastUsed.length());
-					oldText = StringTools.trimRight(oldText);
-				}
-			} 		    	    
-			
-		    if (!headerLastUsed.isEmpty() && oldText.startsWith(headerLastUsed))
-		    {
-		        oldText = oldText.substring(headerLastUsed.length());
-		        oldText = StringTools.trimLeft(oldText);
-		    } else {
-		    	oldText = StringTools.trimLeft(oldText);
-		    	if (!headerLastUsed.isEmpty() && oldText.startsWith(headerLastUsed))
-			    {
-			        oldText = oldText.substring(headerLastUsed.length());
-			        oldText = StringTools.trimLeft(oldText);
-			    }
-		    }
-		    
-		    if(!middle.isEmpty()) {
-		    	if (oldText.contains(middle)) {
-		    		oldText = oldText.replace(middle, this.delimeter);
-		    	} else if(!middle.trim().isEmpty() && oldText.contains(middle.trim())) {
-		    		oldText = oldText.replace(middle.trim(), this.delimeter);
-		    	}
-		    } 
-		    //FileTools.dump(footer, "dump", this.pageName +".footer.txt");
-		   
-		    //oldItems = oldText.split(delimeter); // this includes empty lines, and incorrect result calculation
-		    oldItems = StringUtils.splitByWholeSeparator(oldText,delimeter); // removes empty items
-		    if(delimeter.equals("\n")) log.debug("delimeter is \\n");
-		    else if(delimeter.equals("\r")) log.debug("delimeter is \\r");
-		    else log.debug("delimeter is \""+delimeter+"\"");
-		    
-		
-		    
-		    
-		 // Find intersection of new and old pages
-			/*ArrayList<String> intersect = new ArrayList<String>();
-			for (int i = 0; i < count ; ++i)
-			{
-				String title = includedPages.get(i);
-				log.debug("check title in old: "+title);
-				if(oldText.contains("[["+title+"]]")||oldText.contains("|"+title+"|")) {
-					intersect.add(title);
-					log.debug("INTERSECTON: "+title+"");
-				}
-			}*/
-		    
-		    oldCount = oldItems.length;
-		    for (int i = 0; i < oldItems.length; ++i)
-		    {
-		    	String item = oldItems[i];
-		    	//log.trace("check old line: \t"+item+"");
-		    	boolean skip = false;
-		    	if(oldItems[i].isEmpty()) continue;
-		    	for(String title:includedPages) {
-		    		String variant1 = "[["+title+"]]";		        		
-		    		String variant2 = "|"+
-		    				pageTitleNormalToEscaped(
-		    						title.substring((namespace==0)?0:wiki.namespaceIdentifier(this.namespace).length()+1)
-		    						)+
-		    				"|";
-		    		if(oldItems[i].contains(variant1) ||
-		    				oldItems[i].contains(variant2)) {
-		    			skip = true;
-		    			log.debug("SKIP old line: \t"+oldItems[i]);
-		    			break;
-		    		}
-		    	}
-		    	if(skip) continue;
-		        if (subset.size() < maxItems)  {
-		        	if(!subset.contains(oldItems[i])) {
-		        		boolean deleted = false;
-		        		boolean mark_deleted = false;
-		        		
-		        		if(this.deletedFlag==PortalParam.Deleted.REMOVE || this.deletedFlag==PortalParam.Deleted.MARK) {
-	        				String title = pageTitleEscapedToNormal(getNewPagesItemArticle(oldItems[i]));
-	        				if(!wiki.exists(title)) {
-	    	                	//log.warn(e.toString()+" "+title); // page was created and renamed or deleted after that
-	    	                	if(this.deletedFlag==PortalParam.Deleted.REMOVE) {
-	    	                		log.debug("REMOVE old line: \t"+oldItems[i]);
-	    	                		deleted = true;
-	    	                		deletedCount++;
-	    	                	}
-	    	                	if(this.deletedFlag==PortalParam.Deleted.MARK) {
-	    	                		mark_deleted = true;
-	    	                		item = markDeleted(item);
-	    	                	}
-	        				}
-	        			} 
-		        		if(this.deletedFlag==PortalParam.Deleted.MARK && !mark_deleted) {
-		        			item = unmarkDeleted(item);
-		        		}
-		        		if(!deleted) {
-			        		if(UPDATE_FROM_OLD) {
-		        				log.debug("ADD old line: \t"+item);
-		        				subset.add(item);
-			        		} else {
-			        			log.debug("ARCHIVE old line: \t"+item);
-			        			if(archive!=null) {		        		
-					        		archiveItems.add(item);
-					        	}
-					        	archiveCount++;		        		
-			        		}
-			        	} 
-		        		
-		        	} else {
-		        		log.debug("SKIP old line: \t"+oldItems[i]);
-		        	}
-		        } else {
-		        	log.debug("ARCHIVE old line: \t"+oldItems[i]);
-		        	if(archive!=null) {		        		
-		        		archiveItems.add(oldItems[i]);
-		        	}
-		        	archiveCount++;
-		        }
-		    }
+			analyzeOldText(wiki, text, d, buffer);
 		}
 		
 		
 		//StringUtils.
 		//com.sun.xml.internal.ws.util.StringUtils.
-		Data d = new Data();
 		//String bots = if(botsAllowString!=null)
-		log.debug("bots allow string: "+botsAllowString);
-		String bots = "";
-		if(botsAllowString!=null) {
-			bots = botsAllowString+"\n";
-		}
-		if(middle.isEmpty())
-			d.newText = bots + header + StringUtils.join(subset.toArray(),this.delimeter) + footer;
-		else {
-			if(subset.size()>1) {
-				int m = (subset.size()+1)/2; // 2->1, 3->2, 4->2
-				d.newText = bots + header + 
-						StringUtils.join(subset.subList(0, m),this.delimeter) + 
-						this.middle +
-						StringUtils.join(subset.subList(m, subset.size()),this.delimeter) +
-						footer;
-			} else d.newText = bots + header + 
-					StringUtils.join(subset,this.delimeter) + 
-					this.middle +					
-					footer;
-		}
+		
 			
-		if(archive!=null && archiveItems!=null && archiveItems.size()>0) {
-			if(archiveSettings.enumeration==Enumeration.HASH) {
-				enumerateWithHash(archiveItems);
-			}
-			d.archiveText = StringUtils.join(archiveItems.iterator(),delimeter) + "\n";
-			//if(archiveSettings!=null)
-			d.archiveItems = archiveItems;
-		}
+		d.makeArchiveText();
+		
 		//archiveItems.i
-		d.archiveCount = archiveCount;
-		d.newPagesCount = subset.size() - (oldCount - archiveCount - deletedCount);
-		d.deletedCount = deletedCount;
+		d.newPagesCount = buffer.size() - (d.oldCount - d.archiveCount - d.deletedCount);
 		if(d.newPagesCount<0) d.newPagesCount = 0;
-		log.debug("updated items count: "+subset.size());
-		log.debug("old items count: "+oldCount);
-		log.debug("archive count: "+archiveCount);
-		log.debug("deleted count: "+deletedCount);
+		log.debug("updated items count: "+buffer.size());
+		log.debug("old items count: "+d.oldCount);
+		log.debug("archive count: "+d.archiveCount);
+		log.debug("deleted count: "+d.deletedCount);
 		log.debug("new items count: "+d.newPagesCount);
 		
 		return d;
@@ -582,7 +667,7 @@ public class NewPages implements PortalModule{
 	    }
     }
 
-	public void enumerateWithHash(ArrayList<String> list) {
+	public void enumerateWithHash(List<String> list) {
 		for(int i =0; i<list.size();i++) {
 			String item = list.get(i);
 			if(item.startsWith("#")) {
@@ -596,6 +681,29 @@ public class NewPages implements PortalModule{
 		}
 		return;
 	}
+	
+	protected String getCurrentUser(NirvanaWiki wiki) {
+		if (this.currentUser == null) {
+			Wiki.User user = wiki.getCurrentUser();
+			this.currentUser = user.getUsername();
+		}
+		return this.currentUser;
+	}
+	
+	protected String getCurrentUser() {
+		return this.currentUser;
+	}
+	
+	protected boolean checkAllowBots(NirvanaWiki wiki, String text) {
+		
+		log.debug("current user retrieved");
+		if(!NirvanaWiki.allowBots(text, getCurrentUser(wiki))) {
+			//reportData.status = Status.DENIED;
+			log.info("bots/nobots template forbids updating this portal section");
+			return false;
+		}
+		return true;
+	}
 		
 	@Override
 	public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment) throws IOException, LoginException, InterruptedException, ServiceError {
@@ -603,15 +711,12 @@ public class NewPages implements PortalModule{
 		boolean updated = false;
 		String text = getOldText(wiki);
 		log.debug("old text retrieved");
-		Wiki.User user = wiki.getCurrentUser();
-		log.debug("current user retrieved");
-		if(!NirvanaWiki.allowBots(text, user.getUsername())) {
-			//reportData.status = Status.DENIED;
-			log.info("bots/nobots template forbids updating this portal section");
+		
+		//this.botsAllowString = NirvanaWiki.getAllowBotsString(text);
+		//getData(wiki);
+		if (!checkAllowBots(wiki, text)) {
 			return false;
 		}
-		//this.botsAllowString = NirvanaWiki.getAllowBotsString(text);
-		//getData(wiki);	
 				
 		getHeaderFooterChanges(wiki, reportData.template, reportData.portal);
 				
@@ -646,21 +751,25 @@ public class NewPages implements PortalModule{
 		    updated = true;
 		    reportData.updated = updated;
 		    //wiki.Save(Page, newText, Module.UpdateComment, !MarkEdits ? MinorFlags.NotMinor : MinorFlags.None, MarkEdits);
-		    if(archive!=null && d.archiveText!=null) {		    	
-		    	if(NirvanaBot.UPDATE_PAUSE>0) {
-		    		log.debug("Waiting "+ NirvanaBot.UPDATE_PAUSE+" ms");
-			    	try {			    		 
-			    		Thread.sleep(NirvanaBot.UPDATE_PAUSE);
-			    	} catch (InterruptedException e) {					
-				    	log.error(e.toString());
-						e.printStackTrace();
-					}
-		    	}
+		    if(archive!=null && (d.archiveText!=null || d.archiveItems.size()>0)) {		    	
+		    	waitPauseIfNeed();
 		    	log.info("Updating archive");
 	    		updateArchive(wiki, d, reportData);
 		    }
 		}
 		return updated;
+	}
+	
+	protected void waitPauseIfNeed() {
+		if(NirvanaBot.UPDATE_PAUSE>0) {
+    		log.debug("Waiting "+ NirvanaBot.UPDATE_PAUSE+" ms");
+	    	try {			    		 
+	    		Thread.sleep(NirvanaBot.UPDATE_PAUSE);
+	    	} catch (InterruptedException e) {					
+		    	log.error(e.toString());
+				e.printStackTrace();
+			}
+    	}
 	}
 	
 	/**
@@ -689,7 +798,7 @@ public class NewPages implements PortalModule{
 	    String settingsText = r.getText();
 	    Map<String, String> options = new HashMap<String,String>();
 	    String userNamespace = wiki.namespaceIdentifier(Wiki.USER_NAMESPACE);
-	    if(NirvanaBasicBot.TryParseTemplate(template, userNamespace, settingsText, options)) {
+	    if(NirvanaBasicBot.TryParseTemplate(template, userNamespace, settingsText, options, true)) {
 	    	headerLastUsed = NirvanaBot.getDefaultHeader();
 	    	footerLastUsed = NirvanaBot.getDefaultFooter();
 	    	middleLastUsed = NirvanaBot.getDefaultMiddle();
@@ -792,8 +901,10 @@ public class NewPages implements PortalModule{
     	while(it.hasNext()) {
     		Entry<String, Archive> ar = it.next();
     		Archive thisArchive = ar.getValue();
-    		log.info("Updating "+ar.getKey());
-    		thisArchive.update(wiki,ar.getKey(), minor, bot);
+    		if (thisArchive.newItemsCount()>0) {
+    			log.info("Updating "+ar.getKey());
+    			thisArchive.update(wiki,ar.getKey(), minor, bot);
+    		}
     	}   		
    		reportData.archived = true;	    		
     	return;

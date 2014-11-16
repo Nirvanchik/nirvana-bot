@@ -9,8 +9,8 @@
 <entry key="new-pages-template">Участник:NirvanaBot/Новые статьи</entry>
 <entry key="overriden-properties-page">Участник:NirvanaBot/Новые статьи/Настройки по умолчанию</entry>
 <entry key="wiki-lang">ru</entry>
-<entry key="default-depth">7</entry>
-<entry key="default-hours">720</entry>
+<entry key="default-depth">6</entry>
+<entry key="default-hours">350</entry>
 <entry key="default-maxitems">20</entry>
 <entry key="error-notification">no</entry>
 <entry key="update-pause">1000</entry>
