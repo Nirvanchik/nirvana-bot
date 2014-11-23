@@ -25,6 +25,7 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -67,6 +68,7 @@ import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
  *
  */
 public class NewPages implements PortalModule{
+	private static final int WIKI_API_BUNCH_SIZE = 10;
 	public static final String PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE = "\\[\\[(?<article>[^\\]|]+)(|[^\\]]+)?\\]\\]";
 	public static final String PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM = "\\{\\{(?<template>.+)\\}\\}";
 	private static final String COMMENT_DELETED = "<span style=\"color:#966963\"> — '''Статья удалена'''</span>";
@@ -253,6 +255,25 @@ public class NewPages implements PortalModule{
 		
 		public int size() {
 			return subset.size();
+		}
+		
+		public boolean checkIsDuplicated(String archiveItem) throws IOException {
+			if (contains(archiveItem)) {
+				return true;
+			}
+			for(String title:includedPages) {
+	    		String variant1 = "[["+title+"]]";		        		
+	    		String variant2 = "|"+
+	    				pageTitleNormalToEscaped(
+	    						title.substring((namespace==0)?0:wiki.namespaceIdentifier(namespace).length()+1)
+	    						)+
+	    				"|";
+	    		if(archiveItem.contains(variant1) ||
+	    				archiveItem.contains(variant2)) {
+	    			return true;	    			
+	    		}
+	    	}
+			return false;
 		}
 		
 		public String getNewText(String bots) {
@@ -516,6 +537,40 @@ public class NewPages implements PortalModule{
 		return text;
 	}
 	
+	public class PageInfo {
+		String item;
+		String title;
+		boolean exists;
+		public PageInfo(String item) {
+			this.item = item;
+			this.exists = true;
+			if (deletedFlag==PortalParam.Deleted.REMOVE || deletedFlag==PortalParam.Deleted.MARK) {
+				extractTitle();
+			}
+		}
+		private void extractTitle() {
+			title = getNewPagesItemArticle(item);
+			if (title != null) title = pageTitleEscapedToNormal(title);
+		}
+	}
+	
+	private void checkDeleted(NirvanaWiki wiki, List<PageInfo> pages) throws IOException {
+		ArrayList<String> titles = new ArrayList<String>();
+		boolean pagesExist[];// = new boolean[bunch.size()];
+		for (int j = 0; j < pages.size(); j++) {
+			if (pages.get(j).title != null) {
+				titles.add(pages.get(j).title);
+			}
+		}
+		pagesExist = wiki.exists(titles.toArray(new String[0]));
+		for (int j = 0, k = 0; j < pages.size(); j++) {
+			if (pages.get(j).title != null) {
+				pages.get(j).exists = pagesExist[k];
+				k++;
+			}	
+		}
+	}
+	
 	public void analyzeOldText(NirvanaWiki wiki, String text, Data d, NewPagesBuffer buffer) throws IOException {
 		log.debug("analyzing old text");
 		String oldText = text;
@@ -523,7 +578,6 @@ public class NewPages implements PortalModule{
 		
 		// remove {{bots|allow=}} record
 		String botsAllowString = NirvanaWiki.getAllowBotsString(text);
-		//log.debug("bot allow string: "+botsAllowString);
 		
 		log.debug("analyzing old text -> trancate header/footer/middle");
 		oldText = extractBotsAllowString(oldText, botsAllowString);
@@ -531,10 +585,8 @@ public class NewPages implements PortalModule{
 		oldText = trimLeft(oldText, headerLastUsed);	
 		oldText = trimMiddle(oldText, middleLastUsed);
 	    
-	    
 	    //FileTools.dump(footer, "dump", this.pageName +".footer.txt");
 	   
-	    //oldItems = oldText.split(delimeter); // this includes empty lines, and incorrect result calculation
 	    oldItems = StringUtils.splitByWholeSeparator(oldText, delimeter); // removes empty items
 	    if(delimeter.equals("\n")) log.debug("delimeter is \\n");
 	    else if(delimeter.equals("\r")) log.debug("delimeter is \\r");
@@ -544,75 +596,52 @@ public class NewPages implements PortalModule{
 	    log.debug("analyzing old text -> parse items, len = "+oldItems.length);
 	    
 		d.oldCount = oldItems.length;
-	    for (int i = 0; i < oldItems.length; ++i)
+		int pos = 0;		
+	    while (pos < oldItems.length && UPDATE_FROM_OLD && buffer.size() < maxItems)
 	    {
-	    	String item = oldItems[i];
-	    	log.trace("check old line: \t"+item+"");
-	    	boolean skip = false;
-	    	if(oldItems[i].isEmpty()) continue;
-	    	for(String title:buffer.includedPages) {
-	    		String variant1 = "[["+title+"]]";		        		
-	    		String variant2 = "|"+
-	    				pageTitleNormalToEscaped(
-	    						title.substring((namespace==0)?0:wiki.namespaceIdentifier(this.namespace).length()+1)
-	    						)+
-	    				"|";
-	    		if(oldItems[i].contains(variant1) ||
-	    				oldItems[i].contains(variant2)) {
-	    			skip = true;
-	    			log.debug("SKIP old line: \t"+oldItems[i]);
-	    			break;
-	    		}
+	    	ArrayList<PageInfo> bunch = new ArrayList<PageInfo>(WIKI_API_BUNCH_SIZE);
+	    	for(; bunch.size()<WIKI_API_BUNCH_SIZE && pos<oldItems.length; pos++) {
+	    		String item = oldItems[pos];
+	    		if (item.isEmpty()) continue;
+		    	log.trace("check old line: \t"+item+"");
+		    	if (buffer.checkIsDuplicated(item)) {
+		    		log.debug("SKIP old line: \t"+item);
+		    		continue;
+		    	}
+		    	bunch.add(new PageInfo(item));		    	
+	    	}	    	
+	    	if (this.deletedFlag==PortalParam.Deleted.REMOVE || this.deletedFlag==PortalParam.Deleted.MARK) {
+	    		checkDeleted(wiki, bunch);    			
+    		}
+	    	int j = 0;
+	    	for (; j < bunch.size() && buffer.size() < maxItems; j++) {
+				String item = bunch.get(j).item;
+				if (this.deletedFlag == PortalParam.Deleted.REMOVE && !bunch.get(j).exists) {
+            		log.debug("REMOVE old line: \t"+item);
+            		d.deletedCount++;
+            	} else {
+    				if (this.deletedFlag == PortalParam.Deleted.MARK ){
+    					item = bunch.get(j).exists? unmarkDeleted(item):markDeleted(item);
+    				}  
+    				log.debug("ADD old line: \t"+item);
+    				buffer.addOldItem(item);
+        		}
 	    	}
-	    	if(skip) continue;
-	        if (buffer.size() < maxItems)  {
-	        	if(!buffer.contains(oldItems[i])) {
-	        		if(UPDATE_FROM_OLD) {
-    	        		boolean deleted = false;
-    	        		boolean mark_deleted = false;
-    	        		
-    	        		if (this.deletedFlag==PortalParam.Deleted.REMOVE || this.deletedFlag==PortalParam.Deleted.MARK) {
-            				String title = getNewPagesItemArticle(oldItems[i]);
-            				if (title != null) title = pageTitleEscapedToNormal(title);
-            				if (title != null && !wiki.exists(title)) {
-        	                	//log.warn(e.toString()+" "+title); // page was created and renamed or deleted after that
-        	                	if(this.deletedFlag==PortalParam.Deleted.REMOVE) {
-        	                		log.debug("REMOVE old line: \t"+oldItems[i]);
-        	                		deleted = true;
-        	                		d.deletedCount++;
-        	                	}
-        	                	if(this.deletedFlag==PortalParam.Deleted.MARK) {
-        	                		mark_deleted = true;
-        	                		item = markDeleted(item);
-        	                	}
-            				}
-            			} 
-    	        		if(this.deletedFlag==PortalParam.Deleted.MARK && !mark_deleted) {
-    	        			item = unmarkDeleted(item);
-    	        		}
-    	        		if(!deleted) {
-   	        				log.debug("ADD old line: \t"+item);
-   	        				buffer.addOldItem(item);
-   		        		}
-	        		} else {
-	        			log.debug("ARCHIVE old line: \t"+item);
-	        			if(UPDATE_ARCHIVE && archive!=null) {		        		
-			        		d.archiveItems.add(item);
-			        	}
-			        	d.archiveCount++;		        		
-	        		}
-    		        	
-	        		
-	        	} else {
-	        		log.debug("SKIP old line: \t"+oldItems[i]);
-	        	}
-	        } else {
-	        	log.debug("ARCHIVE old line: \t"+oldItems[i]);
-	        	if(UPDATE_ARCHIVE && archive!=null) {		        		
-	        		d.archiveItems.add(oldItems[i]);
-	        	}
-	        	d.archiveCount++;
-	        }
+	    	pos = pos - bunch.size()+j;	    	
+	    }
+	    for(; pos < oldItems.length; pos++) {
+	    	String item = oldItems[pos];
+	    	if (item.isEmpty()) continue;
+	    	log.trace("check old line: \t"+item+"");
+	    	if (buffer.checkIsDuplicated(item)) {
+	    		log.debug("SKIP old line: \t"+item);
+	    		continue;
+	    	}
+	    	log.debug("ARCHIVE old line: \t"+item);
+        	if(UPDATE_ARCHIVE && archive!=null) {		        		
+        		d.archiveItems.add(item);
+        	}
+        	d.archiveCount++;
 	    }
 	    log.debug("bots allow string: "+botsAllowString);
 		if (!botsAllowString.isEmpty()) {
