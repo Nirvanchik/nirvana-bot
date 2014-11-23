@@ -232,6 +232,7 @@ public class NirvanaBasicBot {
 		
 		wiki = new NirvanaWiki( LANGUAGE + ".wikipedia.org" );
 		wiki.setMaxLag( MAX_LAG );
+		wiki.setThrottle(5000);
 		log.info("login to "+LANGUAGE+ ".wikipedia.org, login: "+login+", password: (not shown)");
 		try {
 			wiki.login(login, pw.toCharArray());
