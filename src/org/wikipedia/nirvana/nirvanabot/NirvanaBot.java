@@ -1,5 +1,5 @@
 /**
- *  @(#)NirvanaBot.java 1.10 16.11.2014
+ *  @(#)NirvanaBot.java 1.11 14.12.2014
  *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -174,7 +174,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	}
 	
 	public static String PROGRAM_INFO = 
-			"NirvanaBot v1.10 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
+			"NirvanaBot v1.11 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
 			"See also http://ru.wikipedia.org/User:NirvanaBot\n" +
 			"Copyright (C) 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)\n" +
 			"\n";
@@ -569,9 +569,9 @@ public class NirvanaBot extends NirvanaBasicBot{
     					NewPagesData data = new NewPagesData();
     					createPortalModule(parameters, data);
     					if(TYPE.equals("all") || TYPE.equals(data.type)) {
-    						if(data.portalModule!=null) {							
+    						if(data.portalModule!=null) {					
     								if(DEBUG_MODE || !DEBUG_BUILD || !portalName.contains("ValidParam") /*&& !portalName.contains("Testing")*/) {
-    									reporter.portalProcessed();
+    									if (retry_count==0) reporter.portalProcessed();
     									if(data.portalModule.update(wiki, reportItem, COMMENT)) {
     										reporter.portalUpdated();
     										reportItem.status = Status.UPDATED;
@@ -727,19 +727,19 @@ public class NirvanaBot extends NirvanaBasicBot{
 		log.debug("тип: "+type);
 		data.type = type;
 		
-		param.categories = optionToStringArray(options,"категории");		
+		param.categories = optionToStringArray(options,"категории", true);		
 		key = "категория";
 		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
 			param.categories.add(options.get(key));
 		}		
 		
-		param.categoriesToIgnore = optionToStringArray(options,"игнорировать");
+		param.categoriesToIgnore = optionToStringArray(options,"игнорировать", true);
 		
 		param.categoryGroups = multiOptionToArray(options, "категории", 1, PortalParam.MAX_CAT_GROUPS);
 		param.categoryToIgnoreGroups = multiOptionToArray(options, "игнорировать", 1, PortalParam.MAX_CAT_GROUPS);
 				
-		param.usersToIgnore = optionToStringArray(options,"игнорировать авторов");
+		param.usersToIgnore = optionToStringArray(options,"игнорировать авторов", false);
 		
 		param.page = "";
 		if (options.containsKey("страница"))
@@ -819,12 +819,10 @@ public class NirvanaBot extends NirvanaBasicBot{
 			//archiveSettings.headerFormat = options.get(key); 
 		}
 		
-		/*
-		String prefix = "";
-		if (options.containsKey("префикс"))
-		{
-			prefix = options.get("префикс");
-		}*/
+		key = "префикс";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {		
+			param.prefix = options.get(key);
+		}
 		
 		//boolean markEdits = true;
 		param.bot = true;
@@ -881,14 +879,39 @@ public class NirvanaBot extends NirvanaBasicBot{
 		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
 			param.middle = options.get(key).replace("\\n", "\n");
-		}
+		}		
 		
-		/*
-		String templates = "";
-		if (options.containsKey("шаблоны"))
-		{
-			templates = options.get("шаблоны").replace("\\n", "\n");
-		}*/
+		key = "шаблоны";
+		if (options.containsKey(key)) {			
+			String option = options.get(key);
+			if (!option.isEmpty()) {
+				// Этот хак корректирует различие в задании параметра "шаблоны"
+				// между разными версиями ботов ClaymoreBot и NirvanaBot
+				// NirvanaBot использует более human-readable формат: через запятую
+				log.debug("templates param detected!!!");
+				if (options.get("BotTemplate").contains("Claymore")) {
+					log.debug("use hack: replace \n by ,");
+					option = option.replace("\\n", ",");
+				}
+				WikiTools.EnumerationType enumType = WikiTools.EnumerationType.OR;
+				if (option.startsWith("!") || option.startsWith("^")) {
+					option = option.substring(1);
+					enumType = WikiTools.EnumerationType.NONE;
+				}
+				if (!option.isEmpty()) {
+    				String sep = ",";
+    				if (option.contains(";")) {
+    					sep = ";";
+    					enumType = WikiTools.EnumerationType.AND;
+    				}
+    				param.templates = optionToStringArray(option, true, sep);
+    				param.templatesEnumType = enumType;
+    				if (param.templates.isEmpty()) {
+    					param.templates = null;
+    				}
+				}
+			}
+		}
 		
 		param.format = DEFAULT_FORMAT;
 		key = "формат элемента";
@@ -931,8 +954,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 		
 		param.maxItems = DEFAULT_MAXITEMS;	
 		key = "элементов";
-		if(type.equals("список наблюдения"))
+		if (isTypeWithUnlimitedItems(type)) {
 			param.maxItems = MAX_MAXITEMS;
+		}
 		//boolean maxItemsSetting = false;
 		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{		
@@ -943,7 +967,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 				log.warn(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
 				data.errors.add(String.format(ERROR_PARSE_INTEGER_FORMAT_STRING_RU, key, options.get(key)));
 			}
-			if(param.maxItems>MAX_MAXITEMS) {
+			if (param.maxItems>MAX_MAXITEMS) {
 				data.errors.add(String.format(ERROR_INTEGER_TOO_BIG_STRING_RU, key, options.get(key),MAX_MAXITEMS));
 				param.maxItems = MAX_MAXITEMS;
 			}
@@ -1024,11 +1048,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 		
 		if (type.equals("список новых статей") || type.equals("новые статьи")) {
 			data.portalModule = new NewPages(param);						
-		}
-		else if (type.equals("список наблюдения")) {
-			data.portalModule = new WatchList(param);
-		}
-		else if (type.equals("отсортированный список статей, которые должны быть во всех проектах")) {
+		} else if (isTypePages(type)) {
+			data.portalModule = new Pages(param);
+		} else if (type.equals("отсортированный список статей, которые должны быть во всех проектах")) {
 			/*module = new EncyShell(portal,
 			title,
 			shortSize,
@@ -1039,50 +1061,18 @@ public class NirvanaBot extends NirvanaBasicBot{
 			}//"Монета:Аверс,Реверс,Изображение аверса,Изображение реверса;image file,Фото,портрет,Изображение"
 		else if (type.equals("список новых статей с изображениями в карточке") || type.equals("новые статьи с изображениями в карточке")) {
 			data.portalModule = new NewPagesWithImages(param, commons, new ImageFinderInCard(param.imageSearchTags));
-		}
-		else if (type.equals("список новых статей с изображениями в тексте") || type.equals("новые статьи с изображениями в тексте") ) {
+		} else if (type.equals("список новых статей с изображениями в тексте") || type.equals("новые статьи с изображениями в тексте") ) {
 			data.portalModule = new NewPagesWithImages(param, commons, new ImageFinderInBody());
-		} 
-		else if (type.equals("список новых статей с изображениями") || type.equals("новые статьи с изображениями")) {
+		} else if (type.equals("список новых статей с изображениями") || type.equals("новые статьи с изображениями")) {
 			data.portalModule = new NewPagesWithImages(param, commons, new ImageFinderUniversal(param.imageSearchTags));
-		}
-		else if (type.equals("списки новых статей по дням") || type.equals("новые статьи по дням")) {
+		} else if (type.equals("списки новых статей по дням") || type.equals("новые статьи по дням")) {
 			data.portalModule = new NewPagesWeek(param);
-		}
-		else if (type.equals("список страниц с заданными категориями и шаблонами")) {
-			/*
-		module = new CategoryTemplateIntersection(portal,
-		    categories,
-		    categoriesToIgnore,
-		    templates,
-		    title,
-		    ns,
-		    depth,
-		    hours,
-		    maxItems,
-		    format,
-		    delimeter,
-		    header,
-		    footer,
-		    markEdits);*/
-		}
-		else if (type.equals("список страниц с заданными категориями, шаблонами и обсуждением"))
-		{/*
-		module = new CategoryIntersectionAndTalkPages(portal,
-		    categories,
-		    categoriesToIgnore,
-		    templates,
-		    prefix,
-		    title,
-		    ns,
-		    depth,
-		    hours,
-		    maxItems,
-		    format,
-		    delimeter,
-		    header,
-		    footer,
-		    markEdits);*/
+		} else if (isTypeDiscussedPages(type)) {
+			if (param.prefix == null) {
+				data.errors.add("Параметр \"префикс\" не задан. Параметр префикс обязателен для этого типа списка.");
+			} else {
+				data.portalModule = new DiscussedPages(param);
+			}
 		} else {
 			data.errors.add("Тип \""+type+"\" не поддерживается. Используйте только разрешенные значения в параметре \"тип\".");			
 		}
@@ -1091,6 +1081,30 @@ public class NirvanaBot extends NirvanaBasicBot{
 	return true;
 	}
 	
+	/**
+     * @param type
+     * @return
+     */
+    private boolean isTypeWithUnlimitedItems(String type) {
+	    
+	    return isTypePages(type) || isTypeDiscussedPages(type);
+    }
+    
+    /**
+     * @param type
+     * @return
+     */
+    private boolean isTypePages(String type) {
+	    
+	    return type.equals("список наблюдения") || type.equals("статьи") || type.equals("статьи с шаблонами") 
+	    		|| type.equals("список страниц с заданными категориями и шаблонами");
+    }
+    
+    private boolean isTypeDiscussedPages(String type) {
+    	return type.equals("обсуждаемые статьи") || type.equals("список страниц с заданными категориями, шаблонами и обсуждением")
+    			|| type.equals("статьи с шаблонами и обсуждением");
+    }
+
 	private void parseIntegerKeyWithMaxVal(Map<String, String> options, String key, PortalParam params, 
 			NewPagesData data, String paramName, int DEF_VAL, int MAX_VAL) throws NoSuchFieldException, 
 			SecurityException, IllegalArgumentException, IllegalAccessException {
@@ -1220,13 +1234,14 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}			
 		return errors;
 	}
-	
-
-	protected static ArrayList<String> optionToStringArray(Map<String, String> options, String key) {
+		
+	protected static ArrayList<String> optionToStringArray(Map<String, String> options, String key, boolean replaceAdditionalSeparator) {
 		ArrayList<String> list = new ArrayList<String>();
 		if (options.containsKey(key)) {			
 			String option = options.get(key);
-			option = option.replace(ADDITIONAL_SEPARATOR, DEPTH_SEPARATOR);
+			if (replaceAdditionalSeparator) {
+				option = option.replace(ADDITIONAL_SEPARATOR, DEPTH_SEPARATOR);
+			}
 			return optionToStringArray(option, true);
 		}
 		return list;
@@ -1237,7 +1252,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		String keyNumbered;
 		for(int i=start;i<=end;i++) {
 			keyNumbered = key + String.valueOf(i);
-			List<String> list = optionToStringArray(options, keyNumbered);
+			List<String> list = optionToStringArray(options, keyNumbered, true);
 			listlist.add(list);
 		}
 		return listlist;

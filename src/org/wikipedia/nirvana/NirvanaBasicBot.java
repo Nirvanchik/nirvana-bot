@@ -1,5 +1,5 @@
 /**
- *  @(#)NirvanaBasicBot.java 16.11.2014
+ *  @(#)NirvanaBasicBot.java 10.12.2014
  *  Copyright © 2012-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -340,14 +340,18 @@ public class NirvanaBasicBot {
 	}
 	
 	protected static ArrayList<String> optionToStringArray(String option, boolean withDQuotes) {
+		return optionToStringArray(option, withDQuotes, ",");
+	}
+	
+	protected static ArrayList<String> optionToStringArray(String option, boolean withDQuotes, String separator) {
 		ArrayList<String> list = new ArrayList<String>();
-		String separator;
+		String separatorPattern;
 		if (withDQuotes && option.contains("\"")) {
-			separator = "(\"\\s*,\\s*\"|^\\s*\"|\"\\s*$)";// old separator = "\","
+			separatorPattern = "(\"\\s*"+separator+"\\s*\"|^\\s*\"|\"\\s*$)"; 
 		} else {
-			separator = ",";
+			separatorPattern = separator;
 		}
-		String[] items = option.split(separator);
+		String[] items = option.split(separatorPattern);
 		for (int i = 0; i < items.length; ++i) {
 			String cat = items[i].trim();
 			if (!cat.isEmpty()) {
@@ -426,14 +430,7 @@ public class NirvanaBasicBot {
         String lastKey = "";
         String lastVal = "";
         for(int i =0;i<ps.length;i++) {
-        	String p = ps[i];//.replace(rareWord, "|");
-        	/*
-        	if (p.endsWith("\\")) {
-        		ps[i]= ps[i]+ps[i+1];
-        		ps[i].replace("\\|", "|");
-        	}*/
-            //p.
-            //Pattern equalPattern = Pattern.compile("([^=])=");
+        	String p = ps[i];
         	//log.debug("checking string: "+p);
         	boolean newStringToLastVal = false;
         	int count = StringTools.howMany(p, '=');
@@ -468,6 +465,7 @@ public class NirvanaBasicBot {
                 parameters.put(lastKey, lastVal);
         	}
         }
+        parameters.put("BotTemplate", template);
         log.debug("portal settings parse finished");
         return true;
     }

@@ -35,7 +35,7 @@ import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinder;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
 
 /**
@@ -94,8 +94,8 @@ public class NewPagesWithImages extends NewPages {
 			log.info("Processing data of " + category);
 		}*/
 		
-		PageListFetcher pageListFetcher = createPageListFetcher();
-		ArrayList<Revision> pageInfoListNotFiltered = pageListFetcher.getNewPages(wiki);
+		PageListProcessor pageListProcessor = createPageListProcessor();
+		ArrayList<Revision> pageInfoListNotFiltered = pageListProcessor.getNewPages(wiki);
 		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
 		
 		for(Revision r: pageInfoListNotFiltered) {
@@ -111,7 +111,7 @@ public class NewPagesWithImages extends NewPages {
             	continue;
             }
             if(NirvanaWiki.isRedirect(article)) {            
-            	if(pageListFetcher.revisionAvailable()) {
+            	if(pageListProcessor.revisionAvailable()) {
             		page = new RevisionWithImage(wiki,wiki.getRevision(revId),id, null);
             	} else {
             		page = new RevisionWithImage(wiki, wiki.getFirstRevision(title, true), id, null); 
@@ -141,7 +141,7 @@ public class NewPagesWithImages extends NewPages {
             }
 		}
 		
-		sortPages(pageInfoList, pageListFetcher.revisionAvailable());
+		sortPages(pageInfoList, pageListProcessor.revisionAvailable());
 		
 	
 		List<String> subset = new ArrayList<String>();
@@ -154,7 +154,7 @@ public class NewPagesWithImages extends NewPages {
 			
 			RevisionWithImage page = (RevisionWithImage)pageInfoList.get(i);
 			if(page.getSize()==0) {
-				if(pageListFetcher.revisionAvailable()) {
+				if(pageListProcessor.revisionAvailable()) {
             		page = new RevisionWithImage(wiki, wiki.getRevision(page.getRevid()), page.getId(), page.getImage());
             	} else {
             		page = new RevisionWithImage(wiki, wiki.getFirstRevision(page.getPage()), page.getId(), page.getImage()); 

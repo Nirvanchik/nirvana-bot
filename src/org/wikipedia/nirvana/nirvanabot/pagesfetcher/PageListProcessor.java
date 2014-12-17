@@ -1,6 +1,6 @@
 /**
- *  @(#)PageListFetcher.java 13.12.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)PageListProcessor.java 13.07.2014
+ *  Copyright © 2013 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,29 +24,20 @@
 package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
 
-import org.wikipedia.nirvana.WikiTools.Service;
+import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
 
 /**
  * @author kin
  *
  */
-public interface PageListFetcher {
-	/**
-     * @param service
-     * @param categories
-     * @param categoriesToIgnore
-     * @param language
-     * @param depth
-     * @param namespace
-     * @return
-     */
-    String loadNewPagesForCatListAndIgnore(Service service, 
-            List<String> categories, List<String> categoriesToIgnore,
-            String language, int depth, int namespace) throws IOException, InterruptedException;
+public interface PageListProcessor {
+	public abstract ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError;
 	
-    String loadNewPagesForCat(Service service, 
-    		String category, String language, int depth, int namespace) throws IOException, InterruptedException;
-
+	public abstract boolean revisionAvailable();
+	
+	public abstract boolean mayHaveDuplicates();
 }

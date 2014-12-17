@@ -17,6 +17,7 @@
 <entry key="stop-after">0</entry>
 <entry key="start-from">0</entry>
 <entry key="update-pause">1000</entry>
+<entry key="update-status">no</entry>
 <entry key="statistics">yes</entry>
 <entry key="statistics-file">report/report.NirvanaBotBe.task-%(date).txt</entry>
 <entry key="statistics-format">txt</entry>

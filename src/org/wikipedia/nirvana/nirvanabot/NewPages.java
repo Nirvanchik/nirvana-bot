@@ -1,5 +1,5 @@
 /**
- *  @(#)NewPages.java 16.11.2014
+ *  @(#)NewPages.java 14.12.2014
  *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,6 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -57,10 +56,12 @@ import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSimple;
 import org.wikipedia.nirvana.archive.ArchiveWithEnumeration;
 import org.wikipedia.nirvana.archive.ArchiveWithHeaders;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherCombinator;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherFastWithService;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.NewPagesFetcherOBOWithService;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.ProcessorCombinator;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessorFast;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessorSlow;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
 
 /**
@@ -95,6 +96,7 @@ public class NewPages implements PortalModule{
     protected boolean minor;
     protected boolean bot;
     protected boolean fastMode;
+    
     protected PortalParam.Deleted deletedFlag;
     protected int renamedFlag;
     
@@ -297,15 +299,18 @@ public class NewPages implements PortalModule{
 			subset.add(item);
 		}
 		
+		protected String getTimeString(Revision rev) {
+			if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) 
+	    		return rev.getTimestamp().getTime().toString();
+	    	else {
+	    		return String.format("%1$tFT%1$tTZ",rev.getTimestamp());
+	    	}
+		}
+		
 		protected void addNewItem(String title, boolean deleted, Revision rev) throws IOException {
 			String element = null;    	
 			String user = rev.getUser();
-			String time = null;
-	    	if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) 
-	    		time = rev.getTimestamp().getTime().toString();
-	    	else {
-	    		time = String.format("%1$tFT%1$tTZ",rev.getTimestamp());
-	    	}
+			String time = getTimeString(rev);	    	
 			
 	    	String titleToInsert = title;
 	    	if(namespace!=0) {
@@ -390,25 +395,22 @@ public class NewPages implements PortalModule{
 		}	
 	}
 	
-	
-	/*
-	public void getNewPages(NirvanaWiki wiki, 
-			ArrayList<Revision> pageInfoList,
-			HashSet<String> pages) throws IOException {
-		BasicFetcher pageListFetcher = createPageListFetcher();
-		
-	}*/
-	PageListFetcher createPageListFetcherForGroup(List<String> categories, List<String> categoriesToIgnore) {
-		if(service.supportsNewPagesManyCats() && fastMode) {
-			return new NewPagesFetcherFastWithService(service, categories, categoriesToIgnore, language, depth, hours, namespace);
+	protected PageListProcessor createPageListProcessorWithFetcher(WikiTools.Service service, PageListFetcher fetcher,
+			List<String> categories, List<String> categoriesToIgnore) {
+		if (service.supportsFastMode() && fastMode) {
+			return new PageListProcessorFast(service, categories, categoriesToIgnore, language, depth, namespace, fetcher);
 		} else {
-			return new NewPagesFetcherOBOWithService(service, categories, categoriesToIgnore, language, depth, hours, namespace);			
+			return new PageListProcessorSlow(service, categories, categoriesToIgnore, language, depth, namespace, fetcher);			
 		}
-		//throw new Error("Unsupported service name");
 	}
 	
-	PageListFetcher createPageListFetcher() {
-		List<PageListFetcher> fetchers = new ArrayList<PageListFetcher>(3);
+	protected PageListProcessor createPageListFetcherForGroup(List<String> categories, List<String> categoriesToIgnore) {
+		FetcherFactory.NewPagesFetcher fetcher = new FetcherFactory.NewPagesFetcher(hours);
+		return createPageListProcessorWithFetcher(this.service, fetcher, categories, categoriesToIgnore);
+	}
+	
+	protected PageListProcessor createPageListProcessor() {
+		List<PageListProcessor> fetchers = new ArrayList<PageListProcessor>(3);
 		fetchers.add(createPageListFetcherForGroup(this.categories, this.categoriesToIgnore));
 		for(int i = 0;i<categoryGroups.size();i++) {
 			if (categoryGroups.get(i).size()>0) {
@@ -416,7 +418,7 @@ public class NewPages implements PortalModule{
 			}
 		}
 		if(fetchers.size()>1)
-			return new FetcherCombinator(fetchers);
+			return new ProcessorCombinator(fetchers);
 		else
 			return fetchers.get(0);
 	}
@@ -454,6 +456,17 @@ public class NewPages implements PortalModule{
 		});
 	}
 	
+	public void sortPagesByDate(ArrayList<Revision> pageInfoList) {
+		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
+
+			@Override
+			public int compare(Revision r1, Revision r2) {				
+				return r2.getTimestamp().compareTo(r1.getTimestamp());
+			}		
+			
+		});
+	}
+	
 	public void sortPages(ArrayList<Revision> pageInfoList, boolean byRevision) {
 		if(byRevision) {
 			sortPagesByRevision(pageInfoList);
@@ -466,20 +479,20 @@ public class NewPages implements PortalModule{
 
 	
 	protected ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError {
-		PageListFetcher pageListFetcher = createPageListFetcher();
-		log.info("Using pagelist fetcher: "+pageListFetcher);
+		PageListProcessor pageListProcessor = createPageListProcessor();
+		log.info("Using pagelist fetcher: "+pageListProcessor);
 		if (getRevisionMethod == GetRevisionMethod.GET_REV) {
-    		if (pageListFetcher.revisionAvailable()) {
+    		if (pageListProcessor.revisionAvailable()) {
     			getRevisionMethod = GetRevisionMethod.GET_REV;
     		} else {
     			getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
     		}
 		}
-		ArrayList<Revision> pageInfoList = pageListFetcher.getNewPages(wiki);
+		ArrayList<Revision> pageInfoList = pageListProcessor.getNewPages(wiki);
 		
-		sortPages(pageInfoList, pageListFetcher.revisionAvailable());		
+		sortPages(pageInfoList, pageListProcessor.revisionAvailable());		
 	
-		if(pageListFetcher.mayHaveDuplicates()) {
+		if(pageListProcessor.mayHaveDuplicates()) {
 			removeDuplicatesInSortedList(pageInfoList);
 		}
 		return pageInfoList;
@@ -637,7 +650,7 @@ public class NewPages implements PortalModule{
 	    		log.debug("SKIP old line: \t"+item);
 	    		continue;
 	    	}
-	    	log.debug("ARCHIVE old line: \t"+item);
+	    	log.debug("ARCHIVE old line:"+item);
         	if(UPDATE_ARCHIVE && archive!=null) {		        		
         		d.archiveItems.add(item);
         	}
@@ -650,19 +663,22 @@ public class NewPages implements PortalModule{
 		d.newText = buffer.getNewText(botsAllowString);
 	}
 	
+	protected NewPagesBuffer createPagesBuffer(NirvanaWiki wiki) {
+		return new NewPagesBuffer(wiki);
+	}
+	
 	public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException, ServiceError {
 		log.info("Get data for [[" + this.pageName+"]]");
 		
 		ArrayList<Revision> pageInfoList = getNewPages(wiki);
 		
-		NewPagesBuffer buffer = new NewPagesBuffer(wiki);
+		NewPagesBuffer buffer = createPagesBuffer(wiki);
 		int count = pageInfoList.size();
 		count = count<maxItems?count:maxItems;
 		for (int i = 0; i < count ; ++i)
 		{
 		    buffer.addNewPage(wiki, pageInfoList.get(i));
 		}
-		
 	
 		// Add elements from old page
 		Data d = new Data();
@@ -672,12 +688,6 @@ public class NewPages implements PortalModule{
 			analyzeOldText(wiki, text, d, buffer);
 		}
 		
-		
-		//StringUtils.
-		//com.sun.xml.internal.ws.util.StringUtils.
-		//String bots = if(botsAllowString!=null)
-		
-			
 		if (UPDATE_ARCHIVE) d.makeArchiveText();
 		
 		//archiveItems.i

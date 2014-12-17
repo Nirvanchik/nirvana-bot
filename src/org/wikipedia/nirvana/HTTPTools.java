@@ -38,7 +38,7 @@ public class HTTPTools {
     private static final int CONNECTION_CONNECT_TIMEOUT_MSEC = 120000; // 120 seconds
     // time for the read to take place. (needs to be longer, some connections are slow
     // and the data volume is large!)
-    private static final int CONNECTION_READ_TIMEOUT_MSEC = 260000; // 260 seconds
+    private static final int CONNECTION_READ_TIMEOUT_MSEC = 5*60*1000; // 5 min
     
     static {
     	log = org.apache.log4j.Logger.getLogger(HTTPTools.class.getName());		

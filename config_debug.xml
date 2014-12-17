@@ -27,7 +27,7 @@
 <entry key="statistics-file">report/report-%(date).txt</entry>
 <entry key="statistics-format">txt</entry>
 <entry key="task-list">yes</entry>
-<entry key="task-list-file">task_eval_nirvana.txt</entry>
+<entry key="task-list-file">task_debug.txt</entry>
 <entry key="service">catscan2</entry>
 <entry key="fast-mode">yes</entry>
 
