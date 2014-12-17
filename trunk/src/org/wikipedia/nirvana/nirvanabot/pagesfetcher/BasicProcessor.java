@@ -1,5 +1,5 @@
 /**
- *  @(#)BasicFetcher.java 13.07.2014
+ *  @(#)BasicProcessor.java 10.12.2014
  *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -30,55 +30,59 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.WikiTools;
 
 /**
  * @author kin
  *
  */
-public abstract class BasicFetcher implements PageListFetcher {
+public abstract class BasicProcessor implements PageListProcessor {
 	protected static org.apache.log4j.Logger log = null;
 	protected WikiTools.Service service;
     protected List<String> categories;
 	protected List<String> categoriesToIgnore;
 	protected String language;
 	protected int depth;
-	protected int hours;
 	protected int namespace;
+	protected PageListFetcher fetcher;
 
     // Regex to check validity of line
     protected String LINE_RULE;
     // We will not check every line if output has thousands lines for better performance
-    private final int LINES_TO_CHECK = 25;
+    protected final int LINES_TO_CHECK = 25;
 
 	/**
 	 * 
 	 */
-	public BasicFetcher(WikiTools.Service service, List<String> cats, List<String> ignore, String lang, int depth, int hours, int namespace) {
+	public BasicProcessor(WikiTools.Service service, List<String> cats, List<String> ignore, 
+			String lang, int depth, int namespace, PageListFetcher fetcher) {
 		this.service = service;
 		this.categories = cats;
 		this.categoriesToIgnore = ignore;
 		this.language = lang;
 		this.depth = depth;
-		this.hours = hours;
 		this.namespace = namespace;
 		this.LINE_RULE = "^.+$";
+		this.fetcher = fetcher;
 		if (service.LINE_RULE != null) {
 			this.LINE_RULE = service.LINE_RULE;
 		}
 		log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
 	}
 
-	//public abstract void getNewPages(NirvanaWiki wiki, ArrayList<Revision> pageInfoList, HashSet<String> pages) throws IOException, InterruptedException;
-	
 	public void parsePageList(NirvanaWiki wiki, HashSet<String> pages, ArrayList<Revision> pageInfoList, HashSet<String> ignore, String pageList) throws IOException, ServiceError {
+        if (pageList.startsWith("ERROR : MYSQL error")) {
+        	log.error("Invalid service output: "+StringTools.trancateTo(pageList, 100));
+        	throw new ServiceError("Invalid output of service: "+service.getName());
+        }		
 		String line;
 		
 		//FileTools.dump(pageList, "dump", "pageList_"+category+".txt");
@@ -93,6 +97,8 @@ public abstract class BasicFetcher implements PageListFetcher {
         	j++;
         	if (line.isEmpty()) continue;
         	if (j<LINES_TO_CHECK && !p.matcher(line).matches()) {
+        		log.error("Invalid service output line: "+line);
+        		FileTools.dump(pageList, "dump", "last_service_out_wit_error.txt");
         		throw new ServiceError("Invalid output of service: "+service.getName());
         	}
             String[] groups = line.split("\t");
@@ -121,7 +127,7 @@ public abstract class BasicFetcher implements PageListFetcher {
                 if (!pages.contains(title))
                 {
                 	long revId=0;
-                	if(service.REVID_POS>=0) {
+                	if (service.REVID_POS>=0) {
 		                try {
 		                	revId = Long.parseLong(groups[service.REVID_POS]);
 		                } catch(NumberFormatException e) {
@@ -130,7 +136,7 @@ public abstract class BasicFetcher implements PageListFetcher {
 		                }
                 	}
                 	long id = 0;
-                	if(service.ID_POS>=0) {
+                	if (service.ID_POS>=0) {
                 		try {
 		                	id = Long.parseLong(groups[service.ID_POS]);
 		                } catch(NumberFormatException e) {
@@ -149,7 +155,7 @@ public abstract class BasicFetcher implements PageListFetcher {
             	// а потом переименовываются в основное пространство
             	//String title = groups[TITLE_POS].replace('_', ' ');
             	long revId=0;
-            	if(service.REVID_POS>=0) {
+            	if (service.REVID_POS>=0) {
 	                try {
 	                	revId = Long.parseLong(groups[service.REVID_POS]);
 	                } catch(NumberFormatException e) {
@@ -159,8 +165,7 @@ public abstract class BasicFetcher implements PageListFetcher {
             	}
             	Revision r = wiki.getRevision(revId);
             	String title = r.getPage();
-                if (ignore.contains(title))
-                {
+                if (ignore.contains(title)) {
                     continue;
                 }	                
                 
@@ -169,16 +174,9 @@ public abstract class BasicFetcher implements PageListFetcher {
                 
                 // Случай когда мы ищем категории, шаблоны и т.д. чтобы отсеять обычные статьи
                 int n = wiki.namespace(title);
-                if(n!=namespace) {
+                if (n != namespace) {
                 	continue;
                 }
-                /*
-                if (namespace != 0 && !title.startsWith(wiki.namespaceIdentifier(namespace)))
-                {	
-                	log.debug("Namespace is other than we seek");
-                	continue;	                	
-                } //else if (namespace==0 && wiki.n)
-                */
                 
                 if (!pages.contains(title))
                 {   

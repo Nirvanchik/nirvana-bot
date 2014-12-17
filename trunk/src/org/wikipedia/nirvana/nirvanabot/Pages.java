@@ -1,5 +1,5 @@
 /**
- *  @(#)WatchList.java
+ *  @(#)Pages.java
  *  Copyright © 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -24,23 +24,31 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.WikiTools;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicFetcher;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PagesFetcherOBOCatScan2;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
 
 /**
  * @author kin
  *
  */
-public class WatchList extends NewPages {
+public class Pages extends NewPages {
+    protected List<String> templates;
+	protected WikiTools.EnumerationType templatesEnumType;
+
 
 	/**
 	 * @param param	 
 	 */
-	public WatchList(PortalParam param) {
+	public Pages(PortalParam param) {
 		super(param);
+		this.templates = param.templates;
+		this.templatesEnumType = param.templatesEnumType;
+		
 		if(this.archiveSettings!=null) {
 			this.archiveSettings = null;
 		}
@@ -52,8 +60,22 @@ public class WatchList extends NewPages {
 	}
 	
 	@Override
-	BasicFetcher createPageListFetcher() {
-		return new PagesFetcherOBOCatScan2(WikiTools.Service.CATSCAN2, categories, categoriesToIgnore, language, depth, namespace);
+    protected PageListProcessor createPageListProcessor() {
+		WikiTools.Service service = this.service;
+		PageListFetcher fetcher;
+		if (templates == null) {
+    		if (!service.supportsPages()) {
+    			service = WikiTools.Service.getDefaultServiceForFeature(WikiTools.ServiceFeatures.PAGES);
+    		}
+    		fetcher = new FetcherFactory.PagesFetcher();
+    				
+		} else {
+			if (!service.supportsFeature(WikiTools.ServiceFeatures.PAGES_WITH_TEMPLATE)) {
+    			service = WikiTools.Service.getDefaultServiceForFeature(WikiTools.ServiceFeatures.PAGES_WITH_TEMPLATE);
+    		}
+			fetcher = new FetcherFactory.PagesWithTemplatesFetcher(templates, templatesEnumType);    		
+		}
+		return createPageListProcessorWithFetcher(service, fetcher, categories, categoriesToIgnore);
 	}
 	
 	@Override

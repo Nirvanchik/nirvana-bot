@@ -1,5 +1,5 @@
 /**
- *  @(#)PageListFetcherOneByOne.java 13.07.2014
+ *  @(#)PageListProcessorSlow.java 14.12.2014
  *  Copyright © 2013 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -38,6 +39,7 @@ import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
@@ -45,7 +47,7 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
  * @author kin
  *
  */
-public abstract class PageListFetcherOneByOne extends BasicFetcher {
+public class PageListProcessorSlow extends BasicProcessor {
 	protected Map<String,String> pageLists;
     protected Map<String,String> pageListsToIgnore;
     
@@ -57,33 +59,29 @@ public abstract class PageListFetcherOneByOne extends BasicFetcher {
 	 * @param hours
 	 * @param namespace
 	 */
-	public PageListFetcherOneByOne(WikiTools.Service service, List<String> cats, List<String> ignore, String lang,
-	        int depth, int hours, int namespace) {
-		super(service, cats, ignore, lang, depth, hours, namespace);		
+	public PageListProcessorSlow(WikiTools.Service service, List<String> cats, List<String> ignore, String lang,
+	        int depth, int namespace, PageListFetcher fetcher) {
+		super(service, cats, ignore, lang, depth, namespace, fetcher);		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.PageListFetcher#getNewPages(org.wikipedia.nirvana.NirvanaWiki, java.util.ArrayList, java.util.HashSet)
+	/** 
+	 * 
 	 */
 	@Override
 	public ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError {
-//	public void getNewPages(NirvanaWiki wiki, ArrayList<Revision> pageInfoList,
-//	        HashSet<String> pages) throws IOException, InterruptedException {
 		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
 		HashSet<String> pages = new HashSet<String>();
 		getData(wiki);
-		HashSet<String> ignore = getIgnorePages(wiki, null);
-		
+		HashSet<String> ignore = getIgnorePages(wiki, null);		
 		for(String category : categories) {		
 			log.info("Processing data of " + category);
 			String pageList = pageLists.get(category);
 			parsePageList(wiki, pages, pageInfoList, ignore, pageList);					    
-		}//for
+		}
 		return pageInfoList;
 	}
 	
-	public void getData(Wiki wiki) throws IOException, InterruptedException {
-		
+	public void getData(Wiki wiki) throws IOException, InterruptedException {		
 		//log.info("Getting data for [[" + this.pageName+"]]");
 		pageLists = getNewPagesForCategories(categories);		
 		pageListsToIgnore = getNewPagesForCategories(categoriesToIgnore);		
@@ -91,10 +89,9 @@ public abstract class PageListFetcherOneByOne extends BasicFetcher {
 	
 	private Map<String,String> getNewPagesForCategories(List<String> categoriList) throws IOException, InterruptedException {
 		Map<String,String> result = new HashMap<String,String>();
-		for(String category : categoriList)
-		{			
-			Pair<Integer, String> pair = PageListFetcherOneByOne.extractDepthFromCat(category);			
-		    String text = getNewPagesForCat(pair.getRight(), language, (pair.getLeft() >= 0)? pair.getLeft(): depth, hours);
+		for (String category : categoriList) {			
+			Pair<Integer, String> pair = PageListProcessorSlow.extractDepthFromCat(category);			
+		    String text = fetcher.loadNewPagesForCat(service, pair.getRight(), language, (pair.getLeft() >= 0)? pair.getLeft(): depth, namespace);
 		    result.put(category, text);
 		}
 		return result;
@@ -114,9 +111,7 @@ public abstract class PageListFetcherOneByOne extends BasicFetcher {
 		return new ImmutablePair<Integer, String>(depth, category);
 	}
 	
-	protected abstract String getNewPagesForCat(String category, String language, int depth, int hours) throws IOException, InterruptedException;
-	
-	public HashSet<String> getIgnorePages(NirvanaWiki wiki, HashSet<String> ignorePages) throws IOException {
+	public HashSet<String> getIgnorePages(NirvanaWiki wiki, HashSet<String> ignorePages) throws IOException, ServiceError {
 		HashSet<String> ignore = ignorePages;
 		if(ignore==null)
 			ignore = new HashSet<String>();
@@ -124,10 +119,22 @@ public abstract class PageListFetcherOneByOne extends BasicFetcher {
 			//log.info("Processing data of " + category);
 	        String line;
 	        String pageList = this.pageListsToIgnore.get(category);
+	        if (pageList.startsWith("ERROR : MYSQL error")) {
+	        	log.error("Invalid service output: "+StringTools.trancateTo(pageList, 100));
+	        	throw new ServiceError("Invalid output of service: "+service.getName());
+	        }
 	        BufferedReader br = new BufferedReader(new StringReader(pageList));
         	for(int j=0;j<service.SKIP_LINES;j++) br.readLine();
+        	Pattern p = Pattern.compile(LINE_RULE);
+        	int j = 0;
 	        while ((line = br.readLine()) != null)
 	        {
+	        	j++;
+	        	if (line.isEmpty()) continue;
+	        	if (j<LINES_TO_CHECK && !p.matcher(line).matches()) {
+	        		log.error("Invalid service output line: "+line);
+	        		throw new ServiceError("Invalid output of service: "+service.getName());
+	        	}
 	            String[] groups = line.split("\t");
 	            if (groups[service.NS_POS].equals(String.valueOf(this.namespace)))
 	            {
@@ -155,7 +162,7 @@ public abstract class PageListFetcherOneByOne extends BasicFetcher {
 	}
 
 	/* (non-Javadoc)
-     * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher#mayHaveDuplicates()
+     * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor#mayHaveDuplicates()
      */
     @Override
     public boolean mayHaveDuplicates() {	    

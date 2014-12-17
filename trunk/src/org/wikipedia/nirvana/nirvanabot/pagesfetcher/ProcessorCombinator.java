@@ -1,5 +1,5 @@
 /**
- *  @(#)FetcherCombinator.java 29.04.2014
+ *  @(#)ProcessorCombinator.java 29.04.2014
  *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -35,9 +35,9 @@ import org.wikipedia.nirvana.ServiceError;
  * @author kin
  *
  */
-public class FetcherCombinator implements PageListFetcher {
+public class ProcessorCombinator implements PageListProcessor {
 	protected static org.apache.log4j.Logger log = null;
-	private List<PageListFetcher> fetchers;
+	private List<PageListProcessor> fetchers;
 
 	/**
 	 * @param cats
@@ -47,28 +47,29 @@ public class FetcherCombinator implements PageListFetcher {
 	 * @param hours
 	 * @param namespace
 	 */
-	public FetcherCombinator(List<PageListFetcher> fetchers) {
+	public ProcessorCombinator(List<PageListProcessor> fetchers) {
 		this.fetchers = fetchers;
 		log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
 	}
 
 	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicFetcher#getNewPages(org.wikipedia.nirvana.NirvanaWiki)
+	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicProcessor#getNewPages(org.wikipedia.nirvana.NirvanaWiki)
 	 */
 	@Override
 	public ArrayList<Revision> getNewPages(NirvanaWiki wiki)
 	        throws IOException, InterruptedException, ServiceError {
 		ArrayList<Revision> list;
+		log.debug("getting results from main fetcher");
 		list = fetchers.get(0).getNewPages(wiki);
 		for(int i=1;i<fetchers.size();i++) {
-			log.debug("adding results from another fetcher: "+i);
+			log.debug("getting results from another fetcher: "+i);
 			list.addAll(fetchers.get(i).getNewPages(wiki));
 		}
 		return list;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicFetcher#revisionAvailable()
+	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicProcessor#revisionAvailable()
 	 */
 	@Override
 	public boolean revisionAvailable() {		
@@ -76,7 +77,7 @@ public class FetcherCombinator implements PageListFetcher {
 	}
 
 	/* (non-Javadoc)
-     * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher#mayHaveDuplicates()
+     * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor#mayHaveDuplicates()
      */
     @Override
     public boolean mayHaveDuplicates() {	    

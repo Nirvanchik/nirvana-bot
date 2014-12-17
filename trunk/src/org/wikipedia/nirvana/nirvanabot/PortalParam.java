@@ -1,6 +1,6 @@
 /**
- *  @(#)PortalParam.java 23/08/2012
- *  Copyright © 2012 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)PortalParam.java 14.12.2014
+ *  Copyright © 2012 - 2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -57,10 +57,12 @@ public class PortalParam {
 	public int renamedFlag;
 	public String imageSearchTags;
 	public int updatesPerDay;
+	public List<String> templates;
+	public WikiTools.EnumerationType templatesEnumType;
+	public String prefix;
 	
 	public static final int MAX_CAT_GROUPS = 20;
 	
-	//public List<Pair<List<String>,List<String>>> categoryPairs;
 	public List<List<String>> categoryGroups;
 	public List<List<String>> categoryToIgnoreGroups;
 	

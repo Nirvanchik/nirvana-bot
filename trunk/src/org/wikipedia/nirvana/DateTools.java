@@ -1,6 +1,6 @@
 /**
- *  @(#)DateTools.java 02/07/2012
- *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)
+ *  @(#)DateTools.java 14.12.2014
+ *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ public class DateTools {
 
 	public static String printDateDayMonthYearGenitiveRussian(Calendar c) {
 		
-		DateFormatSymbols russSymbol = new DateFormatSymbols(Locale.getDefault());
+		DateFormatSymbols russSymbol = new DateFormatSymbols(new Locale("ru"));
 		russSymbol.setMonths(russianMonat);
 		SimpleDateFormat sdf = new SimpleDateFormat("d MMMM yyyy", russSymbol);
 		Date date = c.getTime();
@@ -128,6 +128,25 @@ public class DateTools {
 		}
 		return c;		 
 	}
+	
+	public static Calendar parseDateStringDayMonthYearGenitiveRussian(String dateStr, Locale locale) {
+		Calendar c = null;
+		if (!locale.getLanguage().equals("ru")) {
+			throw new IllegalArgumentException("Only Russian locale supported");
+		}
+		DateFormatSymbols russSymbol = new DateFormatSymbols(locale);
+		russSymbol.setMonths(russianMonat);
+		DateFormat formatter = new SimpleDateFormat("d MMMM yyyy", russSymbol);
+		Date date;
+		try {
+			date = (Date)formatter.parse(dateStr);
+			c = Calendar.getInstance();
+    		c.setTime(date);		    
+		} catch (ParseException e) {		
+		}
+		return c;
+	}
+	
 	public static int dayToWeek(int year, int month, int day) {
 		Calendar c = Calendar.getInstance();
 		c.set(year, month, day);
