@@ -96,6 +96,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 	
 	private static boolean GENERATE_REPORT = false;
 	private static boolean UPDATE_STATUS = false;
+	private static boolean MERGE_FILE_REPORT = false;
+	private static boolean MERGE_WIKI_REPORT = true;
 	private static String REPORT_FILE_NAME = "report.txt";
 	private static String REPORT_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Отчёт";
 	private static String STATUS_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Статус";
@@ -143,15 +145,6 @@ public class NirvanaBot extends NirvanaBasicBot{
 			portalModule = null;
 		}
 	}
-
-	public enum Status {
-		NONE,
-		SKIP,
-		PROCESSED,
-		UPDATED,
-		//DENIED,
-		ERROR
-	};
 	
 	public enum BotError {
 		NONE,
@@ -159,6 +152,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		BOT_ERROR,
 		SERVICE_ERROR,		
 		IO_ERROR,
+		SETTINGS_ERROR
 	};
 	
 	public static String getDefaultFooter() {
@@ -527,7 +521,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     				//Calendar startPortalTime = Calendar.getInstance();
     				reportItem = new ReportItem(newpagesTemplate, portalName);
     				if(reporter!=null) reporter.add(reportItem);
-    				reportItem.startTime = System.currentTimeMillis();
+    				reportItem.start();
     			}
     			
     			
@@ -567,28 +561,28 @@ public class NirvanaBot extends NirvanaBasicBot{
     					log.info("validate portal settings OK");					
     					logPortalSettings(parameters);
     					NewPagesData data = new NewPagesData();
-    					createPortalModule(parameters, data);
-    					if(TYPE.equals("all") || TYPE.equals(data.type)) {
-    						if(data.portalModule!=null) {					
-    								if(DEBUG_MODE || !DEBUG_BUILD || !portalName.contains("ValidParam") /*&& !portalName.contains("Testing")*/) {
-    									if (retry_count==0) reporter.portalProcessed();
-    									if(data.portalModule.update(wiki, reportItem, COMMENT)) {
-    										reporter.portalUpdated();
-    										reportItem.status = Status.UPDATED;
-    									} else {
-    										reportItem.status = Status.PROCESSED;
-    									}   									
-    									
-    									if(UPDATE_PAUSE>0) Thread.sleep(UPDATE_PAUSE);
-    								}
-    							
-    						} else {
-    							log.warn("portal module not created");
-    						}
+    					if (createPortalModule(parameters, data)) {
+        					if((TYPE.equals("all") || TYPE.equals(data.type)) && data.portalModule != null) {
+								if(DEBUG_MODE || !DEBUG_BUILD || !portalName.contains("ValidParam") /*&& !portalName.contains("Testing")*/) {
+									if (retry_count==0) { 
+										reporter.portalProcessed();
+										reportItem.processed();
+									}
+									if(data.portalModule.update(wiki, reportItem, COMMENT)) {
+										reporter.portalUpdated();
+										reportItem.updated();
+									} 
+									if(UPDATE_PAUSE>0) Thread.sleep(UPDATE_PAUSE);
+								}        							
+        					} else {
+        						reportItem.skip();						
+        						log.info("SKIP portal: "+portalName); 
+        					}    						
     					} else {
-    						reportItem.skip();						
-    						log.info("SKIP portal: "+portalName); 
+    						log.warn("portal module not created");
+    						reportItem.error(BotError.SETTINGS_ERROR);
     					}
+
     					if(!data.errors.isEmpty()) {
     						log.warn("errors occured during checking settings");
     						for(String str:data.errors) {
@@ -605,6 +599,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     					}
     				} else {
     					reportItem.settingsValid = false;
+    					reportItem.error(BotError.SETTINGS_ERROR);
     					log.error("validate portal settings FAILED");
     				}
     				
@@ -616,8 +611,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     					retry = true;
     				} else {
     					reporter.portalError();
-    					reportItem.status = Status.ERROR;
-    					reportItem.error = BotError.BOT_ERROR;
+    					reportItem.error(BotError.BOT_ERROR);
     					//e.printStackTrace();
     					log.error("OOOOPS!!!", e); // print stack trace
     				}	
@@ -628,8 +622,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     					retry = true;
     				} else {
     					reporter.portalError();
-    					reportItem.status = Status.ERROR;
-    					reportItem.error = BotError.SERVICE_ERROR;
+    					reportItem.error(BotError.SERVICE_ERROR);
     					//e.printStackTrace();
     					log.error("OOOOPS!!!", e); // print stack trace
     				}
@@ -637,8 +630,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     					log.warn(e.toString());
     					log.info("ignore error and continue ...");
     					reporter.portalError();
-    					reportItem.status = Status.ERROR;
-    					reportItem.error = BotError.SERVICE_ERROR;
+    					reportItem.error(BotError.SERVICE_ERROR);
     			} catch (IOException e) {
     				
     				if(retry_count<RETRY_MAX) {
@@ -648,8 +640,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     				} else {
     					log.error(e.toString());
     					reporter.portalError();
-    					reportItem.status = Status.ERROR;
-    					reportItem.error = BotError.IO_ERROR;
+    					reportItem.error(BotError.IO_ERROR);
     					log.error("OOOOPS!!!", e); // print stack trace
     				}
     			} catch (LoginException e) {
@@ -666,7 +657,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     					retry = true;
     				} else {
     					reporter.portalError();
-    					reportItem.status = Status.ERROR;
+    					reportItem.error();
     					//e.printStackTrace();
     					log.error("OOOOPS!!!", e); // print stack trace
     				}	
@@ -677,12 +668,12 @@ public class NirvanaBot extends NirvanaBasicBot{
     					retry = true;
     				} else {
     					reporter.portalError();
-    					reportItem.status = Status.ERROR;
+    					reportItem.error();
     					//e.printStackTrace();
     					log.error("OOOOPS!!!", e); // print stack trace
     				}	
     			}
-    			reportItem.endTime = System.currentTimeMillis();
+    			reportItem.end();
     			if(STOP_AFTER>0 && t>=STOP_AFTER) break;
     			if(!retry) i++;
     		}
@@ -695,7 +686,12 @@ public class NirvanaBot extends NirvanaBasicBot{
     	}
         reporter.logStatus();
         if (GENERATE_REPORT) {
-			reporter.reportTXT(REPORT_FILE_NAME);
+        	if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "txt")) {        			
+        		reporter.reportTXT(REPORT_FILE_NAME);
+        	}
+        	if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "wiki")) {        			
+        		reporter.reportWiki(REPORT_WIKI_PAGE, startNumber == 1);
+        	}
 		}
         if (UPDATE_STATUS) {
         	try {
@@ -1042,7 +1038,12 @@ public class NirvanaBot extends NirvanaBasicBot{
 			param.imageSearchTags = options.get(key);
 		}
 		
-		if(!validateParams(param,data.errors)) {
+		if (!validateParams(param,data.errors)) {
+			return false;
+		}
+		
+		if (!itsTimeToUpdate(param)) {
+			// There is no errors but we should not update this portal now
 			return true;
 		}
 		
@@ -1077,8 +1078,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 			data.errors.add("Тип \""+type+"\" не поддерживается. Используйте только разрешенные значения в параметре \"тип\".");			
 		}
 	
-	log.debug("portal settings init finished");
-	return true;
+		log.debug("portal settings init finished");
+		return (data.portalModule != null);
 	}
 	
 	/**
@@ -1138,6 +1139,10 @@ public class NirvanaBot extends NirvanaBasicBot{
 			errors.add(String.format(ERROR_ABSENT_PARAMETER_RU,"статья"));
 			retval = false;
 		}
+		return true;
+	}
+	
+	private boolean itsTimeToUpdate(PortalParam param) {
 		if(param.updatesPerDay>DEFAULT_STARTS_PER_DAY) {
 			param.updatesPerDay = DEFAULT_STARTS_PER_DAY;
 		}
@@ -1145,10 +1150,10 @@ public class NirvanaBot extends NirvanaBasicBot{
 		if (startNumber != 1) {
 			int freq = DEFAULT_STARTS_PER_DAY / param.updatesPerDay;
 			if ((startNumber-1)%freq != 0) {
-				retval = false;
+				return false;
 			}
 		}
-		return retval;
+		return true;
 	}
 	
 	private int parseRenamed(String string, int defaultValue,
