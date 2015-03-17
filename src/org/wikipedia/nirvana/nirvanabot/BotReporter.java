@@ -23,20 +23,32 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.statistics.ArchiveDatabase2;
+import org.wikipedia.nirvana.statistics.ArchiveItem;
+import org.wikipedia.nirvana.statistics.ArchiveDatabase2.JsonDb;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author kin
  *
  */
 public class BotReporter {
+	public static final String DEFAULT_CACHE_FOLDER = "cache";
+	public static final String DEFAULT_CACHE_FILE = "report_cache.js";
 	private static org.apache.log4j.Logger log;
 	NirvanaWiki wiki;
 	ArrayList<ReportItem> reportItems;
@@ -127,7 +139,10 @@ public class BotReporter {
     	if (timeFinished == null) {
     		timeFinished = Calendar.getInstance();
     	}
-		log.info("generating report . . .");
+    	if (!fileName.endsWith(".txt")) {
+    		fileName = fileName + ".txt";
+    	}
+		log.info("generating report (TXT) . . .");
 		StringBuilder sb = new StringBuilder();
 		//StringBuffer sbuf = new StringBuffer();
 		sb.append(ReportItem.getHeaderTXT()).append("\r\n");
@@ -143,6 +158,82 @@ public class BotReporter {
 			e.printStackTrace();				
 		}			
 		log.info("report is generated!");    	
+    }
+    
+    public void reportWiki(String reportPage, boolean mainLaunch) {
+    	// 1) Load old data (if any)
+    	String path = DEFAULT_CACHE_FOLDER + "\\" + DEFAULT_CACHE_FILE;
+    	File file = new File(path);
+    	List<ReportItem> oldData = null;		
+    	if (file.exists()) {
+    		log.debug("File with old data found: " + path);
+    		// Check last modification time. Ignore if it's too old
+			long lastModTime = file.lastModified();
+    		if (lastModTime != 0) {
+    			Calendar c = Calendar.getInstance();
+    			c.add(Calendar.DAY_OF_MONTH, -1);
+    			if (lastModTime > c.getTimeInMillis()) {
+    				log.debug("Load old data");
+    				oldData = load(file);
+    			}   			
+    		}
+    		log.debug("Delete old data");
+    		file.delete();
+    	}
+    	// 2) Merge with old data (if any)
+    	if (oldData != null) {
+    		merge(oldData);
+    	}
+    	// 3) Report to wiki or save to file
+    	if (mainLaunch) {
+    		doReportWiki(reportPage);    		
+    	} else {
+    		save(file);
+    	}
+    }
+    
+    public void merge(List<ReportItem> data) {
+    	log.debug("Merge old data");
+    	// 3 cases here:
+    	// 1) lists are equal (ideal)
+    	// 2) left has values that right has not
+    	// 3) right has values that left has not
+    	ArrayList<ReportItem> right = new ArrayList<ReportItem>(data);
+    	for (ReportItem r: reportItems) {
+    		for (int j = 0; j < right.size(); j++) {
+    			if (r.equals(right.get(j))) {
+    				ReportItem rMerge = right.get(j);
+    				r.merge(rMerge);
+    				right.remove(j);
+    				break;
+    			}
+    		}    		
+    	}
+    	reportItems.addAll(right);
+    }
+    
+    
+    public void doReportWiki(String reportPage) {
+    	if (timeFinished == null) {
+    		timeFinished = Calendar.getInstance();
+    	}
+    	log.info("generating report (Wiki) . . .");
+		StringBuilder sb = new StringBuilder();
+		//StringBuffer sbuf = new StringBuffer();
+		sb.append(ReportItem.getHeaderWiki()).append("\n");
+		int i = 0;
+		for(ReportItem item : reportItems) {
+			sb.append(item.toStringWiki(i));
+			sb.append("\n");
+			i++;
+		}
+		sb.append(ReportItem.getFooterWiki());
+		
+		try {
+	        wiki.edit(reportPage, sb.toString(), "Отчёт по работе бота за сутки");
+        } catch (LoginException | IOException e) {
+	        log.error("Failed to update report.", e);
+        }    	
     }
 	/**
      * 
@@ -181,4 +272,35 @@ public class BotReporter {
 		int sec = (int) ((diff)/(1000L) - (long)hours*60L*60L - (long)min*60L);
 		return String.format("%d h %d m %d s", hours, min, sec);
 	}
+    
+    public List<ReportItem> load(File file) {
+    	ObjectMapper mapper = new ObjectMapper();
+    	List<ReportItem> items = null;
+    	try {
+    		items = mapper.readValue(
+					file, 
+					new TypeReference<List<ReportItem>>() { });
+		} catch(IOException e1) {
+			log.error(e1);
+			return null;
+		}
+    	return items;
+    }
+    
+    public void save(File file) {
+    	ObjectMapper mapper = new ObjectMapper();		
+		try {
+			mapper.writeValue(file, reportItems);
+		} catch (JsonParseException e) {
+			log.error(e);
+			return;
+		} catch (JsonMappingException e) {
+			log.error(e);
+			return;
+		} catch (IOException e) {
+			log.error(e);
+			return;
+		}
+		log.info("report items successfully saved to "+file.getPath());
+    }
 }
