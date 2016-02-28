@@ -26,12 +26,15 @@ package org.wikipedia.nirvana.nirvanabot;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.HTTPTools;
+import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinder;
@@ -46,6 +49,7 @@ public class NewPagesWithImages extends NewPages {
 	//private String regexToFindImage;
 	private ImageFinder imageFinder;
 	private NirvanaWiki commons;
+	private List<String> fairUseImageTemplates;
 	
 	public static class RevisionWithImage extends RevisionWithId {
 		String image;
@@ -80,6 +84,7 @@ public class NewPagesWithImages extends NewPages {
 		this.format = this.format.replace("%(имя файла)", "%4$s");
 		this.imageFinder = imageFinder;
 		this.commons = commons;
+		this.fairUseImageTemplates = NirvanaBasicBot.optionToStringArray(param.fairUseImageTemplates);
 		/*if(inCard) {
 			regexToFindImage = "\\| *(image file|Аверс|Реверс|Изображение аверса|Изображение реверса) *= *(?<filename>.+?) *\n";
 		} else {
@@ -279,14 +284,16 @@ public class NewPagesWithImages extends NewPages {
     	String text = null;
     	try {
 	        text = wiki.getPageText(wiki.namespaceIdentifier(NirvanaWiki.FILE_NAMESPACE)+":"+image);
-        } catch (IOException e) {	        
+        } catch (IOException e) {
+            log.warn("Failed to get text for image: "+image);
         }
     	if (text == null) {
     		return true;
     	}
-    	if (text.contains("{{Обоснование добросовестного использования") || text.contains("{{Disputed-fairuse") || 
-    			text.contains("{{ОДИ") || text.contains("{{Несвободный файл/ОДИ")) {
-    		return false;
+        for (String tmpl : this.fairUseImageTemplates) {
+            if (StringUtils.containsIgnoreCase("{{" + tmpl, text)) {
+                return false;
+            }
     	}
 	    return true;
     }

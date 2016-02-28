@@ -57,6 +57,7 @@ public class PortalParam {
 	Deleted deletedFlag;
 	public int renamedFlag;
 	public String imageSearchTags;
+	public String fairUseImageTemplates;
 	public int updatesPerDay;
 	public List<String> templates;
 	public List<TemplateFindItem> templatesWithData;
@@ -83,6 +84,7 @@ public class PortalParam {
 		bot = true;
 		deletedFlag = Deleted.DONT_TOUCH;
 		imageSearchTags = null;
+		fairUseImageTemplates = null;
 		updatesPerDay = 1;
 	}
 }

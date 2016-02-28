@@ -116,6 +116,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static String overridenPropertiesPage = null;
 	
 	private static String PICTURE_SEARCH_TAGS = "image file,Фото,портрет,Изображение,Файл,File";
+	private static String FAIR_USE_IMAGE_TEMPLATES = "Обоснование добросовестного использования, Disputed-fairuse, ОДИ, Несвободный файл/ОДИ";
 	
 	private static int DEFAULT_NAMESPACE = 0;
 	
@@ -272,6 +273,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 		
 		PICTURE_SEARCH_TAGS = properties.getProperty("picture-search-tags",PICTURE_SEARCH_TAGS);
 		log.info("picture search tags = "+PICTURE_SEARCH_TAGS);
+		FAIR_USE_IMAGE_TEMPLATES = properties.getProperty("fair-use-image-templates",FAIR_USE_IMAGE_TEMPLATES);
+		log.info("fair-use image templates = "+FAIR_USE_IMAGE_TEMPLATES);
 		
 		TYPE = properties.getProperty("type",TYPE); 
 		
@@ -408,6 +411,11 @@ public class NirvanaBot extends NirvanaBasicBot{
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			PICTURE_SEARCH_TAGS = options.get(key);
 		}		
+
+		key = "шаблоны запрещенных картинок";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			FAIR_USE_IMAGE_TEMPLATES = options.get(key);
+		}
 	}
 	
 	protected static PortalParam.Deleted parseDeleted(String value, PortalParam.Deleted defaultValue,ArrayList<String> errors) {
@@ -1047,6 +1055,12 @@ public class NirvanaBot extends NirvanaBasicBot{
 			param.imageSearchTags = options.get(key);
 		}
 		
+		param.fairUseImageTemplates = FAIR_USE_IMAGE_TEMPLATES;
+		key = "шаблоны запрещенных картинок";
+		if (options.containsKey(key) && !options.get(key).isEmpty()) {
+			param.fairUseImageTemplates = options.get(key);
+		}
+
 		if (!validateParams(param,data.errors)) {
 			return false;
 		}
@@ -1090,7 +1104,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		log.debug("portal settings init finished");
 		return (data.portalModule != null);
 	}
-	
+
 	/**
      * @param option
      * @return

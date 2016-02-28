@@ -382,15 +382,15 @@ public abstract class NirvanaBasicBot {
 		}
 	}
 	
-	protected static ArrayList<String> optionToStringArray(String option) {
+	public static ArrayList<String> optionToStringArray(String option) {
 		return optionToStringArray(option, false, ",");
 	}
 	
-	protected static ArrayList<String> optionToStringArray(String option, boolean withDQuotes) {
+	public static ArrayList<String> optionToStringArray(String option, boolean withDQuotes) {
 		return optionToStringArray(option, withDQuotes, ",");
 	}
 	
-	protected static ArrayList<String> optionToStringArray(String option, boolean withDQuotes, String separator) {
+	public static ArrayList<String> optionToStringArray(String option, boolean withDQuotes, String separator) {
 		ArrayList<String> list = new ArrayList<String>();
 		String separatorPattern;
 		if (withDQuotes && option.contains("\"")) {
