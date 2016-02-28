@@ -5,6 +5,10 @@
 /report*.txt
 /loginNirvanaBot.xml
 
+/src/org/wikipedia/nirvana/test/*
+
+/.settings/*
+/.svn/*
 /report/*
 /tmp/*
 /log/*
