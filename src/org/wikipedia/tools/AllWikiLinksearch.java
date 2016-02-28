@@ -29,8 +29,8 @@ import org.wikipedia.*;
 /**
  *  Searches all Wikimedia wikis for a given external link. Consider:
  *  <ul>
- *      <li>Running the {@link http://wikipediatools.appspot.com top 20 WPs
- *      linksearch tool}
+ *      <li>Running the <a href="http://wikipediatools.appspot.com">top 20 WPs
+ *      linksearch tool</a>
  *      <li>COIBot poking the domain AND
  *      <li>Using Luxo's cross-wiki contributions to undo revisions by spammers
  *  </ul>
@@ -73,7 +73,7 @@ public class AllWikiLinksearch
                     builder.append("=== Results for ");
                     builder.append(wiki.getDomain());
                     builder.append(" ===\n");
-                    ArrayList[] links = wiki.linksearch("*." + domain);
+                    List[] links = wiki.linksearch("*." + domain);
                     linknumber = links[0].size();
                     if (linknumber != 0)
                     {

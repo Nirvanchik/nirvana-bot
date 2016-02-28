@@ -2,20 +2,18 @@
  *  @(#)ContributionSurveyor.java 0.02 01/03/2011
  *  Copyright (C) 2011-2013 MER-C
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version 3
- *  of the License, or (at your option) any later version. Additionally
- *  this file is subject to the "Classpath" exception.
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software Foundation,
- *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  GNU Affero General Public License for more details.
+
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.wikipedia.tools;
@@ -44,8 +42,10 @@ public class ContributionSurveyor
         File out = null;
         String wikipage = null;
         String infile = null;
+        String category = null;
 
         // parse arguments
+        ArrayList<String> users = new ArrayList<>(1500);
         for (int i = 0; i < args.length; i++)
         {
             String arg = args[i];
@@ -62,6 +62,8 @@ public class ContributionSurveyor
                             + "Default: en.wikipedia.org.\n"
                         + "\t--outfile file\n\t\tSave results to file, shows a filechooser if not specified.\n"
                         + "\t--wikipage 'Main Page'\n\t\tFetch a list of users at the wiki page Main Page.\n"
+                        + "\t--category 'A category'\n\t\tFetch a list of users from the given category (recursive)."
+                        + "\t--user user\n\t\tSurvey the given user.\n"
                         + "\t--userspace\n\t\tSurvey userspace as well.\n");
 
                     System.exit(0);
@@ -70,6 +72,9 @@ public class ContributionSurveyor
                     break;
                 case "--infile":
                     infile = args[++i];
+                    break;
+                case "--user":
+                    users.add(args[++i]);
                     break;
                 case "--userspace":
                     userspace = true;
@@ -83,12 +88,31 @@ public class ContributionSurveyor
                 case "--wikipage":
                     wikipage = args[++i];
                     break;
+                case "--category":
+                    category = args[++i];
+                    break;
             }
         }
-        // file I/O
-        // file must contain list of users, one per line
-        ArrayList<String> users = new ArrayList<String>(1500);
-        if (wikipage == null)
+        
+        // fetch user list
+        if (!users.isEmpty())
+        {
+        }
+        else if (category != null)
+            users.addAll(Arrays.asList(homewiki.getCategoryMembers(category, true, Wiki.USER_NAMESPACE)));
+        else if (wikipage != null)
+        {
+            String[] list = ParserUtils.parseList(homewiki.getPageText(wikipage));
+            for (String temp : list)
+            {
+                if (homewiki.namespace(temp) == Wiki.USER_NAMESPACE)
+                {
+                    temp = temp.replaceFirst("^" + homewiki.namespaceIdentifier(Wiki.USER_NAMESPACE) + ":", "");
+                    users.add(temp);
+                }
+            }
+        }
+        else // file IO
         {
             BufferedReader in = null;
             if (infile == null)
@@ -108,19 +132,17 @@ public class ContributionSurveyor
             String line;
             while ((line = in.readLine()) != null)
             {
-                line = line.replaceFirst("^" + homewiki.namespaceIdentifier(Wiki.USER_NAMESPACE) + ":", "");
-                users.add(line);
+                if (homewiki.namespace(line) == Wiki.USER_NAMESPACE)
+                {
+                    // line = line.replace("[*#]\\s?\\[\\[:?", "");
+                    // line = line.replace("\\]\\]", "");
+                    line = line.replaceFirst("^" + homewiki.namespaceIdentifier(Wiki.USER_NAMESPACE) + ":", "");
+                    users.add(line);
+                }
             }
         }
-        else
-        {
-            String[] list = ParserUtils.parseList(homewiki.getPageText(wikipage));
-            for (String temp : list)
-            {
-                temp = temp.replaceFirst("^" + homewiki.namespaceIdentifier(Wiki.USER_NAMESPACE) + ":", "");
-                users.add(temp);
-            }
-        }
+
+        // output file
         if (out == null)
         {
             JFileChooser fc = new JFileChooser();
@@ -149,26 +171,26 @@ public class ContributionSurveyor
     public static void contributionSurvey(Wiki homewiki, String[] users, File output, boolean userspace, boolean images) throws IOException
     {
         FileWriter out = new FileWriter(output);
-        Wiki commons = new Wiki("commons.wikimedia.org");
         for (String user : users)
         {
             // determine if user exists; if so, stats
-            Wiki.User wpuser = homewiki.getUser(user);
-            int editcount = wpuser.countEdits();
-            if (wpuser == null)
-            {
-                System.out.println(user + " is not a registered user.");
-                continue;
-            }
             Wiki.Revision[] contribs = homewiki.contribs(user);
             out.write("===" + user + "===\n");
             out.write("*{{user5|" + user + "}}\n");
-            out.write("*Total edits: " + editcount + ", Live edits: " + contribs.length +
+            Wiki.User wpuser = homewiki.getUser(user);
+            if (wpuser != null)
+            {
+                int editcount = wpuser.countEdits();
+                out.write("*Total edits: " + editcount + ", Live edits: " + contribs.length +
                 ", Deleted edits: " + (editcount - contribs.length) + "\n\n");
+            }
+            else
+                System.out.println(user + " is not a registered user.");
 
             // survey mainspace edits
-            out.write("====Mainspace edits (" + user + ")====");
-            HashMap<String, StringBuilder> diffs = new HashMap<String, StringBuilder>(60);
+            if (images || userspace)
+                out.write("====Mainspace edits (" + user + ")====");
+            HashMap<String, StringBuilder> diffs = new HashMap<>(60);
             for (Wiki.Revision revision : contribs)
             {
                 String title = revision.getPage();
@@ -190,11 +212,11 @@ public class ContributionSurveyor
                     diffs.put(title, temp);
                 }
                 StringBuilder temp = diffs.get(title);
-                temp.append("{{dif|");
+                temp.append("[[Special:Diff/");
                 temp.append(revision.getRevid());
                 temp.append("|(+");
                 temp.append(size);
-                temp.append(")}}");
+                temp.append(")]]");
                 diffs.put(title, temp);
             }
             // spit out the results of the survey
@@ -226,29 +248,26 @@ public class ContributionSurveyor
             }
 
             // survey images
-            if (images)
+            if (images && wpuser != null)
             {
-                Wiki.User comuser = commons.getUser(user);
-                Wiki.LogEntry[] uploads = homewiki.getUploads(wpuser);
-                if (uploads.length > 0)
+                String[][] survey = imageContributionSurvey(homewiki, wpuser);
+                if (survey[0].length > 0)
                 {
                     out.write("====Local uploads (" + user + ")====\n");
-                    HashSet<String> list = new HashSet<String>(10000);
-                    for (int i = 0; i < uploads.length; i++)
-                        list.add((String)uploads[i].getTarget());
-                    out.write(ParserUtils.formatList(list.toArray(new String[list.size()])));
+                    out.write(ParserUtils.formatList(survey[0]));
                     out.write("\n");
                 }
-
-                // commons
-                uploads = commons.getUploads(comuser);
-                if (uploads.length > 0)
+                if (survey[1].length > 0)
                 {
                     out.write("====Commons uploads (" + user + ")====\n");
-                    HashSet<String> list = new HashSet<String>(10000);
-                    for (int i = 0; i < uploads.length; i++)
-                        list.add((String)uploads[i].getTarget());
-                    out.write(ParserUtils.formatList(list.toArray(new String[list.size()])));
+                    out.write(ParserUtils.formatList(survey[1]));
+                    out.write("\n");
+                }
+                if (survey[2].length > 0)
+                {
+                    out.write("====Transferred uploads (" + user + ")====\n");
+                    out.write("WARNING: may be inaccurate, depending on username.");
+                    out.write(ParserUtils.formatList(survey[2]));
                     out.write("\n");
                 }
             }
@@ -256,9 +275,51 @@ public class ContributionSurveyor
         // timestamp
         Date date = new GregorianCalendar(TimeZone.getTimeZone("UTC")).getTime();
         SimpleDateFormat df = new SimpleDateFormat("hh:mm:ss dd MMMM yyyy");
-        out.write("This report generated by [https://code.google.com/p/wiki-java ContributionSurveyor.java] on "
+        out.write("This report generated by [https://github.com/MER-C/wiki-java ContributionSurveyor.java] on "
             + df.format(date) + " (UTC).");
         out.flush();
         out.close();
+    }
+    
+    /**
+     *  Performs an image contribution survey on a user.
+     *  @param homewiki a wiki
+     *  @param user a user on that wiki
+     *  @return first element = local uploads, second element = uploads on Wikimedia
+     *  Commons by the user, third element = images transferred to Commons (may
+     *  be inaccurate depending on username).
+     *  @throws IOException if a network error occurs
+     */
+    public static String[][] imageContributionSurvey(Wiki homewiki, Wiki.User user) throws IOException
+    {
+        // fetch local uploads
+        HashSet<String> localuploads = new HashSet<>(10000);
+        for (Wiki.LogEntry upload : homewiki.getUploads(user))
+            localuploads.add(upload.getTarget());
+        
+        // fetch commons uploads
+        Wiki commons = new Wiki("commons.wikimedia.org");
+        Wiki.User comuser = commons.getUser(user.getUsername());
+        HashSet<String> comuploads = new HashSet<>(10000);
+        if (comuser != null)
+            for (Wiki.LogEntry upload : commons.getUploads(user))
+                comuploads.add(upload.getTarget());
+        
+        // fetch transferred commons uploads
+        HashSet<String> commonsTransfer = new HashSet<>(10000);
+        String[][] temp = commons.search("\"" + user + "\"", Wiki.FILE_NAMESPACE);
+        for (String[] x : temp)
+            commonsTransfer.add(x[0]);
+
+        // remove all files that have been reuploaded to Commons
+        localuploads.removeAll(comuploads);
+        localuploads.removeAll(commonsTransfer);
+        commonsTransfer.removeAll(comuploads);
+        
+        return new String[][] {
+            localuploads.toArray(new String[localuploads.size()]),
+            comuploads.toArray(new String[comuploads.size()]),
+            commonsTransfer.toArray(new String[commonsTransfer.size()])
+        };
     }
 }
