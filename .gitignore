@@ -1,0 +1,14 @@
+
+*.tmp
+*.TMP
+
+/report*.txt
+/loginNirvanaBot.xml
+
+/report/*
+/tmp/*
+/log/*
+/lib/*
+/dump/*
+/cache/*
+/bin/*
