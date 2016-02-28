@@ -96,8 +96,6 @@ public class NirvanaBot extends NirvanaBasicBot{
 	
 	private static boolean GENERATE_REPORT = false;
 	private static boolean UPDATE_STATUS = false;
-	private static boolean MERGE_FILE_REPORT = false;
-	private static boolean MERGE_WIKI_REPORT = true;
 	private static String REPORT_FILE_NAME = "report.txt";
 	private static String REPORT_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Отчёт";
 	private static String STATUS_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Статус";
@@ -1139,7 +1137,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 			errors.add(String.format(ERROR_ABSENT_PARAMETER_RU,"статья"));
 			retval = false;
 		}
-		return true;
+		return retval;
 	}
 	
 	private boolean itsTimeToUpdate(PortalParam param) {

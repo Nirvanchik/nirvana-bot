@@ -33,9 +33,6 @@ import javax.security.auth.login.LoginException;
 
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.statistics.ArchiveDatabase2;
-import org.wikipedia.nirvana.statistics.ArchiveItem;
-import org.wikipedia.nirvana.statistics.ArchiveDatabase2.JsonDb;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;

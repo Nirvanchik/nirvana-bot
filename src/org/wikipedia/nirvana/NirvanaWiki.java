@@ -32,7 +32,6 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -419,31 +418,6 @@ public class NirvanaWiki extends Wiki {
 	    return r;
 	}
 	
-	private class ContribsIterator implements Iterator<Revision[]> {
-    	private boolean endReached = false;
-    	private String user;
-
-		@Override
-        public boolean hasNext() {
-	        return !endReached;
-        }
-
-		@Override
-        public Revision[] next() {	        
-	        return null;
-        }
-
-		@Override
-        public void remove() {
-	        //throw new OperationNotSupportedException();	        
-        }
-		
-		public ContribsIterator(String user) {
-			this.user = user;
-		}
-    	
-    }
-
     public boolean exists(String title) throws IOException
     {
         return exists(new String[] { title })[0];
