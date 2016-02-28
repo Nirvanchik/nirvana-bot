@@ -126,7 +126,7 @@ public class NewPagesWithImages extends NewPages {
             	//FileTools.dump(article, "dump", page.getPage());
             }
             String image = imageFinder.findImage(wiki, commons, article);
-            if(image!=null) {	
+            if (image != null && checkImageFree(wiki, image)) {	
             	//log.debug("found pattern");
             	//String image = m.group("filename").trim();	                	
             	log.debug("image found = "+image);
@@ -268,5 +268,27 @@ public class NewPagesWithImages extends NewPages {
 		
 		return d;
 	}
+
+	/**
+     * We have no power to add thumbnails of images which are non-free (fair use of images)
+     * So we check for fair-use templates in image description before using it.
+     * 
+     * @return true if image looks like free (doesn't have a description with fair use template)
+     */
+    private boolean checkImageFree(NirvanaWiki wiki, String image) {
+    	String text = null;
+    	try {
+	        text = wiki.getPageText(wiki.namespaceIdentifier(NirvanaWiki.FILE_NAMESPACE)+":"+image);
+        } catch (IOException e) {	        
+        }
+    	if (text == null) {
+    		return true;
+    	}
+    	if (text.contains("{{Обоснование добросовестного использования") || text.contains("{{Disputed-fairuse") || 
+    			text.contains("{{ОДИ") || text.contains("{{Несвободный файл/ОДИ")) {
+    		return false;
+    	}
+	    return true;
+    }
 
 }
