@@ -16,6 +16,7 @@
 <entry key="default-maxitems">20</entry>
 <entry key="default-comment">обновление</entry>
 <entry key="picture-search-tags">image file,Фото,портрет,Изображение</entry>
+<entry key="fair-use-image-templates">Обоснование добросовестного использования, Disputed-fairuse, ОДИ, Несвободный файл/ОДИ</entry>
 <entry key="error-notification">no</entry>
 <entry key="debug-mode">yes</entry>
 <entry key="update-limit">0</entry>
