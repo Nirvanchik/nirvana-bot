@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaBot.java 1.11 14.12.2014
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)NirvanaBot.java 1.12 03.09.2015
+ *  Copyright © 2011 - 2015 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@ import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInBody;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInCard;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderUniversal;
+import org.wikipedia.nirvana.nirvanabot.tmplfinder.TemplateFindItem;
 
 /**
  * @author kin
@@ -78,6 +79,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static final String ERROR_PARAMETER_HAS_MULTIPLE_VALUES_RU = "Для параметра \"%1$s\" дано несколько значений. Использовано значение по умолчанию.";
 	private static final String ERROR_INVALID_PARAMETER = "Error in parameter \"%1$s\". Invalid value (%2$s).";
 	private static final String ERROR_INVALID_PARAMETER_RU = "Ошибка в параметре \"%1$s\". Задано неправильное значение (%2$s).";
+	private static final String ERROR_PARAMETER_NOT_ACCEPTED_RU = "Значение параметра не принято.";
 	private static final String ERROR_ABSENT_PARAMETER_RU = "Ошибка в параметрах. Параметр \"%1$s\" не задан";
 	//private static final String ERROR_NO_CATEGORY = "Ошибка в параметрах. Категории не заданы (см. параметр категория/категории).";
 	//private static final String ERROR_NO_ARTICLE = "Ошибка в параметрах. Параметр \"статья\" не задан.";
@@ -166,9 +168,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 	}
 	
 	public static String PROGRAM_INFO = 
-			"NirvanaBot v1.11 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
+			"NirvanaBot v1.12 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
 			"See also http://ru.wikipedia.org/User:NirvanaBot\n" +
-			"Copyright (C) 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)\n" +
+			"Copyright (C) 2011-2015 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)\n" +
 			"\n";
 			
 	public void showInfo() {
@@ -907,6 +909,15 @@ public class NirvanaBot extends NirvanaBasicBot{
 			}
 		}
 		
+		key = "шаблоны с параметром";
+		if (options.containsKey(key)) {			
+			String option = options.get(key);
+			if (!option.isEmpty()) {
+				log.debug("param 'templates with parameter' detected");
+				param.templatesWithData = parseTemplatesWithData(option, data.errors);	
+			}
+		}
+		
 		param.format = DEFAULT_FORMAT;
 		key = "формат элемента";
 		if (options.containsKey(key) && !options.get(key).isEmpty())
@@ -1080,6 +1091,23 @@ public class NirvanaBot extends NirvanaBasicBot{
 		return (data.portalModule != null);
 	}
 	
+	/**
+     * @param option
+     * @return
+     */
+    private List<TemplateFindItem> parseTemplatesWithData(String option, List<String> errors) {
+    	List<TemplateFindItem> templateDataItems = new ArrayList<>();
+    	List<String> items = optionToStringArray(option, true, ",");
+    	for (String item : items) {
+    		try {
+	            templateDataItems.add(TemplateFindItem.parseTemplateFindData(item));
+            } catch (BadFormatException e) {
+            	errors.add(String.format(ERROR_INVALID_PARAMETER_RU + ERROR_PARAMETER_NOT_ACCEPTED_RU, "шаблоны с параметром", item));
+            }
+    	}
+	    return templateDataItems;
+    }
+
 	/**
      * @param type
      * @return

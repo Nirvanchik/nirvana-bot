@@ -382,89 +382,12 @@ public class NirvanaBasicBot {
 		}
 		recognizeTemplate = "("+userEn+"|"+userLc+")"+recognizeTemplate.replace("(", "\\(").replace(")", "\\)");
 		// We don't start from ^ because we allow any text before template
-        String str = "(\\{\\{"+recognizeTemplate+")(.+)$"; // GOOD
-        log.debug("pattern = "+str);
-        Pattern pattern = Pattern.compile(str,Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
-        Matcher m = pattern.matcher(text);
-        if (!m.find())
-        {
-        	log.error("portal settings parse error (doesn't match pattern)");
-            return false;
-        }
-        
-        log.debug("group count = "+m.groupCount());
-        
-        int level = 1;
-        int begin = m.end(1);
-        int end = -1;
-        for (int i = begin; i < text.length() - 1; ++i)
-        {
-            if (text.charAt(i) == '{' && text.charAt(i+1) == '{')
-            {
-                ++level;
-            }
-            else if (text.charAt(i) == '}' && text.charAt(i+1) == '}')
-            {
-                --level;
-                if (level == 0)
-                {
-                    end = i;
-                    break;
-                }
-            }
-        }
+		
+		if (!WikiUtils.parseTemplate(recognizeTemplate, text, parameters, splitByNewLine)) {
+			log.error("portal settings parse error");
+			return false;
+		}
 
-        if (end == -1)
-        {
-            return false;
-        }
-        Pattern commentPattern = Pattern.compile("<!--(.+?)-->");
-        
-        String parameterString = text.substring(begin, end);
-        String splitParam = "\\|";
-        if (splitByNewLine) {
-        	splitParam = "\\n\\s*\\|";
-        }
-        String[] ps = parameterString.split(splitParam);
-        
-        String lastKey = "";
-        String lastVal = "";
-        for(int i =0;i<ps.length;i++) {
-        	String p = ps[i];
-        	//log.debug("checking string: "+p);
-        	boolean newStringToLastVal = false;
-        	int count = StringTools.howMany(p, '=');
-        	if(count==0 && i==0) continue;
-        	if(!lastVal.isEmpty() && lastVal.endsWith("{")) { // {| означает начало таблицы
-        		newStringToLastVal = true;        		
-        	} else if(count>0) {
-        		int eq = p.indexOf('=');
-        		String first = p.substring(0,eq); 
-        		String last = p.substring(eq+1);
-        		String key = first.trim().toLowerCase();
-        		if(key.equals("align") || key.equals("style")) {
-        			newStringToLastVal = true;
-        		} else {
-	        		Matcher mComment = commentPattern.matcher(last);
-	            	String value = mComment.replaceAll("").trim();
-	        		parameters.put(key, value);
-	                lastKey = key;        	
-	                lastVal = value;
-        		}
-        	} else {
-        		if (!lastKey.isEmpty())
-                {
-        			newStringToLastVal = true;                	
-                }
-        	}  
-        	if(newStringToLastVal) {
-        		Matcher mkey = commentPattern.matcher(p);
-                String value = mkey.replaceAll("").trim();
-                //parameters[lastKey] = parameters[lastKey] + "|" + value;
-                lastVal = parameters.get(lastKey)+"|"+value;
-                parameters.put(lastKey, lastVal);
-        	}
-        }
         parameters.put("BotTemplate", template);
         log.debug("portal settings parse finished");
         return true;

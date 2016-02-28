@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
+import org.wikipedia.nirvana.nirvanabot.tmplfinder.TemplateFindItem;
 
 /**
  * @author kin
@@ -58,6 +59,7 @@ public class PortalParam {
 	public String imageSearchTags;
 	public int updatesPerDay;
 	public List<String> templates;
+	public List<TemplateFindItem> templatesWithData;
 	public WikiTools.EnumerationType templatesEnumType;
 	public String prefix;
 	
@@ -74,7 +76,6 @@ public class PortalParam {
 	
 	public static final int RENAMED_OLD = 1;
 	public static final int RENAMED_NEW = 2;
-	//public static final int RENAMED_MARK = 4;
 	
 	public PortalParam() {
 		lang = "ru";

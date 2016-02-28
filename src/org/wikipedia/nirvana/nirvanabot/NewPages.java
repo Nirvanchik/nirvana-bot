@@ -63,6 +63,8 @@ import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessorFast;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessorSlow;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
+import org.wikipedia.nirvana.nirvanabot.tmplfinder.TemplateFindItem;
+import org.wikipedia.nirvana.nirvanabot.tmplfinder.TemplateFinder;
 
 /**
  * @author kin
@@ -116,6 +118,8 @@ public class NewPages implements PortalModule{
     
     protected String currentUser = null;
     
+    protected List<TemplateFindItem> templatesWithData = null;
+    
     static {
     	log = org.apache.log4j.Logger.getLogger(NewPages.class);
     }
@@ -166,6 +170,7 @@ public class NewPages implements PortalModule{
     	this.renamedFlag = param.renamedFlag;
     	this.service = param.service;
     	this.fastMode = param.fastMode;
+    	this.templatesWithData = param.templatesWithData;
     	
     	log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
     	log.debug("Portal module created for portal subpage [["+this.pageName+"]]");
@@ -490,12 +495,28 @@ public class NewPages implements PortalModule{
 		}
 		ArrayList<Revision> pageInfoList = pageListProcessor.getNewPages(wiki);
 		
+		pageInfoList = filterPagesByCondition(pageInfoList, wiki);
+		
 		sortPages(pageInfoList, pageListProcessor.revisionAvailable());		
 	
 		if(pageListProcessor.mayHaveDuplicates()) {
 			removeDuplicatesInSortedList(pageInfoList);
 		}
 		return pageInfoList;
+	}
+	
+	protected ArrayList<Revision> filterPagesByCondition(ArrayList<Revision> pageInfoList, NirvanaWiki wiki) throws IOException {
+		if (this.templatesWithData == null || templatesWithData.size() == 0) {
+			return pageInfoList;
+		}
+		ArrayList<Revision> list = new ArrayList<Revision>();
+		TemplateFinder finder = new TemplateFinder(templatesWithData.toArray(new TemplateFindItem[0]), wiki);
+		for (Revision r: pageInfoList) {
+			if (finder.find(r.getPage())) {
+				list.add(r);
+			}
+		}
+		return list;
 	}
 	
 	protected String trimRight(String text, String right) {
