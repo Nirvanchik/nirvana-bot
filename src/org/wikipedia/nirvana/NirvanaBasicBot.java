@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaBasicBot.java 10.12.2014
- *  Copyright © 2012-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)NirvanaBasicBot.java 27.12.2015
+ *  Copyright © 2012-2015 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,14 +32,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.security.auth.login.FailedLoginException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -47,10 +46,25 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.PropertyConfigurator;
 
 /**
- * @author kin
- *
+ * How to use this bot framework?
+ * 1) CONFIG
+ * Write your config file in xml: config.xml
+ * You may choose another file name, but specify it in command line when starting the bot:
+ * java - <package_name_of_your_bot>.<YourBotClassName> <your_config_file_name>.xml
+ * If you have special properties, load them in redefined {@link loadCustomProperties()}
+ * Use {@link properties} to load your properties
+ * 2) Bot INFO, LICENSE, USAGE
+ * Redefine {@link showLicense()} if your prefer license other than GNU GPL
+ * Redefine {@link showInfo()}. Redefine {@link showUsage()}.
+ * 3) CONSTRUCTOR
+ * Write your constructor and pass int flags to default constructor
+ * 4) GO
+ * Implement the body of {@link go()} - the main code of what your bot
+ * 5) MAIN
+ * Implement <code>public static void main()</code> where create your bot instance with specified flags
+ * and call {@link run()} to run bot.
  */
-public class NirvanaBasicBot {
+public abstract class NirvanaBasicBot {
 	public static final int FLAG_SHOW_LICENSE = 0b01;
 	public static final int FLAG_CONSOLE_LOG = 0b010;
 	protected static final boolean DEBUG_BUILD = false;
@@ -63,9 +77,13 @@ public class NirvanaBasicBot {
 	public static final String NO = "no";
 	
 	protected int MAX_LAG = 15;
+	protected int THROTTLE_TIME_MS = 10000;
 	
 	protected NirvanaWiki wiki;
 	protected String LANGUAGE= "ru";
+	protected String DOMAIN = ".wikipedia.org";
+	protected String SCRIPT_PATH = "/w";
+	protected String PROTOCOL = "https://";
 	protected String COMMENT = "обновление";
 	protected int flags = 0;
 	
@@ -102,11 +120,7 @@ public class NirvanaBasicBot {
 		this.flags = flags;
 	}
 
-	
-	public static NirvanaBasicBot createBot() {
-		return new NirvanaBasicBot();
-	}
-	
+
 	public int getFlags() {
 		return flags;
 	}
@@ -131,7 +145,7 @@ public class NirvanaBasicBot {
 	    HashMap<String,String> params = new HashMap<String,String>();
 	    for(int i=1;i<args.length;i++) {
 	    	if(!args[i].startsWith("-")) continue;
-	    	String [] parts = args[i].substring(1).split("=",2);
+	    	String [] parts = args[i].substring(1).split("=", 2);
 	    	String left = parts[0];
 	    	String right = "1";
 	    	if(parts.length == 2) {
@@ -142,12 +156,14 @@ public class NirvanaBasicBot {
 	    return params;
     }
 	/**
-	 * @param args
+	 * this is an example of main function
 	 */
+    /**
 	public static void main(String[] args) {
-		NirvanaBasicBot bot = createBot();
+		NirvanaBasicBot bot = new NirvanaBasicBot(FLAG_CONSOLE_LOG);
 		bot.run(args);
-	}
+	}*/
+    
 	public String getConfig(String[] args) {
 		String configFile = null;
 		if(args.length==0) {
@@ -220,20 +236,33 @@ public class NirvanaBasicBot {
 		
 		log.info("login="+login+",password=(not shown)");
 		
-		LANGUAGE = properties.getProperty("wiki-lang",LANGUAGE);
-		log.info("language="+LANGUAGE);
+		LANGUAGE = properties.getProperty("wiki-lang", LANGUAGE);
+		log.info("language=" + LANGUAGE);
+		DOMAIN = properties.getProperty("wiki-domain", DOMAIN);
+		log.info("domain=" + DOMAIN);
+		PROTOCOL = properties.getProperty("wiki-protocol", PROTOCOL);
+		log.info("protocol=" + PROTOCOL);
 		COMMENT = properties.getProperty("update-comment",COMMENT);
+		MAX_LAG = Integer.valueOf(properties.getProperty("wiki-maxlag", String.valueOf(MAX_LAG)));
+		THROTTLE_TIME_MS = Integer.valueOf(properties.getProperty("wiki-throttle", String.valueOf(THROTTLE_TIME_MS)));
 		log.info("comment="+COMMENT);
 		DEBUG_MODE = properties.getProperty("debug-mode",DEBUG_MODE?YES:NO).equals(YES);
 		log.info("DEBUG_MODE="+DEBUG_MODE);
 		
 		
-		loadCustomProperties(launch_params);
+		if (!loadCustomProperties(launch_params)) {
+			log.fatal("Failed to load all required properties. Exiting...");
+			return;
+		}
+		String domain = DOMAIN;
+		if (domain.startsWith(".")) {
+			domain = LANGUAGE + DOMAIN;
+		}
+		wiki = new NirvanaWiki( domain, SCRIPT_PATH, PROTOCOL );
 		
-		wiki = new NirvanaWiki( LANGUAGE + ".wikipedia.org" );
-		wiki.setMaxLag( MAX_LAG );
-		wiki.setThrottle(5000);
-		log.info("login to "+LANGUAGE+ ".wikipedia.org, login: "+login+", password: (not shown)");
+		configureWikiBeforeLogin();
+		
+		log.info("login to " + domain + ", login: "+login+", password: (not shown)");
 		try {
 			wiki.login(login, pw.toCharArray());
 		} catch (FailedLoginException e) {
@@ -246,7 +275,7 @@ public class NirvanaBasicBot {
 		}
 		
 		if(DEBUG_MODE) {
-			wiki.setDumpMode("dump");
+			wiki.setDumpMode();
 		}	
 		
 		log.warn("BOT STARTED");
@@ -257,10 +286,15 @@ public class NirvanaBasicBot {
 		log.warn("EXIT");
 	}
 	
-	protected void go() {
-		log.info("This is a basic bot framework");
-		log.info("It doesn't have any practical use, but can be utilized as a basis to create a new Bot");
-	}
+	/**
+     * 
+     */
+    protected void configureWikiBeforeLogin() {
+		wiki.setMaxLag( MAX_LAG );
+		wiki.setThrottle(THROTTLE_TIME_MS);
+    }
+
+	protected abstract void go();
 	
 	protected boolean loadCustomProperties(Map<String,String> launch_params) {
 		return true;
@@ -317,12 +351,21 @@ public class NirvanaBasicBot {
 	}
 	
 	public static boolean textOptionsToMap(String text, Map<String, String> parameters)
+    {		
+		return textOptionsToMap(text, parameters, "#", "//");
+    }
+	
+	public static boolean textOptionsToMap(String text, Map<String, String> parameters, String... commentSeparators)
     {
 		String lines[] = text.split("\r|\n");
-		log.debug("Archive settings");
 		for(String line: lines) {			
 			if(line.trim().isEmpty()) continue;
 			log.debug(line);
+			if (commentSeparators != null && commentSeparators.length > 0) {
+				if (StringUtils.startsWithAny(line.trim(), commentSeparators)) {
+					continue;
+				}
+			}
 			int index = line.indexOf("=");
 			if(index<0) return false;
 			parameters.put(line.substring(0,index).trim(), line.substring(index+1).trim());
@@ -337,6 +380,10 @@ public class NirvanaBasicBot {
 			Entry<String,String> next = it.next();
 			log.debug(next.getKey()+" = "+next.getValue());
 		}
+	}
+	
+	protected static ArrayList<String> optionToStringArray(String option) {
+		return optionToStringArray(option, false, ",");
 	}
 	
 	protected static ArrayList<String> optionToStringArray(String option, boolean withDQuotes) {

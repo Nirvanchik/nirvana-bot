@@ -171,7 +171,7 @@ public class Statistics {
 		totalUserStat = new HashMap<String,Integer>(200);
 		createTotal();
 		String ini = iniFolder+"\\"+type+".ini";
-		String file = FileTools.readFile(ini);
+		String file = FileTools.readFileSilently(ini);
 		if(file==null) {
 			log.error("file "+ini +" not found");
 			throw new FileNotFoundException(ini);

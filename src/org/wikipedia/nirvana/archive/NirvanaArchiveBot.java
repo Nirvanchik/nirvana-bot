@@ -81,7 +81,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 		// ~6) подвал
 		
 		
-		String task = FileTools.readFile(TASK_LIST_FILE);
+		String task = FileTools.readFileSilently(TASK_LIST_FILE);
 		
 		if(task==null)
 			return;

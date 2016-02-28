@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -147,28 +148,14 @@ public class FileTools {
 	    return text.toString();
 	}
 	
-	public static String readFile(String fileName) {
-		return readFile(fileName, DEFAULT_ENCODING);
+	public static String readFileSilently(String fileName) {
+		return readFileSilently(fileName, DEFAULT_ENCODING);
 	}
 	
-	public static String readFile(String fileName, String encoding) {
+	public static String readFileSilently(String fileName, String encoding) {
 		String text = null;
-		File file = new File(fileName);		
-		
 		try {
-	        StringBuilder sb = new StringBuilder(10000);
-	        FileInputStream fis = new FileInputStream(file);
-	        InputStreamReader reader = new InputStreamReader(fis, encoding);
-	        char buf[] = new char[1000];
-	        while (true) {
-	            int readCount = reader.read(buf);
-	            if (readCount < 0) {
-	              break;
-	            }
-	            sb.append(buf, 0, readCount);
-	          }
-	        text = sb.toString();
-			reader.close();			
+	        text = readFile(fileName, encoding);			
 		} catch (FileNotFoundException e) {
 			logE(e);	
 		} catch (UnsupportedEncodingException e) {
@@ -180,11 +167,49 @@ public class FileTools {
 		return text;
 	}
 	
-	public static String [] readFileToList(String fileName, boolean removeEmpty) {
-		return readFileToList(fileName, DEFAULT_ENCODING, removeEmpty);
+	public static String readFile(String fileName) throws IOException {
+		return readFile(fileName, DEFAULT_ENCODING);
 	}
 	
-	public static String [] readFileToList(String fileName, String encoding, boolean removeEmpty) {
+	public static String readFile(String fileName, String encoding) throws IOException {
+		String text = null;
+		File file = new File(fileName);		
+		
+        StringBuilder sb = new StringBuilder(10000);
+        FileInputStream fis = new FileInputStream(file);
+        InputStreamReader reader = new InputStreamReader(fis, encoding);
+        char buf[] = new char[1000];
+        while (true) {
+            int readCount = reader.read(buf);
+            if (readCount < 0) {
+              break;
+            }
+            sb.append(buf, 0, readCount);
+          }
+        text = sb.toString();
+        reader.close();
+		return text;
+	}
+	
+	@Deprecated
+	public static String [] readFileToArray(String fileName, boolean removeEmpty) {
+		return readFileToArray(fileName, DEFAULT_ENCODING, removeEmpty);
+	}
+
+	public static List<String> readFileToList(String fileName) {
+		return readFileToList(fileName, DEFAULT_ENCODING, true);
+	}
+	
+	public static List<String> readFileToList(String fileName, boolean removeEmpty) {
+		return readFileToList(fileName, DEFAULT_ENCODING, removeEmpty);
+	}
+
+	@Deprecated
+	public static String [] readFileToArray(String fileName, String encoding, boolean removeEmpty) {
+		return readFileToList(fileName, encoding, removeEmpty).toArray(new String[0]);
+	}
+
+	public static List<String> readFileToList(String fileName, String encoding, boolean removeEmpty) {
 		File file = new File(fileName);
 		ArrayList<String> items = new ArrayList<String>(5000);
 		try {
@@ -207,6 +232,6 @@ public class FileTools {
 			e.printStackTrace();
 			return null;
 		}
-		return items.toArray(new String[0]);
+		return items;
 	}
 }

@@ -82,8 +82,8 @@ public class ListTools {
 			out = "out_"+cmd.toString()+".txt";			
 		}
 		
-		String lines1[] = FileTools.readFileToList(list1, FileTools.UTF8, true);
-		String lines2[] = FileTools.readFileToList(list2, FileTools.UTF8, true);
+		String lines1[] = FileTools.readFileToArray(list1, FileTools.UTF8, true);
+		String lines2[] = FileTools.readFileToArray(list2, FileTools.UTF8, true);
 		//String lines1[] = FileTools.readFileToList(list1);
 		//String lines2[] = FileTools.readFileToList(list2);
 		if(lines1==null || lines1.length==0) return;

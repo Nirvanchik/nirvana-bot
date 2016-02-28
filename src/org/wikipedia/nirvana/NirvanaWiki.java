@@ -39,6 +39,7 @@ import java.util.zip.GZIPInputStream;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.wikipedia.Wiki;
 
 /**
@@ -47,6 +48,8 @@ import org.wikipedia.Wiki;
  */
 public class NirvanaWiki extends Wiki {
 	
+	protected static final String DEFULT_DUMP_FOLDER = "dump";
+	
     private static final long serialVersionUID = -8745212681497644127L;
 
 	private static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(NirvanaWiki.class.getName());	
@@ -54,11 +57,8 @@ public class NirvanaWiki extends Wiki {
 	private boolean dumpMode = false;
 	private String dumpFolder = "dump";
 	private boolean logDomain = false;
-	/**
-	 * 
-	 */
-	public NirvanaWiki() {
-	}
+	//rev_comment` varbinary(767) NOT NULL, Summaries longer than 200 characters are
+    //*  truncated server-side.
 
 	/**
 	 * @param domain
@@ -66,7 +66,7 @@ public class NirvanaWiki extends Wiki {
 	public NirvanaWiki(String domain) {
 		super(domain);
 	}
-
+	
 	/**
 	 * @param domain
 	 * @param scriptPath
@@ -74,14 +74,19 @@ public class NirvanaWiki extends Wiki {
 	public NirvanaWiki(String domain, String scriptPath) {
 		super(domain, scriptPath);
 	}
+
+	public NirvanaWiki(String domain, String scriptPath, String protocol) {
+		super(domain, scriptPath, protocol);
+	}
 	
+
 	public void setDumpMode(String folder) {
 		dumpMode = true;
 		dumpFolder = folder;
 	}
 	
 	public void setDumpMode() {
-		dumpMode = true;
+		setDumpMode(DEFULT_DUMP_FOLDER);
 	}
 	
 	/**
@@ -425,6 +430,39 @@ public class NirvanaWiki extends Wiki {
     
     public Revision[] getPageHistory(String title, Calendar start, Calendar end) throws IOException {
     	return getPageHistory(title, start, end, false);
+    }
+    
+    public String prefixedName(int namespace, String name) throws IOException {
+    	assert namespace != Wiki.MAIN_NAMESPACE;
+    	return namespaceIdentifier(namespace) + ":" + name;
+    }
+    
+    public String getPageTextBefore(String title, Calendar c) throws IOException
+    {
+        // pitfall check
+        if (namespace(title) < 0)
+            throw new UnsupportedOperationException("Cannot retrieve Special: or Media: pages!");
+        
+        Revision revs[] = getPageHistory(title, null, c, false);
+        if (revs.length == 0) {
+        	return null;
+        }
+        Revision r = revs[0];        
+        return r.getText();
+    }
+    
+    public Revision getPageRevisionBefore(String title, Calendar c) throws IOException
+    {
+        // pitfall check
+        if (namespace(title) < 0)
+            throw new UnsupportedOperationException("Cannot retrieve Special: or Media: pages!");
+        
+        Revision revs[] = getPageHistory(title, null, c, false);
+        if (revs.length == 0) {
+        	return null;
+        }
+        Revision r = revs[0];  
+        return r;
     }
 
 }

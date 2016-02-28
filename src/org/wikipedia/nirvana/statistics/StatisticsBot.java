@@ -150,7 +150,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 		
 		String [] tasks = null;
 		if(TASK) {			
-			 tasks = FileTools.readFileToList(TASK_LIST_FILE,true);
+			 tasks = FileTools.readFileToArray(TASK_LIST_FILE, true);
 			 if (tasks == null) {
 				 return;
 			 }

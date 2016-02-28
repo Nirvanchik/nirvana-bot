@@ -108,12 +108,35 @@ public class DateTools {
 		return sdf.format(date);
 	}
 	
+	public static Calendar parseSimpleDate(String dateStr) {
+		Calendar c = null;
+		DateFormat formatter1; 
+		Date date;		 
+		formatter1 = new SimpleDateFormat("yyyy-MM-dd'T'");
+		try {
+			date = (Date)formatter1.parse(dateStr);
+			c = Calendar.getInstance();
+    		c.setTime(date);		    
+		} catch (ParseException e) {
+			
+		}
+		return c;
+	}
+	
+	public static Calendar parseTimeStampOrSimpleDate(String dateStr) {
+		Calendar c = parseDate(dateStr);
+		if (c == null) {
+			c = parseSimpleDate(dateStr);
+		}
+		return c;
+	}
+	
 	public static Calendar parseDate(String dateStr) {		
 		Calendar c = null;
 		DateFormat formatter1,formatter2; 
 		Date date;		 
 		formatter1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		formatter2 = new SimpleDateFormat("EEE MMM d HH:mm:ss z yyyy",Locale.ENGLISH);
+		formatter2 = new SimpleDateFormat("EEE MMM d HH:mm:ss z yyyy", Locale.ENGLISH);
 		try {
 			date = (Date)formatter1.parse(dateStr);
 			c = Calendar.getInstance();

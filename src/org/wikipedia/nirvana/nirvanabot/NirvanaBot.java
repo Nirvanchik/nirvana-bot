@@ -66,8 +66,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 	
 	public static String TIME_FORMAT = "short"; // short,long
 	
-	private static boolean TASK = false;
-	private static String TASK_LIST_FILE = "task.txt";
+	private boolean TASK = false;
+	private String TASK_LIST_FILE = "task.txt";
 	
 	private String newpagesTemplates[] = null;
 	
@@ -475,7 +475,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     		String [] tasks = null;
     		if(TASK) {	
     			log.info("reading tasks from file: "+TASK_LIST_FILE);
-    			tasks = FileTools.readFileToList(TASK_LIST_FILE, true);
+    			tasks = FileTools.readFileToArray(TASK_LIST_FILE, true);
     			if (tasks == null) {
     				return;
     			}

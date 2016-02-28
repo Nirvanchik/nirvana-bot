@@ -114,4 +114,16 @@ public class StringTools {
     	return text.length()>len?text.substring(0,len):text;
     }
     
+    public static boolean startsWithAnyChar(String text, String chars) {
+    	if (chars == null || chars.isEmpty()) {
+    		return false;
+    	}
+    	for (char ch:chars.toCharArray()) {
+    		if (text.charAt(0) == ch) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
 }

@@ -88,7 +88,7 @@ public class UserStatBot extends NirvanaBasicBot {
 	protected void go() {
 		//log.info("Bot");
 		
-		String tasks[] = FileTools.readFileToList(TASK_LIST_FILE, true);
+		String tasks[] = FileTools.readFileToArray(TASK_LIST_FILE, true);
 		
 		if(tasks==null) {
 			return;

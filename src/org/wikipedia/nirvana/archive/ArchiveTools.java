@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,7 +85,7 @@ public class ArchiveTools {
 		
 		log.log(Level.INFO, "processing file: "+in);
 		String out = "out.txt";
-		String pages[] = FileTools.readFileToList(args[0], FileTools.UTF8, true);
+		String pages[] = FileTools.readFileToArray(args[0], FileTools.UTF8, true);
 		wiki = new Wiki( "ru.wikipedia.org" );
 		wiki.setMaxLag( 15 );
 		//print( "db lag (seconds): " + wiki.getCurrentDatabaseLag() );
@@ -104,7 +105,7 @@ public class ArchiveTools {
 		//wiki.lo
 
 		int i = 0;
-		HashMap results[];
+		Map results[];
 		//Page pagesWithInfo[] = new Page[pages.length];
 		ArrayList<Page> pagesWithInfo = new ArrayList<Page>(100000);
 		while(i<pages.length) {
@@ -121,7 +122,7 @@ public class ArchiveTools {
 	            wiki.logout();
 	            return;
             }
-			for (HashMap info:results) {
+			for (Map info:results) {
 				long pageId = (Long)info.get("pageid");
 				String pageName = (String) info.get("displaytitle");
 				//if (pageId>0) {

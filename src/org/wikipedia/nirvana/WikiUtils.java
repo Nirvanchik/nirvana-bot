@@ -33,23 +33,13 @@ import java.util.regex.Pattern;
  */
 public class WikiUtils {
 	protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(WikiUtils.class.getName());
-
-	public static boolean parseTemplate(String templateRegex, String text, Map<String, String> parameters, boolean splitByNewLine) {
-        String str = "(\\{\\{"+templateRegex+")(.+)$"; // GOOD
-        log.debug("pattern = "+str);
-        Pattern pattern = Pattern.compile(str,Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
-        Matcher m = pattern.matcher(text);
-        if (!m.find())
-        {
-        	//log.error("portal settings parse error (doesn't match pattern)");
-            return false;
-        }
-        
-        log.debug("group count = "+m.groupCount());
-        
-        int level = 1;
-        int begin = m.end(1);
+	
+	private static final Pattern COMMENT_PATTERN = Pattern.compile("<!--(.+?)-->");
+	
+	public static int findMatchingBraceOfTemplate(String text, int start) {
+		int begin = start;
         int end = -1;
+        int level = 1;
         for (int i = begin; i < text.length() - 1; ++i)
         {
             if (text.charAt(i) == '{' && text.charAt(i+1) == '{')
@@ -66,12 +56,27 @@ public class WikiUtils {
                 }
             }
         }
+        return end;
+	}
 
-        if (end == -1)
+	public static boolean parseTemplate(String templateRegex, String text, Map<String, String> parameters, boolean splitByNewLine) {
+        String str = "(\\{\\{"+templateRegex+")(.+)$"; // GOOD
+        log.debug("pattern = "+str);
+        Pattern pattern = Pattern.compile(str,Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+        Matcher m = pattern.matcher(text);
+        if (!m.find())
         {
+        	//log.error("portal settings parse error (doesn't match pattern)");
             return false;
         }
-        Pattern commentPattern = Pattern.compile("<!--(.+?)-->");
+        
+        log.debug("group count = "+m.groupCount());
+        
+        int begin = m.end(1);
+        int end = findMatchingBraceOfTemplate(text, begin);
+        if (end == -1) {
+            return false;
+        }        
         
         String parameterString = text.substring(begin, end);
         String splitParam = "\\|";
@@ -98,8 +103,7 @@ public class WikiUtils {
         		if(key.equals("align") || key.equals("style")) {
         			newStringToLastVal = true;
         		} else {
-	        		Matcher mComment = commentPattern.matcher(last);
-	            	String value = mComment.replaceAll("").trim();
+	            	String value = removeComments(last).trim();
 	        		parameters.put(key, value);
 	                lastKey = key;        	
 	                lastVal = value;
@@ -111,8 +115,7 @@ public class WikiUtils {
                 }
         	}  
         	if(newStringToLastVal) {
-        		Matcher mkey = commentPattern.matcher(p);
-                String value = mkey.replaceAll("").trim();
+                String value = removeComments(p).trim();
                 //parameters[lastKey] = parameters[lastKey] + "|" + value;
                 lastVal = parameters.get(lastKey)+"|"+value;
                 parameters.put(lastKey, lastVal);
@@ -120,4 +123,103 @@ public class WikiUtils {
         }
         return true;
 	}
+
+	/**
+     * @param text
+     * @return
+     */
+    public static String removeNoWikiText(String text) {
+	    String result = text;
+	    boolean changed = false;
+	    StringBuilder sb = new StringBuilder();
+	    int index = text.indexOf("<nowiki>");
+	    int lastNoWikiEnd = 0;
+	    while (index>=0 && index < text.length()) {
+	    	changed = true;
+	    	sb.append(text.substring(lastNoWikiEnd, index));
+	    	
+	    	int end = text.indexOf("</nowiki>", index);
+	    	if (end < 0) {
+	    		lastNoWikiEnd = text.length();
+	    		break;
+	    	} 
+	    	lastNoWikiEnd = end + "</nowiki>".length();
+	    	
+	    	index = text.indexOf("<nowiki>", lastNoWikiEnd);	    	
+	    } 
+	    if (changed) {
+	    	if (lastNoWikiEnd < text.length()) {
+	    		sb.append(text.substring(lastNoWikiEnd, text.length()));
+	    	}
+	    	result = sb.toString();
+	    }
+	    return result;
+    }
+    
+    public static String removeComments(String text) {
+    	return COMMENT_PATTERN.matcher(text).replaceAll("");
+    }
+    
+    public static String addTextToTemplateLastNoincludeSectionBeforeCats(String categoryKey, String templateText, String insertText) {
+    	String text;
+    	String separator = "\n";
+    	//Pattern pNoinclude = Pattern.compile("<noinclude>.*?</noinclude>");
+    	//Matcher mNoinclude = pNoinclude.matcher(templateText).
+    	int indexOfLastNoinclude = templateText.lastIndexOf("<noinclude>");
+    	if (indexOfLastNoinclude < 0) {
+    		text = templateText + "<noinclude>" + insertText + "</noinclude>";
+    	} else {
+    		int insertPos = templateText.length();
+    		
+    		int indexOfLastNoincludeCloser = templateText.indexOf("</noinclude", indexOfLastNoinclude);
+    		if (indexOfLastNoincludeCloser < 0) {
+    			log.warn("Oops! The template code doesn't close <noinclude> section!");
+        		if (templateText.endsWith(separator)) {
+        			separator = "";
+        		}
+    			text = templateText + separator + insertText;
+    			indexOfLastNoincludeCloser = templateText.length();
+    		} else {
+    			if (templateText.charAt(indexOfLastNoincludeCloser - 1) == '\n') {
+    				separator = "";
+    			}
+    			text = templateText.substring(0, indexOfLastNoincludeCloser) +
+    					separator +
+    					insertText +
+    					templateText.substring(indexOfLastNoincludeCloser);
+    		}
+    		// here we have a range of (indexOfLastNoinclude,indexOfLastNoincludeCloser)
+    		int insertPlace = findCategoriesSectionInTextRange(categoryKey, templateText, indexOfLastNoinclude, indexOfLastNoincludeCloser);
+    		if (templateText.charAt(insertPlace - 1) == '\n') {
+				separator = "";
+			}
+    		String start = templateText;
+    		String end = "";
+    		if (insertPlace < templateText.length()) {
+    			start = templateText.substring(0, insertPlace);
+    			end = templateText.substring(insertPlace);
+    		}
+			text = start +
+					separator +
+					insertText +
+					end;
+    	}
+    	return text;
+    }
+    
+    public static int findCategoriesSectionInTextRange(String categoryKey, String text, int start, int end) {
+    	String categoryDetected = "[["+categoryKey+":";
+    	String categoryEnDetected = "[[Category:";
+    	int index = text.indexOf(categoryDetected, start);
+    	if (index<0 || index>=end) {
+    		index = text.indexOf(categoryEnDetected, start);
+    	}
+    	if (index>0 && index<end) {
+    		if (text.charAt(index-1)=='\n') {
+    			index--;
+    		}
+    		return index;
+    	}
+    	return end;
+    }
 }
