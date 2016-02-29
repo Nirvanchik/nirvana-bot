@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.nirvanabot.imagefinder;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 import org.wikipedia.nirvana.NirvanaWiki;
 
@@ -32,7 +33,8 @@ import org.wikipedia.nirvana.NirvanaWiki;
  *
  */
 public class ImageFinderInBody extends ImageFinder {
-	private final String regexToFindImage = "\\[\\[(Image|File|Файл|Изображение):(?<filename>.+?)(\\||\\])";
+	static final String REGEX_TO_FIND_IMAGE = "\\[\\[(Image|File|Файл|Изображение):(?<filename>[^\\|\\]]+)";
+	static final Pattern PATTERN_TO_FIND_IMAGE = Pattern.compile(REGEX_TO_FIND_IMAGE);
 
 	/**
 	 * 
@@ -41,8 +43,9 @@ public class ImageFinderInBody extends ImageFinder {
 		// nothing to do
 	}
 
+	@Override
 	public String findImage(NirvanaWiki wiki, NirvanaWiki commons, String article) throws IOException {
-		return findImageByRegex(wiki, commons, article,regexToFindImage,"filename");
+		return findImageByRegex(wiki, commons, article, PATTERN_TO_FIND_IMAGE, "filename");
 	}
 	
 

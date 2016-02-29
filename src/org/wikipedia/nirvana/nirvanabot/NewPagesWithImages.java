@@ -23,6 +23,7 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -279,19 +280,20 @@ public class NewPagesWithImages extends NewPages {
      * So we check for fair-use templates in image description before using it.
      * 
      * @return true if image looks like free (doesn't have a description with fair use template)
+	 * @throws IOException 
      */
-    private boolean checkImageFree(NirvanaWiki wiki, String image) {
+    private boolean checkImageFree(NirvanaWiki wiki, String image) throws IOException {
     	String text = null;
     	try {
 	        text = wiki.getPageText(wiki.namespaceIdentifier(NirvanaWiki.FILE_NAMESPACE)+":"+image);
-        } catch (IOException e) {
-            log.warn("Failed to get text for image: "+image);
-        }
-    	if (text == null) {
+    	} catch (FileNotFoundException e) {
+    		log.info("Failed to get text for image (probably it's on commons): "+image);
+    		// Most likely this image comes from Commons and is free to use therefore
     		return true;
-    	}
+        }
+
         for (String tmpl : this.fairUseImageTemplates) {
-            if (StringUtils.containsIgnoreCase("{{" + tmpl, text)) {
+            if (StringUtils.containsIgnoreCase(text, "{{" + tmpl)) {
                 return false;
             }
     	}

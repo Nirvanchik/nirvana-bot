@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.nirvana.NirvanaWiki;
@@ -87,19 +89,49 @@ public class ImageFinderInCard extends ImageFinder {
 						StringUtils.join(entry.getValue(),"|")+
 						") *= *(?<filename>.+?) *\n";
 				//log.debug("regex = "+regexToFindImage);
-				String image = findImageByRegex(wiki,commons,article,regexToFindImage,"filename");
-				if(image!=null)
+				String image = checkImage(wiki,commons,article,regexToFindImage);
+				if (image != null) {
 					return image;
+				}
 			}
 		}		
 		if(defaultKeys.size()>0) {
 			String regexToFindImage = "\\| *("+
 					StringUtils.join(defaultKeys,"|")+
 					") *= *(?<filename>.+?) *\n";
-			//log.debug("regex = "+regexToFindImage);
-			String image = findImageByRegex(wiki,commons,article,regexToFindImage,"filename");
-			if(image!=null)
-				return image;
+			return checkImage(wiki,commons,article,regexToFindImage);
+		}
+		return null;
+	}
+
+	private String checkImage(NirvanaWiki wiki, NirvanaWiki commons, String article, String regexToFindImage) throws IOException {
+		Matcher m = Pattern.compile(regexToFindImage).matcher(article);
+		while(m.find()) {
+        	String image = m.group(DEFAULT_REGEX_IMAGE_TAG).trim();
+        	log.debug("image: "+image);
+/*        	String image = findImageByRegexSimple(article,Pattern.compile(regexToFindImage));
+    		// TODO(Nirvanchik): This way we can miss images. For example we found 1 image,
+    		// it happened to be non-existing and we return with null and don't check what
+    		// it is further in the article text
+    		// This should be made with using some kind of iterator rather then just return value
+  */
+        	if (image == null || image.isEmpty()) {
+    			continue;
+    		}
+    		if (image.contains("{{")) {
+    			image = checkImageIsImageTemplate(image);
+    		} else if (image.contains("[[")) {
+    			image = findImageByRegexSimple(image, ImageFinderInBody.PATTERN_TO_FIND_IMAGE);
+    		} 
+    		if(image!=null && image.contains("|")) {
+       			image = image.substring(0, image.indexOf('|'));
+    		}
+    		if (image == null || image.isEmpty() || image.contains(">") || image.contains("<")) {
+    			continue;
+    		}
+    		if (checkImageExists(wiki, commons, image)) {
+    			return image;
+    		}    		
 		}
 		return null;
 	}
