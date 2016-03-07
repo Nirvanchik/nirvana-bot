@@ -55,7 +55,7 @@ public class WikiTools {
     	public static final int FAST_MODE = 0b100;
     	public static final int PAGES_WITH_TEMPLATE = 0b1000;
     	public static final int CATSCAN_FEATURES = NEWPAGES;
-    	public static final int CATSCAN2_FEATURES = PAGES|NEWPAGES|FAST_MODE;
+    	public static final int CATSCAN2_FEATURES = PAGES|NEWPAGES|FAST_MODE|PAGES_WITH_TEMPLATE;
     	public static final int CATSCAN3_FEATURES = PAGES|NEWPAGES|FAST_MODE|PAGES_WITH_TEMPLATE;
 	}
 	
@@ -81,8 +81,8 @@ public class WikiTools {
 				ServiceFeatures.CATSCAN2_FEATURES,
 				"language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%5$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
-				null,
-				null,
+				"language=%1$s&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1&sortby=title&format=tsv&doit=submit",
+				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&ns[%7$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=1",
 				"^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\S+$"),
@@ -171,10 +171,7 @@ public class WikiTools {
 		}
 		
 		public static Service getDefaultServiceForFeature(int feature) {
-			switch (feature) {
-				case ServiceFeatures.PAGES_WITH_TEMPLATE: return Service.CATSCAN3;
-				default: return Service.CATSCAN2;
-			}
+			return Service.CATSCAN2;
 		}
 	}
 
