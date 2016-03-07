@@ -82,7 +82,7 @@ public class NewPagesWithImages extends NewPages {
 		if(this.archiveSettings!=null) {
 			this.archiveSettings = null;
 		}
-		this.format = this.format.replace("%(טלÿ פאיכא)", "%4$s");
+		this.formatString = formatString.replace("%(טלÿ פאיכא)", "%4$s");
 		this.imageFinder = imageFinder;
 		this.commons = commons;
 		this.fairUseImageTemplates = NirvanaBasicBot.optionToStringArray(param.fairUseImageTemplates);
@@ -184,7 +184,7 @@ public class NewPagesWithImages extends NewPages {
 		    	log.debug("user2 -> "+HTTPTools.removeEscape(page.getUser()));
 		    	log.debug("time -> "+time);
 		    	log.debug("format -> "+this.format);*/
-		    	String element = String.format(this.format,
+		    	String element = String.format(this.formatString,
 		    			namespace!=0?title.substring(wiki.namespaceIdentifier(this.namespace).length()+1):title,
 		    			HTTPTools.removeEscape(page.getUser()), 
 		    			time, 

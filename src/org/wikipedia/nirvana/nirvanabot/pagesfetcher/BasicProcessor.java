@@ -84,6 +84,10 @@ public abstract class BasicProcessor implements PageListProcessor {
         	throw new ServiceError("Invalid output of service: "+service.getName());
         }		
 		String line;
+		String namespaceIdentifier = "";
+		if (namespace!=0) {
+			namespaceIdentifier = wiki.namespaceIdentifier(namespace);
+		}
 		
 		//FileTools.dump(pageList, "dump", "pageList_"+category+".txt");
 		StringReader sr = new StringReader(pageList);
@@ -120,7 +124,7 @@ public abstract class BasicProcessor implements PageListProcessor {
                 }
                 if (!service.hasSuffix && namespace != 0)
                 {	                	
-                    title = wiki.namespaceIdentifier(namespace) + ":" + title;	                	
+                    title = namespaceIdentifier + ":" + title;	                	
                 	log.debug("Namespace is not 0");
                 }	                
                 

@@ -86,30 +86,7 @@ public class NewPagesWeek extends NewPages {
 		
 		@Override
 		protected void addNewItem(String title, boolean deleted, Revision rev) throws IOException {
-			String element = null;    	
-			String user = rev.getUser();
-			String time = null;
-	    	if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) 
-	    		time = rev.getTimestamp().getTime().toString();
-	    	else {
-	    		time = String.format("%1$tFT%1$tTZ",rev.getTimestamp());
-	    	}
-			
-	    	String titleToInsert = title;
-	    	if(namespace!=0) {
-	    		log.debug("namespace = "+wiki.namespaceIdentifier(namespace)+" namespace="+String.valueOf(namespace)+" title="+title);
-	    		titleToInsert = title.substring(wiki.namespaceIdentifier(namespace).length()+1);
-	    	}
-	    	if(format.contains("{{") && format.contains("}}")) {
-	    		titleToInsert = pageTitleNormalToEscaped(titleToInsert); // replaces '=' equal-sign by escape-code
-	    	}
-	    	element = String.format(format,
-	    			titleToInsert,
-	    			HTTPTools.removeEscape(user), 
-	    			time);
-	    	if(deletedFlag==PortalParam.Deleted.MARK && deleted) {
-	    		element = markDeleted(element);
-	    	} 
+			String element = formatItemString(title, deleted, rev);
 	    	
 	        if (!subset.contains(element))
 	        {	            

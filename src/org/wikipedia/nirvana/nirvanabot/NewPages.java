@@ -85,6 +85,7 @@ public class NewPages implements PortalModule{
     protected String archive;
     protected ArchiveSettings archiveSettings;
     protected String format;
+    protected String formatString;
     protected String header;
     protected String footer;
     protected String middle;
@@ -94,6 +95,7 @@ public class NewPages implements PortalModule{
     protected String delimeter;    
     protected int depth;
     protected int namespace;
+    protected String namespaceIdentifier;
     //protected boolean markEdits;
     protected boolean minor;
     protected boolean bot;
@@ -127,6 +129,7 @@ public class NewPages implements PortalModule{
     protected enum GetRevisionMethod {
     	GET_FIRST_REV,
     	GET_FIRST_REV_IF_NEED,
+    	GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL,
     	GET_REV,
     	GET_TOP_REV
     	//GET_LAST_REV_BY_PAGE_NAME
@@ -146,10 +149,15 @@ public class NewPages implements PortalModule{
     	this.archive = param.archive;
    		this.archiveSettings = param.archSettings;
     	this.maxItems = param.maxItems;
-    	this.format = param.format.replace("%(название)", "%1$s").replace("%(автор)", "%2$s").replace("%(дата)", "%3$s");
+    	this.format = param.format;
+    	
+    	this.formatString = format.replace("%(название)", "%1$s").replace("%(автор)", "%2$s").replace("%(дата)", "%3$s");
+    	/*
+    	TODO(Nirvanchik): I don't understand what is this for?
     	if(param.deletedFlag==PortalParam.Deleted.MARK) {
-    		this.format = this.format.replace("(удалено)", "%4$s");
+    		this.formatString = formatString.replace("%(удалено)", "%4$s");
     	}
+    	*/
     	this.hours = param.hours;
     	//this.Module = module;
     	this.delimeter = param.delimeter;
@@ -175,6 +183,10 @@ public class NewPages implements PortalModule{
     	log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
     	log.debug("Portal module created for portal subpage [["+this.pageName+"]]");
 	}
+    
+    protected String getFormatString() {
+    	return formatString;
+    }
     
     public String getOldText(Wiki wiki) throws IOException {
     	try
@@ -264,7 +276,7 @@ public class NewPages implements PortalModule{
 			return subset.size();
 		}
 		
-		public boolean checkIsDuplicated(String archiveItem) throws IOException {
+		public boolean checkIsDuplicated(String archiveItem) {
 			if (contains(archiveItem)) {
 				return true;
 			}
@@ -272,7 +284,7 @@ public class NewPages implements PortalModule{
 	    		String variant1 = "[["+title+"]]";		        		
 	    		String variant2 = "|"+
 	    				pageTitleNormalToEscaped(
-	    						title.substring((namespace==0)?0:wiki.namespaceIdentifier(namespace).length()+1)
+	    						title.substring((namespace==0)?0:namespaceIdentifier.length()+1)
 	    						)+
 	    				"|";
 	    		if(archiveItem.contains(variant1) ||
@@ -304,7 +316,7 @@ public class NewPages implements PortalModule{
 			subset.add(item);
 		}
 		
-		protected String getTimeString(Revision rev) {
+		protected String formatTimeString(Revision rev) {
 			if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) 
 	    		return rev.getTimestamp().getTime().toString();
 	    	else {
@@ -312,26 +324,33 @@ public class NewPages implements PortalModule{
 	    	}
 		}
 		
-		protected void addNewItem(String title, boolean deleted, Revision rev) throws IOException {
-			String element = null;    	
-			String user = rev.getUser();
-			String time = getTimeString(rev);	    	
-			
+		String formatTitleString(String title) {
 	    	String titleToInsert = title;
 	    	if(namespace!=0) {
-	    		log.debug("namespace = "+wiki.namespaceIdentifier(namespace)+" namespace="+String.valueOf(namespace)+" title="+title);
-	    		titleToInsert = title.substring(wiki.namespaceIdentifier(namespace).length()+1);
+	    		log.debug("namespace = "+namespaceIdentifier+" namespace="+String.valueOf(namespace)+" title="+title);
+	    		titleToInsert = title.substring(namespaceIdentifier.length()+1);
 	    	}
 	    	if(format.contains("{{") && format.contains("}}")) {
 	    		titleToInsert = pageTitleNormalToEscaped(titleToInsert); // replaces '=' equal-sign by escape-code
 	    	}
-	    	element = String.format(format,
-	    			titleToInsert,
-	    			HTTPTools.removeEscape(user), 
-	    			time);
+	    	return titleToInsert;
+		}
+		
+		String formatItemString(String title, boolean deleted, Revision rev) {
+			String element;
+			String user = rev.getUser();
+			String time = formatTimeString(rev);	    	
+	    	String titleToInsert = formatTitleString(title);
+
+	    	element = String.format(formatString, titleToInsert, HTTPTools.removeEscape(user), time);
 	    	if(deletedFlag==PortalParam.Deleted.MARK && deleted) {
 	    		element = markDeleted(element);
-	    	} 
+	    	}
+	    	return element;
+		}
+		
+		protected void addNewItem(String title, boolean deleted, Revision rev) throws IOException {
+			String element = formatItemString(title, deleted, rev);    	
 	    	
 	        if (!subset.contains(element))
 	        {
@@ -342,6 +361,19 @@ public class NewPages implements PortalModule{
 	            log.debug("ADD new line: \t"+element);
 	        }
 		}
+		
+		/*
+		protected void addNewItem(String item) throws IOException {
+	        if (!subset.contains(item))
+	        {
+	            subset.add(item);
+	            if (includedPages != null) {
+	            	includedPages.add(item);
+	            }
+	            log.debug("ADD new line: \t"+item);
+	        }
+		}*/
+
 		protected void addNewPage(NirvanaWiki wiki, Revision pageInfo) throws IOException {
 			Revision page = null;
 		    switch(getRevisionMethod) {
@@ -357,8 +389,19 @@ public class NewPages implements PortalModule{
 		    	case GET_FIRST_REV_IF_NEED:
 		    		if(usersToIgnore.size()==0) {
 		    			page = pageInfo;
-		    		} else {
+		    		} else {		    			
 		    			page = wiki.getFirstRevision(pageInfo.getPage());
+		    		}
+		    		break;
+		    	case GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL:
+		    		if(usersToIgnore.size()==0) {
+		    			page = pageInfo;
+		    		} else {
+		    			// TODO (Nirvanchik): here we may lost an important information
+		    			Revision r = wiki.getFirstRevision(pageInfo.getPage());
+		    			if (r != null) {
+		    				pageInfo.setUser(r.getUser());
+		    			}
 		    		}
 		    		break;
 		    	default:
@@ -781,6 +824,7 @@ public class NewPages implements PortalModule{
 	@Override
 	public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment) throws IOException, LoginException, InterruptedException, ServiceError {
 		log.debug("=> update()");
+		this.namespaceIdentifier = wiki.namespaceIdentifier(this.namespace);
 		boolean updated = false;
 		String text = getOldText(wiki);
 		log.debug("old text retrieved");

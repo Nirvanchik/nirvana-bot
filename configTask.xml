@@ -17,6 +17,14 @@
 <entry key="default-maxitems">20</entry>
 <entry key="picture-search-tags">image file,Фото,портрет,Изображение</entry>
 <entry key="fair-use-image-templates">Обоснование добросовестного использования, Disputed-fairuse, ОДИ, Несвободный файл/ОДИ</entry>
+<entry key="discussion-pages-templates">
+	К удалению = Википедия:К удалению/%(дата)#%(название), к удалению
+	К переименованию = Википедия:К переименованию/%(дата)#%(текст_с_названием), к переименованию
+	К объединению = Википедия:К объединению/%(дата)#%(текст_с_названием), к объединению
+	К улучшению = Википедия:К улучшению/%(дата)#%(название), к улучшению
+	Rq =
+</entry>
+<entry key="discussion-pages-settings-wikipage">Участник:NirvanaBot/Новые статьи/Настройки обсуждаемых статей.js</entry>
 <entry key="error-notification">no</entry>
 <entry key="debug-mode">no</entry>
 <entry key="stop-after">0</entry>

@@ -23,6 +23,7 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -104,6 +105,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static String STATUS_WIKI_TEMPLATE = "Участник:NirvanaBot/Новые статьи/Отображение статуса";
 	private static String REPORT_FORMAT = "txt";
 	private static String DEFAULT_FORMAT = "* [[%(название)]]";
+	public static String DEFAULT_FORMAT_STRING = "* [[%1$s]]";
 	private static String DEFAULT_TYPE = "список новых статей";
 	
 	private static String TYPE = "all";
@@ -117,6 +119,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 	
 	private static String PICTURE_SEARCH_TAGS = "image file,Фото,портрет,Изображение,Файл,File";
 	private static String FAIR_USE_IMAGE_TEMPLATES = "Обоснование добросовестного использования, Disputed-fairuse, ОДИ, Несвободный файл/ОДИ";
+	private static DiscussionPagesSettings DISCUSSION_PAGES_SETTINGS = null;
+	private static String DISCUSSION_PAGES_SETTINGS_WIKI = null;
 	
 	private static int DEFAULT_NAMESPACE = 0;
 	
@@ -275,6 +279,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 		log.info("picture search tags = "+PICTURE_SEARCH_TAGS);
 		FAIR_USE_IMAGE_TEMPLATES = properties.getProperty("fair-use-image-templates",FAIR_USE_IMAGE_TEMPLATES);
 		log.info("fair-use image templates = "+FAIR_USE_IMAGE_TEMPLATES);
+		DISCUSSION_PAGES_SETTINGS = DiscussionPagesSettings.parseFromSettingsString(
+				properties.getProperty("discussion-pages-templates", ""));
+		DISCUSSION_PAGES_SETTINGS_WIKI = properties.getProperty("discussion-pages-settings-wikipage", "");
 		
 		TYPE = properties.getProperty("type",TYPE); 
 		
@@ -415,6 +422,27 @@ public class NirvanaBot extends NirvanaBasicBot{
 		key = "шаблоны запрещенных картинок";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			FAIR_USE_IMAGE_TEMPLATES = options.get(key);
+		}
+		
+		if (!DISCUSSION_PAGES_SETTINGS_WIKI.isEmpty()) {
+			String text = null;
+			DiscussionPagesSettings newSettings = null;
+			try{
+				text = wiki.getPageText(DISCUSSION_PAGES_SETTINGS_WIKI);
+			} catch (FileNotFoundException e) {
+				log.error("Failed to get settings from wiki page: "+DISCUSSION_PAGES_SETTINGS_WIKI, e);
+			}			
+			if (text != null) {
+				newSettings = DiscussionPagesSettings.parseFromSettingsString(text);
+				if (newSettings == null) {
+					log.error("Failed to parse settings from wiki page: "+DISCUSSION_PAGES_SETTINGS_WIKI);
+				}
+			} 
+			if (newSettings == null) {
+				log.warn("locally provided settings will be used");
+			} else {
+				DISCUSSION_PAGES_SETTINGS = newSettings;
+			}
 		}
 	}
 	
@@ -1092,10 +1120,10 @@ public class NirvanaBot extends NirvanaBasicBot{
 		} else if (type.equals("списки новых статей по дням") || type.equals("новые статьи по дням")) {
 			data.portalModule = new NewPagesWeek(param);
 		} else if (isTypeDiscussedPages(type)) {
-			if (param.prefix == null) {
-				data.errors.add("Параметр \"префикс\" не задан. Параметр префикс обязателен для этого типа списка.");
+			if (DISCUSSION_PAGES_SETTINGS == null) {
+				data.errors.add("Настройки обсуждаемых страниц не заданы или некорректны. Невозможно обновлять этот вид списков.");
 			} else {
-				data.portalModule = new DiscussedPages(param);
+				data.portalModule = new DiscussedPages(param, DISCUSSION_PAGES_SETTINGS);
 			}
 		} else {
 			data.errors.add("Тип \""+type+"\" не поддерживается. Используйте только разрешенные значения в параметре \"тип\".");			

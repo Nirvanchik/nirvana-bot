@@ -6971,6 +6971,10 @@ public class Wiki implements Serializable
         {
             Wiki.this.rollback(this, bot, reason);
         }
+        
+        public void setUser(String user) {
+        	this.user = user;
+        }
     }
 
     // INTERNALS

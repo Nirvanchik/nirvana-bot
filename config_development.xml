@@ -13,16 +13,24 @@
 <entry key="wiki-lang">ru</entry>
 <entry key="wiki-java-loglevel">OFF</entry>
 <entry key="update-comment">обновление</entry>
-<entry key="default-depth">7</entry>
-<entry key="default-hours">720</entry>
+<entry key="default-depth">6</entry>
+<entry key="default-hours">350</entry>
 <entry key="default-maxitems">20</entry>
 <entry key="default-comment">обновление</entry>
 <entry key="default-comment-new">обновление</entry>
 <entry key="default-comment-new-archive">обновление</entry>
 <entry key="picture-search-tags">image file,Фото,портрет,Изображение</entry>
 <entry key="fair-use-image-templates">Обоснование добросовестного использования, Disputed-fairuse, ОДИ, Несвободный файл/ОДИ</entry>
+<entry key="discussion-pages-templates">
+	К удалению = Википедия:К удалению/%(дата)#%(название), к удалению
+	К переименованию = Википедия:К переименованию/%(дата)#%(текст_с_названием), к переименованию
+	К объединению = Википедия:К объединению/%(дата)#%(текст_с_названием), к объединению
+	К улучшению = Википедия:К улучшению/%(дата)#%(название), к улучшению
+	Rq =
+</entry>
+<entry key="discussion-pages-settings-wikipage">Участник:NirvanaBot/Новые статьи/Настройки обсуждаемых статей.js</entry>
 <entry key="error-notification">no</entry>
-<entry key="debug-mode">yes</entry>
+<entry key="debug-mode">no</entry>
 <entry key="stop-after">0</entry>
 <entry key="start-from">0</entry>
 <entry key="update-pause">2000</entry>
@@ -36,7 +44,8 @@
 <entry key="status-wiki">Участник:NirvanaBot/test/Новые статьи/Статус</entry>
 <entry key="status-wiki-template">Участник:NirvanaBot/Новые статьи/Отображение статуса</entry>
 <!--<entry key="status-wiki-format">Участник:NirvanaBot/test/Новые статьи/Отображение статуса</entry>-->
-<entry key="statistics-format">txt,wiki</entry>
+<entry key="statistics-format">txt</entry>
+<!--<entry key="statistics-format">txt,wiki</entry>-->
 <entry key="type">all</entry>
 <entry key="service">catscan2</entry>
 <entry key="fast-mode">yes</entry>

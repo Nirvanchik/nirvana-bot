@@ -26,15 +26,21 @@ package org.wikipedia.nirvana.nirvanabot;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.DateTools;
+import org.wikipedia.nirvana.HTTPTools;
+import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.nirvanabot.DiscussionPagesSettings.DiscussionPageTemplate;
 
 /**
  * @author kin
@@ -42,39 +48,145 @@ import org.wikipedia.nirvana.ServiceError;
  */
 public class DiscussedPages extends Pages {
 	String prefix;
+	DiscussionPagesSettings settings;
+	List<DiscussionPageTemplate> discussionTemplates;
 
 	protected class DiscussedPagesBuffer extends NewPagesBuffer {
 
-		/**
-         * @param wiki
-         */
         public DiscussedPagesBuffer(NirvanaWiki wiki) {
 	        super(wiki);	        
         }
         
         @Override
-        protected String getTimeString(Revision rev) {
+        protected String formatTimeString(Revision rev) {
         	return DateTools.printDateDayMonthYearGenitiveRussian(rev.getTimestamp());
+		}
+        
+        @Override
+        String formatItemString(String title, boolean deleted, Revision rev) {
+			String element;
+			String user = rev.getUser();
+			String time = formatTimeString(rev);	    	
+	    	String titleToInsert = formatTitleString(title);
+	    	
+	    	RevisionWithDiscussion revDisc = (RevisionWithDiscussion) rev;
+	    	DiscussionInfo discussion = revDisc.getDiscussion();
+
+	    	if (discussion != null) {
+	    		if (format.contains("%(обсуждение)")) {
+	    			String formatExt = formatString.replace("%(обсуждение)", "%4$s");
+	    			String link = discussion.template.formatLinkForPage(
+	    					discussion.discussionPage, title, stripFragment(discussion.discussionFragment));
+	    			element = String.format(formatExt, titleToInsert, HTTPTools.removeEscape(user), time, link);
+	    		} else {
+	    			element = String.format(formatString, titleToInsert, HTTPTools.removeEscape(user), time);
+	    		}
+	    	} else {
+	    		element = String.format(NirvanaBot.DEFAULT_FORMAT_STRING, titleToInsert);
+	    	}
+	    	return element;
 		}
 	}
 	
-	private static class RevisionWithModifiedDate extends Revision {
+	private String stripFragment(String fragment) {
+		if (fragment == null) {
+			return null;
+		}
+		if (fragment.isEmpty()) {
+			return fragment;
+		}
+		return fragment.replace("<s>", "").replace("</s>", "").trim().replace("[[", "").replace("]]", "");
+	}
+	
+	private static class RevisionWithDiscussion extends Revision {
+		DiscussionInfo discussion;
 
 		/**
          */
-        public RevisionWithModifiedDate(Wiki wiki, Revision r, Calendar newDate) {
-	        wiki.super(r.getRevid(), newDate, r.getPage(), r.getSummary(), r.getUser(), r.isMinor(), r.isBot(), r.isNew(), r.getSize());
-	        // TODO Auto-generated constructor stub
+        public RevisionWithDiscussion(Wiki wiki, Revision r, DiscussionInfo discussion) {
+	        wiki.super(r.getRevid(), r.getTimestamp(), r.getPage(), r.getSummary(), r.getUser(),
+	        		r.isMinor(), r.isBot(), r.isNew(), r.getSize());
+	        this.discussion = discussion;
+        }
+        
+        @Override
+        public Calendar getTimestamp()
+        {
+        	// This is for sort() only
+            if (discussion != null) {
+            	return discussion.discussionDate;
+            } else {
+            	return super.getTimestamp();
+            }
         }
 		
+        public DiscussionInfo getDiscussion() {
+        	return discussion;
+        }
+        
+	}
+	
+	public static class DiscussionInfo implements Comparable<DiscussionInfo>{
+		Calendar discussionDate;
+		String discussionPage;
+		DiscussionPageTemplate template;
+		String discussionFragment;
+		
+		public DiscussionInfo(Calendar discussionDate, String discussionPage, DiscussionPageTemplate template) {
+			this.discussionDate = discussionDate;
+			this.discussionPage = discussionPage;
+			this.template = template;
+			this.discussionFragment = null;
+		}
+
+		/* (non-Javadoc)
+         * @see java.lang.Comparable#compareTo(java.lang.Object)
+         */
+        @Override
+        public int compareTo(DiscussionInfo o) {	        
+	        return discussionDate.compareTo(o.discussionDate);
+        }
 	}
 
 	/**
 	 * @param param
 	 */
-	public DiscussedPages(PortalParam param) {
+	public DiscussedPages(PortalParam param, DiscussionPagesSettings settings) {
 		super(param);
 		this.prefix = param.prefix;
+		this.settings = settings;
+		getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL;
+		this.discussionTemplates = filterDiscussionTemplates();
+	}
+	
+	private List<DiscussionPageTemplate> filterDiscussionTemplates() {
+		List<DiscussionPageTemplate> list = new ArrayList<>();
+		for (DiscussionPageTemplate t:this.settings.templates) {
+			if (templates.contains(t.template)) {
+				list.add(t);
+			}
+		}
+		if (this.prefix != null && !prefix.isEmpty()) {
+			List<DiscussionPageTemplate> list2 = new ArrayList<>();
+			List<String> prefixes = NirvanaBasicBot.optionToStringArray(prefix);
+			for (String prefix:prefixes) {
+				boolean found = false;
+				for (DiscussionPageTemplate t:list) {
+					if (t.prefix.equalsIgnoreCase(prefix)) {
+						list2.add(t);
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					DiscussionPageTemplate custom = DiscussionPageTemplate.fromPrefix(prefix);
+					if (custom != null) {
+						list2.add(custom);
+					}
+				}
+			}
+		}
+		return list;
 	}
 	
 	@Override
@@ -91,29 +203,48 @@ public class DiscussedPages extends Pages {
 	protected ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError {
 		ArrayList<Revision> pageInfoList = super.getNewPages(wiki);
 		ArrayList<Revision> pageInfoListNew = new ArrayList<Revision>();
-		//int count = pageInfoList.size();
-		//count = count<maxItems?count:maxItems;
 		for (int i = 0; i < pageInfoList.size() && pageInfoListNew.size() < maxItems; ++i)
 		{
 			Revision r = pageInfoList.get(i);
 			String[] linkedPages = wiki.whatLinksHere(r.getPage(), Wiki.PROJECT_NAMESPACE);
-			SortedSet<Calendar> dates = new TreeSet<Calendar>();
+			SortedSet<DiscussionInfo> discussionSet = new TreeSet<DiscussionInfo>();
 			for (String linked:linkedPages) {
 				//linked = linked.substring(wiki.namespaceIdentifier(Wiki.PROJECT_NAMESPACE).length()+1);
-				if (linked.startsWith(this.prefix)) {
-					linked = linked.substring(this.prefix.length());
-					Calendar c = DateTools.parseDateStringDayMonthYearGenitiveRussian(linked, new Locale("ru"));
-					if (c != null) {
-						dates.add(c);
+				for (DiscussionPageTemplate template: discussionTemplates) {
+					if (template.hasLink() && linked.startsWith(template.prefix)) {
+						String right = linked.substring(template.prefix.length());
+						Calendar c = DateTools.parseDateStringDayMonthYearGenitiveRussian(right, new Locale("ru"));
+						if (c != null) {
+							discussionSet.add(new DiscussionInfo(c, linked, template));
+						}
 					}
 				}
 			}
-			if (dates.size() > 0) {
-				pageInfoListNew.add(new RevisionWithModifiedDate(wiki, r, dates.last()));
-			}		    
+			DiscussionInfo lastDiscussion = null;
+			if (discussionSet.size() > 0) {
+				lastDiscussion = discussionSet.last();
+				if (lastDiscussion.template.needsToSearchFragment()) {
+					lastDiscussion.discussionFragment = searchFragment(wiki, lastDiscussion.discussionPage, r.getPage());
+				}
+			}
+			pageInfoListNew.add(new RevisionWithDiscussion(wiki, r, lastDiscussion));
 		}
 		sortPagesByDate(pageInfoListNew);
 		return pageInfoListNew;
 	}
-
+	
+	//private static final S
+	public static String searchFragment(NirvanaWiki wiki, String discussionPage, String page) throws IOException {
+		String lines[] = wiki.getPageLines(discussionPage);
+		Pattern p = Pattern.compile("\\s*===?\\s*([^=]+\\s*)=?==\\s*");
+		for (String line:lines) {
+			if (line.contains(page)) {
+				Matcher m = p.matcher(line);
+				if (m.matches()) {
+					return m.group(1);
+				}
+			}
+		}		
+		return null;
+	}
 }
