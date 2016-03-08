@@ -58,12 +58,15 @@ public class BotReporter {
 	private int portalsUpdated;
 	private int portalsError;
 	
+	String version;
+	
 	static {
 		log = org.apache.log4j.Logger.getLogger(BotReporter.class.getName());
 	}
 	
-	public BotReporter(NirvanaWiki wiki, int capacity, boolean started) {
+	public BotReporter(NirvanaWiki wiki, int capacity, boolean started, String version) {
 		this.wiki = wiki;
+		this.version = version;
 		reportItems = new ArrayList<ReportItem>(capacity);
 		if (started) {
 			botStarted(true);
@@ -116,15 +119,15 @@ public class BotReporter {
     }
     
     public void updateStartStatus(String page, String template) throws LoginException, IOException {
-    	String text = String.format("{{%1$s|status=1|starttime=%2$tF %2$tT}}", template, timeStarted);
+    	String text = String.format("{{%1$s|status=1|starttime=%2$tF %2$tT|version=%3$s}}", template, timeStarted, version);
     	wiki.edit(page, text, "Бот запущен");
     }
     
     public void updateEndStatus(String page, String template) throws LoginException, IOException {
     	String text = String.format("{{%1$s|status=0|starttime=%2$tF %2$tT|endtime=%3$tF %3$tT|time=%4$s"+
-    			"|total=%5$d|checked=%6$d|processed=%7$d|updated=%8$d|errors=%9$d}}", 
+    			"|total=%5$d|checked=%6$d|processed=%7$d|updated=%8$d|errors=%9$d|version=%10$s}}", 
     			template, timeStarted, timeFinished, printTimeDiff(timeStarted, timeFinished),
-    			portalsTotal, portalsChecked, portalsProcessed, portalsUpdated, portalsError);
+    			portalsTotal, portalsChecked, portalsProcessed, portalsUpdated, portalsError, version);
     	wiki.edit(page, text, "Бот остановлен");
     }
 

@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaBot.java 1.12 03.09.2015
- *  Copyright © 2011 - 2015 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)NirvanaBot.java 1.13 08.03.2016
+ *  Copyright © 2011 - 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -172,14 +172,20 @@ public class NirvanaBot extends NirvanaBasicBot{
 		return DEFAULT_MIDDLE;
 	}
 	
+	private static final String VERSION = "v1.13";
+	
 	public static String PROGRAM_INFO = 
-			"NirvanaBot v1.12 Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
+			"NirvanaBot " + VERSION + " Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
 			"See also http://ru.wikipedia.org/User:NirvanaBot\n" +
-			"Copyright (C) 2011-2015 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)\n" +
+			"Copyright (C) 2011-2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)\n" +
 			"\n";
 			
 	public void showInfo() {
 		System.out.print(PROGRAM_INFO);
+	}
+	
+	public String getVersion() {
+		return VERSION;
 	}
 		
 	/**
@@ -469,7 +475,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		commons.setMaxLag( MAX_LAG );
 
 		BotReporter reporter;
-        reporter = new BotReporter(wiki, 700, true);
+        reporter = new BotReporter(wiki, 700, true, getVersion());
         //reporter.botStarted(true);
         if (UPDATE_STATUS) {
         	try {
