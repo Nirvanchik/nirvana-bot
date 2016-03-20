@@ -280,10 +280,18 @@ public abstract class NirvanaBasicBot {
 		
 		log.warn("BOT STARTED");
 		
-		go();		
+		try {
+	        go();
+        } catch (InterruptedException e) {
+        	onInterrupted(e);
+        }		
 		
 		wiki.logout();		
 		log.warn("EXIT");
+	}
+	
+	protected void onInterrupted(InterruptedException e) {
+		
 	}
 	
 	/**
@@ -294,7 +302,7 @@ public abstract class NirvanaBasicBot {
 		wiki.setThrottle(THROTTLE_TIME_MS);
     }
 
-	protected abstract void go();
+	protected abstract void go() throws InterruptedException;
 	
 	protected boolean loadCustomProperties(Map<String,String> launch_params) {
 		return true;
@@ -320,13 +328,11 @@ public abstract class NirvanaBasicBot {
 				properties.setProperty("log4j.rootLogger", "OFF");
 				PropertyConfigurator.configure(properties);
 			}
-			
-			log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
 		} else {
 			PropertyConfigurator.configure(log4jSettings);
-			log = org.apache.log4j.Logger.getLogger(this.getClass().getName());	
 			System.out.println("INFO: using log settings : " + log4jSettings);
 		}
+		log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
 	}
 	
 	protected static int validateIntegerSetting(Properties pop, String name, int def, boolean notifyNotFound) {

@@ -33,40 +33,54 @@ import java.net.URLConnection;
  *
  */
 public class HTTPTools {
+	private static final String USER_AGENT = "NirvanaBot";
+	private static final String DEFAULT_ENCODING = "UTF-8";
 	private static org.apache.log4j.Logger log = null;	
 	// time to open a connection
-    private static final int CONNECTION_CONNECT_TIMEOUT_MSEC = 120000; // 120 seconds
+    private static final int CONNECTION_CONNECT_TIMEOUT_MSEC_LONG = 120000; // 120 seconds
     // time for the read to take place. (needs to be longer, some connections are slow
     // and the data volume is large!)
-    private static final int CONNECTION_READ_TIMEOUT_MSEC = 5*60*1000; // 5 min
-    
+    private static final int CONNECTION_READ_TIMEOUT_MSEC_LONG = 5*60*1000; // 5 min
+
+    private static final int CONNECTION_CONNECT_TIMEOUT_MSEC_SHORT = 15*1000;
+    private static final int CONNECTION_READ_TIMEOUT_MSEC_SHORT = 60*1000;
+
     static {
     	log = org.apache.log4j.Logger.getLogger(HTTPTools.class.getName());		
     }
     
     public static String fetch(String url) throws IOException {
-    	return fetch(url, false);
+    	return fetch(url, false, false, true);
+    }
+
+    public static String fetch(URL url) throws IOException {
+    	return fetch(url, false, false, true);
     }
     
-    public static String fetch(String url, boolean removeEscape) throws IOException {
-    	return fetch(url, false);
+    public static String fetch(String url, boolean longTimeout, boolean removeEscape, boolean customUserAgent) throws IOException {
+    	return fetch(new URL(url), longTimeout, removeEscape, customUserAgent);
     }
     
-	public static String fetch(String url, boolean removeEscape, boolean customUserAgent) throws IOException
+	public static String fetch(URL url, boolean longTimeout, boolean removeEscape, boolean customUserAgent) throws IOException
     {
 		log.debug("fetching url="+url);
 		log.trace("remove escape="+removeEscape);
         // connect
-        HttpURLConnection connection = (HttpURLConnection)new URL(url).openConnection();
-        connection.setConnectTimeout(CONNECTION_CONNECT_TIMEOUT_MSEC);
-        connection.setReadTimeout(CONNECTION_READ_TIMEOUT_MSEC);
-        if(customUserAgent) {
-        	connection.setRequestProperty("User-Agent", "NirvanaBot");
+        HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+        if (longTimeout) {
+        	connection.setConnectTimeout(CONNECTION_CONNECT_TIMEOUT_MSEC_LONG);
+        	connection.setReadTimeout(CONNECTION_READ_TIMEOUT_MSEC_LONG);
+        } else {
+        	connection.setConnectTimeout(CONNECTION_CONNECT_TIMEOUT_MSEC_SHORT);
+        	connection.setReadTimeout(CONNECTION_READ_TIMEOUT_MSEC_SHORT);
+        }
+        if (customUserAgent) {
+        	connection.setRequestProperty("User-Agent", USER_AGENT);
         }
         //setCookies(connection, cookies);
         connection.connect();
         BufferedReader in = new BufferedReader(new InputStreamReader(
-            connection.getInputStream(), "UTF-8"));       
+            connection.getInputStream(), DEFAULT_ENCODING));       
 
         // get the text
         String line;

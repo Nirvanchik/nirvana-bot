@@ -27,7 +27,9 @@
 <entry key="statistics-format">txt</entry>
 <entry key="task-list">yes</entry>
 <entry key="task-list-file">task_eval_nirvana_be.txt</entry>
-<entry key="service">catscan2</entry>
+<entry key="default-service">catscan2</entry>
+<entry key="service">auto</entry>
 <entry key="fast-mode">yes</entry>
+<entry key="long-task">no</entry>
 
 </properties>

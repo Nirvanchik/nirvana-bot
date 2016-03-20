@@ -5,4 +5,4 @@ java -classpath ^.\bin;^
 .\lib\jackson-core-2.0.6.jar;^
 .\lib\jackson-databind-2.0.6.jar;^
 .\lib\jackson-annotations-2.0.6.jar ^
-org.wikipedia.nirvana.nirvanabot.NirvanaBot config_evaluate_nirvana.xml
+org.wikipedia.nirvana.nirvanabot.NirvanaBot config_debug.xml

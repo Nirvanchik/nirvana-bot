@@ -577,6 +577,10 @@ public class Wiki implements Serializable
     public void setSlowmax(int slowmax) {
     	this.slowmax = slowmax;
     }
+    
+    public String getProtocol() {
+    	return protocol;
+    }
 
     /**
      *  Gets the domain of the wiki, as supplied on construction.

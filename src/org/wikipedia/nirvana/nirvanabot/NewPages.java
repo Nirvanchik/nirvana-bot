@@ -877,15 +877,10 @@ public class NewPages implements PortalModule{
 		return updated;
 	}
 	
-	protected void waitPauseIfNeed() {
+	protected void waitPauseIfNeed() throws InterruptedException {
 		if(NirvanaBot.UPDATE_PAUSE>0) {
     		log.debug("Waiting "+ NirvanaBot.UPDATE_PAUSE+" ms");
-	    	try {			    		 
-	    		Thread.sleep(NirvanaBot.UPDATE_PAUSE);
-	    	} catch (InterruptedException e) {					
-		    	log.error(e.toString());
-				e.printStackTrace();
-			}
+    		Thread.sleep(NirvanaBot.UPDATE_PAUSE);
     	}
 	}
 	

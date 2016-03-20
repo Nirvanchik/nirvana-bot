@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -46,14 +47,20 @@ public class WikiTools {
 	private static final String CATSCAN3_DOMAIN = LABS_DOMAIN;
 	private static final String CATSCAN2_PATH = "/catscan2/catscan2.php";
 	private static final String CATSCAN3_PATH = "/catscan3/catscan2.php";
-	private static final String HTTP = "http";
+	public static final String HTTP = "http";
 	private static final int TIMEOUT_DELAY = 10000; // 10 sec
+	
+	//private static final EnumSet<Service> SERVICES = EnumSet.of(Service.CATSCAN2, Service.CATSCAN3);
+	private static final Service SERVICES[] = {Service.CATSCAN2, Service.CATSCAN3};
+	
+	private static boolean fastMode = false;
 	
 	public static class ServiceFeatures {
     	public static final int PAGES = 0b1;
     	public static final int NEWPAGES = 0b10;
     	public static final int FAST_MODE = 0b100;
     	public static final int PAGES_WITH_TEMPLATE = 0b1000;
+    	@Deprecated
     	public static final int CATSCAN_FEATURES = NEWPAGES;
     	public static final int CATSCAN2_FEATURES = PAGES|NEWPAGES|FAST_MODE|PAGES_WITH_TEMPLATE;
     	public static final int CATSCAN3_FEATURES = PAGES|NEWPAGES|FAST_MODE|PAGES_WITH_TEMPLATE;
@@ -66,6 +73,7 @@ public class WikiTools {
 	}
 	
 	public enum Service {
+		@Deprecated
 		CATSCAN ("catscan", CATSCAN_DOMAIN, CATSCAN_PATH, 
 				0, 0, 1, 5, 4, false, false, true, 720,
 				ServiceFeatures.CATSCAN_FEATURES,
@@ -148,6 +156,11 @@ public class WikiTools {
 			this.GET_NEW_PAGES_FORMAT = getNewPagesFormat;
 			this.GET_NEW_PAGES_FORMAT_FAST = getNewPagesFormatFast;
 			this.LINE_RULE = lineRule;
+			this.toString();
+		}
+		@Override
+		public String toString() {
+			return getName();
 		}
 		public String getName() { return name; }
 		public boolean supportsPages() { return supportsFeature (ServiceFeatures.PAGES); }
@@ -156,15 +169,10 @@ public class WikiTools {
 		public boolean supportsFeature(int feature) { return ((FEATURES & feature) != 0); }
 		
 		public static Service getServiceByName(String name) {
-			Service service = null;
-			if (name.equals(CATSCAN.getName())) return CATSCAN;
-			if (name.equals(CATSCAN2.getName())) return CATSCAN2;
-			if (name.equals(CATSCAN3.getName())) return CATSCAN3;
-			return service;
+			return getServiceByName(name, null);
 		}
 		
 		public static Service getServiceByName(String name, Service defaultService) {
-			if (name.equals(CATSCAN.getName())) return CATSCAN;
 			if (name.equals(CATSCAN2.getName())) return CATSCAN2;
 			if (name.equals(CATSCAN3.getName())) return CATSCAN3;
 			return defaultService;
@@ -188,7 +196,7 @@ public class WikiTools {
                 depth,
                 category,
                 namespace);
-        return fetchQueryWithTimeoutRetry(service, url_query);   
+        return fetchQuery(service, url_query);   
     }
 	
 	public static String loadPagesForCatListAndIgnoreWithService(Service service, 
@@ -206,7 +214,7 @@ public class WikiTools {
                 StringUtils.join(cats, CAT_SEPARATOR),
                 StringUtils.join(ignore, CAT_SEPARATOR),
                 namespace);
-        return fetchQueryWithTimeoutRetry(service, url_query);   
+        return fetchQuery(service, url_query);   
     }
 	
 	public static String loadPagesWithTemplatesForCatWithService(Service service, 
@@ -231,7 +239,7 @@ public class WikiTools {
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
                 namespace);
-        return fetchQueryWithTimeoutRetry(service, url_query);
+        return fetchQuery(service, url_query);
     }
 	
 	public static String loadPagesWithTemplatesForCatListAndIgnoreWithService(Service service, 
@@ -258,7 +266,7 @@ public class WikiTools {
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
                 namespace);
-        return fetchQueryWithTimeoutRetry(service, url_query);
+        return fetchQuery(service, url_query);
     }
 	
 	public static String loadNewPagesForCatWithService(Service service, String category, String language, int depth, int hours, int namespace) throws IOException, InterruptedException {
@@ -279,7 +287,7 @@ public class WikiTools {
                     category,
                     hours);
         }
-        return fetchQueryWithTimeoutRetry(service, url_query);
+        return fetchQuery(service, url_query);
 	}
 	
 	public static String loadNewPagesForCatListAndIgnoreWithService(Service service, List<String> cats, List<String> ignore, String language, int depth, int hours, int namespace) throws IOException, InterruptedException
@@ -295,10 +303,10 @@ public class WikiTools {
                 hours,
                 namespace
                 );        
-		return fetchQueryWithTimeoutRetry(service, url_query);
+		return fetchQuery(service, url_query);
     }
 	
-	private static String fetchQueryWithTimeoutRetry(Service service, String query) throws IOException, InterruptedException {
+	private static String fetchQuery(Service service, String query) throws IOException, InterruptedException {
 		URI uri = null;
 		try {
 			uri = new URI(HTTP, service.DOMAIN, service.PATH, query, null);
@@ -308,13 +316,21 @@ public class WikiTools {
 		}
 		String page = null;
 		try {
-			page = HTTPTools.fetch(uri.toASCIIString(), true, true);
+			page = HTTPTools.fetch(uri.toASCIIString(), !fastMode, true, true);
 		} catch (java.net.SocketTimeoutException e) {
-			log.warn(e.toString()+", retry again ...");
-			Thread.sleep(TIMEOUT_DELAY);
-			page = HTTPTools.fetch(uri.toASCIIString(), true, true);
+			if (fastMode) {
+				throw e;
+			} else {
+				log.warn(e.toString()+", retry again ...");
+				Thread.sleep(TIMEOUT_DELAY);
+				page = HTTPTools.fetch(uri.toASCIIString(), true, true, true);
+			}
 		}
 		return page;  
+	}
+	
+	public static void setFastMode(boolean fast) {
+		fastMode = fast;
 	}
 	
 }

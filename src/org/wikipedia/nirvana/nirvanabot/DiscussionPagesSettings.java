@@ -82,6 +82,7 @@ public class DiscussionPagesSettings {
 		}
 		
 		public static DiscussionPageTemplate fromSettingString(String str) {
+			
 			DiscussionPageTemplate newTempl = null;
 			String parts[] = str.split("=");
 			if (parts.length != 2) {
@@ -138,9 +139,13 @@ public class DiscussionPagesSettings {
 		DiscussionPagesSettings settings = new DiscussionPagesSettings();
 		String lines[] = text.split("\n");
 		for (String line:lines) {
-			DiscussionPageTemplate template = DiscussionPageTemplate.fromSettingString(line.trim());
+			line = line.trim();
+			if (line.startsWith("//") || line.startsWith("#")) {
+				continue;
+			}
+			DiscussionPageTemplate template = DiscussionPageTemplate.fromSettingString(line);
 			if (template == null) {
-				log.error("Failed to parse DiscussionPage settings line: "+line.trim());
+				log.error("Failed to parse DiscussionPage settings line: "+line);
 			} else {
 				settings.templates.add(template);
 			}

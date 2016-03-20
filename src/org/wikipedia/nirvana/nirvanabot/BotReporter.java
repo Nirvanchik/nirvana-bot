@@ -240,7 +240,7 @@ public class BotReporter {
      */
     
     private void logStartStatus() {
-    	log.info(String.format("BOT STARTED %1$tF %1$tT", timeStarted));
+    	log.info(String.format("BOT STARTED %1$tF %1$tT version: %2$s", timeStarted, version));
     }
     
     public void logStatus() {
