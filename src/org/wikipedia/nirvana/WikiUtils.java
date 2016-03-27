@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 public class WikiUtils {
 	protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(WikiUtils.class.getName());
 	
-	private static final Pattern COMMENT_PATTERN = Pattern.compile("<!--(.+?)-->");
+	private static final Pattern COMMENT_PATTERN = Pattern.compile("<!--(.+?)-->", Pattern.DOTALL);
 	
 	public static int findMatchingBraceOfTemplate(String text, int start) {
 		int begin = start;
