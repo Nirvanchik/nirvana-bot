@@ -133,9 +133,6 @@ public class DiscussionPagesSettings {
 			return null;
 		}
 		text = text.trim();
-		if (text.isEmpty()) {
-			return null;
-		}
 		DiscussionPagesSettings settings = new DiscussionPagesSettings();
 		String lines[] = text.split("\n");
 		for (String line:lines) {

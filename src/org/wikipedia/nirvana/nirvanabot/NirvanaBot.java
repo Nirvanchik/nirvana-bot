@@ -134,7 +134,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	
 	private static String PICTURE_SEARCH_TAGS = "image file,Фото,портрет,Изображение,Файл,File";
 	private static String FAIR_USE_IMAGE_TEMPLATES = "Обоснование добросовестного использования, Disputed-fairuse, ОДИ, Несвободный файл/ОДИ";
-	private static DiscussionPagesSettings DISCUSSION_PAGES_SETTINGS = null;
+	private static DiscussionPagesSettings DISCUSSION_PAGES_SETTINGS = DiscussionPagesSettings.parseFromSettingsString("");
 	private static String DISCUSSION_PAGES_SETTINGS_WIKI = null;
 	
 	private static int DEFAULT_NAMESPACE = 0;
@@ -510,6 +510,19 @@ public class NirvanaBot extends NirvanaBasicBot{
 		return flag;
 	}
 	
+	private boolean checkPortalInTaskList(List<String> tasks, String portal) {
+		if (tasks == null) {
+			return true;
+		}
+		for (String task : tasks) {					
+			if(portal.startsWith(task)) {
+				log.debug("task detected: " + task);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	@SuppressWarnings("unused")
 	protected void go() throws InterruptedException {	
 		commons = new NirvanaWiki("commons.wikimedia.org");
@@ -535,9 +548,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	        return;
         }
 
-		BotReporter reporter;
-        reporter = new BotReporter(wiki, 700, true, getVersion());
-        //reporter.botStarted(true);
+		BotReporter reporter = new BotReporter(wiki, 1000, true, getVersion());
         if (UPDATE_STATUS) {
         	try {
 	            reporter.updateStartStatus(STATUS_WIKI_PAGE, STATUS_WIKI_TEMPLATE);
@@ -553,15 +564,35 @@ public class NirvanaBot extends NirvanaBasicBot{
 	        return;
         }
         
+		// this is a workaround for bad support of keep alive feature in HttpUrlConnection
+		// without it, writing of big articles (~500KB) may hang 
+		// (when reading answer from server after writing)
+		System.setProperty("http.keepAlive", "false"); // adjust HTTP connections
+
+		List<String> tasks = null;
+		if (TASK) {	
+			log.info("reading tasks from file: "+TASK_LIST_FILE);
+			tasks = FileTools.readFileToList(TASK_LIST_FILE, true);
+			if (tasks == null) {
+				log.fatal("Failed to read tasks file: " + TASK_LIST_FILE);
+				return;
+			}
+			log.info("loaded tasks: "+tasks.size()+" total");
+			for(String task : tasks) {
+				log.debug("task: "+task);
+			}
+		}
+        
         for (String newpagesTemplate: newpagesTemplates) {
+        	boolean fatalProblem = false;
         	long startT = Calendar.getInstance().getTimeInMillis();
     		log.info("template to check: "+newpagesTemplate);
     		
     		try {
     			loadOverridenProperties(newpagesTemplate);
     		} catch (IOException e) {
-    			e.printStackTrace();
-    			return;
+    			log.fatal(e);
+    			continue;
     		}
     		
     		// 1 extract portal list
@@ -570,20 +601,10 @@ public class NirvanaBot extends NirvanaBasicBot{
     			portalNewPagesLists = wiki.whatTranscludesHere(newpagesTemplate, Wiki.ALL_NAMESPACES);
     		} catch (IOException e) {			
     			log.fatal("failed to get portal list");
-    			return;
+    			continue;
     		}
     		log.info("loaded portal settings: "+portalNewPagesLists.length);
     		java.util.Arrays.sort(portalNewPagesLists);
-    		
-    		String [] tasks = null;
-    		if(TASK) {	
-    			log.info("reading tasks from file: "+TASK_LIST_FILE);
-    			tasks = FileTools.readFileToArray(TASK_LIST_FILE, true);
-    			if (tasks == null) {
-    				return;
-    			}
-    			log.info("loaded tasks: "+tasks.length+" total");
-    		}
     		
     		int i = 0;	// текущий портал
     		int t = 0;	// количество проверенных порталов
@@ -591,19 +612,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     		boolean retry = false;
     		ReportItem reportItem = null;
     		String portalName = null;
-    		
-    		// this is a workaround for bad support of keep alive feature in HttpUrlConnection
-    		// without it, writing of big articles (~500KB) may hang 
-    		// (when reading answer from server after writing)
-    		System.setProperty("http.keepAlive", "false"); // adjust HTTP connections
-    		
-    		// show task list
-    		if(tasks!=null) {
-    			for(String task : tasks) {
-    				log.debug("task: "+task);
-    			}
-    		}
-    		
+   		
     		while(i < portalNewPagesLists.length) {
     			log.debug("start processing portal No: "+i);
     			if(retry) {
@@ -627,20 +636,11 @@ public class NirvanaBot extends NirvanaBasicBot{
     				reportItem.start();
     			}
     			
-    			
-    			
-    			//if(DEBUG_BUILD && !portalName.endsWith(TESTING_PORTAL)) {log.info("SKIP portal: "+portalName);	continue;}
-    			
-    			if(tasks!=null) {
-    				boolean skip = true;
-    				for(String task : tasks) {					
-    					if(portalName.startsWith(task)) {
-    						log.debug("task detected: "+task);
-    						skip = false;
-    						break;
-    					}
-    				}
-    				if(skip) { log.info("SKIP portal: "+portalName); reportItem.skip(); i++; continue; }
+    			if (!checkPortalInTaskList(tasks, portalName)) {
+    				log.info("SKIP portal: "+portalName);
+    				reportItem.skip();
+    				i++;
+    				continue;
     			}
     			if(retry_count==0) t++;
     			if(t<START_FROM) {log.info("SKIP portal: "+portalName);	reportItem.skip(); i++; continue;}
@@ -743,6 +743,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     				}
     			} catch (LoginException e) {
     				log.fatal(e.toString());
+    				fatalProblem = true;
     				break;
     				//e.printStackTrace();
     			} catch (Exception e) {
@@ -774,18 +775,21 @@ public class NirvanaBot extends NirvanaBasicBot{
     			if (mayBeSomeServiceProblem) {
                     if(!serviceManager.checkServices()) {
                     	log.fatal("Some services are down. Stopping...");
+                    	fatalProblem = true;
                     	break;
                     }
     			}
-
     		}
     		reportItem.end();
     		Calendar cEnd = Calendar.getInstance();
     		long endT = cEnd.getTimeInMillis();
     		reporter.addToTotal(portalNewPagesLists.length);
     		
-    		log.info("TEMPLATE FINISHED at "+String.format("%1$tT", cEnd));
+    		log.info("TEMPLATE "+ (fatalProblem?"STOPPED":"FINISHED")+" at "+String.format("%1$tT", cEnd));
     		log.info("WORK TIME for TEMPLATE: "+BotReporter.printTimeDiff(endT-startT));
+    		if (fatalProblem) {
+    			break;
+    		}
     	}
         reporter.logStatus();
         if (GENERATE_REPORT) {
