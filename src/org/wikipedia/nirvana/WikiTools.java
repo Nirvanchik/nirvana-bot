@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -49,9 +48,6 @@ public class WikiTools {
 	private static final String CATSCAN3_PATH = "/catscan3/catscan2.php";
 	public static final String HTTP = "http";
 	private static final int TIMEOUT_DELAY = 10000; // 10 sec
-	
-	//private static final EnumSet<Service> SERVICES = EnumSet.of(Service.CATSCAN2, Service.CATSCAN3);
-	private static final Service SERVICES[] = {Service.CATSCAN2, Service.CATSCAN3};
 	
 	private static boolean fastMode = false;
 	

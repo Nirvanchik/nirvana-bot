@@ -36,7 +36,6 @@ import java.util.regex.Pattern;
 import javax.security.auth.login.LoginException;
 
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 

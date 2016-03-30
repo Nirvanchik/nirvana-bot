@@ -160,17 +160,14 @@ public class WikiUtils {
     	return COMMENT_PATTERN.matcher(text).replaceAll("");
     }
     
-    public static String addTextToTemplateLastNoincludeSectionBeforeCats(String categoryKey, String templateText, String insertText) {
+    public static String addTextToTemplateLastNoincludeSectionBeforeCats(
+    		String categoryKey, String templateText, String insertText) {
     	String text;
     	String separator = "\n";
-    	//Pattern pNoinclude = Pattern.compile("<noinclude>.*?</noinclude>");
-    	//Matcher mNoinclude = pNoinclude.matcher(templateText).
     	int indexOfLastNoinclude = templateText.lastIndexOf("<noinclude>");
     	if (indexOfLastNoinclude < 0) {
     		text = templateText + "<noinclude>" + insertText + "</noinclude>";
     	} else {
-    		int insertPos = templateText.length();
-    		
     		int indexOfLastNoincludeCloser = templateText.indexOf("</noinclude", indexOfLastNoinclude);
     		if (indexOfLastNoincludeCloser < 0) {
     			log.warn("Oops! The template code doesn't close <noinclude> section!");
@@ -189,7 +186,8 @@ public class WikiUtils {
     					templateText.substring(indexOfLastNoincludeCloser);
     		}
     		// here we have a range of (indexOfLastNoinclude,indexOfLastNoincludeCloser)
-    		int insertPlace = findCategoriesSectionInTextRange(categoryKey, templateText, indexOfLastNoinclude, indexOfLastNoincludeCloser);
+    		int insertPlace = findCategoriesSectionInTextRange(
+    				categoryKey, templateText, indexOfLastNoinclude, indexOfLastNoincludeCloser);
     		if (templateText.charAt(insertPlace - 1) == '\n') {
 				separator = "";
 			}

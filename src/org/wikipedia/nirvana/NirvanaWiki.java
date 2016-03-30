@@ -39,7 +39,6 @@ import java.util.zip.GZIPInputStream;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.wikipedia.Wiki;
 
 /**
