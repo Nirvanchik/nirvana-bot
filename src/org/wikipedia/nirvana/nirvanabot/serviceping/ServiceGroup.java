@@ -42,6 +42,12 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
 
 	private T activeService;
 	
+	private Listener<T> listener = null;
+	
+	public interface Listener<T extends BasicService> {
+		void onActiveServiceChanged(T activeService);
+	}
+	
     @SafeVarargs
     public ServiceGroup(String name, T defaultChecker, T... allCheckers) {
         super(name);
@@ -55,6 +61,16 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
         		defaultChecker,
         		allCheckers);
     }
+    
+    public void setListener(Listener<T> l) {
+    	this.listener = l;
+    }
+    
+    public void notifyActiveServiceChanged() {
+    	if (listener != null) {
+    		listener.onActiveServiceChanged(activeService);
+    	}
+    }
 	
 	public T getActiveService() {
 		return activeService;
@@ -66,20 +82,8 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
 	}
 	
 	@Override
-	public Status isOk() throws InterruptedException {
-		return activeService.isOk();
-	}
-	
-	@Override
-	public boolean isReplacable() {
-		return true;
-	}
-
-	@Override
-	public boolean replace() throws InterruptedException {
-		if (defaultService.isOk() == Status.OK) {
-			log.debug("Switch back to default service: "+defaultService.getName());
-			activeService = defaultService;
+	protected boolean checkOk() throws InterruptedException {
+		if (activeService.isOk() == Status.OK) {
 			return true;
 		}
 		for (T service: services) {
@@ -87,20 +91,29 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
 			log.info(String.format(Locale.ENGLISH, ServicePinger.SERVICE_STATUS_STRING, service.getName(), status));
 			ServicePinger.logDetailedStatusIfFailed(defaultService);
 			if (status == Status.OK) {
-				log.info(String.format("%1$s is replaced by %2$s",
-						activeService.getName(),
-						service.getName()));
-				activeService = service;
-	    		firstFailTime = System.currentTimeMillis();
-	    		lastFailTime = firstFailTime;
-	    		currentDelay = RECHECK_DELAY_1;
+				if (activeService != service) {
+					log.info(String.format("%1$s is replaced by %2$s",
+							activeService.getName(),
+							service.getName()));
+					activeService = service;
+		    		firstFailTime = System.currentTimeMillis();
+		    		lastFailTime = firstFailTime;
+		    		currentDelay = RECHECK_DELAY_1;
+		    		notifyActiveServiceChanged();
+				}
 				return true;
 			}
 		}
 		activeService = defaultService;
+		notifyActiveServiceChanged();
 		return false;
 	}
 	
+	@Override
+	public boolean isReplacable() {
+		return true;
+	}
+
 	@Override
     public void resetCache() {
 	    super.resetCache();
@@ -110,17 +123,14 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
 	    //activeService = null; Here we should use recheck delay or use it in
     }
 	
-	@Override
-    public boolean isReplaced() {
-	    return activeService != defaultService;
-    }
-
 	/* (non-Javadoc)
      * @see org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService#recover()
      */
     @Override
     public void recover() throws InterruptedException {
-    	assert activeService != defaultService;
+    	if (activeService == defaultService) {
+    		return;
+    	}
     	assert firstFailTime != 0;
     	assert lastFailTime != 0;
     	long time = System.currentTimeMillis();
@@ -138,6 +148,7 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
     	if (status == Status.OK) {
     		activeService = defaultService;
     		log.info(String.format("Switched back to %1$s successfully", defaultService.getName()));
+    		notifyActiveServiceChanged();
     		return;
     	}
     	lastFailTime = time;

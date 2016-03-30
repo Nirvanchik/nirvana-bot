@@ -32,6 +32,7 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.CatscanService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.InternetService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.NetworkInterface;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServiceGroup;
+import org.wikipedia.nirvana.nirvanabot.serviceping.ServiceGroup.Listener;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
@@ -80,6 +81,14 @@ public class ServiceManager {
 			pageListFetchServiceGroup =
 					new ServiceGroup<CatscanService>(
 							serviceCatscanDefault, serviceCatscan2, serviceCatscan3);
+			
+			pageListFetchServiceGroup.setListener(new Listener<CatscanService>() {
+
+				@Override
+                public void onActiveServiceChanged(CatscanService activeService) {
+					ServiceManager.this.activeService = activeService.getService();	                
+                }
+			});
 		
 			servicePinger = new ServicePinger(
 		 			serviceNetwork, 
@@ -118,9 +127,6 @@ public class ServiceManager {
 		try {
 	        if (!servicePinger.isOk()) {
 	        	servicePinger.tryToSolveProblems();
-	        	if (pageListFetchServiceGroup != null) {
-	        		activeService = pageListFetchServiceGroup.getActiveService().getService();
-	        	}
 	        }
         } catch (ServiceWaitTimeoutException e) {
 	        log.error(e);

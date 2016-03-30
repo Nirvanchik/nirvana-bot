@@ -44,7 +44,7 @@ public class DoubleCheckServiceTest {
 		boolean checkAvailableReturnVal = true;
 		boolean checkWorkingReturnVal = true;
 
-        public TestService(String name, int priority) {
+        public TestService(String name) {
 	        super(name);
         }
         
@@ -78,7 +78,7 @@ public class DoubleCheckServiceTest {
 	
 	@Test
 	public void bothChecksAreCalled() throws InterruptedException {
-		TestService service = new TestService("service", 0);
+		TestService service = new TestService("service");
 		service.isOk();
 		assertTrue(service.checkAvailableCalled);
 		assertTrue(service.checkWoringCalled);
@@ -86,7 +86,7 @@ public class DoubleCheckServiceTest {
 
 	@Test
 	public void isWorkingDependsOnIsAvailable() throws InterruptedException {
-		TestService service = new TestService("service", 0);
+		TestService service = new TestService("service");
 		service.checkAvailableReturnVal = false;
 		service.checkWorkingReturnVal = true;
 		assertFalse(Status.OK == service.isOk());

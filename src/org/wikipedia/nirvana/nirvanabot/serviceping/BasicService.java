@@ -81,14 +81,6 @@ public class BasicService implements OnlineService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService#getReplacement()
-	 */
-	@Override
-	public boolean replace() throws InterruptedException {
-		return false;
-	}
-
-	/* (non-Javadoc)
      * @see org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService#getPriority()
      */
     @Override
@@ -108,14 +100,6 @@ public class BasicService implements OnlineService {
     public void resetCache() {
 	    cachedStatus = null;
 	    lastError = null;
-    }
-
-	/* (non-Javadoc)
-     * @see org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService#isReplaced()
-     */
-    @Override
-    public boolean isReplaced() {
-	    return false;
     }
 
 	/* (non-Javadoc)

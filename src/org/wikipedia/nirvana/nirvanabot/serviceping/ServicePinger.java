@@ -68,39 +68,17 @@ public class ServicePinger {
     
     public void tryRecoverReplacedServices() throws InterruptedException {
     	for (OnlineService service: services) {
-    		if (service.isReplaced()) {
-    			service.recover();
-    		}
+   			service.recover();
     	}
     }
     
     public long tryToSolveProblems() throws InterruptedException, ServiceWaitTimeoutException {
     	long start = currentTimeMillis();
-    	if (!tryToSolveProblemsByReplacingService()) {
-    		tryToSolveProblemsByWaiting();
-    	}
+   		tryToSolveProblemsByWaiting();
     	long end = currentTimeMillis();
     	return end - start;
     }
-    
-    private boolean tryToSolveProblemsByReplacingService() throws InterruptedException {
-    	boolean ok = false;
-    	while (!ok) {
-        	for (OnlineService service: services) {
-        		if (service.isOk() != Status.OK) {
-        			if (!service.isReplacable()) {
-        				return false;
-        			}
-        			if (!service.replace()) {
-        				return false;
-        			}
-        		}
-        	}
-        	ok = isOk();
-    	}
-    	return true;
-    }
-    
+
     private void tryToSolveProblemsByWaiting() throws InterruptedException, ServiceWaitTimeoutException {
     	long firstFailTime = currentTimeMillis();
     	long currentDelay = RECHECK_DELAY_1;

@@ -36,8 +36,6 @@ public interface OnlineService {
 	String getName();
 	Status isOk() throws InterruptedException;
 	boolean isReplacable();
-	boolean replace() throws InterruptedException;
-	boolean isReplaced();
 	void recover() throws InterruptedException;
 	int getPriority();
 	void resetCache();

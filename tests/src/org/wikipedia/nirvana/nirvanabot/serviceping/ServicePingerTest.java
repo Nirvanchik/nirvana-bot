@@ -189,45 +189,6 @@ public class ServicePingerTest {
 	}
 	
 	@Test
-	public void resolveProblemsByReplacingService() throws InterruptedException {
-		TestService service1 = new TestService("service1");
-		TestService service2 = new TestService("service2") {
-			public boolean replaceCalled = false;
-			@Override
-			public boolean isReplacable() {
-				return true;
-			}
-			@Override
-            public boolean replace() throws InterruptedException {
-				replaceCalled = true;
-				return true;
-			}
-			
-			@Override
-	        protected boolean checkOk() {
-	        	checkOkCalled = true;
-	        	return checkOkReturnVal || replaceCalled;
-	        }
-			
-			@Override
-			public boolean isReplaced() {
-				return replaceCalled;
-			}
-		};
-		TestService service3 = new TestService("service3");
-		ServicePinger manager = new ServicePinger(service1, service2, service3);
-		service2.checkOkReturnVal = false;
-		manager.isOk();
-		try {
-	        manager.tryToSolveProblems();
-        } catch (ServiceWaitTimeoutException e) {
-	        Assert.fail();
-        }
-		Assert.assertTrue(service2.isReplaced());
-		Assert.assertTrue(manager.isOk());
-	}
-	
-	@Test
 	public void resolveProblemsByWaiting_shortTime() throws InterruptedException {
 		TestService service1 = new TestService("service1");
 		TestService service2 = new TestService("service2");
