@@ -36,7 +36,6 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.Wiki;
-import org.wikipedia.Wiki.Error504;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
@@ -719,11 +718,6 @@ public class NirvanaBot extends NirvanaBasicBot{
     					//e.printStackTrace();
     					log.error("OOOOPS!!!", e); // print stack trace
     				}	
-    			} catch (Error504 e) {				
-					log.warn(e.toString());
-					log.info("ignore error and continue ...");
-					reporter.portalError();
-					reportItem.error(BotError.SERVICE_ERROR);
     			} catch (ServiceError | IOException e) {
     				log.error(e.toString());
     				

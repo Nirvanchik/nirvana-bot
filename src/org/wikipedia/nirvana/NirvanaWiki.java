@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaWiki.java 0.08 16.11.2014
- *  Copyright © 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)NirvanaWiki.java 0.09
+ *  Copyright © 2011-2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,8 +43,7 @@ import javax.security.auth.login.LoginException;
 import org.wikipedia.Wiki;
 
 /**
- * @author KIN 
- * based on Wiki.java version 0.30, revision 208  
+ * based on Wiki.java version 0.31   
  */
 public class NirvanaWiki extends Wiki {
 	
@@ -320,32 +320,39 @@ public class NirvanaWiki extends Wiki {
 		return nobots;
 	}
 	
-	public String [] getPageLines(String title) throws IOException {
-	        // pitfall check
-	    if (namespace(title) < 0)
-	        throw new UnsupportedOperationException("Cannot retrieve Special: or Media: pages!");
+	@Deprecated
+	public String [] getPageLinesArray(String title) throws IOException {
+		List<String> lines = getPageLines(title); 
+        return lines.toArray(new String[lines.size()]);
+	}
 	
-	    // go for it
-	    String url = base + URLEncoder.encode(title, "UTF-8") + "&action=raw";
-	    String [] temp = fetchLines(url, "getPageLines");
-	    log(Level.INFO, "getPageLines", "Successfully retrieved text of " + title);
-	        return decode(temp);
+	public List<String> getPageLines(String title) throws IOException {
+        // pitfall check
+        if (namespace(title) < 0)
+            throw new UnsupportedOperationException("Cannot retrieve Special: or Media: pages!");
+    
+        // go for it
+        String url = base + URLEncoder.encode(title, "UTF-8") + "&action=raw";
+        List<String> items = fetchLines(url, "getPageLines");
+        log(Level.INFO, "getPageLines", "Successfully retrieved text of " + title);
+        return decodeList(items);
 	}
  
-	protected String [] decode(String items[]) {
-	        // Remove entity references. Oddly enough, URLDecoder doesn't nuke these.
+	protected String [] decodeArray(String items[]) {
 	 	for(int i=0;i<items.length;i++) {
-	 		String item = items[i];
-	 		items[i] = item.replace("&lt;", "<").
-	 				replace("&gt;", ">").
-	 				replace("&amp;", "&").
-	 				replace("&quot;", "\"").
-	 				replace("&#039;", "'");
-		 	}
+	 		items[i] = decode(items[i]);
+		}
 	 	return items;
     }
 	
-	protected String [] fetchLines(String url, String caller) throws IOException {
+	protected List<String> decodeList(List<String> items) {
+	 	for(int i=0;i<items.size();i++) {
+	 		items.set(i, decode(items.get(i)));
+		}
+	 	return items;
+    }
+	
+	protected List<String> fetchLines(String url, String caller) throws IOException {
 		logurl(url, caller);
 	    URLConnection connection = new URL(url).openConnection();
 	    connection.setConnectTimeout(CONNECTION_CONNECT_TIMEOUT_MSEC);
@@ -387,7 +394,7 @@ public class NirvanaWiki extends Wiki {
 		    //text.append("\n");
 		}
 	    in.close();
-	    return lines.toArray(new String[0]);
+	    return lines;
 	}
  
 	 /**

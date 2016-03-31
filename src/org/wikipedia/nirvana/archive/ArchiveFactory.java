@@ -48,7 +48,7 @@ public class ArchiveFactory {
 			String lines[] = new String[0];
 			if(!empty) {
 				try{
-					lines = wiki.getPageLines(name);
+					lines = wiki.getPageLinesArray(name);
 				} catch(FileNotFoundException e) {
 					//log.info("archive "+arname+" is empty");
 				}
@@ -60,7 +60,7 @@ public class ArchiveFactory {
 					String lines[] = new String[0];
 					if(!empty) {
 						try{
-							lines = wiki.getPageLines(name);
+							lines = wiki.getPageLinesArray(name);
 						} catch(FileNotFoundException e) {
 							//log.info("archive "+arname+" is empty");
 						}
@@ -84,7 +84,7 @@ public class ArchiveFactory {
 			String lines[] = new String[0];
 			if(!empty) {
 				try{
-					lines = wiki.getPageLines(name);
+					lines = wiki.getPageLinesArray(name);
 				} catch(FileNotFoundException e) {
 					//log.info("archive "+arname+" is empty");
 				}
