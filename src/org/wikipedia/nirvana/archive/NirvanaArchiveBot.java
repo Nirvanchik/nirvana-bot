@@ -257,7 +257,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 		log.info("updating archive: "+archive);
 		String lines[]= null;
 		try {
-			lines = this.wiki.getPageLines(archive);
+			lines = this.wiki.getPageLinesArray(archive);
 		} catch (FileNotFoundException e) {
 			log.info("archive not found");
 			return;

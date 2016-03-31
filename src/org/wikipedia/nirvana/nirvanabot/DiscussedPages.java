@@ -235,7 +235,7 @@ public class DiscussedPages extends Pages {
 	
 	//private static final S
 	public static String searchFragment(NirvanaWiki wiki, String discussionPage, String page) throws IOException {
-		String lines[] = wiki.getPageLines(discussionPage);
+		String lines[] = wiki.getPageLinesArray(discussionPage);
 		Pattern p = Pattern.compile("\\s*===?\\s*([^=]+\\s*)=?==\\s*");
 		for (String line:lines) {
 			if (line.contains(page)) {

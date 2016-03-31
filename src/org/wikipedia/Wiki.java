@@ -7049,12 +7049,6 @@ public class Wiki implements Serializable
         return temp;
     }
 
-    public static class Error504 extends IOException {
-    	public Error504(String text) {
-    		super(text);
-    	}
-    }
-
     /**
      *  Does a text-only HTTP POST.
      *  @param url the url to post to
@@ -7083,11 +7077,6 @@ public class Wiki implements Serializable
         if (checkLag(connection))
             post(url, text, caller);
         
-		/*
-		int responseCode = connection.getResponseCode();
-        if(responseCode == 504) {
-        	throw new Error504("HTTP Error 504");
-        }*/
         StringBuilder temp = new StringBuilder(100000);
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
             zipped ? new GZIPInputStream(connection.getInputStream()) : connection.getInputStream(), "UTF-8")))
