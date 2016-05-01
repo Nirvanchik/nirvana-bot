@@ -92,14 +92,6 @@ public abstract class FetcherFactory {
 		List<String> templates;
 		WikiTools.EnumerationType templateEnumType;
 
-		/**
-		 * @param service
-		 * @param cats
-		 * @param ignore
-		 * @param lang
-		 * @param depth
-		 * @param namespace
-		 */
 		public PagesWithTemplatesFetcher(List<String> templates, WikiTools.EnumerationType enumType) {
 			this.templates = templates;
 			this.templateEnumType = enumType;

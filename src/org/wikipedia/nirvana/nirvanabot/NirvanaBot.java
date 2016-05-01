@@ -1,5 +1,5 @@
 /**
- *  @(#)NirvanaBot.java 1.14 08.03.2016
+ *  @(#)NirvanaBot.java 1.15 01.04.2016
  *  Copyright © 2011 - 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
@@ -47,6 +47,7 @@ import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInBody;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInCard;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderUniversal;
+import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
 import org.wikipedia.nirvana.nirvanabot.tmplfinder.TemplateFindItem;
 
 /**
@@ -133,7 +134,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	
 	private static String PICTURE_SEARCH_TAGS = "image file,Фото,портрет,Изображение,Файл,File";
 	private static String FAIR_USE_IMAGE_TEMPLATES = "Обоснование добросовестного использования, Disputed-fairuse, ОДИ, Несвободный файл/ОДИ";
-	private static DiscussionPagesSettings DISCUSSION_PAGES_SETTINGS = DiscussionPagesSettings.parseFromSettingsString("");
+    private static DiscussionPagesSettings DISCUSSION_PAGES_SETTINGS = DiscussionPagesSettings.EMPTY;
 	private static String DISCUSSION_PAGES_SETTINGS_WIKI = null;
 	
 	private static int DEFAULT_NAMESPACE = 0;
@@ -149,16 +150,24 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static int MAX_UPDATES_PER_DAY = 4;
 	
 	private static int DEFAULT_STARTS_PER_DAY = 1;
-		
-	
+
+    private static final String DEFAULT_REPORT_PREAMBULA_FILE = "templates/Report_preambula.txt";
+    private String reportPreambulaFile = DEFAULT_REPORT_PREAMBULA_FILE;
+
+
 	private int startNumber = 1;
-	
-	private boolean longTask = true;
-	
+
+    @Deprecated
+    private boolean longTask = true;
+
 	private NirvanaWiki commons = null;
 	
 	private ServiceManager serviceManager;
-	
+
+    private int botTimeout = 0;
+
+    private int servicesTimeout = 0;
+
 	private static class NewPagesData {
 		ArrayList<String> errors;
 		PortalModule portalModule;
@@ -175,7 +184,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 		BOT_ERROR,
 		SERVICE_ERROR,		
 		IO_ERROR,
-		SETTINGS_ERROR
+		SETTINGS_ERROR,
+        FATAL
 	};
 	
 	public static String getDefaultFooter() {
@@ -189,9 +199,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 	public static String getDefaultMiddle() {
 		return DEFAULT_MIDDLE;
 	}
-	
-	private static final String VERSION = "v1.14";
-	
+
+    private static final String VERSION = "v1.15";
+
 	public static String PROGRAM_INFO = 
 			"NirvanaBot " + VERSION + " Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
 			"See also http://ru.wikipedia.org/User:NirvanaBot\n" +
@@ -317,7 +327,10 @@ public class NirvanaBot extends NirvanaBasicBot{
 		longTask = properties.getProperty("long-task",longTask?YES:NO).equals(YES);
 		
 		overridenPropertiesPage = properties.getProperty("overriden-properties-page",null);
-		
+
+        botTimeout = validateIntegerSetting(properties, "bot-timeout", botTimeout, false);
+        servicesTimeout = validateIntegerSetting(properties, "services-timeout", servicesTimeout, false);
+
 		return true;
 	}
 	
@@ -328,8 +341,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	
 	private static boolean validateService(String service) {
 		return service.equalsIgnoreCase(WikiTools.Service.CATSCAN2.name()) ||
-				service.equalsIgnoreCase(WikiTools.Service.CATSCAN3.name()) ||
-						service.equalsIgnoreCase(SERVICE_AUTO);
+                service.equalsIgnoreCase(WikiTools.Service.CATSCAN3.name());
 	}
 	
 	private static boolean validateSelectedService(String service) {
@@ -393,7 +405,12 @@ public class NirvanaBot extends NirvanaBasicBot{
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			SELECTED_SERVICE_NAME = validateSelectedService(options.get(key), SELECTED_SERVICE_NAME);			
 		}
-		
+
+        key = "сервис по умолчанию";
+        if (options.containsKey(key) && !options.get(key).isEmpty()) {
+            DEFAULT_SERVICE_NAME = validateService(options.get(key), DEFAULT_SERVICE_NAME);
+        }
+
 		key = "быстрый режим";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			DEFAULT_USE_FAST_MODE = options.get(key).equalsIgnoreCase(YES_RU);
@@ -523,31 +540,26 @@ public class NirvanaBot extends NirvanaBasicBot{
 	}
 	
 	@SuppressWarnings("unused")
-	protected void go() throws InterruptedException {	
+	protected void go() throws InterruptedException {
+        long startMillis = Calendar.getInstance().getTimeInMillis();
 		commons = new NirvanaWiki("commons.wikimedia.org");
 		commons.setMaxLag( MAX_LAG );
-		
+
 		try {
 	        serviceManager = new ServiceManager(DEFAULT_SERVICE_NAME, SELECTED_SERVICE_NAME, wiki, commons);
         } catch (BotFatalError e) {
 	        log.fatal(e);
 	        return;
         }
-		
-		if (startNumber != 1) {
-			serviceManager.setTimeout(2*60L*60L*1000L);  // 2 hours timeout for additional launches
-		}
-		
-		if (!longTask) {
-			serviceManager.setTimeout(0);
-		}
-		
+
+        serviceManager.setTimeout(servicesTimeout);
+
 		if (!serviceManager.checkServices()) {
 	        log.fatal("Some services are down. Exiting. ");
 	        return;
         }
 
-		BotReporter reporter = new BotReporter(wiki, 1000, true, getVersion());
+        BotReporter reporter = new BotReporter(wiki, 1000, true, getVersion(), reportPreambulaFile);
         if (UPDATE_STATUS) {
         	try {
 	            reporter.updateStartStatus(STATUS_WIKI_PAGE, STATUS_WIKI_TEMPLATE);
@@ -581,27 +593,46 @@ public class NirvanaBot extends NirvanaBasicBot{
 				log.debug("task: "+task);
 			}
 		}
-        
+        boolean fatalProblem = false;
+        boolean noServicesOrTimeout = false;
         for (String newpagesTemplate: newpagesTemplates) {
-        	boolean fatalProblem = false;
+
         	long startT = Calendar.getInstance().getTimeInMillis();
     		log.info("template to check: "+newpagesTemplate);
-    		
-    		try {
-    			loadOverridenProperties(newpagesTemplate);
-    		} catch (IOException e) {
-    			log.fatal(e);
-    			continue;
-    		}
-    		
-    		// 1 extract portal list
-    		String []portalNewPagesLists = null;
-    		try {
-    			portalNewPagesLists = wiki.whatTranscludesHere(newpagesTemplate, Wiki.ALL_NAMESPACES);
-    		} catch (IOException e) {			
-    			log.fatal("failed to get portal list");
-    			continue;
-    		}
+
+            String []portalNewPagesLists = null;
+            int repeat = 2;
+            while(repeat > 0) {
+                try {
+                    loadOverridenProperties(newpagesTemplate);
+                } catch (IOException e) {
+                    log.error("failed to get page: " + newpagesTemplate);
+                    if(!serviceManager.checkServices()) {
+                        log.fatal("Some services are down. Stopping...");
+                        fatalProblem = true;
+                        break;
+                    }
+                    repeat--;
+                    continue;
+                }
+
+                try {
+                    portalNewPagesLists = wiki.whatTranscludesHere(newpagesTemplate, Wiki.ALL_NAMESPACES);
+                } catch (IOException e) {            
+                    log.fatal("failed to get portal list");
+                    if(!serviceManager.checkServices()) {
+                        log.fatal("Some services are down. Stopping...");
+                        fatalProblem = true;
+                        break;
+                    }
+                    repeat--;
+                    continue;
+                }
+                break;
+            }
+            if (repeat == 0 || fatalProblem) {
+                break;
+            }
     		log.info("loaded portal settings: "+portalNewPagesLists.length);
     		java.util.Arrays.sort(portalNewPagesLists);
     		
@@ -611,8 +642,13 @@ public class NirvanaBot extends NirvanaBasicBot{
     		boolean retry = false;
     		ReportItem reportItem = null;
     		String portalName = null;
-   		
+
     		while(i < portalNewPagesLists.length) {
+                if (!noServicesOrTimeout && botTimeout > 0 &&
+                        (Calendar.getInstance().getTimeInMillis() - startMillis > botTimeout)) {
+                    log.debug("Bot work time exceeded allowed maximum of " + botTimeout + " ms. Stopping bot.");
+                    noServicesOrTimeout = true;
+                }
     			log.debug("start processing portal No: "+i);
     			if(retry) {
     				retry = false;
@@ -641,6 +677,11 @@ public class NirvanaBot extends NirvanaBasicBot{
     				i++;
     				continue;
     			}
+                if (noServicesOrTimeout) {
+                    reportItem.error(BotError.FATAL);
+                    i++;
+                    continue;
+                }
     			if(retry_count==0) t++;
     			if(t<START_FROM) {log.info("SKIP portal: "+portalName);	reportItem.skip(); i++; continue;}
     			
@@ -768,9 +809,14 @@ public class NirvanaBot extends NirvanaBasicBot{
     			if(!retry) i++;
     			if (mayBeSomeServiceProblem) {
                     if(!serviceManager.checkServices()) {
-                    	log.fatal("Some services are down. Stopping...");
-                    	fatalProblem = true;
-                    	break;
+                        log.fatal("Some services are down. Stopping...");
+                        if (serviceManager.getMainWikiService().isOk() == Status.OK) {
+                            noServicesOrTimeout = true;
+                            continue;
+                        } else {
+                            fatalProblem = true;
+                            break;
+                        }
                     }
     			}
     		}
@@ -778,8 +824,8 @@ public class NirvanaBot extends NirvanaBasicBot{
     		Calendar cEnd = Calendar.getInstance();
     		long endT = cEnd.getTimeInMillis();
     		reporter.addToTotal(portalNewPagesLists.length);
-    		
-    		log.info("TEMPLATE "+ (fatalProblem?"STOPPED":"FINISHED")+" at "+String.format("%1$tT", cEnd));
+
+            log.info("TEMPLATE "+ ((fatalProblem||noServicesOrTimeout)? "STOPPED": "FINISHED")+" at "+String.format("%1$tT", cEnd));
     		log.info("WORK TIME for TEMPLATE: "+BotReporter.printTimeDiff(endT-startT));
     		if (fatalProblem) {
     			break;
@@ -790,9 +836,13 @@ public class NirvanaBot extends NirvanaBasicBot{
         	if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "txt")) {        			
         		reporter.reportTXT(REPORT_FILE_NAME);
         	}
-        	if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "wiki")) {        			
-        		reporter.reportWiki(REPORT_WIKI_PAGE, startNumber == 1);
-        	}
+            if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "wiki")) {
+                if (serviceManager.getMainWikiService().isOk() == Status.OK) {
+                    reporter.reportWiki(REPORT_WIKI_PAGE, startNumber == 1);
+                } else {
+                    log.warn("Wiki is not available. Reporting to wiki skipped.");
+                }
+            }
 		}
         if (UPDATE_STATUS) {
         	try {

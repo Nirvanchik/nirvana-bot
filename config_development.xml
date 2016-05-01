@@ -52,5 +52,7 @@
 <entry key="fast-mode">yes</entry>
 <entry key="starts-per-day">2</entry>
 <entry key="long-task">no</entry>
+<entry key="bot-timeout">0</entry>
+<entry key="services-timeout">0</entry>
 
 </properties>

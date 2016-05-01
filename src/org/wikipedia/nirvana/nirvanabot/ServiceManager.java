@@ -1,5 +1,5 @@
 /**
- *  @(#)ServiceManager.java 20.03.2016
+ *  @(#)ServiceManager.java 01.04.2016
  *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -46,7 +46,8 @@ public class ServiceManager {
 	private final ServicePinger servicePinger;
 	private final ServiceGroup<CatscanService> pageListFetchServiceGroup;
 	private WikiTools.Service activeService = null;
-	
+    private final WikiService mainWiki;
+
 	public ServiceManager(String defaultServiceName, String selectedServiceName, NirvanaWiki wiki, NirvanaWiki commons) throws BotFatalError {
 		WikiTools.Service defaultService = WikiTools.Service.CATSCAN2;
 		defaultService = WikiTools.Service.getServiceByName(defaultServiceName, defaultService);
@@ -61,6 +62,7 @@ public class ServiceManager {
 		InternetService serviceInternet = new InternetService();
 		serviceInternet.dependsOn(serviceNetwork);
 		WikiService serviceWiki = new WikiService(wiki);
+        mainWiki = serviceWiki;
 		serviceWiki.dependsOn(serviceInternet);
 		WikiService serviceCommons = new WikiService(commons);
 		serviceCommons.dependsOn(serviceInternet);
@@ -69,7 +71,7 @@ public class ServiceManager {
 		CatscanService serviceCatscan3 = new CatscanService(Service.CATSCAN3);
 		serviceCatscan3.dependsOn(serviceInternet);
 		CatscanService serviceCatscanDefault = serviceCatscan2; 
-		switch (defaultService) {
+        switch (activeService) {
 			case CATSCAN2: serviceCatscanDefault = serviceCatscan2; break;
 			case CATSCAN3: serviceCatscanDefault = serviceCatscan3; break;
 			default:
@@ -78,6 +80,7 @@ public class ServiceManager {
 		}
 		
 		if (selectedServiceName.equalsIgnoreCase(SERVICE_AUTO)) {
+            log.info("Create service group");
 			pageListFetchServiceGroup =
 					new ServiceGroup<CatscanService>(
 							serviceCatscanDefault, serviceCatscan2, serviceCatscan3);
@@ -87,6 +90,7 @@ public class ServiceManager {
 				@Override
                 public void onActiveServiceChanged(CatscanService activeService) {
 					ServiceManager.this.activeService = activeService.getService();	                
+                    log.info("Active service changed to: " + ServiceManager.this.activeService.name());
                 }
 			});
 		
@@ -115,7 +119,11 @@ public class ServiceManager {
 	public WikiTools.Service getActiveService() {
 		return activeService;
 	}
-	
+
+    public WikiService getMainWikiService() {
+        return mainWiki;
+    }
+
 	public void timeToFixProblems() throws InterruptedException {
 		if (pageListFetchServiceGroup != null) {
 			servicePinger.tryRecoverReplacedServices();

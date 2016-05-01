@@ -22,5 +22,7 @@
 <entry key="service">auto</entry>
 <entry key="fast-mode">yes</entry>
 <entry key="long-task">yes</entry>
+<entry key="bot-timeout">7200000</entry>
+<entry key="services-timeout">3600000</entry>
 	
 </properties>
