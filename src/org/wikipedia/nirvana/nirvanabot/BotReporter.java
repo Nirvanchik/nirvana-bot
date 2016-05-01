@@ -59,18 +59,26 @@ public class BotReporter {
 	private int portalsError;
 	
 	String version;
-	
+
+    private String preambula = "";
+
 	static {
 		log = org.apache.log4j.Logger.getLogger(BotReporter.class.getName());
 	}
 	
-	public BotReporter(NirvanaWiki wiki, int capacity, boolean started, String version) {
+	public BotReporter(NirvanaWiki wiki, int capacity, boolean started, String version, String preambulaFile) {
 		this.wiki = wiki;
 		this.version = version;
 		reportItems = new ArrayList<ReportItem>(capacity);
 		if (started) {
 			botStarted(true);
 		}
+        if (preambulaFile!= null && !preambulaFile.isEmpty()) {
+            preambula = FileTools.readFileSilently(preambulaFile, "");
+            if (!preambula.isEmpty() && !preambula.endsWith("\n")) {
+                preambula += "\n";
+            }
+        }
 	}
 	
 	public void botStarted(boolean log) {
@@ -219,7 +227,7 @@ public class BotReporter {
     	}
     	log.info("generating report (Wiki) . . .");
 		StringBuilder sb = new StringBuilder();
-		//StringBuffer sbuf = new StringBuffer();
+        sb.append(preambula);
 		sb.append(ReportItem.getHeaderWiki()).append("\n");
 		int i = 0;
 		for(ReportItem item : reportItems) {

@@ -125,7 +125,7 @@ public abstract class BasicProcessor implements PageListProcessor {
                 if (!service.hasSuffix && namespace != 0)
                 {	                	
                     title = namespaceIdentifier + ":" + title;	                	
-                	log.debug("Namespace is not 0");
+                    log.debug("Namespace is not 0, add suffix!");
                 }	                
                 
                 if (!pages.contains(title))

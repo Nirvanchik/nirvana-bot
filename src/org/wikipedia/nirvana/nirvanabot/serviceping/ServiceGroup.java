@@ -89,7 +89,7 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
 		for (T service: services) {
 			Status status = service.isOk();
 			log.info(String.format(Locale.ENGLISH, ServicePinger.SERVICE_STATUS_STRING, service.getName(), status));
-			ServicePinger.logDetailedStatusIfFailed(defaultService);
+            ServicePinger.logDetailedStatusIfFailed(service);
 			if (status == Status.OK) {
 				if (activeService != service) {
 					log.info(String.format("%1$s is replaced by %2$s",
@@ -104,8 +104,11 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
 				return true;
 			}
 		}
-		activeService = defaultService;
-		notifyActiveServiceChanged();
+        if (activeService != defaultService) {
+            log.info(String.format("Set default service back: %1$s ", defaultService.getName()));
+            activeService = defaultService;
+            notifyActiveServiceChanged();
+        }
 		return false;
 	}
 	

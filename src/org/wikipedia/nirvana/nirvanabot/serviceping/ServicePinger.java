@@ -89,7 +89,9 @@ public class ServicePinger {
     			currentDelay = RECHECK_DELAY_2;
     		}
     		if (lastFailTime - firstFailTime > timeout) {
-    			log.warn("Stop waiting after more then "+ timeout +" ms passed");
+                if (timeout > 0 ) {
+                    log.warn("Stop waiting after more then "+ timeout +" ms passed");
+                }
     			throw new ServiceWaitTimeoutException(
     					String.format(Locale.ENGLISH,
     							"Required services are not available after waiting more than %d ms",

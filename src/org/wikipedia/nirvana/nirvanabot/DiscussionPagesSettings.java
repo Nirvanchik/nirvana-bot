@@ -31,10 +31,16 @@ import java.util.List;
  *
  */
 public class DiscussionPagesSettings {
-	protected static org.apache.log4j.Logger log;
-	static {
-		log = org.apache.log4j.Logger.getLogger(DiscussionPagesSettings.class);
-	}
+    protected static org.apache.log4j.Logger log = null;
+    public static final DiscussionPagesSettings EMPTY = new DiscussionPagesSettings();
+
+    private static void initLog() {
+        if (log == null) {
+            log = org.apache.log4j.Logger.getLogger(DiscussionPagesSettings.class);
+        }
+    }
+
+
 	List<DiscussionPageTemplate> templates;
 
 	public static class DiscussionPageTemplate {
@@ -127,8 +133,9 @@ public class DiscussionPagesSettings {
 	DiscussionPagesSettings() {
 		templates = new ArrayList<>();
 	}
-	
+
 	public static DiscussionPagesSettings parseFromSettingsString(String text) {
+        initLog();
 		if (text == null) {
 			return null;
 		}

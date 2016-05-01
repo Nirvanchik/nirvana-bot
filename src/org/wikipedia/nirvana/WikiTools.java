@@ -80,8 +80,8 @@ public class WikiTools {
 				"wikilang=%1$s&wikifam=.wikipedia.org&basecat=%2$s&basedeep=%3$d&mode=rc&hours=%4$d&onlynew=on&go=Сканировать&format=csv&userlang=ru",
 				null,
 				null),
-		CATSCAN2 ("catscan2", CATSCAN2_DOMAIN, CATSCAN2_PATH, 
-				2, 2, 0, -1, 1, true, false, false, 8928, ////	8760 = 1 year = 24*31*12 = 8928;
+        CATSCAN2 ("catscan2", CATSCAN2_DOMAIN, CATSCAN2_PATH,
+                2, 2, 0, -1, 1, true, false, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
 				ServiceFeatures.CATSCAN2_FEATURES,
 				"language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%5$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
@@ -90,8 +90,8 @@ public class WikiTools {
 				"language=%1$s&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=1",
 				"^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\S+$"),
-		CATSCAN3 ("catscan3", CATSCAN3_DOMAIN, CATSCAN3_PATH, 
-				2, 2, 0, -1, 1, true, false, false, 8928, ////	8760 = 1 year = 24*31*12 = 8928;
+        CATSCAN3 ("catscan3", CATSCAN3_DOMAIN, CATSCAN3_PATH,
+                2, 2, 0, -1, 1, true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
 				ServiceFeatures.CATSCAN3_FEATURES,
 				"language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%5$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",

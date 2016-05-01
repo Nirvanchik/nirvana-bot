@@ -65,7 +65,15 @@ public class FileTools {
 			logger.fine(ob.toString());
 		}
 	}
-	
+
+    private static void logW(Object ob) {
+        if (log4j != null) {
+            log4j.warn(ob);
+        } else {
+            logger.warning(ob.toString());
+        }
+    }
+
 	private static void logE(Object ob) {
 		if (log4j!=null) {
 			log4j.error(ob);
@@ -147,23 +155,26 @@ public class FileTools {
         in.close();
 	    return text.toString();
 	}
-	
-	public static String readFileSilently(String fileName) {
-		return readFileSilently(fileName, DEFAULT_ENCODING);
-	}
-	
-	public static String readFileSilently(String fileName, String encoding) {
-		String text = null;
+
+    public static String readFileSilently(String fileName) {
+        return readFileSilently(fileName, null, DEFAULT_ENCODING);
+    }
+
+    public static String readFileSilently(String fileName, String defaultVal) {
+        return readFileSilently(fileName, defaultVal, DEFAULT_ENCODING);
+    }
+
+    public static String readFileSilently(String fileName, String defaultVal, String encoding) {
+        String text = defaultVal;
 		try {
 	        text = readFile(fileName, encoding);			
-		} catch (FileNotFoundException e) {
-			logE(e);	
-		} catch (UnsupportedEncodingException e) {
-			logE(e);		
-		} catch (IOException e) {
-			logE(e);
-			e.printStackTrace();			
+        } catch (IOException e) {
+            logE("Failed to read file: " + fileName);
+            logE(e);
 		}
+        if (text == defaultVal && defaultVal != null) {
+            logW("Using default value instead: "+ defaultVal);
+        }
 		return text;
 	}
 	
