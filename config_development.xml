@@ -47,7 +47,7 @@
 <entry key="statistics-format">txt</entry>
 <!--<entry key="statistics-format">txt,wiki</entry>-->
 <entry key="type">all</entry>
-<entry key="default-service">catscan2</entry>
+<entry key="default-service">petscan</entry>
 <entry key="service">auto</entry>
 <entry key="fast-mode">yes</entry>
 <entry key="starts-per-day">2</entry>

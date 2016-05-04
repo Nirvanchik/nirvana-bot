@@ -25,17 +25,22 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import static org.wikipedia.nirvana.nirvanabot.NirvanaBot.SERVICE_AUTO;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.WikiTools.Service;
 import org.wikipedia.nirvana.nirvanabot.serviceping.CatscanService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.InternetService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.NetworkInterface;
+import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServiceGroup;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServiceGroup.Listener;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger;
-import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
+import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 
 /**
  * @author kin
@@ -44,47 +49,71 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTim
 public class ServiceManager {
 	protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(ServiceManager.class.getName());
 	private final ServicePinger servicePinger;
-	private final ServiceGroup<CatscanService> pageListFetchServiceGroup;
+    private ServiceGroup<CatscanService> pageListFetchServiceGroup = null;
 	private WikiTools.Service activeService = null;
-    private final WikiService mainWiki;
+    private WikiService mainWiki = null;
+    private InternetService internet = null;
+    private OnlineService catscan = null;
 
 	public ServiceManager(String defaultServiceName, String selectedServiceName, NirvanaWiki wiki, NirvanaWiki commons) throws BotFatalError {
-		WikiTools.Service defaultService = WikiTools.Service.CATSCAN2;
-		defaultService = WikiTools.Service.getServiceByName(defaultServiceName, defaultService);
+        this(wiki, commons);
+        updateCatScan(defaultServiceName, selectedServiceName);
+    }
 
-		if (selectedServiceName.equalsIgnoreCase(SERVICE_AUTO)) {
-			activeService = defaultService;
-		} else {
-			activeService = WikiTools.Service.getServiceByName(selectedServiceName, defaultService);
-		}
-		
+    public ServiceManager(NirvanaWiki wiki, NirvanaWiki commons) {
 		NetworkInterface serviceNetwork = new NetworkInterface();
 		InternetService serviceInternet = new InternetService();
 		serviceInternet.dependsOn(serviceNetwork);
+        internet = serviceInternet; 
 		WikiService serviceWiki = new WikiService(wiki);
         mainWiki = serviceWiki;
 		serviceWiki.dependsOn(serviceInternet);
 		WikiService serviceCommons = new WikiService(commons);
 		serviceCommons.dependsOn(serviceInternet);
-		CatscanService serviceCatscan2 = new CatscanService(Service.CATSCAN2);
-		serviceCatscan2.dependsOn(serviceInternet);		
-		CatscanService serviceCatscan3 = new CatscanService(Service.CATSCAN3);
-		serviceCatscan3.dependsOn(serviceInternet);
-		CatscanService serviceCatscanDefault = serviceCatscan2; 
-        switch (activeService) {
-			case CATSCAN2: serviceCatscanDefault = serviceCatscan2; break;
-			case CATSCAN3: serviceCatscanDefault = serviceCatscan3; break;
-			default:
-				log.fatal("Unexpected default service: "+defaultService);
-				throw new BotFatalError("Unexpected default service: "+defaultService);
-		}
-		
+        servicePinger = new ServicePinger(
+                 serviceNetwork,
+                 serviceInternet,
+                 serviceWiki,
+                 serviceCommons);
+    }
+
+    public void updateCatScan(String defaultServiceName, String selectedServiceName) throws BotFatalError {
+        WikiTools.Service defaultService = WikiTools.Service.getServiceByName(defaultServiceName);
+        assert defaultService != null;
+
+        if (selectedServiceName.equalsIgnoreCase(SERVICE_AUTO)) {
+            activeService = defaultService;
+        } else {
+            activeService = WikiTools.Service.getServiceByName(selectedServiceName, defaultService);
+        }
+        log.info("Selected service is: " + activeService.getName());
+
+        Map<Service, CatscanService> servicesMap = new HashMap<>();
+        ArrayList<CatscanService> services = new ArrayList<>();
+        for (Service s: Service.values()) {
+            if (!s.DOWN) {
+                CatscanService service = new CatscanService(s);
+                service.dependsOn(internet);
+                servicesMap.put(s, service);
+                services.add(service);
+            }
+        }
+        CatscanService serviceCatscanDefault = servicesMap.get(activeService);
+        if (serviceCatscanDefault == null) {
+            log.error("We have a problem, Watson! HOUHOU!");
+            throw new BotFatalError("Unexpected state: we can't find this service");
+        }
+
+        if (catscan != null) {
+            servicePinger.removeService(catscan);
+        }
 		if (selectedServiceName.equalsIgnoreCase(SERVICE_AUTO)) {
             log.info("Create service group");
+
 			pageListFetchServiceGroup =
 					new ServiceGroup<CatscanService>(
-							serviceCatscanDefault, serviceCatscan2, serviceCatscan3);
-			
+                            serviceCatscanDefault, services.toArray(new CatscanService[0]));
+
 			pageListFetchServiceGroup.setListener(new Listener<CatscanService>() {
 
 				@Override
@@ -93,29 +122,18 @@ public class ServiceManager {
                     log.info("Active service changed to: " + ServiceManager.this.activeService.name());
                 }
 			});
-		
-			servicePinger = new ServicePinger(
-		 			serviceNetwork, 
-		 			serviceInternet,
-		 			serviceWiki,
-		 			serviceCommons,
-		 			pageListFetchServiceGroup);
+            catscan = pageListFetchServiceGroup;
 		} else {
 			pageListFetchServiceGroup = null;
-			servicePinger = new ServicePinger(
-		 			serviceNetwork, 
-		 			serviceInternet,
-		 			serviceWiki,
-		 			serviceCommons,
-		 			serviceCatscanDefault);
+            catscan = serviceCatscanDefault;
 		}
-	}
-	
-	
+        servicePinger.addService(catscan);
+    }
+
 	public void setTimeout(long timeout) {
 		servicePinger.setTimeout(timeout);
 	}
-	
+
 	public WikiTools.Service getActiveService() {
 		return activeService;
 	}
@@ -142,5 +160,4 @@ public class ServiceManager {
         }
 		return true;
 	}
-
 }

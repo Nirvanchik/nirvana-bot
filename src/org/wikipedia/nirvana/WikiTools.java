@@ -46,6 +46,8 @@ public class WikiTools {
 	private static final String CATSCAN3_DOMAIN = LABS_DOMAIN;
 	private static final String CATSCAN2_PATH = "/catscan2/catscan2.php";
 	private static final String CATSCAN3_PATH = "/catscan3/catscan2.php";
+    private static final String PETSCAN_DOMAIN = "petscan.wmflabs.org";
+    private static final String PETSCAN_PATH = "/";
 	public static final String HTTP = "http";
 	private static final int TIMEOUT_DELAY = 10000; // 10 sec
 	
@@ -58,8 +60,10 @@ public class WikiTools {
     	public static final int PAGES_WITH_TEMPLATE = 0b1000;
     	@Deprecated
     	public static final int CATSCAN_FEATURES = NEWPAGES;
+        @Deprecated
     	public static final int CATSCAN2_FEATURES = PAGES|NEWPAGES|FAST_MODE|PAGES_WITH_TEMPLATE;
     	public static final int CATSCAN3_FEATURES = PAGES|NEWPAGES|FAST_MODE|PAGES_WITH_TEMPLATE;
+        public static final int PETSCAN_FEATURES = PAGES|NEWPAGES|FAST_MODE|PAGES_WITH_TEMPLATE;
 	}
 	
 	public enum EnumerationType {
@@ -79,7 +83,9 @@ public class WikiTools {
 				null,
 				"wikilang=%1$s&wikifam=.wikipedia.org&basecat=%2$s&basedeep=%3$d&mode=rc&hours=%4$d&onlynew=on&go=Сканировать&format=csv&userlang=ru",
 				null,
-				null),
+                null,
+                true),
+        @Deprecated
         CATSCAN2 ("catscan2", CATSCAN2_DOMAIN, CATSCAN2_PATH,
                 2, 2, 0, -1, 1, true, false, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
 				ServiceFeatures.CATSCAN2_FEATURES,
@@ -89,7 +95,8 @@ public class WikiTools {
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&ns[%7$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=1",
-				"^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\S+$"),
+                "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\S+$",
+                true),
         CATSCAN3 ("catscan3", CATSCAN3_DOMAIN, CATSCAN3_PATH,
                 2, 2, 0, -1, 1, true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
 				ServiceFeatures.CATSCAN3_FEATURES,
@@ -99,7 +106,20 @@ public class WikiTools {
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&ns[%7$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=1",
-				"^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\d+\\s+\\S+$");
+                "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\d+\\s+\\S+$",
+                false),
+        PETSCAN ("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
+                1, 3, 1, -1, 2,
+                true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
+                ServiceFeatures.PETSCAN_FEATURES,
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s&combination=union&ns[%5$d]=1&sortby=title&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1&sortby=title&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&combination=union&ns[%7$d]=1&sortby=title&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on&sortorder=descending&format=tsv&doit=",
+                "^\\d+\\s+\\S+\\s+\\d+\\s+(\\S+\\s+)?\\d+\\s+\\d+\\s*$",
+                false);
 		private final String name;
 		public final String DOMAIN;
 		public final String PATH;
@@ -120,6 +140,7 @@ public class WikiTools {
 		public final String GET_NEW_PAGES_FORMAT;
 		public final String GET_NEW_PAGES_FORMAT_FAST;
 		public final String LINE_RULE;
+        public final boolean DOWN;
 
 		Service(String name, String domain, String path, 
 				int skipLines, int namespacePos, int titlePos, int revidPos, int idPos,
@@ -131,7 +152,8 @@ public class WikiTools {
 				String getPagesWithTemplateFormatFast,
 				String getNewPagesFormat,
 				String getNewPagesFormatFast,
-				String lineRule) {
+                String lineRule,
+                boolean down) {
 			this.name = name;
 			this.DOMAIN = domain;
 			this.PATH = path;
@@ -152,6 +174,7 @@ public class WikiTools {
 			this.GET_NEW_PAGES_FORMAT = getNewPagesFormat;
 			this.GET_NEW_PAGES_FORMAT_FAST = getNewPagesFormatFast;
 			this.LINE_RULE = lineRule;
+            this.DOWN = down;
 			this.toString();
 		}
 		@Override
@@ -169,14 +192,22 @@ public class WikiTools {
 		}
 		
 		public static Service getServiceByName(String name, Service defaultService) {
-			if (name.equals(CATSCAN2.getName())) return CATSCAN2;
-			if (name.equals(CATSCAN3.getName())) return CATSCAN3;
+            for (Service s: Service.values()) {
+                if (s.getName().equals(name)) return s;
+            }
 			return defaultService;
 		}
 		
-		public static Service getDefaultServiceForFeature(int feature) {
-			return Service.CATSCAN2;
-		}
+        public static Service getDefaultServiceForFeature(int feature) {
+            return Service.PETSCAN;
+        }
+        
+        public static boolean hasService(String name) {
+            for (Service s: Service.values()) {
+                if (s.name.equals(name)) return true;
+            }
+            return false;
+        }
 	}
 
 	public static String loadPagesForCatWithService(Service service, 

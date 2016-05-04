@@ -23,6 +23,9 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 
@@ -44,34 +47,40 @@ public class ServicePinger {
 	static final String SERVICE_STATUS_STRING = "%1$-25s -> %2$s";
 	private static final String SERVICE_STATUS_STRING_DETAILED = "%1$s: %2$s";
 	
-	//private long currentDelay = RECHECK_DELAY_1;
-	//private Calendar lastFailTime = null;
-	//private long lastFailTime = 0;
-	
-	//List<OnlineService> services = new ArrayList<>();
-	private OnlineService services[];
+    private final List<OnlineService> services;
 	private OnlineService lastFuckedService = null;
 	
 	private long timeout = TIMEOUT;
-	/**
-     * 
-     */
+
     public ServicePinger(OnlineService... servicesList) {
-	    //services.addAll(servicesList);
-    	services = servicesList;
+        services = new ArrayList<>(Arrays.asList(servicesList));
     	log.debug("Build ServicePinger of services: " + StringUtils.join(services, ", "));
     }
     
+    public void addService(OnlineService service) {
+        log.debug("Add service to ServicePinger: " + service.toString());
+        services.add(service);
+    }
+
+    public void removeService(OnlineService service) {
+        for (OnlineService s: services) {
+            if (s == service) {
+                services.remove(s);
+                return;
+            }
+        }
+    }
+
     public void setTimeout(long timeout) {
     	this.timeout = timeout;
     }
-    
+
     public void tryRecoverReplacedServices() throws InterruptedException {
     	for (OnlineService service: services) {
    			service.recover();
     	}
     }
-    
+
     public long tryToSolveProblems() throws InterruptedException, ServiceWaitTimeoutException {
     	long start = currentTimeMillis();
    		tryToSolveProblemsByWaiting();
