@@ -144,7 +144,7 @@ public class DiscussionPagesSettings {
 		String lines[] = text.split("\n");
 		for (String line:lines) {
 			line = line.trim();
-			if (line.startsWith("//") || line.startsWith("#")) {
+            if (line.isEmpty() || line.startsWith("//") || line.startsWith("#")) {
 				continue;
 			}
 			DiscussionPageTemplate template = DiscussionPageTemplate.fromSettingString(line);

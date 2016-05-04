@@ -93,16 +93,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static int MAX_MAXITEMS = 5000;
 	private static int DEFAULT_MAXITEMS = 20;
 	private static int DEFAULT_HOURS = 500;
-	
-	//private static WikiTools.Service DEFAULT_SERVICE = WikiTools.Service.CATSCAN2;
-	private static String DEFAULT_SERVICE_NAME = WikiTools.Service.CATSCAN2.name();
 
+    private static String DEFAULT_SERVICE_NAME = WikiTools.Service.PETSCAN.name();
 	private static String SELECTED_SERVICE_NAME = SERVICE_AUTO;
-	
-	//private ServicePinger servicePinger = null;
-
-	//private static WikiTools.Service activeService = null;
-	//private static String DEFAULT_SERVICE_NAME = DEFAULT_SERVICE.name();
 
 	private static boolean DEFAULT_USE_FAST_MODE = true;
 	private static boolean ERROR_NOTIFICATION = false;
@@ -263,11 +256,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 		DEFAULT_STARTS_PER_DAY = validateIntegerSetting(properties,"starts-per-day", DEFAULT_STARTS_PER_DAY, false);
 		
 		DEFAULT_PARSE_COUNT = validateIntegerSetting(properties,"parse-count",DEFAULT_PARSE_COUNT,false);
-		
-		DEFAULT_SERVICE_NAME = validateService(properties.getProperty("default-service", DEFAULT_SERVICE_NAME), DEFAULT_SERVICE_NAME);
-		//private static WikiTools.Service DEFAULT_SERVICE = WikiTools.Service.CATSCAN2;
-		//DEFAULT_SERVICE = WikiTools.Service.getServiceByName(DEFAULT_SERVICE_NAME, DEFAULT_SERVICE);
 
+		DEFAULT_SERVICE_NAME = validateService(properties.getProperty("default-service", DEFAULT_SERVICE_NAME), DEFAULT_SERVICE_NAME);
 		SELECTED_SERVICE_NAME = validateSelectedService(properties.getProperty("service", SELECTED_SERVICE_NAME), SELECTED_SERVICE_NAME);
 
 		DEFAULT_USE_FAST_MODE = properties.getProperty("fast-mode",DEFAULT_USE_FAST_MODE?YES:NO).equals(YES);
@@ -340,10 +330,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 	}
 	
 	private static boolean validateService(String service) {
-		return service.equalsIgnoreCase(WikiTools.Service.CATSCAN2.name()) ||
-                service.equalsIgnoreCase(WikiTools.Service.CATSCAN3.name());
+        return WikiTools.Service.hasService(service);
 	}
-	
+
 	private static boolean validateSelectedService(String service) {
 		return validateService(service) || service.equalsIgnoreCase(SERVICE_AUTO);
 	}
@@ -362,9 +351,10 @@ public class NirvanaBot extends NirvanaBasicBot{
 		return defaultValue;
 	}
 	
-	private void loadOverridenProperties(String newpagesTemplate) throws IOException	{
-		if(overridenPropertiesPage==null || overridenPropertiesPage.isEmpty())
-			return;
+    private boolean loadOverridenProperties(String newpagesTemplate) throws IOException	{
+        if(overridenPropertiesPage==null || overridenPropertiesPage.isEmpty()) {
+            return false;
+        }
 		log.info("loading overriden properties from page "+overridenPropertiesPage);
 		String overridenPropertiesText = null;
 		try {
@@ -376,7 +366,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		Map<String, String> options = new HashMap<String, String>();		
 		if(!TryParseTemplate(newpagesTemplate, userNamespace, overridenPropertiesText,options, true)) {
 			log.info("no default settings for this template: "+newpagesTemplate);
-			return;
+            return false;
 		}
 		if (options.containsKey("разделитель") && !options.get("разделитель").isEmpty())
 		{
@@ -507,8 +497,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 				DISCUSSION_PAGES_SETTINGS = newSettings;
 			}
 		}
+        return true;
 	}
-	
+
 	protected static PortalParam.Deleted parseDeleted(String value, PortalParam.Deleted defaultValue,ArrayList<String> errors) {
 		PortalParam.Deleted flag = defaultValue;
 		if(value.equalsIgnoreCase("удалять")) {
@@ -546,6 +537,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		commons.setMaxLag( MAX_LAG );
 
 		try {
+            log.debug("Create service manager with default service: " + DEFAULT_SERVICE_NAME + " and selected service: " + SELECTED_SERVICE_NAME);
 	        serviceManager = new ServiceManager(DEFAULT_SERVICE_NAME, SELECTED_SERVICE_NAME, wiki, commons);
         } catch (BotFatalError e) {
 	        log.fatal(e);
@@ -602,9 +594,10 @@ public class NirvanaBot extends NirvanaBasicBot{
 
             String []portalNewPagesLists = null;
             int repeat = 2;
+            boolean overridden = false;
             while(repeat > 0) {
                 try {
-                    loadOverridenProperties(newpagesTemplate);
+                    overridden = loadOverridenProperties(newpagesTemplate);
                 } catch (IOException e) {
                     log.error("failed to get page: " + newpagesTemplate);
                     if(!serviceManager.checkServices()) {
@@ -632,6 +625,15 @@ public class NirvanaBot extends NirvanaBasicBot{
             }
             if (repeat == 0 || fatalProblem) {
                 break;
+            }
+            if (overridden) {
+                try {
+                    log.debug("Update service manager with default service: " + DEFAULT_SERVICE_NAME + " and selected service: " + SELECTED_SERVICE_NAME);
+                    serviceManager.updateCatScan(DEFAULT_SERVICE_NAME, SELECTED_SERVICE_NAME);
+                } catch (BotFatalError e1) {
+                    log.fatal(e1);
+                    return;
+                }
             }
     		log.info("loaded portal settings: "+portalNewPagesLists.length);
     		java.util.Arrays.sort(portalNewPagesLists);

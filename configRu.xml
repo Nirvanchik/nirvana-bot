@@ -34,7 +34,7 @@
 <entry key="status-wiki">Участник:NirvanaBot/Новые статьи/Статус</entry>
 <entry key="status-wiki-template">Участник:NirvanaBot/Новые статьи/Отображение статуса</entry>
 <entry key="start-from">0</entry>
-<entry key="default-service">catscan2</entry>
+<entry key="default-service">petscan</entry>
 <entry key="service">auto</entry>
 <entry key="fast-mode">yes</entry>
 <entry key="long-task">yes</entry>

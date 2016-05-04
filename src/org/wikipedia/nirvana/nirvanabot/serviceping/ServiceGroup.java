@@ -54,14 +54,14 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
         services = Arrays.copyOf(allCheckers, allCheckers.length);
         activeService = defaultService = defaultChecker;
     }
-    
+
     @SafeVarargs
     public ServiceGroup(T defaultChecker, T... allCheckers) {
         this("group of services: " + StringUtils.join(allCheckers, ", ") + ".",
         		defaultChecker,
         		allCheckers);
     }
-    
+
     public void setListener(Listener<T> l) {
     	this.listener = l;
     }
