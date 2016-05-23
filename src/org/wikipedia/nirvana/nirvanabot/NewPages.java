@@ -330,6 +330,10 @@ public class NewPages implements PortalModule{
 	    		log.debug("namespace = "+namespaceIdentifier+" namespace="+String.valueOf(namespace)+" title="+title);
 	    		titleToInsert = title.substring(namespaceIdentifier.length()+1);
 	    	}
+	        // There are pages like /etc or /dev/null which start with '/'
+	        if (titleToInsert.startsWith("/")) {
+	            titleToInsert = ":" + titleToInsert;
+	        }
 	    	if(format.contains("{{") && format.contains("}}")) {
 	    		titleToInsert = pageTitleNormalToEscaped(titleToInsert); // replaces '=' equal-sign by escape-code
 	    	}
