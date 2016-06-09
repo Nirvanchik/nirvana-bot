@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# First part return the files being commited, excluding deleted files.
+git diff-index -z --cached HEAD --name-only --diff-filter=ACMRTUXB |
+xargs --null --no-run-if-empty java -jar .checkstyle/checkstyle-6.19-all.jar -c .checkstyle/checks.xml 
+
+if [ "$?" != "0" ]; then
+  echo "checkstyle found some problems with the modified files.";
+  echo "Fix them before committing or suggest a change to the rules defined in .checkstyle/checks.xml";
+  echo "If it is not possible to fix them all commit with the option --no-verify.";
+
+  exit 1;
+fi
