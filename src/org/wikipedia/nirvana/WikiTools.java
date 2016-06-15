@@ -26,6 +26,7 @@ package org.wikipedia.nirvana;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -52,7 +53,10 @@ public class WikiTools {
 	private static final int TIMEOUT_DELAY = 10000; // 10 sec
 	
 	private static boolean fastMode = false;
-	
+
+    private static boolean testMode = false;
+    private static List<String> mockedResponses = null;
+
 	public static class ServiceFeatures {
     	public static final int PAGES = 0b1;
     	public static final int NEWPAGES = 0b10;
@@ -341,6 +345,14 @@ public class WikiTools {
 			log.error(e.toString());
 			return null;
 		}
+        if (testMode && mockedResponses != null) {
+            if (mockedResponses.isEmpty()) {
+                throw new RuntimeException(
+                        "fetchQuery() called in test mode when no mocked responces is available!");
+            }
+            return mockedResponses.remove(0);
+        }
+
 		String page = null;
 		try {
 			page = HTTPTools.fetch(uri.toASCIIString(), !fastMode, true, true);
@@ -359,5 +371,18 @@ public class WikiTools {
 	public static void setFastMode(boolean fast) {
 		fastMode = fast;
 	}
-	
+
+    static void mockResponces(List<String> responces) {
+        testMode = true;
+        if (mockedResponses == null) {
+            mockedResponses = new ArrayList<String>();
+        }
+        mockedResponses.addAll(responces);
+    }
+
+    static void resetFromTest() {
+        if (mockedResponses != null) mockedResponses.clear();
+        testMode = true;
+    }
+
 }

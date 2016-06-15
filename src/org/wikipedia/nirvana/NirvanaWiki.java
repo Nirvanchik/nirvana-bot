@@ -174,11 +174,12 @@ public class NirvanaWiki extends Wiki {
     	//log.setLevel(org.apache.log4j.Level.OFF);
     	log.setLevel(level);
     }
-    
-    public synchronized void edit(String title, String text, String summary, boolean minor, boolean bot,
-            int section) throws IOException, LoginException {
+
+    @Override
+    public synchronized void edit(String title, String text, String summary, boolean minor,
+            boolean bot, int section, Calendar basetime) throws IOException, LoginException {
     	if(!this.dumpMode) {
-    		super.edit(title, text, summary, minor, bot, section, null);    		
+            super.edit(title, text, summary, minor, bot, section, null);
     	} else {
     		String fileNew = title+".new.txt";
     		String fileOld = title+".old.txt";
@@ -191,12 +192,12 @@ public class NirvanaWiki extends Wiki {
     
     public void edit(String title, String text, String summary, boolean minor, boolean bot) throws IOException, LoginException
     {
-    	this.edit(title, text, summary, minor, bot, -2);
+        edit(title, text, summary, minor, bot, -2, null);
     }
     
     public void edit(String title, String text, String summary) throws IOException, LoginException
     {
-    	this.edit(title, text, summary, false, true, -2);
+        edit(title, text, summary, false, true, -2, null);
     }
     
     public boolean editIfChanged(String title, String text, String summary, boolean minor, boolean bot) throws IOException, LoginException
@@ -209,7 +210,7 @@ public class NirvanaWiki extends Wiki {
     	}
     	if(old==null || old.length()!=text.length() || !old.equals(text)) { // to compare lengths is faster than comparing 5k chars
     		log.debug("editing "+title);
-    		edit(title, text, summary, minor, bot, -2);
+            edit(title, text, summary, minor, bot, -2, null);
     		return true;
     	} else {
     		log.debug("skip updating "+title+ " (no changes)");
@@ -222,7 +223,7 @@ public class NirvanaWiki extends Wiki {
         StringBuilder text = new StringBuilder(100000);
         text.append(stuff);
         text.append(getPageText(title));
-        this.edit(title, text.toString(), "+" + stuff, minor, bot);
+        edit(title, text.toString(), "+" + stuff, minor, bot);
     }
     
     public void prepend(String title, String stuff, String comment, boolean minor, boolean bot) throws IOException, LoginException

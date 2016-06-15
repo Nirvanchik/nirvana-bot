@@ -529,16 +529,25 @@ public class NirvanaBot extends NirvanaBasicBot{
 		}
 		return false;
 	}
-	
+
+    protected NirvanaWiki createCommonsWiki() {
+        return new NirvanaWiki("commons.wikimedia.org");
+    }
+
+    protected ServiceManager createServiceManager() throws BotFatalError {
+        log.debug("Create service manager with default service: " + DEFAULT_SERVICE_NAME +
+                " and selected service: " + SELECTED_SERVICE_NAME);
+        return new ServiceManager(DEFAULT_SERVICE_NAME, SELECTED_SERVICE_NAME, wiki, commons);
+    }
+
 	@SuppressWarnings("unused")
 	protected void go() throws InterruptedException {
         long startMillis = Calendar.getInstance().getTimeInMillis();
-		commons = new NirvanaWiki("commons.wikimedia.org");
+        commons = createCommonsWiki();
 		commons.setMaxLag( MAX_LAG );
 
 		try {
-            log.debug("Create service manager with default service: " + DEFAULT_SERVICE_NAME + " and selected service: " + SELECTED_SERVICE_NAME);
-	        serviceManager = new ServiceManager(DEFAULT_SERVICE_NAME, SELECTED_SERVICE_NAME, wiki, commons);
+            serviceManager = createServiceManager();
         } catch (BotFatalError e) {
 	        log.fatal(e);
 	        return;
