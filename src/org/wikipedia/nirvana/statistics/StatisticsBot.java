@@ -495,7 +495,7 @@ public class StatisticsBot extends NirvanaBasicBot {
     	}
     	if(old==null || old.length()!=text.length() || !old.equals(text)) { // to compare lengths is faster than comparing 5k chars
     		log.info("updating "+title+" : "+summary);
-    		wiki.edit(title, text, summary, minor, true, -2);
+            wiki.edit(title, text, summary, minor, true, -2, null);
     		return true;
     	} else {
     		log.debug("skip updating "+title+ " (no changes)");
