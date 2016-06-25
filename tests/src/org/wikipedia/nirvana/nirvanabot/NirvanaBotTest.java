@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.nirvana.FileTools;
+import org.wikipedia.nirvana.MockWikiTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.nirvanabot.MockNirvanaBot.TestError;
 
@@ -61,6 +62,7 @@ public class NirvanaBotTest {
 
     @After
     public void tearDown() throws Exception {
+        MockWikiTools.reset();
     }
 
     // Ensure test infrastructure is not broken
@@ -70,22 +72,70 @@ public class NirvanaBotTest {
         Assert.assertNotNull(str);
     }
 
-    // Conditions:
-    // PORTAL SETTINGS:
-    // 1) The type is "новые статьи"
-    // 2) All portal settings are default
-    // 3) No archive
-    // BOT SETTINGS:
-    // 1) All bot settings are default
-    // WIKI state:
-    // 1) New pages page doesn't exist
+    /**
+     * Test case 001.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     * 2) All portal settings are default
+     * 3) No archive
+     * BOT SETTINGS:
+     * 1) All bot settings are default
+     * WIKI state:
+     * 1) New pages page doesn't exist
+     */
     @Test
     public void newPages_updateWithDefaultValues_firstTime() throws TestError {
-        String config = "new_pages_update_with_default_vals_first_time.js";
+        String config = "001_new_pages_update_with_default_vals_first_time.js";
         MockNirvanaBot bot =
                 new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
         bot.validateEdits();
     }
 
+    /**
+     * Test case 002.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     * 2) шаблоны с параметром = ћузыкальный коллектив/язык/–усский €зык,
+     *    ћузыкальный коллектив/язык/русский €зык
+     * 3) No archive
+     * BOT SETTINGS:
+     * 1) All bot settings are default
+     * WIKI state:
+     * 1) New pages page doesn't exist
+     */
+    @Test
+    public void newPages_templateWithParams1() throws TestError {
+        String config = "002_new_pages_template_with_params_1.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 003.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "статьи с шаблонами"
+     * 2) шаблоны = ’ороша€ стать€, »збранна€ стать€, —тать€ года
+     * 3) No archive
+     * BOT SETTINGS:
+     * 1) All bot settings are default
+     * WIKI state:
+     * 1) New pages page doesn't exist
+     */
+    @Test
+    public void pages_templates1() throws TestError {
+        String config = "003_pages_templates_1.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
 }

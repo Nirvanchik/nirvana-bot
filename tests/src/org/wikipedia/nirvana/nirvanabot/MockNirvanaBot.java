@@ -35,6 +35,7 @@ import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -48,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TimeZone;
 
 import junit.framework.Assert;
 
@@ -65,6 +67,7 @@ public class MockNirvanaBot extends NirvanaBot {
     JSONObject commonsWikiJson = null;
 
     List<EditInfoMinimal> expectedEdits = null;
+    List<ExpectedQuery> expectedQueries = null;
 
     public static class TestError extends Exception {
         private static final long serialVersionUID = 1L;
@@ -72,6 +75,37 @@ public class MockNirvanaBot extends NirvanaBot {
 
         public TestError(Exception error) {
             original = error;
+        }
+    }
+
+    public static class ExpectedQuery {
+        public final List<String> contains;
+
+        public ExpectedQuery(List<String> contains) {
+            this.contains = contains;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof String) {
+                return containsAll((String) obj);
+            }
+            return super.equals(obj);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder temp = new StringBuilder("ExpectedQuery [contains: ");
+            temp.append(StringUtils.join(contains, ", "));
+            temp.append("]");
+            return temp.toString();
+        }
+
+        private boolean containsAll(String str) {
+            for (String thing: contains) {
+                if (!str.contains(thing)) return false;
+            }
+            return true;
         }
     }
 
@@ -98,6 +132,7 @@ public class MockNirvanaBot extends NirvanaBot {
                 throw new TestError(e);
             }
         }
+        setRetryCount(0);
     }
 
     void initializeFromTestConfig(String testConfigPath) throws IOException, ParseException {
@@ -119,11 +154,27 @@ public class MockNirvanaBot extends NirvanaBot {
             if (jsonEdits != null) {
                 expectedEdits = parseEdits(jsonEdits); 
             }
+
+            JSONArray jsonQueries = (JSONArray) jsonObject.get("expected_tools_queries");
+            if (jsonQueries != null) {
+                expectedQueries = parseQueries(jsonQueries); 
+            }
         } finally {
             if (reader != null) {
                 reader.close();
             }
         }
+    }
+
+    private List<ExpectedQuery> parseQueries(JSONArray jsonQueries) {
+        Iterator<?> it = jsonQueries.iterator();
+        List<ExpectedQuery> queries = new ArrayList<>();
+        while (it.hasNext()) {
+            JSONObject queryJson = (JSONObject) it.next();
+            ExpectedQuery query = new ExpectedQuery(readStringList(queryJson, "contains"));
+            queries.add(query);
+        }
+        return queries;
     }
 
     private List<EditInfoMinimal> parseEdits(JSONArray jsonEdits) {
@@ -189,6 +240,16 @@ public class MockNirvanaBot extends NirvanaBot {
                         parseRevision(wiki, revisionJson));
             }
         }
+
+        JSONArray pageTemplatesJsonList = (JSONArray) wikiJson.get("templates");
+        if (pageTemplatesJsonList != null) {
+            Iterator<?> it = pageTemplatesJsonList.iterator();
+            while (it.hasNext()) {
+                JSONObject pageTemplatesJson = (JSONObject) it.next();
+                wiki.mockPageTemplates((String) pageTemplatesJson.get("title"),
+                        readStringList(pageTemplatesJson, "templates"));
+            }
+        }
     }
 
     private Revision parseRevision(MockNirvanaWiki wiki, JSONObject revisionJson) {
@@ -196,6 +257,7 @@ public class MockNirvanaBot extends NirvanaBot {
         long timestamp = (Long) revisionJson.get("timestamp");
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(timestamp);
+        c.setTimeZone(TimeZone.getTimeZone("UTC"));
         String title = (String) revisionJson.get("title");
         String summary = (String) revisionJson.get("summary");
         String user = (String) revisionJson.get("user");
@@ -228,6 +290,16 @@ public class MockNirvanaBot extends NirvanaBot {
             }
             return b.toString();
         }
+    }
+
+    private List<String> readStringList(JSONObject jsonObject, String name) {
+        JSONArray list = (JSONArray) jsonObject.get(name);
+        Iterator<?> it = list.iterator();
+        List<String> result = new ArrayList<String>();
+        while (it.hasNext()) {
+            result.add((String) it.next());
+        }
+        return result;
     }
 
     @Override
@@ -280,6 +352,16 @@ public class MockNirvanaBot extends NirvanaBot {
     public void validateEdits() {
         if (expectedEdits != null) {
             Assert.assertEquals(expectedEdits, mainWiki.getEdits());
+        }
+    }
+
+    /**
+     * Checks if required http queries were made in test run or just validate
+     * that they have required strings for example. 
+     */
+    public void validateQueries() {
+        if (expectedQueries != null) {
+            Assert.assertEquals(expectedQueries, MockWikiTools.getQueries());
         }
     }
 }

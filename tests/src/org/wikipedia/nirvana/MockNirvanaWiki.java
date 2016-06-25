@@ -26,6 +26,7 @@ package org.wikipedia.nirvana;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +47,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     private Map<Long, String> namespaceIdMap = new HashMap<>();
     private Map<String, Revision> topRevMap = new HashMap<>();
     private Map<String, Revision> firstRevMap = new HashMap<>();
+    private Map<String, String []> pageTemplatesMap = new HashMap<>();
 
     private User user;
 
@@ -123,6 +125,19 @@ public class MockNirvanaWiki extends NirvanaWiki {
             }
             return false;
         }
+
+        @Override
+        public String toString() {
+            StringBuilder temp = new StringBuilder("Edit Info[title=");
+            temp.append(title);
+            temp.append(", section=");
+            temp.append(section);
+            temp.append(", text=");
+            temp.append(text);
+            temp.append("]");
+            return temp.toString();
+        }
+        
     }
 
     private static final long serialVersionUID = 1L;
@@ -245,5 +260,19 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     public List<EditInfo> getEdits() {
         return edits;
+    }
+
+    @Override
+    public String[] getTemplates(String title, int... ns) throws IOException {
+        if (!pageTemplatesMap.containsKey(title)) return new String[0];
+        return pageTemplatesMap.get(title);
+    }
+
+    public void mockPageTemplates(String title, String[] templates) {
+        pageTemplatesMap.put(title, templates);
+    }
+
+    public void mockPageTemplates(String title, List<String> templates) {
+        pageTemplatesMap.put(title, templates.toArray(new String[templates.size()]));
     }
 }

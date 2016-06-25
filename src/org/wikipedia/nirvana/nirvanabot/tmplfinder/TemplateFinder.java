@@ -66,8 +66,10 @@ public class TemplateFinder {
     private boolean findItem(TemplateFindItem item, String text, String templates[]) {
     	String templatesToSearch[];
     	if (item.template.isEmpty()) {
+            // Check all templates that article includes
     		templatesToSearch = templates;
     	} else {    		
+            // Check only template that TemplateFindItem has requested
     		if (ArrayUtils.contains(templates, item.template)) {
     			templatesToSearch = new String[]{item.template};
     		} else {
