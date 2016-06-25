@@ -56,6 +56,7 @@ public class WikiTools {
 
     private static boolean testMode = false;
     private static List<String> mockedResponses = null;
+    private static List<String> savedQueries = null;
 
 	public static class ServiceFeatures {
     	public static final int PAGES = 0b1;
@@ -345,6 +346,10 @@ public class WikiTools {
 			log.error(e.toString());
 			return null;
 		}
+        if (testMode) {
+            if (savedQueries == null) savedQueries = new ArrayList<>();
+            savedQueries.add(query);
+        }
         if (testMode && mockedResponses != null) {
             if (mockedResponses.isEmpty()) {
                 throw new RuntimeException(
@@ -377,12 +382,17 @@ public class WikiTools {
         if (mockedResponses == null) {
             mockedResponses = new ArrayList<String>();
         }
+        log.debug(String.format("Adding %d responces for mocking.", responces.size()));
         mockedResponses.addAll(responces);
     }
 
     static void resetFromTest() {
         if (mockedResponses != null) mockedResponses.clear();
+        if (savedQueries != null) savedQueries.clear();
         testMode = true;
     }
 
+    static List<String> getQueries() {
+        return savedQueries;
+    }
 }

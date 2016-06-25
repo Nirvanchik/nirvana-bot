@@ -66,5 +66,10 @@
 				"* [[Квазисобака]]" ],
 			"section": -2
 		}
+	],
+	"expected_tools_queries": [
+		{
+			"contains": ["Собаки"]
+		}
 	]
 }

@@ -119,10 +119,13 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static String TYPE = "all";
 	
 	private static String DEFAULT_DELIMETER = "\n";
-	
-	private static int RETRY_MAX = 1;
 
-	
+    /**
+     * This is how many times we will retry each portal page update if it fails.
+     * 0 means that we will not retry.
+     */
+    private int retryMax = 1;
+
 	private static String overridenPropertiesPage = null;
 	
 	private static String PICTURE_SEARCH_TAGS = "image file,Фото,портрет,Изображение,Файл,File";
@@ -160,6 +163,11 @@ public class NirvanaBot extends NirvanaBasicBot{
     private int botTimeout = 0;
 
     private int servicesTimeout = 0;
+
+    public void setRetryCount(int count) {
+        if (count < 0) throw new RuntimeException("retry count must be 0 or positive value");
+        retryMax = count;
+    }
 
 	private static class NewPagesData {
 		ArrayList<String> errors;
@@ -761,7 +769,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     			} catch (IllegalArgumentException | IndexOutOfBoundsException | NullPointerException | java.util.zip.ZipException e) { 
     				// includes ArrayIndexOfBoundsException
     				log.error(e.toString()); 
-    				if(retry_count<RETRY_MAX) {
+                    if (retry_count < retryMax) {
     					log.info("RETRY AGAIN");
     					retry = true;
     				} else {
@@ -774,8 +782,8 @@ public class NirvanaBot extends NirvanaBasicBot{
     				log.error(e.toString());
     				
     				mayBeSomeServiceProblem = true;
-    				
-    				if(retry_count<RETRY_MAX) {
+
+                    if (retry_count < retryMax) {
     					log.info("RETRY AGAIN");
     					retry = true;
     				} else {
@@ -794,7 +802,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     				//e.printStackTrace();
     			} catch (Exception e) {
     				log.error(e.toString()); 
-    				if(retry_count<RETRY_MAX) {
+                    if (retry_count < retryMax) {
     					log.info("RETRY AGAIN");
     					retry = true;
     				} else {
@@ -805,7 +813,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     				}	
     			} catch (Error e) {
     				log.error(e.toString()); 
-    				if(retry_count<RETRY_MAX) {
+                    if (retry_count < retryMax) {
     					log.info("RETRY AGAIN");
     					retry = true;
     				} else {

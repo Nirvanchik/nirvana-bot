@@ -38,4 +38,8 @@ public class MockWikiTools {
     public static void mockResponses(List<String> responces) {
         WikiTools.mockResponces(responces);
     }
+
+    public static List<String> getQueries() {
+        return WikiTools.getQueries();
+    }
 }
