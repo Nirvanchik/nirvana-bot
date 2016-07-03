@@ -40,10 +40,6 @@ public class Pages extends NewPages {
     protected List<String> templates;
 	protected WikiTools.EnumerationType templatesEnumType;
 
-
-	/**
-	 * @param param	 
-	 */
 	public Pages(PortalParam param) {
 		super(param);
 		this.templates = param.templates;
@@ -56,9 +52,9 @@ public class Pages extends NewPages {
 		getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED;
 		UPDATE_FROM_OLD = false;
 		UPDATE_ARCHIVE = false;
-				
+        supportAuthor = false;
 	}
-	
+
 	@Override
     protected PageListProcessor createPageListProcessor() {
 		WikiTools.Service service = this.service;

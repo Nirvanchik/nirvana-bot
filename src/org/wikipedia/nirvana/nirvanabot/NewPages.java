@@ -121,7 +121,12 @@ public class NewPages implements PortalModule{
     protected String currentUser = null;
     
     protected List<TemplateFindItem> templatesWithData = null;
-    
+
+    /**
+     * True means that list item may contain new page author info.
+     */
+    protected boolean supportAuthor = true;
+
     static {
     	log = org.apache.log4j.Logger.getLogger(NewPages.class);
     }
@@ -150,8 +155,11 @@ public class NewPages implements PortalModule{
    		this.archiveSettings = param.archSettings;
     	this.maxItems = param.maxItems;
     	this.format = param.format;
-    	
-    	this.formatString = format.replace("%(название)", "%1$s").replace("%(автор)", "%2$s").replace("%(дата)", "%3$s");
+
+        this.formatString = format.replace("%(название)", "%1$s").replace("%(дата)", "%3$s");
+        if (supportAuthor) {
+            formatString = formatString.replace("%(автор)", "%2$s");
+        }
     	/*
     	TODO(Nirvanchik): I don't understand what is this for?
     	if(param.deletedFlag==PortalParam.Deleted.MARK) {
@@ -526,9 +534,6 @@ public class NewPages implements PortalModule{
 			sortPagesById(pageInfoList);
 		}
 	}
-	
-
-
 	
 	protected ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError {
 		PageListProcessor pageListProcessor = createPageListProcessor();

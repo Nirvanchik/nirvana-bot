@@ -28,6 +28,7 @@ import org.wikipedia.nirvana.MockWikiTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.nirvanabot.MockNirvanaBot.TestError;
 
+import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -50,6 +51,7 @@ public class NirvanaBotTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
+        Logger.getRootLogger().removeAllAppenders();  // NirvanaBot has it's own console appender.
     }
 
     @AfterClass
@@ -132,6 +134,79 @@ public class NirvanaBotTest {
     @Test
     public void pages_templates1() throws TestError {
         String config = "003_pages_templates_1.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 004.
+     * Similar tests: 002
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "статьи с шаблонами"
+     * 2) шаблоны с параметром = ћузыкальный коллектив/язык/–усский €зык,
+     *    ћузыкальный коллектив/язык/русский €зык
+     * 3) No archive
+     * BOT SETTINGS:
+     * 1) All bot settings are default
+     * WIKI state:
+     * 1) New pages page doesn't exist
+     */
+    @Test
+    public void pages_templateWithParams1() throws TestError {
+        String config = "004_pages_template_with_params_1.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 005.
+     * Similar tests: 002
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     * 2) шаблоны с параметром = ѕросто шаблон, ћузыкальный коллектив/язык/–усский €зык,
+     *    ћузыкальный коллектив/язык/русский €зык
+     * 3) No archive
+     * BOT SETTINGS:
+     * 1) All bot settings are default
+     * WIKI state:
+     * 1) New pages page doesn't exist
+     */
+    @Test
+    public void newPages_templateWithParams2() throws TestError {
+        String config = "005_new_pages_template_with_params_2.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 006.
+     * Similar tests: 004, 005
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "статьи с шаблонами"
+     * 2) шаблоны с параметром = ѕросто шаблон, rq/notability/,
+     *    ћузыкальный коллектив/язык/–усский €зык,
+     *    ћузыкальный коллектив/язык/русский €зык
+     * 3) No archive
+     * BOT SETTINGS:
+     * 1) All bot settings are default
+     * WIKI state:
+     * 1) New pages page doesn't exist
+     */
+    @Test
+    public void pages_templateWithParams2() throws TestError {
+        String config = "006_pages_template_with_params_2.js";
         MockNirvanaBot bot =
                 new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
