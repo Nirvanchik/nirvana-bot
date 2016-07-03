@@ -59,19 +59,50 @@ public class WikiUtils {
         return end;
 	}
 
-	public static boolean parseTemplate(String templateRegex, String text, Map<String, String> parameters, boolean splitByNewLine) {
+    public static boolean parseBotTemplate(String templateRegex, String text,
+            Map<String, String> parameters) {
+        return parseTemplateImpl(templateRegex, text, parameters, true);
+    }
+
+    public static boolean parseWikiTemplate(String templateRegex, String text,
+            Map<String, String> parameters) {
+        return parseTemplateImpl(templateRegex, text, parameters, false);
+    }
+
+    @Deprecated
+    public static boolean parseTemplate(String templateRegex, String text,
+            Map<String, String> parameters, boolean botTemplate) {
+        return parseTemplateImpl(templateRegex, text, parameters, botTemplate);
+    }
+
+    private static boolean parseTemplateImpl(String templateRegex, String text,
+            Map<String, String> parameters, boolean botTemplate) {
+        // Bot template looks like:
+        // {{Template
+        //   | param1 = val1
+        //   | param2 = val2
+        //   | param3 = Val3: very long
+        //     multiline srting
+        //   | param4 = Val4: In the middle you can also find | symbol but it isn't param separator
+        //   | it is strange, but this is treated as a continuation of Val4
+        //   | param5 =
+        // }}
+        // Wiki template looks like:
+        // {{Template
+        //   | param1
+        //   | param2 = value2
+        // }}
+        // or
+        // {{Template | param1 | param2 = value2}}
+        boolean splitByNewLine = botTemplate;
         String str = "(\\{\\{"+templateRegex+")(.+)$"; // GOOD
-        log.debug("pattern = "+str);
         Pattern pattern = Pattern.compile(str,Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
         Matcher m = pattern.matcher(text);
         if (!m.find())
         {
-        	//log.error("portal settings parse error (doesn't match pattern)");
             return false;
         }
-        
-        log.debug("group count = "+m.groupCount());
-        
+
         int begin = m.end(1);
         int end = findMatchingBraceOfTemplate(text, begin);
         if (end == -1) {
@@ -83,51 +114,44 @@ public class WikiUtils {
         if (splitByNewLine) {
         	splitParam = "\\n\\s*\\|";
         }
-        String[] ps = parameterString.split(splitParam);
-        
+        String[] parts = parameterString.split(splitParam);
         String lastKey = "";
-        String lastVal = "";
-        for(int i =0;i<ps.length;i++) {
-        	String p = ps[i];
-        	//log.debug("checking string: "+p);
-        	boolean newStringToLastVal = false;
-        	int count = StringTools.howMany(p, '=');
-        	if(count==0 && i==0) continue;
-        	if(!lastVal.isEmpty() && lastVal.endsWith("{")) { // {| означает начало таблицы
-        		newStringToLastVal = true;        		
-        	} else if(count>0) {
-        		int eq = p.indexOf('=');
-        		String first = p.substring(0,eq); 
-        		String last = p.substring(eq+1);
-        		String key = first.trim().toLowerCase();
-        		if(key.equals("align") || key.equals("style")) {
-        			newStringToLastVal = true;
+        for (int i = 1; i < parts.length; i++) {
+            String p = parts[i];
+            String[] eqParts = p.split("=", 2);
+            if (eqParts.length > 1) {
+                String key = eqParts[0].trim().toLowerCase();
+                if ((botTemplate && key.equals("align") || key.equals("style"))) {
+                    appendToLastVal(parameters, lastKey, p);
         		} else {
-	            	String value = removeComments(last).trim();
+                    String value = removeComments(eqParts[1]).trim();
 	        		parameters.put(key, value);
-	                lastKey = key;        	
-	                lastVal = value;
+                    if (botTemplate) {
+                        lastKey = key;
+                    }
         		}
         	} else {
-        		if (!lastKey.isEmpty())
-                {
-        			newStringToLastVal = true;                	
+                if (botTemplate) {
+                    if (!lastKey.isEmpty()) {
+                        appendToLastVal(parameters, lastKey, p);
+                    }
+                } else {
+                    String key = p.trim();
+                    if (!key.isEmpty()) {
+                        parameters.put(key, null);
+                    }
                 }
         	}  
-        	if(newStringToLastVal) {
-                String value = removeComments(p).trim();
-                //parameters[lastKey] = parameters[lastKey] + "|" + value;
-                lastVal = parameters.get(lastKey)+"|"+value;
-                parameters.put(lastKey, lastVal);
-        	}
         }
         return true;
 	}
 
-	/**
-     * @param text
-     * @return
-     */
+    private static void appendToLastVal(Map<String, String> parameters, String value, String lastKey) {
+        value = removeComments(value).trim();
+        String lastVal = parameters.get(lastKey) + "|" + value;
+        parameters.put(lastKey, lastVal);
+    }
+
     public static String removeNoWikiText(String text) {
 	    String result = text;
 	    boolean changed = false;

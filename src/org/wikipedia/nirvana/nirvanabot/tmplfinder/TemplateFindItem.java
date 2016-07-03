@@ -36,12 +36,8 @@ public class TemplateFindItem {
 	public String param;
 	public String value;
 	
-//	public TemplateFindItem(String templateFindData) {
-//		String parts[] = templateFindData.
-//	}
-	
 	public TemplateFindItem(String template, String param, String value) {
-		this.template = template;
+        this.template = StringUtils.capitalize(template);
 		this.param = param;
 		if (this.param != null && !this.param.isEmpty()) {
 			this.param = this.param.toLowerCase();
@@ -49,14 +45,24 @@ public class TemplateFindItem {
 		this.value = value;
 	}
 	
-	public static TemplateFindItem parseTemplateFindData(String templateFindData) throws BadFormatException {		
-		if (StringTools.howMany(templateFindData, '/') == 2) {
+	public static TemplateFindItem parseTemplateFindData(String templateFindData) throws BadFormatException {
+        int slashes = StringTools.howMany(templateFindData, '/'); 
+        if (slashes == 2) {
 			String parts[] = StringUtils.splitPreserveAllTokens(templateFindData, "/", 3);
 			parts = StringUtils.stripAll(parts);
 			if (parts[0].isEmpty() && parts[1].isEmpty() && parts[2].isEmpty()) {
 				throw new BadFormatException();
 			}
 			return new TemplateFindItem(parts[0], parts[1], parts[2]);
+        } else if (slashes == 1) {
+            String parts[] = StringUtils.splitPreserveAllTokens(templateFindData, "/", 3);
+            parts = StringUtils.stripAll(parts);
+            if (parts[0].isEmpty() && parts[1].isEmpty()) {
+                throw new BadFormatException();
+            }
+            return new TemplateFindItem(parts[0], parts[1], "");
+        } else if (slashes == 0) {
+            return new TemplateFindItem(templateFindData.trim(), "", "");
 		} else {
 			throw new BadFormatException();
 		}

@@ -84,6 +84,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static final String ERROR_INVALID_PARAMETER_RU = "Ошибка в параметре \"%1$s\". Задано неправильное значение (%2$s).";
 	private static final String ERROR_PARAMETER_NOT_ACCEPTED_RU = "Значение параметра не принято.";
 	private static final String ERROR_ABSENT_PARAMETER_RU = "Ошибка в параметрах. Параметр \"%1$s\" не задан";
+    private static final String ERROR_AUTHOR_PARAMETER_INVALID_USAGE_RU =
+            "Неверный параметр \"%1$s\". Поле %(автор) не поддерживается для данного типа типа " +
+            "списков. Удалите его!";
 	//private static final String ERROR_NO_CATEGORY = "Ошибка в параметрах. Категории не заданы (см. параметр категория/категории).";
 	//private static final String ERROR_NO_ARTICLE = "Ошибка в параметрах. Параметр \"статья\" не задан.";
 	//private static final String ERROR_INVALID_SERVICE_NAME = "Ошибка в параметрах. Параметр \"статья\" не задан.";
@@ -1097,10 +1100,16 @@ public class NirvanaBot extends NirvanaBasicBot{
 		key = "формат элемента";
 		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
-			param.format = options.get(key);//.replace("{", "{{").replace("}", "}}");
+            param.format = options.get(key);
+            if (param.format.contains("%(автор)")) {
+                if (isTypePages(type) || isTypeDiscussedPages(type)) {
+                    data.errors.add(String.format(ERROR_AUTHOR_PARAMETER_INVALID_USAGE_RU, key));
+                    param.format.replace("%(автор)", "");
+                }
+            }
 		}
-		
-		
+
+
 		param.depth = DEFAULT_DEPTH;
 		key = "глубина";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {			

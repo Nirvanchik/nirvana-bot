@@ -23,15 +23,15 @@
 
 package org.wikipedia.nirvana.nirvanabot.tmplfinder;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.WikiUtils;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * @author kin
@@ -91,7 +91,7 @@ public class TemplateFinder {
     private boolean findItemInTemplate(TemplateFindItem item, String text, String template) {
 	    // 1) Нужно найти и распарсить код шаблона, занести в мапу словарь значений
     	HashMap<String, String> params = new HashMap<>();
-    	if (!WikiUtils.parseTemplate(template, text, params, false)) {
+        if (!WikiUtils.parseWikiTemplate(template, text, params)) {
     		return false;
     	}    	
     	// 2) Пройтись по словарю и отыскать нужный ключ и значение
@@ -104,11 +104,13 @@ public class TemplateFinder {
         			return true;
         		}
         	}
-    	} else { 
-			String value = params.get(item.param);
-			if (value != null && (item.value.isEmpty() || value.contains(item.value))) {
-				return true;
-			}
+        } else if (item.value.isEmpty()) {
+            // We don't care value, just check that param exists
+            return params.containsKey(item.param);
+        } else {
+            // We care template, param, value
+            String value = params.get(item.param);
+            return (value != null && value.contains(item.value));
     	}
 	    return false;
     }    

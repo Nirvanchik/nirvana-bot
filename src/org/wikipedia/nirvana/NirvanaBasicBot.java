@@ -86,7 +86,9 @@ public abstract class NirvanaBasicBot {
 	protected String PROTOCOL = "https://";
 	protected String COMMENT = "обновление";
 	protected int flags = 0;
-	
+
+    private ConsoleAppender consoleAppender = null;
+
 	public static String LICENSE = 
 			"This program is free software: you can redistribute it and/or modify\n" +
 			"it under the terms of the GNU General Public License as published by\n" +
@@ -130,17 +132,23 @@ public abstract class NirvanaBasicBot {
 		if((flags & FLAG_SHOW_LICENSE) != 0) {
 			showLicense();
 		}
-		System.out.print("-----------------------------------------------------------------\n");
+        System.out.print("----------------------< BOT STARTED >-------------------------------\n");
 		String configFile = getConfig(args);		
 		System.out.println("applying config file: "+configFile);
 		Map<String,String> launch_params = getLaunchArgs(args);
 		startWithConfig(configFile, launch_params);
-	}
-	
-	/**
-     * @param args
-     * @return
-     */
+
+        cleanup();
+        System.out.print("----------------------< BOT FINISHED > -----------------------------\n");
+    }
+
+    private void cleanup() {
+        if (consoleAppender != null) {
+            Logger.getRootLogger().removeAppender(consoleAppender);
+            consoleAppender = null;
+        }
+    }
+
     private Map<String, String> getLaunchArgs(String[] args) {
 	    HashMap<String,String> params = new HashMap<String,String>();
 	    for(int i=1;i<args.length;i++) {
@@ -324,6 +332,7 @@ public abstract class NirvanaBasicBot {
 				  console.setLayout(new PatternLayout(PATTERN)); 
 				  console.setThreshold(Level.DEBUG);
 				  console.activateOptions();
+                consoleAppender = console;
 				  //add appender to any Logger (here is root)
 				  Logger.getRootLogger().addAppender(console);
 				  //properties.setProperty("log4j.rootLogger", "DEBUG, stdout");					
@@ -338,7 +347,7 @@ public abstract class NirvanaBasicBot {
 		}
 		log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
 	}
-	
+
 	protected static int validateIntegerSetting(Properties pop, String name, int def, boolean notifyNotFound) {
 		int val = def;
 		try {

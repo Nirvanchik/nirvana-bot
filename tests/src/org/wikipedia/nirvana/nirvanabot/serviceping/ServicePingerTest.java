@@ -47,7 +47,8 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTim
  *
  */
 public class ServicePingerTest {
-	
+    private ConsoleAppender consoleAppender = null;
+
 	private static class TestService extends BasicService {
 		protected boolean checkOkCalled = false;
 		
@@ -130,6 +131,7 @@ public class ServicePingerTest {
     		console.activateOptions();
     		//add appender to any Logger (here is root)
     		Logger.getRootLogger().addAppender(console);
+            consoleAppender = console;
 		}
 	}
 
@@ -138,6 +140,9 @@ public class ServicePingerTest {
 	 */
 	@After
 	public void tearDown() throws Exception {
+        if (consoleAppender != null) {
+            Logger.getRootLogger().removeAppender(consoleAppender);
+        }
 	}
 
 	@Test
