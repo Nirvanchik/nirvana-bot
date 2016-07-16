@@ -21,7 +21,7 @@
  * Recommended code page for this file is CP1251 (also called Windows-1251).
  * */
 
-package org.wikipedia.nirvana.nirvanabot.tmplfinder;
+package org.wikipedia.nirvana.nirvanabot.templates;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.NirvanaWiki;
@@ -32,20 +32,21 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author kin
  *
  */
 public class TemplateFinder {
-	TemplateFindItem findData[];
+	List<TemplateFindItem> findItems;
 	NirvanaWiki wiki;
-	
-	public TemplateFinder(TemplateFindItem findData[], NirvanaWiki wiki) {
-		this.findData = findData;
+
+	public TemplateFinder(List<TemplateFindItem> findItems, NirvanaWiki wiki) {
+		this.findItems = findItems;
 		this.wiki = wiki;
 	}
-	
+
     public boolean find(String article) throws IOException {
     	String templates[] = wiki.getTemplates(article, Wiki.TEMPLATE_NAMESPACE);
     	for (int i = 0; i<templates.length; i++) {
@@ -55,7 +56,7 @@ public class TemplateFinder {
     		return false;
     	}
     	String text = wiki.getPageText(article);
-    	for(TemplateFindItem findItem: findData) {
+    	for(TemplateFindItem findItem: findItems) {
     		if (findItem(findItem, text, templates)) {
     			return true;
     		}
@@ -114,5 +115,4 @@ public class TemplateFinder {
     	}
 	    return false;
     }    
-    
 }

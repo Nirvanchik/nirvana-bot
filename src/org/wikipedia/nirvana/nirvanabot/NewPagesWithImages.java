@@ -90,8 +90,10 @@ public class NewPagesWithImages extends NewPages {
 			regexToFindImage = "\\[\\[(Image|File|Файл|Изображение):(?<filename>.+?)(\\||\\])";
 		}*/
 	}
-	
-	public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException, ServiceError {
+
+    @Override
+    public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException,
+            ServiceError, BotFatalError {
 		log.info("Processing data for [[" + this.pageName+"]]");
 		
 		/*for (String category : categories) {

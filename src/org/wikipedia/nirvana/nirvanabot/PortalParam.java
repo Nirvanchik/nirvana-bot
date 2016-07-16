@@ -23,11 +23,11 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import java.util.List;
-
 import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
-import org.wikipedia.nirvana.nirvanabot.tmplfinder.TemplateFindItem;
+import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
+
+import java.util.List;
 
 /**
  * @author kin
@@ -59,11 +59,9 @@ public class PortalParam {
 	public String imageSearchTags;
 	public String fairUseImageTemplates;
 	public int updatesPerDay;
-	public List<String> templates;
-	public List<TemplateFindItem> templatesWithData;
-	public WikiTools.EnumerationType templatesEnumType;
+    public TemplateFilter templateFilter = null;
 	public String prefix;
-	
+
 	public static final int MAX_CAT_GROUPS = 20;
 	
 	public List<List<String>> categoryGroups;

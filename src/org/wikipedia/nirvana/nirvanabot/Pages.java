@@ -23,27 +23,24 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.WikiTools;
+import org.wikipedia.nirvana.WikiTools.Service;
+import org.wikipedia.nirvana.WikiTools.ServiceFeatures;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
+
+import java.util.ArrayList;
 
 /**
  * @author kin
  *
  */
 public class Pages extends NewPages {
-    protected List<String> templates;
-	protected WikiTools.EnumerationType templatesEnumType;
 
 	public Pages(PortalParam param) {
 		super(param);
-		this.templates = param.templates;
-		this.templatesEnumType = param.templatesEnumType;
 		
 		if(this.archiveSettings!=null) {
 			this.archiveSettings = null;
@@ -56,24 +53,39 @@ public class Pages extends NewPages {
 	}
 
 	@Override
-    protected PageListProcessor createPageListProcessor() {
-		WikiTools.Service service = this.service;
+    protected PageListProcessor createPageListProcessor() throws BotFatalError {
 		PageListFetcher fetcher;
-		if (templates == null) {
-    		if (!service.supportsPages()) {
-    			service = WikiTools.Service.getDefaultServiceForFeature(WikiTools.ServiceFeatures.PAGES);
-    		}
-    		fetcher = new FetcherFactory.PagesFetcher();
-    				
+        needsCustomTemlateFiltering = false;
+        if (templateFilter == null) {
+            fetcher = createSimpleFetcher();
 		} else {
+            WikiTools.Service service = this.service;
 			if (!service.supportsFeature(WikiTools.ServiceFeatures.PAGES_WITH_TEMPLATE)) {
-    			service = WikiTools.Service.getDefaultServiceForFeature(WikiTools.ServiceFeatures.PAGES_WITH_TEMPLATE);
+                service = WikiTools.Service.getDefaultServiceForFeature(
+                        WikiTools.ServiceFeatures.PAGES_WITH_TEMPLATE, this.service);
     		}
-			fetcher = new FetcherFactory.PagesWithTemplatesFetcher(templates, templatesEnumType);    		
+            if (service.supportsFeature(WikiTools.ServiceFeatures.PAGES_WITH_TEMPLATE)) {
+                fetcher = new FetcherFactory.PagesWithTemplatesFetcher(templateFilter);
+            } else {
+                needsCustomTemlateFiltering = true;
+                fetcher = createSimpleFetcher();
+            }
 		}
 		return createPageListProcessorWithFetcher(service, fetcher, categories, categoriesToIgnore);
 	}
 	
+    private PageListFetcher createSimpleFetcher() throws BotFatalError {
+        Service service = this.service;
+        if (!service.supportsFeature(ServiceFeatures.PAGES)) {
+            service = Service.getDefaultServiceForFeature(
+                    ServiceFeatures.PAGES, this.service);
+        }
+        if (!service.supportsFeature(ServiceFeatures.PAGES)) {
+            throw new BotFatalError("No service available for this project page list.");
+        }
+        return new FetcherFactory.PagesFetcher();
+    }
+
 	@Override
 	public void sortPages(ArrayList<Revision> pageInfoList, boolean byRevision) {
 		// no sort (sorted by default)

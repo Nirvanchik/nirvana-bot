@@ -26,6 +26,8 @@ package org.wikipedia.nirvana.nirvanabot;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.MockWikiTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.WikiTools.Service;
+import org.wikipedia.nirvana.WikiTools.ServiceFeatures;
 import org.wikipedia.nirvana.nirvanabot.MockNirvanaBot.TestError;
 
 import org.apache.log4j.Logger;
@@ -98,16 +100,12 @@ public class NirvanaBotTest {
 
     /**
      * Test case 002.
+     * Info: smoke
      * Conditions:
      * PORTAL SETTINGS:
      * 1) type = "новые статьи"
      * 2) шаблоны с параметром = Музыкальный коллектив/Язык/Русский язык,
      *    Музыкальный коллектив/Язык/русский язык
-     * 3) No archive
-     * BOT SETTINGS:
-     * 1) All bot settings are default
-     * WIKI state:
-     * 1) New pages page doesn't exist
      */
     @Test
     public void newPages_templateWithParams1() throws TestError {
@@ -121,15 +119,11 @@ public class NirvanaBotTest {
 
     /**
      * Test case 003.
+     * Info: smoke
      * Conditions:
      * PORTAL SETTINGS:
      * 1) type = "статьи с шаблонами"
      * 2) шаблоны = Хорошая статья, Избранная статья, Статья года
-     * 3) No archive
-     * BOT SETTINGS:
-     * 1) All bot settings are default
-     * WIKI state:
-     * 1) New pages page doesn't exist
      */
     @Test
     public void pages_templates1() throws TestError {
@@ -144,16 +138,12 @@ public class NirvanaBotTest {
     /**
      * Test case 004.
      * Similar tests: 002
+     * Info: smoke
      * Conditions:
      * PORTAL SETTINGS:
      * 1) type = "статьи с шаблонами"
      * 2) шаблоны с параметром = Музыкальный коллектив/Язык/Русский язык,
      *    Музыкальный коллектив/Язык/русский язык
-     * 3) No archive
-     * BOT SETTINGS:
-     * 1) All bot settings are default
-     * WIKI state:
-     * 1) New pages page doesn't exist
      */
     @Test
     public void pages_templateWithParams1() throws TestError {
@@ -173,11 +163,6 @@ public class NirvanaBotTest {
      * 1) type = "новые статьи"
      * 2) шаблоны с параметром = Просто шаблон, Музыкальный коллектив/Язык/Русский язык,
      *    Музыкальный коллектив/Язык/русский язык
-     * 3) No archive
-     * BOT SETTINGS:
-     * 1) All bot settings are default
-     * WIKI state:
-     * 1) New pages page doesn't exist
      */
     @Test
     public void newPages_templateWithParams2() throws TestError {
@@ -198,15 +183,135 @@ public class NirvanaBotTest {
      * 2) шаблоны с параметром = Просто шаблон, rq/notability/,
      *    Музыкальный коллектив/Язык/Русский язык,
      *    Музыкальный коллектив/Язык/русский язык
-     * 3) No archive
-     * BOT SETTINGS:
-     * 1) All bot settings are default
-     * WIKI state:
-     * 1) New pages page doesn't exist
      */
     @Test
     public void pages_templateWithParams2() throws TestError {
         String config = "006_pages_template_with_params_2.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 007.
+     * Similar tests: 003, 008, 009
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "статьи с шаблонами"
+     * 2) шаблоны = Хорошая статья, Избранная статья, Статья года
+     */
+    @Test
+    public void pages_templates_any() throws TestError {
+        String config = "007_pages_templates_any.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 008.
+     * Similar tests: 003, 007, 009
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "статьи с шаблонами"
+     * 2) шаблоны = Хорошая статья; Избранная статья; Статья года
+     */
+    @Test
+    public void pages_templates_all() throws TestError {
+        String config = "008_pages_templates_all.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 009.
+     * Similar tests: 003, 007, 008
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "статьи с шаблонами"
+     * 2) шаблоны = ! Хорошая статья, Избранная статья, Статья года
+     */
+    @Test
+    public void pages_templates_none() throws TestError {
+        String config = "009_pages_templates_none.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 010.
+     * Similar tests: 003.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     * 2) шаблоны = Хорошая статья, Избранная статья, Статья года
+     */
+    @Test
+    public void newPages_templates1() throws TestError {
+        String config = "010_new_pages_templates_1.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 011.
+     * Similar tests: 003, 010.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     * 2) шаблоны = Хорошая статья, Избранная статья, Статья года
+     * SERVICE SETTINGS:
+     * 1) No support of ServiceFeatures.NEWPAGES_WITH_TEMPLATE
+     */
+    @Test
+    public void newPages_templates2() throws TestError {
+        String config = "011_new_pages_templates_2.js";
+        // TODO(Nirvanchik): mock it with Mockito.
+        // Not possible to mock with Mockito currently.
+        // Service spyService = Mockito.spy(Service.PETSCAN);
+        // Mockito.when(spyService.supportsFeature(ServiceFeatures.NEWPAGES_WITH_TEMPLATE))
+        //         .thenReturn(false);
+        Service.setTestFeatures(ServiceFeatures.NEWPAGES | ServiceFeatures.FAST_MODE);
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 012.
+     * Similar tests: 005, 011.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     * 2) шаблоны с параметром = Просто шаблон, Музыкальный коллектив/Язык/Русский язык,
+     *    Музыкальный коллектив/Язык/русский язык
+     * SERVICE SETTINGS:
+     * 1) No support of ServiceFeatures.NEWPAGES_WITH_TEMPLATE
+     */
+    @Test
+    public void newPages_templateWithParams3() throws TestError {
+        String config = "012_new_pages_template_with_params_3.js";
+        // TODO(Nirvanchik): mock it with Mockito.
+        // Not possible to mock with Mockito currently.
+        // Service spyService = Mockito.spy(Service.PETSCAN);
+        // Mockito.when(spyService.supportsFeature(ServiceFeatures.NEWPAGES_WITH_TEMPLATE))
+        //         .thenReturn(false);
+        Service.setTestFeatures(ServiceFeatures.NEWPAGES | ServiceFeatures.FAST_MODE);
         MockNirvanaBot bot =
                 new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});

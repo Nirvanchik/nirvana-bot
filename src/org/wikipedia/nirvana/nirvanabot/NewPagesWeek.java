@@ -125,10 +125,11 @@ public class NewPagesWeek extends NewPages {
 	    }
 		return textTrimmed;
 	}
-		
-	public Data getData(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError {
+
+    public Data getData(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError,
+            BotFatalError {
 		log.info("Processing data for [[" + this.pageName+"]]");		
-		
+
 		ArrayList<Revision> pageInfoList = getNewPages(wiki);
 		
 		//Map<String, Data> wikiPages = new HashMap<String, Data>();
@@ -179,11 +180,12 @@ public class NewPagesWeek extends NewPages {
 		}
         return data; 
 	}
-	
+
 	@Override
-	public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment) throws IOException, LoginException, InterruptedException, ServiceError {
+    public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment)
+            throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError {
 		boolean updated = false;
-		
+
 		String text = getOldText(wiki);
 		log.debug("old text retrieved");
 		if (!checkAllowBots(wiki, text)) {
