@@ -21,7 +21,7 @@
  * Recommended code page for this file is CP1251 (also called Windows-1251).
  * */
 
-package org.wikipedia.nirvana.nirvanabot.tmplfinder;
+package org.wikipedia.nirvana.nirvanabot.templates;
 
 import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.nirvana.StringTools;
@@ -32,19 +32,19 @@ import org.wikipedia.nirvana.nirvanabot.BadFormatException;
  *
  */
 public class TemplateFindItem {
-	public String template;
-	public String param;
-	public String value;
-	
+    public final String template;
+    public final String param;
+    public final String value;
+
 	public TemplateFindItem(String template, String param, String value) {
         this.template = StringUtils.capitalize(template);
-		this.param = param;
-		if (this.param != null && !this.param.isEmpty()) {
-			this.param = this.param.toLowerCase();
+        if (param != null && !param.isEmpty()) {
+            param = param.toLowerCase();
 		}
+        this.param = param;
 		this.value = value;
 	}
-	
+
 	public static TemplateFindItem parseTemplateFindData(String templateFindData) throws BadFormatException {
         int slashes = StringTools.howMany(templateFindData, '/'); 
         if (slashes == 2) {

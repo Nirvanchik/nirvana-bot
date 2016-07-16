@@ -162,7 +162,7 @@ public class DiscussedPages extends Pages {
 	private List<DiscussionPageTemplate> filterDiscussionTemplates() {
 		List<DiscussionPageTemplate> list = new ArrayList<>();
 		for (DiscussionPageTemplate t:this.settings.templates) {
-			if (templates.contains(t.template)) {
+            if (templateFilter.getTemplates().contains(t.template)) {
 				list.add(t);
 			}
 		}
@@ -198,9 +198,10 @@ public class DiscussedPages extends Pages {
 	public void sortPages(ArrayList<Revision> pageInfoList, boolean byRevision) {
 		// no sort (sort implemented in another place)
 	}	
-	
+
 	@Override
-	protected ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError {
+    protected ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException,
+            InterruptedException, ServiceError, BotFatalError {
 		ArrayList<Revision> pageInfoList = super.getNewPages(wiki);
 		ArrayList<Revision> pageInfoListNew = new ArrayList<Revision>();
 		for (int i = 0; i < pageInfoList.size() && pageInfoListNew.size() < maxItems; ++i)

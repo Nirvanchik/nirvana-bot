@@ -23,6 +23,26 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import org.wikipedia.Wiki;
+import org.wikipedia.nirvana.FileTools;
+import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.WikiTools;
+import org.wikipedia.nirvana.WikiTools.EnumerationType;
+import org.wikipedia.nirvana.archive.ArchiveSettings;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInBody;
+import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInCard;
+import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderUniversal;
+import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
+import org.wikipedia.nirvana.nirvanabot.templates.ComplexTemplateFilter;
+import org.wikipedia.nirvana.nirvanabot.templates.SimpleTemplateFilter;
+import org.wikipedia.nirvana.nirvanabot.templates.TemplateFindItem;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -33,22 +53,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.login.LoginException;
-
-import org.apache.commons.lang3.StringUtils;
-import org.wikipedia.Wiki;
-import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaBasicBot;
-import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.ServiceError;
-import org.wikipedia.nirvana.WikiTools;
-import org.wikipedia.nirvana.archive.ArchiveSettings;
-import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
-import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
-import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInBody;
-import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInCard;
-import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderUniversal;
-import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
-import org.wikipedia.nirvana.nirvanabot.tmplfinder.TemplateFindItem;
 
 /**
  * @author kin
@@ -1076,12 +1080,13 @@ public class NirvanaBot extends NirvanaBasicBot{
     				String sep = ",";
     				if (option.contains(";")) {
     					sep = ";";
-    					enumType = WikiTools.EnumerationType.AND;
+                        if (enumType != WikiTools.EnumerationType.NONE) {
+                            enumType = WikiTools.EnumerationType.AND;
+                        }
     				}
-    				param.templates = optionToStringArray(option, true, sep);
-    				param.templatesEnumType = enumType;
-    				if (param.templates.isEmpty()) {
-    					param.templates = null;
+                    List<String> templates = optionToStringArray(option, true, sep);
+                    if (!templates.isEmpty()) {
+                        param.templateFilter = new SimpleTemplateFilter(templates, enumType);
     				}
 				}
 			}
@@ -1092,7 +1097,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 			String option = options.get(key);
 			if (!option.isEmpty()) {
 				log.debug("param 'templates with parameter' detected");
-				param.templatesWithData = parseTemplatesWithData(option, data.errors);	
+                param.templateFilter = new ComplexTemplateFilter(
+                        parseTemplatesWithData(option, data.errors),
+                        EnumerationType.OR);
 			}
 		}
 		

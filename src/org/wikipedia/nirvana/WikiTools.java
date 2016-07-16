@@ -57,20 +57,25 @@ public class WikiTools {
     private static boolean testMode = false;
     private static List<String> mockedResponses = null;
     private static List<String> savedQueries = null;
+    
+    private static final String ERR_SERVICE_DOESNT_SUPPORT_FEATURE =
+            "Service %s doesn't support this feature.";
 
 	public static class ServiceFeatures {
     	public static final int PAGES = 0b1;
     	public static final int NEWPAGES = 0b10;
     	public static final int FAST_MODE = 0b100;
     	public static final int PAGES_WITH_TEMPLATE = 0b1000;
+        public static final int NEWPAGES_WITH_TEMPLATE = 0b10000;
     	@Deprecated
     	public static final int CATSCAN_FEATURES = NEWPAGES;
         @Deprecated
     	public static final int CATSCAN2_FEATURES = PAGES|NEWPAGES|FAST_MODE|PAGES_WITH_TEMPLATE;
     	public static final int CATSCAN3_FEATURES = PAGES|NEWPAGES|FAST_MODE|PAGES_WITH_TEMPLATE;
-        public static final int PETSCAN_FEATURES = PAGES|NEWPAGES|FAST_MODE|PAGES_WITH_TEMPLATE;
+        public static final int PETSCAN_FEATURES =
+                PAGES|NEWPAGES|FAST_MODE|PAGES_WITH_TEMPLATE|NEWPAGES_WITH_TEMPLATE;
 	}
-	
+
 	public enum EnumerationType {
 		AND,
 		OR,
@@ -89,6 +94,8 @@ public class WikiTools {
 				"wikilang=%1$s&wikifam=.wikipedia.org&basecat=%2$s&basedeep=%3$d&mode=rc&hours=%4$d&onlynew=on&go=Сканировать&format=csv&userlang=ru",
 				null,
                 null,
+                null,
+                null,
                 true),
         @Deprecated
         CATSCAN2 ("catscan2", CATSCAN2_DOMAIN, CATSCAN2_PATH,
@@ -100,6 +107,8 @@ public class WikiTools {
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&ns[%7$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=1",
+                null,
+                null,
                 "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\S+$",
                 true),
         CATSCAN3 ("catscan3", CATSCAN3_DOMAIN, CATSCAN3_PATH,
@@ -111,6 +120,8 @@ public class WikiTools {
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&ns[%7$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=1",
+                null,
+                null,
                 "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\d+\\s+\\S+$",
                 false),
         PETSCAN ("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
@@ -123,6 +134,11 @@ public class WikiTools {
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&combination=union&ns[%7$d]=1&sortby=title&format=tsv&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=tsv&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on&sortorder=descending&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&%6$s=%7$s&ns[%5$d]=1" +
+                    "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
+                    "&%7$s=%8$s&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on" +
+                    "&sortorder=descending&format=tsv&doit=",
                 "^\\d+\\s+\\S+\\s+\\d+\\s+(\\S+\\s+)?\\d+\\s+\\d+\\s*$",
                 false);
 		private final String name;
@@ -144,8 +160,12 @@ public class WikiTools {
 		public final String GET_PAGES_WITH_TEMPLATE_FORMAT_FAST;
 		public final String GET_NEW_PAGES_FORMAT;
 		public final String GET_NEW_PAGES_FORMAT_FAST;
+        public final String GET_NEWPAGES_WITH_TEMPLATE_FORMAT;
+        public final String GET_NEWPAGES_WITH_TEMPLATE_FORMAT_FAST;
 		public final String LINE_RULE;
         public final boolean DOWN;
+
+        private static Integer testFeatures = null;
 
 		Service(String name, String domain, String path, 
 				int skipLines, int namespacePos, int titlePos, int revidPos, int idPos,
@@ -157,6 +177,8 @@ public class WikiTools {
 				String getPagesWithTemplateFormatFast,
 				String getNewPagesFormat,
 				String getNewPagesFormatFast,
+                String getNewPagesWithTemplateFormat,
+                String getNewPagesWithTemplateFormatFast,
                 String lineRule,
                 boolean down) {
 			this.name = name;
@@ -178,6 +200,8 @@ public class WikiTools {
 			this.GET_PAGES_WITH_TEMPLATE_FORMAT_FAST = getPagesWithTemplateFormatFast;
 			this.GET_NEW_PAGES_FORMAT = getNewPagesFormat;
 			this.GET_NEW_PAGES_FORMAT_FAST = getNewPagesFormatFast;
+            this.GET_NEWPAGES_WITH_TEMPLATE_FORMAT = getNewPagesWithTemplateFormat;
+            this.GET_NEWPAGES_WITH_TEMPLATE_FORMAT_FAST = getNewPagesWithTemplateFormatFast;
 			this.LINE_RULE = lineRule;
             this.DOWN = down;
 			this.toString();
@@ -187,11 +211,18 @@ public class WikiTools {
 			return getName();
 		}
 		public String getName() { return name; }
-		public boolean supportsPages() { return supportsFeature (ServiceFeatures.PAGES); }
-		public boolean supportsNewPages() { return supportsFeature (ServiceFeatures.NEWPAGES); }
 		public boolean supportsFastMode() { return supportsFeature (ServiceFeatures.FAST_MODE); }
-		public boolean supportsFeature(int feature) { return ((FEATURES & feature) != 0); }
-		
+        public boolean supportsFeature(int feature) {
+            if (testMode && testFeatures != null) {
+                return ((testFeatures & feature) != 0); 
+            }
+            return ((FEATURES & feature) != 0); 
+        }
+
+        public static void setTestFeatures(Integer features) {
+            testFeatures = features;
+        }
+
 		public static Service getServiceByName(String name) {
 			return getServiceByName(name, null);
 		}
@@ -202,11 +233,11 @@ public class WikiTools {
             }
 			return defaultService;
 		}
-		
-        public static Service getDefaultServiceForFeature(int feature) {
+
+        public static Service getDefaultServiceForFeature(int feature, Service defaultValue) {
             return Service.PETSCAN;
         }
-        
+
         public static boolean hasService(String name) {
             for (Service s: Service.values()) {
                 if (s.name.equals(name)) return true;
@@ -218,8 +249,9 @@ public class WikiTools {
 	public static String loadPagesForCatWithService(Service service, 
 			String category, String language, int depth, int namespace) throws IOException, InterruptedException
     {
-		if (!service.supportsPages()) {
-			service = Service.getDefaultServiceForFeature(ServiceFeatures.PAGES);
+        if (!service.supportsFeature(ServiceFeatures.PAGES)) {
+            throw new IllegalArgumentException(
+                    String.format(ERR_SERVICE_DOESNT_SUPPORT_FEATURE, service.name()));
 		}
 		log.debug("Downloading data for " + category);
         String url_query = 
@@ -234,8 +266,9 @@ public class WikiTools {
 	public static String loadPagesForCatListAndIgnoreWithService(Service service, 
 			List<String> cats, List<String> ignore, String language, int depth, int namespace) throws IOException, InterruptedException
     {
-		if (!service.supportsPages()) {
-			service = Service.getDefaultServiceForFeature(ServiceFeatures.PAGES);
+        if (!service.supportsFeature(ServiceFeatures.PAGES | ServiceFeatures.FAST_MODE)) {
+            throw new IllegalArgumentException(
+                    String.format(ERR_SERVICE_DOESNT_SUPPORT_FEATURE, service.name()));
 		}
 		log.debug("Downloading data for categories: " + Arrays.toString(cats.toArray()));
         log.debug("and ignore categories: " + Arrays.toString(ignore.toArray()));
@@ -253,8 +286,9 @@ public class WikiTools {
 			String category, String language, int depth, 
 			List<String> templates, EnumerationType enumType, int namespace) throws IOException, InterruptedException
     {
-		if (!service.supportsPages()) {
-			service = Service.getDefaultServiceForFeature(ServiceFeatures.PAGES_WITH_TEMPLATE);
+        if (!service.supportsFeature(ServiceFeatures.PAGES_WITH_TEMPLATE)) {
+            throw new IllegalArgumentException(
+                    String.format(ERR_SERVICE_DOESNT_SUPPORT_FEATURE, service.name()));
 		}
 		log.debug("Downloading data for " + category);
 		String templatesParam = "templates_yes";
@@ -278,8 +312,10 @@ public class WikiTools {
 			List<String> cats, List<String> ignore, String language, int depth, 
 			List<String> templates, EnumerationType enumType, int namespace) throws IOException, InterruptedException
     {
-		if (!service.supportsPages()) {
-			service = Service.getDefaultServiceForFeature(ServiceFeatures.PAGES_WITH_TEMPLATE);
+        if (!service.supportsFeature(ServiceFeatures.PAGES_WITH_TEMPLATE |
+                ServiceFeatures.FAST_MODE)) {
+            throw new IllegalArgumentException(
+                    String.format(ERR_SERVICE_DOESNT_SUPPORT_FEATURE, service.name()));
 		}
 		log.debug("Downloading data for categories: " + Arrays.toString(cats.toArray()));
         log.debug("and ignore categories: " + Arrays.toString(ignore.toArray()));
@@ -302,7 +338,12 @@ public class WikiTools {
     }
 	
 	public static String loadNewPagesForCatWithService(Service service, String category, String language, int depth, int hours, int namespace) throws IOException, InterruptedException {
-		log.debug("Downloading data for category " + category);		
+        log.debug("Downloading data for category " + category);
+        if (!service.supportsFeature(ServiceFeatures.NEWPAGES)) {
+            throw new IllegalArgumentException(
+                    String.format(ERR_SERVICE_DOESNT_SUPPORT_FEATURE, service.name()));
+        }
+
         String url_query;
         if (service.filteredByNamespace) {
         	url_query = String.format(service.GET_NEW_PAGES_FORMAT,
@@ -324,6 +365,10 @@ public class WikiTools {
 	
 	public static String loadNewPagesForCatListAndIgnoreWithService(Service service, List<String> cats, List<String> ignore, String language, int depth, int hours, int namespace) throws IOException, InterruptedException
     {
+        if (!service.supportsFeature(ServiceFeatures.NEWPAGES | ServiceFeatures.FAST_MODE)) {
+            throw new IllegalArgumentException(
+                    String.format(ERR_SERVICE_DOESNT_SUPPORT_FEATURE, service.name()));
+        }
         log.debug("Downloading data for categories: " + Arrays.toString(cats.toArray()));
         log.debug("and ignore categories: " + Arrays.toString(ignore.toArray()));
         String url_query = 
@@ -337,7 +382,63 @@ public class WikiTools {
                 );        
 		return fetchQuery(service, url_query);
     }
-	
+
+    public static String loadNewPagesWithTemplatesForCatWithService(Service service,
+            String category, String language, int depth, int hours, List<String> templates,
+            EnumerationType enumType, int namespace) throws IOException, InterruptedException {
+        if (!service.supportsFeature(ServiceFeatures.NEWPAGES_WITH_TEMPLATE)) {
+            throw new IllegalArgumentException(
+                    String.format(ERR_SERVICE_DOESNT_SUPPORT_FEATURE, service.name()));
+        }
+        log.debug("Downloading data for category " + category);
+        String templatesParam = "templates_yes";
+        switch (enumType) {
+            case AND: templatesParam = "templates_yes"; break;
+            case OR: templatesParam = "templates_any"; break;
+            case NONE: templatesParam = "templates_no"; break;
+        }
+        String url = String.format(
+                service.GET_NEW_PAGES_FORMAT,
+                language,
+                depth,
+                category,
+                hours,
+                namespace,
+                templatesParam,
+                StringUtils.join(templates, CAT_SEPARATOR));
+        return fetchQuery(service, url);
+    }
+
+    public static String loadNewPagesWithTemplatesForCatListAndIgnoreWithService(Service service,
+            List<String> cats, List<String> ignore, String language, int depth, int hours,
+            List<String> templates, EnumerationType enumType, int namespace) throws IOException,
+                InterruptedException {
+        if (!service.supportsFeature(ServiceFeatures.NEWPAGES_WITH_TEMPLATE |
+                ServiceFeatures.FAST_MODE)) {
+            throw new IllegalArgumentException(
+                    String.format(ERR_SERVICE_DOESNT_SUPPORT_FEATURE, service.name()));
+        }
+        log.debug("Downloading data for categories: " + Arrays.toString(cats.toArray()));
+        log.debug("and ignore categories: " + Arrays.toString(ignore.toArray()));
+        String templatesParam = "templates_yes";
+        switch (enumType) {
+            case AND: templatesParam = "templates_yes"; break;
+            case OR: templatesParam = "templates_any"; break;
+            case NONE: templatesParam = "templates_no"; break;
+        }
+        String url = String.format(
+                service.GET_NEWPAGES_WITH_TEMPLATE_FORMAT_FAST,
+                language,
+                depth,
+                StringUtils.join(cats, CAT_SEPARATOR),
+                StringUtils.join(ignore, CAT_SEPARATOR),
+                hours,
+                namespace,
+                templatesParam,
+                StringUtils.join(templates, CAT_SEPARATOR));        
+        return fetchQuery(service, url);
+    }
+
 	private static String fetchQuery(Service service, String query) throws IOException, InterruptedException {
 		URI uri = null;
 		try {
@@ -390,6 +491,7 @@ public class WikiTools {
         if (mockedResponses != null) mockedResponses.clear();
         if (savedQueries != null) savedQueries.clear();
         testMode = true;
+        Service.setTestFeatures(null);
     }
 
     static List<String> getQueries() {

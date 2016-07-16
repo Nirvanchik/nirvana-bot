@@ -49,6 +49,8 @@ import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.WikiTools;
+import org.wikipedia.nirvana.WikiTools.Service;
+import org.wikipedia.nirvana.WikiTools.ServiceFeatures;
 import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveFactory;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
@@ -63,8 +65,8 @@ import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessorFast;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessorSlow;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
-import org.wikipedia.nirvana.nirvanabot.tmplfinder.TemplateFindItem;
-import org.wikipedia.nirvana.nirvanabot.tmplfinder.TemplateFinder;
+import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
+import org.wikipedia.nirvana.nirvanabot.templates.TemplateFinder;
 
 /**
  * @author kin
@@ -120,12 +122,20 @@ public class NewPages implements PortalModule{
     
     protected String currentUser = null;
     
-    protected List<TemplateFindItem> templatesWithData = null;
+    protected boolean supportsTemplateFilter = true;
+    protected TemplateFilter templateFilter = null;
 
     /**
      * True means that list item may contain new page author info.
      */
     protected boolean supportAuthor = true;
+
+    /**
+     * This happens when service doesn't support fetching page list with filtering by provided
+     * templates list. In this case we filter it by ours. This flag enables manual filtering
+     * by template filter.
+     */
+    protected boolean needsCustomTemlateFiltering = false;
 
     static {
     	log = org.apache.log4j.Logger.getLogger(NewPages.class);
@@ -186,8 +196,8 @@ public class NewPages implements PortalModule{
     	this.renamedFlag = param.renamedFlag;
     	this.service = param.service;
     	this.fastMode = param.fastMode;
-    	this.templatesWithData = param.templatesWithData;
-    	
+        this.templateFilter = param.templateFilter;
+
     	log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
     	log.debug("Portal module created for portal subpage [["+this.pageName+"]]");
 	}
@@ -463,13 +473,42 @@ public class NewPages implements PortalModule{
 			return new PageListProcessorSlow(service, categories, categoriesToIgnore, language, depth, namespace, fetcher);			
 		}
 	}
-	
-	protected PageListProcessor createPageListFetcherForGroup(List<String> categories, List<String> categoriesToIgnore) {
-		FetcherFactory.NewPagesFetcher fetcher = new FetcherFactory.NewPagesFetcher(hours);
+
+    protected PageListProcessor createPageListFetcherForGroup(List<String> categories,
+            List<String> categoriesToIgnore) throws BotFatalError {
+        PageListFetcher fetcher;
+        needsCustomTemlateFiltering = false;
+        if (templateFilter == null) {
+            fetcher = createSimpleFetcher();
+        } else {
+            Service service = this.service;
+            if (!service.supportsFeature(WikiTools.ServiceFeatures.NEWPAGES_WITH_TEMPLATE)) {
+                service = Service.getDefaultServiceForFeature(
+                        ServiceFeatures.NEWPAGES_WITH_TEMPLATE, this.service);
+            }
+            if (service.supportsFeature(WikiTools.ServiceFeatures.NEWPAGES_WITH_TEMPLATE)) {
+                fetcher = new FetcherFactory.NewPagesWithTemplatesFetcher(templateFilter, hours);
+            } else {
+                needsCustomTemlateFiltering = true;
+                fetcher = createSimpleFetcher();
+            }
+        }
 		return createPageListProcessorWithFetcher(this.service, fetcher, categories, categoriesToIgnore);
 	}
-	
-	protected PageListProcessor createPageListProcessor() {
+
+    private PageListFetcher createSimpleFetcher() throws BotFatalError {
+        Service service = this.service;
+        if (!service.supportsFeature(ServiceFeatures.NEWPAGES)) {
+            service = Service.getDefaultServiceForFeature(
+                    ServiceFeatures.NEWPAGES, this.service);
+        }
+        if (!service.supportsFeature(ServiceFeatures.NEWPAGES)) {
+            throw new BotFatalError("No service available for this project page list.");
+        }
+        return new FetcherFactory.NewPagesFetcher(hours);
+    }
+
+    protected PageListProcessor createPageListProcessor() throws BotFatalError {
 		List<PageListProcessor> fetchers = new ArrayList<PageListProcessor>(3);
 		fetchers.add(createPageListFetcherForGroup(this.categories, this.categoriesToIgnore));
 		for(int i = 0;i<categoryGroups.size();i++) {
@@ -534,8 +573,9 @@ public class NewPages implements PortalModule{
 			sortPagesById(pageInfoList);
 		}
 	}
-	
-	protected ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError {
+
+    protected ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException,
+            InterruptedException, ServiceError, BotFatalError {
 		PageListProcessor pageListProcessor = createPageListProcessor();
 		log.info("Using pagelist fetcher: "+pageListProcessor);
 		if (getRevisionMethod == GetRevisionMethod.GET_REV) {
@@ -558,11 +598,12 @@ public class NewPages implements PortalModule{
 	}
 	
 	protected ArrayList<Revision> filterPagesByCondition(ArrayList<Revision> pageInfoList, NirvanaWiki wiki) throws IOException {
-		if (this.templatesWithData == null || templatesWithData.size() == 0) {
+        if (this.templateFilter == null ||
+                (!templateFilter.paramValueFiltering() && !needsCustomTemlateFiltering)) {
 			return pageInfoList;
 		}
 		ArrayList<Revision> list = new ArrayList<Revision>();
-		TemplateFinder finder = new TemplateFinder(templatesWithData.toArray(new TemplateFindItem[0]), wiki);
+        TemplateFinder finder = new TemplateFinder(templateFilter.getParamFilterItems(), wiki);
 		for (Revision r: pageInfoList) {
 			if (finder.find(r.getPage())) {
 				list.add(r);
@@ -740,9 +781,10 @@ public class NewPages implements PortalModule{
 		return new NewPagesBuffer(wiki);
 	}
 	
-	public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException, ServiceError {
+    public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException,
+            ServiceError, BotFatalError {
 		log.info("Get data for [[" + this.pageName+"]]");
-		
+
 		ArrayList<Revision> pageInfoList = getNewPages(wiki);
 		
 		NewPagesBuffer buffer = createPagesBuffer(wiki);
@@ -774,12 +816,7 @@ public class NewPages implements PortalModule{
 		
 		return d;
 	}
-	
-	
 
-	/**
-     * @param pageInfoList
-     */
     private void removeDuplicatesInSortedList(ArrayList<Revision> list) {
     	log.debug("removing duplicates from list");
 	    int i = 1;
@@ -831,21 +868,20 @@ public class NewPages implements PortalModule{
 	}
 		
 	@Override
-	public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment) throws IOException, LoginException, InterruptedException, ServiceError {
+    public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment)
+            throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError {
 		log.debug("=> update()");
 		this.namespaceIdentifier = wiki.namespaceIdentifier(this.namespace);
 		boolean updated = false;
 		String text = getOldText(wiki);
 		log.debug("old text retrieved");
-		
-		//this.botsAllowString = NirvanaWiki.getAllowBotsString(text);
-		//getData(wiki);
+
 		if (!checkAllowBots(wiki, text)) {
 			return false;
 		}
-				
+
 		getHeaderFooterChanges(wiki, reportData.template, reportData.portal);
-				
+
 		Data d = getData(wiki, text);
 		reportData.pagesArchived = d.archiveCount;
 		reportData.newPagesFound = d.newPagesCount;

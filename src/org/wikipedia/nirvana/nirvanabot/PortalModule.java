@@ -35,11 +35,7 @@ import org.wikipedia.nirvana.ServiceError;
  *
  */
 public interface PortalModule {
-	public boolean update(NirvanaWiki wiki, 
-						  ReportItem reportData, 
-						  String comment) throws IOException, 
-						  						 LoginException, 
-						  						 InterruptedException, 
-						  						 ServiceError;	
+    public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment)
+            throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError;
 }
 

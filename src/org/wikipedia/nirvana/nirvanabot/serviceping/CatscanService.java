@@ -23,12 +23,13 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
+import org.wikipedia.nirvana.WikiTools;
+import org.wikipedia.nirvana.WikiTools.ServiceFeatures;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
-
-import org.wikipedia.nirvana.WikiTools;
 
 /**
  * @author kin
@@ -70,7 +71,7 @@ public class CatscanService extends InternetService {
 	
 	@Override
     protected boolean checkWorking() throws InterruptedException {	    
-		if (service.supportsPages()) {
+        if (service.supportsFeature(ServiceFeatures.PAGES)) {
 			try {
 				Date date = new Date();
 				log.debug("time: "+date.toString());
@@ -93,7 +94,7 @@ public class CatscanService extends InternetService {
             	WikiTools.setFastMode(false);
             }
         } 
-		if (service.supportsNewPages()) {
+        if (service.supportsFeature(ServiceFeatures.NEWPAGES)) {
 				try {
 					//System.currentTimeMillis();
 					Date date = new Date();

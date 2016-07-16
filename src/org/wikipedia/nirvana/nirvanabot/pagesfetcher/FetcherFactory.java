@@ -23,11 +23,12 @@
 
 package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
-import java.io.IOException;
-import java.util.List;
-
 import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.WikiTools.Service;
+import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * @author kin
@@ -35,18 +36,12 @@ import org.wikipedia.nirvana.WikiTools.Service;
  */
 public abstract class FetcherFactory {
 
-	/**
-	 * 
-	 */
-	public FetcherFactory() {
-		// TODO Auto-generated constructor stub
-	}
-	
+    private FetcherFactory() {
+    }
+
 	public static class NewPagesFetcher implements PageListFetcher {
 		protected int hours;
-		/**
-		 * @param hours
-		 */
+
 		public NewPagesFetcher(int hours) {
 			this.hours = hours;
 		}
@@ -64,7 +59,36 @@ public abstract class FetcherFactory {
         	return WikiTools.loadNewPagesForCatWithService(service, category, language, depth, hours, namespace);
         }
 	}
-	
+
+    public static class NewPagesWithTemplatesFetcher implements PageListFetcher {
+        protected TemplateFilter templateFilter;
+        protected int hours;
+
+        public NewPagesWithTemplatesFetcher(TemplateFilter templateFilter, int hours) {
+            this.templateFilter = templateFilter;
+            this.hours = hours;
+        }
+
+        @Override
+        public String loadNewPagesForCatListAndIgnore(Service service,
+                List<String> categories, List<String> categoriesToIgnore,
+                String language, int depth, int namespace) throws IOException,
+                InterruptedException {
+            return WikiTools.loadNewPagesWithTemplatesForCatListAndIgnoreWithService(
+                    service, categories, categoriesToIgnore, language, depth, depth,
+                    templateFilter.getTemplates(), templateFilter.listType(), namespace);
+        }
+
+        @Override
+        public String loadNewPagesForCat(Service service, String category,
+                String language, int depth, int namespace) throws IOException,
+                InterruptedException {
+            return WikiTools.loadNewPagesWithTemplatesForCatWithService(
+                    service, category, language, depth, hours, templateFilter.getTemplates(),
+                    templateFilter.listType(), namespace);
+        }
+    }
+
 	public static class PagesFetcher implements PageListFetcher {
 
 		/**
@@ -89,12 +113,10 @@ public abstract class FetcherFactory {
 	}
 	
 	public static class PagesWithTemplatesFetcher implements PageListFetcher {
-		List<String> templates;
-		WikiTools.EnumerationType templateEnumType;
+        TemplateFilter templateFilter;
 
-		public PagesWithTemplatesFetcher(List<String> templates, WikiTools.EnumerationType enumType) {
-			this.templates = templates;
-			this.templateEnumType = enumType;
+        public PagesWithTemplatesFetcher(TemplateFilter templateFilter) {
+            this.templateFilter = templateFilter;
 		}
 
 		@Override
@@ -103,7 +125,8 @@ public abstract class FetcherFactory {
 		        String language, int depth, int namespace) throws IOException,
 		        InterruptedException {
 			return WikiTools.loadPagesWithTemplatesForCatListAndIgnoreWithService(service, 
-					categories, categoriesToIgnore, language, depth, templates, templateEnumType, namespace);
+                    categories, categoriesToIgnore, language, depth, templateFilter.getTemplates(),
+                    templateFilter.listType(), namespace);
 		}
 
         @Override
@@ -111,8 +134,8 @@ public abstract class FetcherFactory {
                 String language, int depth, int namespace) throws IOException,
                 InterruptedException {
         	return WikiTools.loadPagesWithTemplatesForCatWithService(service, 
-        			category, language, depth, templates, templateEnumType, namespace);
+                    category, language, depth, templateFilter.getTemplates(),
+                    templateFilter.listType(), namespace);
         }
 	}
-
 }
