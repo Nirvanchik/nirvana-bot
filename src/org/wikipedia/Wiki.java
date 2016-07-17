@@ -569,7 +569,15 @@ public class Wiki implements Serializable
             apigen.append("redirects&");
         query = apigen.toString();
     }
-   
+
+    public int getSlowmax() {
+        return slowmax;
+    }
+
+    public void setSlowmax(int slowmax) {
+        this.slowmax = slowmax;
+    }
+
     public String getProtocol() {
     	return protocol;
     }
@@ -2182,8 +2190,7 @@ public class Wiki implements Serializable
 
     /**
      *  Gets the list of templates used on a particular page that are in a
-     *  particular namespace(s). Capped at <tt>max</tt> number of templates,
-     *  there's no reason why there should be more than that.
+     *  particular namespace(s).
      *
      *  @param title a page
      *  @param ns a list of namespaces to filter by, empty = all namespaces.
@@ -2193,20 +2200,91 @@ public class Wiki implements Serializable
      */
     public String[] getTemplates(String title, int... ns) throws IOException
     {
+        return getPagesTemplates(new String[]{title}, ns)[0];
+    }
+
+    /**
+     *  Gets the lists of templates used on given pages that are in a
+     *  particular namespace(s).
+     *
+     *  @param titles list of pages
+     *  @param ns a list of namespaces to filter by, empty = all namespaces.
+     *  @return the list of templates used on those pages in that namespace
+     *  @throws IOException if a network error occurs
+     *  @since 0.31
+     */
+    public String[][] getPagesTemplates(String[] titles, int... ns) throws IOException
+    {
+        String[][] result = new String[titles.length][];
+        Map<String, List<String>> pagesTemplates = new HashMap<>();
         StringBuilder url = new StringBuilder(query);
-        url.append("prop=templates&tllimit=max&titles=");
-        url.append(encode(title, true));
+        url.append("prop=templates&tllimit=max");
         constructNamespaceString(url, "tl", ns);
-        String line = fetch(url.toString(), "getTemplates");
-
-        // xml form: <tl ns="10" title="Template:POTD" />
-        List<String> templates = new ArrayList<>(750);
-        for (int a = line.indexOf("<tl "); a > 0; a = line.indexOf("<tl ", ++a))
-            templates.add(parseAttribute(line, "title", a));
-
-        int size = templates.size();
-        log(Level.INFO, "getTemplates", "Successfully retrieved templates used on " + title + " (" + size + " templates)");
-        return templates.toArray(new String[size]);
+        url.append("&titles=");
+        String[] titleBunches = constructTitleString(titles);
+        for (String temp : titleBunches)
+        {
+            String line;
+            String tlcontinue = null;
+            do
+            {
+                if (tlcontinue == null)
+                    line = fetch(url.toString() + temp, "getPagesTemplates");
+                else
+                    line = fetch(url.toString() + temp + "&tlcontinue=" + tlcontinue,
+                            "getPagesTemplates");
+                tlcontinue = parseAttribute(line, "tlcontinue", 0);
+                // String line = fetch(url.toString() + temp, "getPagesTemplates");
+                // <page _idx="25458" pageid="25458" ns="0" title="Rome">
+                // <templates>
+                // <tl ns="10" title="Template:About" />
+                // ...
+                // </templates>
+                // </page>
+                //
+                // Somtimes you can see no closing "</page>":
+                // <page _idx="24007" pageid="24007" ns="0" title="Hercules"/>
+                // <page _idx="633" pageid="633" ns="0" title="Sun">
+                // <templates>
+                // <tl ns="10" title="Template:***"/>
+                for (int j = line.indexOf("<page "); j > 0; j = line.indexOf("<page ", ++j))
+                {
+                    int nextPage = line.indexOf("<page", j + 1);
+                    String item;
+                    if (nextPage > 0) {
+                        item = line.substring(j, nextPage);
+                    } else {
+                        item = line.substring(j);
+                    }
+                    String parsedtitle = parseAttribute(item, "title", 0);
+                    // xml form: <tl ns="10" title="Template:POTD" />
+                    List<String> templates = new ArrayList<>(200);
+                    if (item.contains("<templates>"))
+                        for (int a = item.indexOf("<tl "); a > 0; a = item.indexOf("<tl ", ++a))
+                            templates.add(parseAttribute(item, "title", a));
+                    if (!templates.isEmpty()) 
+                    {
+                        List<String> thisPageTemplates = pagesTemplates.get(parsedtitle);
+                        if (thisPageTemplates == null)
+                            pagesTemplates.put(parsedtitle, templates);
+                        else
+                            thisPageTemplates.addAll(templates);
+                    }
+                }
+            }
+            while (tlcontinue != null);
+        }
+        for (int i = 0; i < titles.length; i++)
+        {
+            List<String> templates = pagesTemplates.get(normalize(titles[i]));
+            if (templates == null)
+                result[i] = new String[0];
+            else
+                result[i] = templates.toArray(new String[templates.size()]);
+        }
+        log(Level.INFO, "getPagesTemplates",
+                "Successfully retrieved pages templates for " + Arrays.toString(titles));
+        return result;
     }
 
     /**

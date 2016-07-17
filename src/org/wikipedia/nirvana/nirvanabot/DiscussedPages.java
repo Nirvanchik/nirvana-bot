@@ -200,9 +200,9 @@ public class DiscussedPages extends Pages {
 	}	
 
 	@Override
-    protected ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException,
+    protected List<Revision> getNewPages(NirvanaWiki wiki) throws IOException,
             InterruptedException, ServiceError, BotFatalError {
-		ArrayList<Revision> pageInfoList = super.getNewPages(wiki);
+        List<Revision> pageInfoList = super.getNewPages(wiki);
 		ArrayList<Revision> pageInfoListNew = new ArrayList<Revision>();
 		for (int i = 0; i < pageInfoList.size() && pageInfoListNew.size() < maxItems; ++i)
 		{

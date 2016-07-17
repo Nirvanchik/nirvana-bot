@@ -31,7 +31,7 @@ import org.wikipedia.nirvana.nirvanabot.BadFormatException;
  * @author kin
  *
  */
-public class TemplateFindItem {
+public class TemplateFindItem implements Comparable<TemplateFindItem>{
     public final String template;
     public final String param;
     public final String value;
@@ -43,6 +43,9 @@ public class TemplateFindItem {
 		}
         this.param = param;
 		this.value = value;
+        if (template == null || template.isEmpty() || param == null || value == null) {
+            throw new RuntimeException("Bad format");
+        }
 	}
 
 	public static TemplateFindItem parseTemplateFindData(String templateFindData) throws BadFormatException {
@@ -50,21 +53,41 @@ public class TemplateFindItem {
         if (slashes == 2) {
 			String parts[] = StringUtils.splitPreserveAllTokens(templateFindData, "/", 3);
 			parts = StringUtils.stripAll(parts);
-			if (parts[0].isEmpty() && parts[1].isEmpty() && parts[2].isEmpty()) {
+            if (parts[0].isEmpty()) {
 				throw new BadFormatException();
 			}
 			return new TemplateFindItem(parts[0], parts[1], parts[2]);
         } else if (slashes == 1) {
             String parts[] = StringUtils.splitPreserveAllTokens(templateFindData, "/", 3);
             parts = StringUtils.stripAll(parts);
-            if (parts[0].isEmpty() && parts[1].isEmpty()) {
+            if (parts[0].isEmpty()) {
                 throw new BadFormatException();
             }
             return new TemplateFindItem(parts[0], parts[1], "");
         } else if (slashes == 0) {
+            if (templateFindData.trim().isEmpty()) {
+                throw new BadFormatException();
+            }
             return new TemplateFindItem(templateFindData.trim(), "", "");
 		} else {
 			throw new BadFormatException();
 		}
 	}
+
+    public boolean isSimple() {
+        return param.isEmpty() && value.isEmpty();
+    }
+
+    @Override
+    public int compareTo(TemplateFindItem ob) {
+        if (this.isSimple() && ob.isSimple()) {
+            return 0;
+        } else if (!this.isSimple() && ob.isSimple()) {
+            return 1;
+        } else if (this.isSimple() && !ob.isSimple()) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
 }

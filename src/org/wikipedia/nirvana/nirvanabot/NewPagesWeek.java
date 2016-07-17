@@ -23,21 +23,21 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
-
-import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.ServiceError;
 
 /**
  * @author kin
@@ -130,8 +130,8 @@ public class NewPagesWeek extends NewPages {
             BotFatalError {
 		log.info("Processing data for [[" + this.pageName+"]]");		
 
-		ArrayList<Revision> pageInfoList = getNewPages(wiki);
-		
+        List<Revision> pageInfoList = getNewPages(wiki);
+
 		//Map<String, Data> wikiPages = new HashMap<String, Data>();
 		WeekData data = new WeekData();
 		WeekBuffer buffer = new WeekBuffer(wiki);
