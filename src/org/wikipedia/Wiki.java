@@ -432,6 +432,7 @@ public class Wiki implements Serializable
     // preferences
     private int max = 500;
     private int slowmax = 50;
+    private int urlMaxLength = 8192;
     private int throttle = 10000; // throttle
     protected int maxlag = 5;
     private int assertion = ASSERT_NONE; // assertion mode
@@ -1401,7 +1402,7 @@ public class Wiki implements Serializable
         Map[] info = new HashMap[pages.length];
         StringBuilder url = new StringBuilder(query);
         url.append("prop=info&intoken=edit%7Cwatch&inprop=protection%7Cdisplaytitle%7Cwatchers&titles=");
-        String[] titles = constructTitleString(pages);
+        String[] titles = constructTitleString(url, pages);
         for (String temp : titles)
         {
             String line = fetch(url.toString() + temp, "getPageInfo");
@@ -2221,7 +2222,7 @@ public class Wiki implements Serializable
         url.append("prop=templates&tllimit=max");
         constructNamespaceString(url, "tl", ns);
         url.append("&titles=");
-        String[] titleBunches = constructTitleString(titles);
+        String[] titleBunches = constructTitleString(url, titles, 100);
         for (String temp : titleBunches)
         {
             String line;
@@ -2497,7 +2498,7 @@ public class Wiki implements Serializable
             url.append("redirects&");
         url.append("titles=");
         String[] ret = new String[titles.length];
-        String[] temp = constructTitleString(titles);
+        String[] temp = constructTitleString(url, titles);
         for (String blah : temp)
         {
             String line = fetch(url.toString() + blah, "resolveRedirects");
@@ -7440,6 +7441,68 @@ public class Wiki implements Serializable
 
     /**
      *  Cuts up a list of titles into batches for prop=X&amp;titles=Y type queries.
+     *
+     *  @param url - url which should be requested with this titles[] list
+     *  @param titles a list of titles.
+     *  @return the titles ready for insertion into a URL
+     *  @throws IOException if a network error occurs
+     *  @since 0.31
+     */
+    protected String[] constructTitleString(StringBuilder sb, String[] titles) throws IOException
+    {
+        return constructTitleString(sb, titles, 0);
+    }
+
+    /**
+     *  Cuts up a list of titles into batches for prop=X&amp;titles=Y type queries.
+     *  A version with additional reserve value (for cases when url can grow).
+     *
+     *  @param url - url which should be requested with this titles[] list
+     *  @param titles a list of titles.
+     *  @param reserve spare bytes count on which the url may grow.
+     *  @return the titles ready for insertion into a URL
+     *  @throws IOException if a network error occurs
+     *  @since 0.31
+     */
+    protected String[] constructTitleString(StringBuilder url, String[] titles, int reserve)
+            throws IOException
+    {
+        if (titles.length == 0)
+            return new String[0];
+        List<String> result = new ArrayList<>();
+        StringBuilder buffer = new StringBuilder(urlMaxLength);
+        buffer.append(normalize(titles[0]));
+        int count = 1;
+        String sep = encode("|", false);
+        for (int i = 1; i < titles.length; i++)
+        {
+            String next = encode(titles[i], true);
+            if (url.length() + buffer.length() + sep.length() + next.length() + reserve >
+                    urlMaxLength || count >= slowmax)
+            {
+                result.add(buffer.toString());
+                buffer.setLength(0);  // This is faster then allocating a new one.
+                buffer.append(next);
+                count = 1;
+            }
+            else
+            {
+                buffer.append(sep);
+                buffer.append(next);
+                count++;
+            }
+        }
+        result.add(encode(buffer.toString(), false));  // Finish him!
+        return result.toArray(new String[result.size()]);
+    }
+
+    /**
+     *  Cuts up a list of titles into batches for prop=X&amp;titles=Y type queries.
+     *  Ignores URL max allowed length.
+     *  OK for POST requests.
+     *  Not recommended for GET requests (may throw HTTP 414 error if titles count is higher then
+     *  ~100 for latin titles or ~50 for other alphabets).
+     *  
      *  @param titles a list of titles.
      *  @return the titles ready for insertion into a URL
      *  @throws IOException if a network error occurs
