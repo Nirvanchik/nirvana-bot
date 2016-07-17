@@ -23,6 +23,37 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import org.wikipedia.Wiki;
+import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.DateTools;
+import org.wikipedia.nirvana.HTTPTools;
+import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.StringTools;
+import org.wikipedia.nirvana.WikiBooster;
+import org.wikipedia.nirvana.WikiTools;
+import org.wikipedia.nirvana.WikiTools.Service;
+import org.wikipedia.nirvana.WikiTools.ServiceFeatures;
+import org.wikipedia.nirvana.archive.Archive;
+import org.wikipedia.nirvana.archive.ArchiveFactory;
+import org.wikipedia.nirvana.archive.ArchiveSettings;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.archive.ArchiveSimple;
+import org.wikipedia.nirvana.archive.ArchiveWithEnumeration;
+import org.wikipedia.nirvana.archive.ArchiveWithHeaders;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessorFast;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessorSlow;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.ProcessorCombinator;
+import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
+import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
+import org.wikipedia.nirvana.nirvanabot.templates.TemplateFinder;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -38,35 +69,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
-
-import org.apache.commons.lang3.StringUtils;
-import org.wikipedia.Wiki;
-import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.DateTools;
-import org.wikipedia.nirvana.HTTPTools;
-import org.wikipedia.nirvana.NirvanaBasicBot;
-import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.ServiceError;
-import org.wikipedia.nirvana.StringTools;
-import org.wikipedia.nirvana.WikiTools;
-import org.wikipedia.nirvana.WikiTools.Service;
-import org.wikipedia.nirvana.WikiTools.ServiceFeatures;
-import org.wikipedia.nirvana.archive.Archive;
-import org.wikipedia.nirvana.archive.ArchiveFactory;
-import org.wikipedia.nirvana.archive.ArchiveSettings;
-import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
-import org.wikipedia.nirvana.archive.ArchiveSimple;
-import org.wikipedia.nirvana.archive.ArchiveWithEnumeration;
-import org.wikipedia.nirvana.archive.ArchiveWithHeaders;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.ProcessorCombinator;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessorFast;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessorSlow;
-import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
-import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
-import org.wikipedia.nirvana.nirvanabot.templates.TemplateFinder;
 
 /**
  * @author kin
@@ -574,7 +576,7 @@ public class NewPages implements PortalModule{
 		}
 	}
 
-    protected ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException,
+    protected List<Revision> getNewPages(NirvanaWiki wiki) throws IOException,
             InterruptedException, ServiceError, BotFatalError {
 		PageListProcessor pageListProcessor = createPageListProcessor();
 		log.info("Using pagelist fetcher: "+pageListProcessor);
@@ -602,8 +604,10 @@ public class NewPages implements PortalModule{
                 (!templateFilter.paramValueFiltering() && !needsCustomTemlateFiltering)) {
 			return pageInfoList;
 		}
-		ArrayList<Revision> list = new ArrayList<Revision>();
-        TemplateFinder finder = new TemplateFinder(templateFilter.getParamFilterItems(), wiki);
+        ArrayList<Revision> list = new ArrayList<>();
+        WikiBooster booster = WikiBooster.create(wiki, pageInfoList);
+        TemplateFinder finder =
+                new TemplateFinder(templateFilter.getParamFilterItems(), wiki,booster);
 		for (Revision r: pageInfoList) {
 			if (finder.find(r.getPage())) {
 				list.add(r);
@@ -785,8 +789,8 @@ public class NewPages implements PortalModule{
             ServiceError, BotFatalError {
 		log.info("Get data for [[" + this.pageName+"]]");
 
-		ArrayList<Revision> pageInfoList = getNewPages(wiki);
-		
+        List<Revision> pageInfoList = getNewPages(wiki);
+
 		NewPagesBuffer buffer = createPagesBuffer(wiki);
 		int count = pageInfoList.size();
 		count = count<maxItems?count:maxItems;

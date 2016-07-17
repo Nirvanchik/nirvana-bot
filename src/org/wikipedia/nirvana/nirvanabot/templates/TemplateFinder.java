@@ -25,12 +25,13 @@ package org.wikipedia.nirvana.nirvanabot.templates;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.WikiBooster;
 import org.wikipedia.nirvana.WikiUtils;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -39,56 +40,47 @@ import java.util.List;
  *
  */
 public class TemplateFinder {
-	List<TemplateFindItem> findItems;
-	NirvanaWiki wiki;
+    private final List<TemplateFindItem> findItems;
+    private final NirvanaWiki wiki;
+    private final WikiBooster wikiBooster;
 
-	public TemplateFinder(List<TemplateFindItem> findItems, NirvanaWiki wiki) {
+    public TemplateFinder(List<TemplateFindItem> findItems, NirvanaWiki wiki,
+            WikiBooster wikiBooster) {
 		this.findItems = findItems;
 		this.wiki = wiki;
+        this.wikiBooster = wikiBooster;
 	}
 
     public boolean find(String article) throws IOException {
-    	String templates[] = wiki.getTemplates(article, Wiki.TEMPLATE_NAMESPACE);
-    	for (int i = 0; i<templates.length; i++) {
-    		templates[i] = StringUtils.removeStart(templates[i], wiki.namespaceIdentifier(Wiki.TEMPLATE_NAMESPACE) + ":");
-    	}
-    	if (templates.length == 0) {
+        List<String> templates = wikiBooster.getTemplates(article, Wiki.TEMPLATE_NAMESPACE);
+        if (templates.isEmpty()) {
     		return false;
     	}
-    	String text = wiki.getPageText(article);
+        List<String> templatesNoNs = new ArrayList<>(templates.size());
+        for (String template: templates) {
+            String ns = wiki.namespaceIdentifier(Wiki.TEMPLATE_NAMESPACE);
+            templatesNoNs.add(StringUtils.removeStart(template, ns + ":"));
+        }
     	for(TemplateFindItem findItem: findItems) {
-    		if (findItem(findItem, text, templates)) {
+            if (findItem(findItem, article, templatesNoNs)) {
     			return true;
     		}
     	}
     	return false;
     }
     
-    private boolean findItem(TemplateFindItem item, String text, String templates[]) {
-    	String templatesToSearch[];
-    	if (item.template.isEmpty()) {
-            // Check all templates that article includes
-    		templatesToSearch = templates;
-    	} else {    		
-            // Check only template that TemplateFindItem has requested
-    		if (ArrayUtils.contains(templates, item.template)) {
-    			templatesToSearch = new String[]{item.template};
-    		} else {
-    			return false;
-    		}
-    	}
-    	return findItemInTemplates(item, text, templatesToSearch);
+    private boolean findItem(TemplateFindItem item, String article, List<String> templates)
+            throws IOException {
+        if (!templates.contains(item.template)) {
+            return false;
+        }
+        if (item.isSimple()) {
+            return true;
+        }
+        String text = wikiBooster.getPageText(article);
+        return findItemInTemplate(item, text, item.template);
     }
 
-    private boolean findItemInTemplates(TemplateFindItem item, String text, String templates[]) {
-	    for (String template:templates) {
-	    	if (findItemInTemplate(item, text, template)) {
-	    		return true;
-	    	}
-	    }
-	    return false;
-    }
-    
     private boolean findItemInTemplate(TemplateFindItem item, String text, String template) {
 	    // 1) Нужно найти и распарсить код шаблона, занести в мапу словарь значений
     	HashMap<String, String> params = new HashMap<>();

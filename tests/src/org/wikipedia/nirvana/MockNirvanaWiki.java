@@ -26,7 +26,6 @@ package org.wikipedia.nirvana;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -274,5 +273,16 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     public void mockPageTemplates(String title, List<String> templates) {
         pageTemplatesMap.put(title, templates.toArray(new String[templates.size()]));
+    }
+
+    @Override
+    public String[][] getPagesTemplates(String[] titles, int... ns) throws IOException {
+        String[][] result = new String [titles.length][];
+        for (int i = 0; i < titles.length; i++) {
+            String title = titles[i];
+            if (!pageTemplatesMap.containsKey(title)) result[i] = new String[0];
+            else result[i] = pageTemplatesMap.get(title); 
+        }
+        return result;
     }
 }

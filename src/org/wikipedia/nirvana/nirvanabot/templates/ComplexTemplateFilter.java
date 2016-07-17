@@ -26,6 +26,7 @@ package org.wikipedia.nirvana.nirvanabot.templates;
 import org.wikipedia.nirvana.WikiTools.EnumerationType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -49,6 +50,7 @@ public class ComplexTemplateFilter extends SimpleTemplateFilter {
                 templates.add(item.template);
             }
         }
+        Collections.sort(findItems);
     }
 
     @Override
