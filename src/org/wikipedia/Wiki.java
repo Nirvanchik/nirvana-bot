@@ -433,6 +433,10 @@ public class Wiki implements Serializable
     private int max = 500;
     private int slowmax = 50;
     private int urlMaxLength = 8192;
+    // POST is not recommended here:
+    // https://www.mediawiki.org/wiki/API:Main_page#API_etiquette
+    // So we don't use is by default but don't prohibit.
+    private boolean usePost = false;
     private int throttle = 10000; // throttle
     protected int maxlag = 5;
     private int assertion = ASSERT_NONE; // assertion mode
@@ -577,6 +581,14 @@ public class Wiki implements Serializable
 
     public void setSlowmax(int slowmax) {
         this.slowmax = slowmax;
+    }
+
+    public boolean isUsingPost() {
+        return usePost;
+    }
+
+    public void setUsePost(boolean enable) {
+        usePost = enable;
     }
 
     public String getProtocol() {
@@ -2218,22 +2230,41 @@ public class Wiki implements Serializable
     {
         String[][] result = new String[titles.length][];
         Map<String, List<String>> pagesTemplates = new HashMap<>();
-        StringBuilder url = new StringBuilder(query);
-        url.append("prop=templates&tllimit=max");
-        constructNamespaceString(url, "tl", ns);
-        url.append("&titles=");
-        String[] titleBunches = constructTitleString(url, titles, 100);
+        StringBuilder getUrl = new StringBuilder(query);
+        StringBuilder request = new StringBuilder();
+        request.append("prop=templates&tllimit=max");
+        constructNamespaceString(request, "tl", ns);
+        request.append("&titles=");
+        String[] titleBunches;
+        if (usePost)
+            titleBunches = constructTitleString(titles);
+        else
+        {
+            getUrl.append(request.toString());
+            titleBunches = constructTitleString(getUrl, titles, 100);
+        }
         for (String temp : titleBunches)
         {
             String line;
             String tlcontinue = null;
             do
             {
-                if (tlcontinue == null)
-                    line = fetch(url.toString() + temp, "getPagesTemplates");
+                StringBuilder nextRequest;
+                if (usePost)
+                    nextRequest = new StringBuilder(request);
                 else
-                    line = fetch(url.toString() + temp + "&tlcontinue=" + tlcontinue,
-                            "getPagesTemplates");
+                    nextRequest = new StringBuilder(getUrl);
+                if (tlcontinue == null)
+                    nextRequest.append(temp);
+                else
+                {
+                    nextRequest.append(temp);
+                    nextRequest.append("&tlcontinue=").append(tlcontinue);
+                }
+                if (usePost)
+                    line = post(query, nextRequest.toString(), "getPagesTemplates");
+                else
+                    line = fetch(nextRequest.toString(), "getPagesTemplates");
                 tlcontinue = parseAttribute(line, "tlcontinue", 0);
                 // String line = fetch(url.toString() + temp, "getPagesTemplates");
                 // <page _idx="25458" pageid="25458" ns="0" title="Rome">
@@ -7471,7 +7502,7 @@ public class Wiki implements Serializable
             return new String[0];
         List<String> result = new ArrayList<>();
         StringBuilder buffer = new StringBuilder(urlMaxLength);
-        buffer.append(normalize(titles[0]));
+        buffer.append(encode(titles[0], true));
         int count = 1;
         String sep = encode("|", false);
         for (int i = 1; i < titles.length; i++)
@@ -7492,7 +7523,7 @@ public class Wiki implements Serializable
                 count++;
             }
         }
-        result.add(encode(buffer.toString(), false));  // Finish him!
+        result.add(buffer.toString());  // Finish him!
         return result.toArray(new String[result.size()]);
     }
 
