@@ -76,7 +76,11 @@ public class WikiBooster {
         }
         templatesNs = ns;
         if (templatesCache == null) {
+            boolean usePostOld = wiki.isUsingPost();
+            // Actually, POST here is slower than GET, so I leave it commented
+            // wiki.setUsePost(true);
             String[][] pagesTemplates = wiki.getPagesTemplates(pages, ns);
+            wiki.setUsePost(usePostOld);
             templatesCache = new HashMap<>();
             for (int i=0; i<pages.length; i++) {
                 templatesCache.put(pages[i], Arrays.asList(pagesTemplates[i]));
