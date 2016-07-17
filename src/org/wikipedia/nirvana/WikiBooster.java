@@ -76,12 +76,7 @@ public class WikiBooster {
         }
         templatesNs = ns;
         if (templatesCache == null) {
-            int slowmax = wiki.getSlowmax();
-            // TODO(Nirvanchik): Remove this workaround when 
-            // https://github.com/MER-C/wiki-java/issues/128 is fixed.
-            wiki.setSlowmax(50);
             String[][] pagesTemplates = wiki.getPagesTemplates(pages, ns);
-            wiki.setSlowmax(slowmax);
             templatesCache = new HashMap<>();
             for (int i=0; i<pages.length; i++) {
                 templatesCache.put(pages[i], Arrays.asList(pagesTemplates[i]));
