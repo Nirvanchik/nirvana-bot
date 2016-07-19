@@ -25,7 +25,10 @@ package org.wikipedia.nirvana;
 
 import org.wikipedia.Wiki.Revision;
 
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,8 +45,9 @@ import java.util.Set;
  * hundreds instead. Each HTTP GET is expensive, it takes time, it adds a load to network. 
  */
 public class WikiBooster {
+    private static final Logger log = Logger.getLogger(WikiBooster.class.getName());
     private final NirvanaWiki wiki;
-    private final String[] pages;
+    private final List<String> pages;
     private final Set<String> pagesSet;
     private Map<String, List<String>> templatesCache = null;
     private Map<String, String> pageTextCache = null;
@@ -58,8 +62,8 @@ public class WikiBooster {
      */
     public WikiBooster(NirvanaWiki wiki, String[] pages) {
         this.wiki = wiki;
-        this.pages = pages;
-        pagesSet = new HashSet<>(Arrays.asList(pages));
+        this.pages = new ArrayList<>(Arrays.asList(pages));
+        pagesSet = new HashSet<>(this.pages);
     }
 
     /**
@@ -71,7 +75,7 @@ public class WikiBooster {
      */
     public WikiBooster(NirvanaWiki wiki, List<String> pages) {
         this.wiki = wiki;
-        this.pages = pages.toArray(new String[pages.size()]);
+        this.pages = pages;
         pagesSet = new HashSet<>(pages);
     }
 
@@ -84,9 +88,9 @@ public class WikiBooster {
      * @param revs list of revisions of class {@link org.wikipedia.Wiki.Revision Revision}.
      */
     public static WikiBooster create(NirvanaWiki wiki, List<Revision> revs) {
-        String[] pages = new String[revs.size()];
+        List<String> pages = new ArrayList<>(revs.size());
         for (int i = 0; i < revs.size(); i++) {
-            pages[i] = revs.get(i).getPage();
+            pages.add(revs.get(i).getPage());
         }
         return new WikiBooster(wiki, pages);
     }
@@ -113,11 +117,13 @@ public class WikiBooster {
             boolean usePostOld = wiki.isUsingPost();
             // Actually, POST here is slower than GET, so I leave it commented
             // wiki.setUsePost(true);
-            String[][] pagesTemplates = wiki.getPagesTemplates(pages, ns);
+            log.debug("Request templates for " + pages.size() + " pages.");
+            String[][] pagesTemplates =
+                    wiki.getPagesTemplates(pages.toArray(new String[pages.size()]), ns);
             wiki.setUsePost(usePostOld);
             templatesCache = new HashMap<>();
-            for (int i = 0; i < pages.length; i++) {
-                templatesCache.put(pages[i], Arrays.asList(pagesTemplates[i]));
+            for (int i = 0; i < pages.size(); i++) {
+                templatesCache.put(pages.get(i), Arrays.asList(pagesTemplates[i]));
             }
         }
         return templatesCache.get(title);
@@ -135,12 +141,25 @@ public class WikiBooster {
             throw new RuntimeException("The booster is not prepared for page: " + title);
         }
         if (pageTextCache == null) {
-            String[] texts = wiki.getPagesTexts(pages);
+            log.debug("Request texts for " + pages.size() + " pages.");
+            String[] texts = wiki.getPagesTexts(pages.toArray(new String[pages.size()]));
             pageTextCache = new HashMap<>();
-            for (int i = 0; i < pages.length; i++) {
-                pageTextCache.put(pages[i], texts[i]);
+            for (int i = 0; i < pages.size(); i++) {
+                pageTextCache.put(pages.get(i), texts[i]);
             }
         }
         return pageTextCache.get(title);
+    }
+
+    /**
+     * Use it when you are sure that you will not use the specified page.
+     * Good for performance. Why fetch anything for it if will not use it?
+     * Please use this method carefully.
+     *
+     * @param title the title of the page that should be removed from processing
+     */
+    public void removePage(String title) {
+        pages.remove(title);
+        pagesSet.remove(title);
     }
 }
