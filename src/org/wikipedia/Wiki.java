@@ -1652,6 +1652,117 @@ public class Wiki implements Serializable
     }
 
     /**
+     *  Gets the raw wikicode for a list of pages. WARNING: does not support special
+     *  pages. Check [[User talk:MER-C/Wiki.java#Special page equivalents]]
+     *  for fetching the contents of special pages. 
+     *
+     *  @param titles array of titles of the pages.
+     *  @return array with the raw wikicode of pages. The pages which do not exist will
+     *  give <code>null</code> as a result.
+     *  @throws UnsupportedOperationException if you try to retrieve the text of a
+     *  Special: or Media: page
+     *  @throws IOException if a network error occurs
+     *  @since 0.31
+     */
+    public String[] getPagesTexts(String... titles) throws IOException
+    {
+        // pitfall check
+        for (String title: titles)
+            if (namespace(title) < 0)
+                throw new UnsupportedOperationException(
+                        "Cannot retrieve Special: or Media: pages!");
+
+        Map<String, String> pagesTexts = new HashMap<>();
+        StringBuilder getUrl = new StringBuilder(query);
+        StringBuilder request = new StringBuilder();
+        request.append("prop=revisions");
+        request.append("&rvprop=content");
+        request.append("&titles=");
+
+        String[] titleBunches;
+        if (usePost)
+            titleBunches = constructTitleString(titles);
+        else
+        {
+            getUrl.append(request.toString());
+            titleBunches = constructTitleString(getUrl, titles, 100);
+        }
+        for (String temp : titleBunches)
+        {
+            String line;
+            String rvcontinue = null;
+            do
+            {
+                StringBuilder nextRequest;
+                if (usePost)
+                    nextRequest = new StringBuilder(request);
+                else
+                    nextRequest = new StringBuilder(getUrl);
+                if (rvcontinue == null)
+                    nextRequest.append(temp);
+                else
+                {
+                    nextRequest.append(temp);
+                    nextRequest.append("&rvcontinue=").append(rvcontinue);
+                }
+                if (usePost)
+                    line = post(query, nextRequest.toString(), "getPagesTexts");
+                else
+                    line = fetch(nextRequest.toString(), "getPagesTexts");
+                rvcontinue = parseAttribute(line, "rvcontinue", 0);
+                // String line = fetch(url.toString() + temp, "getPagesTemplates");
+                // Typically this looks like:
+                // ...
+                // <normalized>
+                // <n from="ghghghgghg" to="Ghghghgghg" />
+                // </normalized>
+                // <pages>
+                //  <page _idx="-1" ns="0" title="Ghghghgghg" missing="" />
+                //  <page _idx="25458" pageid="25458" ns="0" title="Rome">
+                //    <revisions>
+                //      <rev contentformat="text/x-wiki" contentmodel="wikitext"
+                //             xml:space="preserve">{{about|the city in Italy|the
+                // ...
+                // [[Category:World Heritage Sites in Italy]]</rev>
+                // </revisions>
+                // </page>
+                // <page _idx="26751" pageid="26751" ns="0" title="Sun">
+                //  <revisions>
+                //    <rev contentformat
+                for (int j = line.indexOf("<page _idx="); j > 0;
+                        j = line.indexOf("<page _idx=", ++j))
+                {
+                    int next = line.indexOf("<page _idx=", j + 1);
+                    if (next < 0)
+                        next = line.length();
+                    String item = line.substring(j, next);
+                    String pageId = parseAttribute(item, "_idx", 0);
+                    // Page not found (or doesn't exist, or deleted, etc).
+                    if (pageId == null || pageId.equals("-1"))
+                        continue;
+                    String parsedtitle = parseAttribute(item, "title", 0);
+                    if (!item.contains("<revisions>"))
+                        continue;  // WTF? May be <revisions/> ?
+                    item = item.substring(item.indexOf("<revisions>"));
+                    item = item.substring(0, item.lastIndexOf("</revisions>"));
+                    int begin = item.indexOf("<rev ");
+                    begin = item.indexOf(">", begin + 1);
+                    int end = item.indexOf("</rev>");
+                    item = item.substring(begin, end);
+                       pagesTexts.put(parsedtitle, decode(item));
+                }
+            }
+            while (rvcontinue != null);
+        }
+        String[] result = new String[titles.length];
+        for (int i = 0; i < titles.length; i++)
+            result[i] = pagesTexts.get(normalize(titles[i]));
+        log(Level.INFO, "getPagesTexts",
+                "Successfully retrieved pages texts for " + Arrays.toString(titles));
+        return result;
+    }
+
+    /**
      *  Gets the text of a specific section. Useful for section editing.
      *  @param title the title of the relevant page
      *  @param number the section number of the section to retrieve text for
@@ -7127,6 +7238,7 @@ public class Wiki implements Serializable
         if (checkLag(connection))
             fetch(url, caller);
 
+        
         // get the text
         String temp;
         try (BufferedReader in = new BufferedReader(new InputStreamReader(

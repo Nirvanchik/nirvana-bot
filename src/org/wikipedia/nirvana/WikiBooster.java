@@ -34,37 +34,71 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @author kin
- *
+ * This is a thing that increases bot performance greatly. When you know what pages texts you're
+ * going to download or what pages templates you're going to get you and so on you can use this
+ * booster. It will prefetch all required data in a short time and then return them one by one
+ * when you ask them. The effect is achieved by fetching more data in every request. So, you 
+ * don't waste thousands of HTTP GET/POST requests to download what you want, you use tens or
+ * hundreds instead. Each HTTP GET is expensive, it takes time, it adds a load to network. 
  */
 public class WikiBooster {
     private final NirvanaWiki wiki;
-    private final String pages[];
+    private final String[] pages;
     private final Set<String> pagesSet;
     private Map<String, List<String>> templatesCache = null;
     private Map<String, String> pageTextCache = null;
     private int templatesNs = -1;
     
-    public WikiBooster(NirvanaWiki wiki, String pages[]) {
+    /**
+     * Constructor taking a wiki instance and page list as an array.
+     * If you need a booster for another set of pages, please create a new instance for that.
+     * 
+     * @param wiki {@link org.wikipedia.nirvana.NirvanaWiki NirvanaWiki} instance.
+     * @param pages an array of pages.
+     */
+    public WikiBooster(NirvanaWiki wiki, String[] pages) {
         this.wiki = wiki;
         this.pages = pages;
         pagesSet = new HashSet<>(Arrays.asList(pages));
     }
 
+    /**
+     * Constructor taking a wiki instance and page list.
+     * If you need a booster for another set of pages, please create a new instance for that.
+     * 
+     * @param wiki {@link org.wikipedia.nirvana.NirvanaWiki NirvanaWiki} instance.
+     * @param pages list of pages.
+     */
     public WikiBooster(NirvanaWiki wiki, List<String> pages) {
         this.wiki = wiki;
         this.pages = pages.toArray(new String[pages.size()]);
         pagesSet = new HashSet<>(pages);
     }
-    
+
+    /**
+     * Constructs <code>WikiBooster</code> taking a wiki instance and list of revisions.
+     * Page list will be taken from those revisions.
+     * If you need a booster for another set of pages, please create a new instance for that.
+     * 
+     * @param wiki {@link org.wikipedia.nirvana.NirvanaWiki NirvanaWiki} instance.
+     * @param revs list of revisions of class {@link org.wikipedia.Wiki.Revision Revision}.
+     */
     public static WikiBooster create(NirvanaWiki wiki, List<Revision> revs) {
-        String pages[] = new String[revs.size()];
-        for (int i=0; i < revs.size(); i++) {
+        String[] pages = new String[revs.size()];
+        for (int i = 0; i < revs.size(); i++) {
             pages[i] = revs.get(i).getPage();
         }
         return new WikiBooster(wiki, pages);
     }
-    
+
+    /**
+     * Gets the list of templates used on a particular page that are in a particular namespace(s).
+     *
+     * @param title the title of the page.
+     * @param ns a list of namespaces to filter by, empty = all namespaces.
+     * @return the list of templates used on that page in that namespace.
+     * @see org.wikipedia.Wiki#getTemplates(String, int...)
+     */
     public List<String> getTemplates(String title, int ns) throws IOException {
         if (!pagesSet.contains(title)) {
             throw new RuntimeException("The booster is not prepared for page: " + title);
@@ -82,25 +116,31 @@ public class WikiBooster {
             String[][] pagesTemplates = wiki.getPagesTemplates(pages, ns);
             wiki.setUsePost(usePostOld);
             templatesCache = new HashMap<>();
-            for (int i=0; i<pages.length; i++) {
+            for (int i = 0; i < pages.length; i++) {
                 templatesCache.put(pages[i], Arrays.asList(pagesTemplates[i]));
             }
         }
         return templatesCache.get(title);
     }
 
+    /**
+     * Gets the raw wikicode for a page.
+     *
+     * @param title the title of the page.
+     * @return the raw wikicode of a page.
+     * @see org.wikipedia.Wiki#getPageText(String)
+     */
     public String getPageText(String title) throws IOException {
         if (!pagesSet.contains(title)) {
             throw new RuntimeException("The booster is not prepared for page: " + title);
         }
         if (pageTextCache == null) {
+            String[] texts = wiki.getPagesTexts(pages);
             pageTextCache = new HashMap<>();
+            for (int i = 0; i < pages.length; i++) {
+                pageTextCache.put(pages[i], texts[i]);
+            }
         }
-        String text = pageTextCache.get(title);
-        if (text == null) {
-            text = wiki.getPageText(title);
-            pageTextCache.put(title, text);
-        }
-        return text;
+        return pageTextCache.get(title);
     }
 }
