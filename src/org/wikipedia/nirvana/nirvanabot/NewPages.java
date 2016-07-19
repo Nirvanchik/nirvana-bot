@@ -607,11 +607,12 @@ public class NewPages implements PortalModule{
         ArrayList<Revision> list = new ArrayList<>();
         WikiBooster booster = WikiBooster.create(wiki, pageInfoList);
         TemplateFinder finder =
-                new TemplateFinder(templateFilter.getParamFilterItems(), wiki,booster);
+                new TemplateFinder(templateFilter.getParamFilterItems(), wiki, booster);
 		for (Revision r: pageInfoList) {
 			if (finder.find(r.getPage())) {
 				list.add(r);
 			}
+            booster.removePage(r.getPage());
 		}
 		return list;
 	}

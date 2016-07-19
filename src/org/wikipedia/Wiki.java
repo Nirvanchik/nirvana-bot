@@ -1758,7 +1758,8 @@ public class Wiki implements Serializable
         for (int i = 0; i < titles.length; i++)
             result[i] = pagesTexts.get(normalize(titles[i]));
         log(Level.INFO, "getPagesTexts",
-                "Successfully retrieved pages texts for " + Arrays.toString(titles));
+                "Successfully retrieved pages texts for " + String.valueOf(titles.length) +
+                " pages: " + Arrays.toString(titles));
         return result;
     }
 
@@ -2426,7 +2427,8 @@ public class Wiki implements Serializable
                 result[i] = templates.toArray(new String[templates.size()]);
         }
         log(Level.INFO, "getPagesTemplates",
-                "Successfully retrieved pages templates for " + Arrays.toString(titles));
+                "Successfully retrieved pages templates for " + String.valueOf(titles.length) +
+                " pages: " + Arrays.toString(titles));
         return result;
     }
 
