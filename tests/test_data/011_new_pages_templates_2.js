@@ -161,43 +161,43 @@
 		"templates": [
 			{
 				"title": "Lavanify miolaka",
-				"templates": ["Хорошая статья", "other"]
+				"templates": ["Шаблон:Хорошая статья", "Шаблон:Other"]
 			},
 			{
 				"title": "Альбертозавр",
-				"templates": ["Хорошая статья", "Rq", "other"]
+				"templates": ["Шаблон:Хорошая статья", "Rq", "Шаблон:Other"]
 			},
 			{
 				"title": "Анкилозавр",
-				"templates": ["Хорошая статья", "Просто шаблон", "other"]
+				"templates": ["Шаблон:Хорошая статья", "Просто шаблон", "Шаблон:Other"]
 			},
 			{
 				"title": "Браун, Барнум",
-				"templates": ["Избранная статья", "Какой-то шаблон", "other"]
+				"templates": ["Шаблон:Избранная статья", "Какой-то шаблон", "Шаблон:Other"]
 			},
 			{
 				"title": "Гипсилофодон",
-				"templates": ["Хорошая статья", "Rq", "other"]
+				"templates": ["Шаблон:Хорошая статья", "Rq", "Шаблон:Other"]
 			},
 			{
 				"title": "Гулд, Стивен Джей",
-				"templates": ["Избранная статья", "Rq", "other"]
+				"templates": ["Шаблон:Избранная статья", "Rq", "Шаблон:Other"]
 			},
 			{
 				"title": "Нигерзавр",
-				"templates": ["Rq", "other"]
+				"templates": ["Шаблон:Rq", "Шаблон:Other"]
 			},
 			{
 				"title": "Патагозавр",
-				"templates": ["Rq", "other"]
+				"templates": ["Шаблон:Rq", "Шаблон:Other"]
 			},
 			{
 				"title": "Протоптер",
-				"templates": ["Rq", "other"]
+				"templates": ["Шаблон:Rq", "Шаблон:Other"]
 			},
 			{
 				"title": "Тарбозавр",
-				"templates": ["Rq", "other"]
+				"templates": ["Шаблон:Rq", "Шаблон:Other"]
 			}
 		]
 	},

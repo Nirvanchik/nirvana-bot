@@ -23,6 +23,8 @@
 
 package org.wikipedia.nirvana;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -298,5 +300,21 @@ public class MockNirvanaWiki extends NirvanaWiki {
             result[i] = text;
         }
         return result;
+    }
+
+    @Override
+    public boolean[][] hasTemplates(String[] titles, String... templates) throws IOException {
+        boolean[][] results = new boolean[titles.length][];
+        for (int i = 0; i < titles.length; i++) {
+            String title = titles[i];
+            boolean[] thisResult = new boolean[templates.length];
+            for (int j = 0; j < templates.length; j++) {
+                if (!pageTemplatesMap.containsKey(title)) thisResult[j] = false;
+                else thisResult[j] =
+                        ArrayUtils.contains(pageTemplatesMap.get(titles[i]), templates[j]);
+            }
+            results[i] = thisResult;
+        }
+        return results;
     }
 }

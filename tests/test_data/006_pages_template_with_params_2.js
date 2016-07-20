@@ -92,23 +92,23 @@
 		"templates": [
 			{
 				"title": "Scream In Darkness",
-				"templates": ["Музыкальный коллектив", "other"]
+				"templates": ["Шаблон:Музыкальный коллектив", "Шаблон:Other"]
 			},
 			{
 				"title": "MULTIVERSE",
-				"templates": ["Rq", "other"]
+				"templates": ["Шаблон:Rq", "Шаблон:Other"]
 			},
 			{
 				"title": "Тень солнца",
-				"templates": ["Просто шаблон", "other"]
+				"templates": ["Шаблон:Просто шаблон", "Other"]
 			},
 			{
 				"title": "Tacit Fury",
-				"templates": ["Какой-то шаблон", "other"]
+				"templates": ["Шаблон:Какой-то шаблон", "Шаблон:Other"]
 			},
 			{
 				"title": "Another Case",
-				"templates": ["Rq", "other"]
+				"templates": ["Шаблон:Rq", "Шаблон:Other"]
 			}
 		]
 	},

@@ -81,15 +81,15 @@
 		"templates": [
 			{
 				"title": "Scream In Darkness",
-				"templates": ["Музыкальный коллектив"]
+				"templates": ["Шаблон:Музыкальный коллектив"]
 			},
 			{
 				"title": "Тень солнца",
-				"templates": ["Просто шаблон"]
+				"templates": ["Шаблон:Просто шаблон"]
 			},
 			{
 				"title": "Tacit Fury",
-				"templates": ["Какой-то шаблон"]
+				"templates": ["Шаблон:Какой-то шаблон"]
 			},
 		]
 	},
