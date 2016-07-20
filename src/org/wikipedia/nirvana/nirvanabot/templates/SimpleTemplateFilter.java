@@ -26,6 +26,7 @@ package org.wikipedia.nirvana.nirvanabot.templates;
 import org.wikipedia.nirvana.WikiTools.EnumerationType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,10 +36,13 @@ import java.util.List;
 public class SimpleTemplateFilter implements TemplateFilter {
     protected List<String> templates;
     protected EnumerationType enumType;
-    
+
     public SimpleTemplateFilter(List<String> templates, EnumerationType enumType) {
         this.templates = templates;
         this.enumType = enumType;
+        if (templates != null) {
+            Collections.sort(templates);
+        }
     }
 
     @Override
