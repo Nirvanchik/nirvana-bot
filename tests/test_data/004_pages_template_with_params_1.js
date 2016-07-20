@@ -88,15 +88,15 @@
 		"templates": [
 			{
 				"title": "Scream In Darkness",
-				"templates": ["Музыкальный коллектив"]
+				"templates": ["Шаблон:Музыкальный коллектив"]
 			},
 			{
 				"title": "MULTIVERSE",
-				"templates": ["Музыкальный коллектив"]
+				"templates": ["Шаблон:Музыкальный коллектив"]
 			},
 			{
 				"title": "Tacit Fury",
-				"templates": ["Какой-то шаблон"]
+				"templates": ["Шаблон:Какой-то шаблон"]
 			},
 		]
 	},
