@@ -2340,12 +2340,31 @@ public class Wiki implements Serializable
      */
     public String[][] getPagesTemplates(String[] titles, int... ns) throws IOException
     {
+        return getPagesTemplatesImpl(titles, ns, null);
+    }
+
+    /**
+     *  Gets the lists of templates used on given pages that are in a
+     *  particular namespace(s) and filter them by provided list of templates.
+     *
+     *  @param titles list of pages
+     *  @param ns a list of namespaces to filter by, empty = all namespaces.
+     *  @param templatesToCheck only these templates will appear in results if pages use them.
+     *  @return the list of templates used on those pages in that namespace
+     *  @throws IOException if a network error occurs
+     *  @since 0.31
+     */
+    protected String[][] getPagesTemplatesImpl(String[] titles, int[] ns,
+            String[] templatesToCheck) throws IOException
+    {
         String[][] result = new String[titles.length][];
         Map<String, List<String>> pagesTemplates = new HashMap<>();
         StringBuilder getUrl = new StringBuilder(query);
         StringBuilder request = new StringBuilder();
         request.append("prop=templates&tllimit=max");
         constructNamespaceString(request, "tl", ns);
+        if (templatesToCheck != null && templatesToCheck.length > 0)
+            request.append("&tltemplates=").append(constructTitleString(templatesToCheck)[0]);
         request.append("&titles=");
         String[] titleBunches;
         if (usePost)
@@ -2426,9 +2445,52 @@ public class Wiki implements Serializable
             else
                 result[i] = templates.toArray(new String[templates.size()]);
         }
-        log(Level.INFO, "getPagesTemplates",
+        log(Level.INFO, "getPagesTemplatesImpl",
                 "Successfully retrieved pages templates for " + String.valueOf(titles.length) +
                 " pages: " + Arrays.toString(titles));
+        return result;
+    }
+
+    /**
+     * Checks if pages with provided list of titles use particular template.
+     *
+     *  @param titles list of pages
+     *  @param template template to check
+     *  @return array with check results, <code>true</code> if the corresponding page uses
+     *  the template, results go in the same order as in the input list.
+     *  @throws IOException if a network error occurs
+     *  @since 0.31
+     */
+    public boolean[] hasTemplate(String[] titles, String templates) throws IOException
+    {
+        return hasTemplates(titles)[0];
+    }
+
+    /**
+     *  Checks if pages with provided list of titles use particular templates. List of pages is not
+     *  limited. List of templates is limited to max (50 for users or 500 for bots);
+     *
+     *  @param titles list of pages
+     *  @param templates list of templates
+     *  @return array with check results, <code>true</code> if the corresponding page uses
+     *  the corresponding template, results go in the same order as in the input lists.
+     *  @throws IOException if a network error occurs
+     *  @since 0.31
+     **/
+    public boolean[][] hasTemplates(String[] titles, String... templates) throws IOException
+    {
+        if (templates.length == 0)
+            throw new IllegalArgumentException("You should provide at least 1 template");
+        String[][] pagesTemplates = getPagesTemplatesImpl(titles, new int[0], templates);
+        boolean[][] result = new boolean[titles.length][];
+        for (int i = 0; i < titles.length; i++)
+        {
+            String[] thisTemplates = pagesTemplates[i];
+            boolean[] thisResult = new boolean[templates.length];
+            for (int j = 0; j < templates.length; j++)
+                thisResult[j] = (Arrays.binarySearch(thisTemplates, normalize(templates[j])) >= 0);
+            result[i] = thisResult;
+        }
         return result;
     }
 

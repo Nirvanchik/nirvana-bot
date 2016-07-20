@@ -44,13 +44,15 @@ public class ComplexTemplateFilter extends SimpleTemplateFilter {
     public ComplexTemplateFilter(List<TemplateFindItem> items, EnumerationType enumType) {        
         super(null, enumType);
         findItems = items;
+        Collections.sort(findItems);
+
         templates = new ArrayList<>();
         for (TemplateFindItem item: items) {
             if (!templates.contains(item.template)) {
                 templates.add(item.template);
             }
         }
-        Collections.sort(findItems);
+        Collections.sort(templates);
     }
 
     @Override

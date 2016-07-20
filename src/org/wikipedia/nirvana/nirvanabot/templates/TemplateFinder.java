@@ -28,10 +28,7 @@ import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.WikiBooster;
 import org.wikipedia.nirvana.WikiUtils;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -41,37 +38,28 @@ import java.util.List;
  */
 public class TemplateFinder {
     private final List<TemplateFindItem> findItems;
-    private final NirvanaWiki wiki;
     private final WikiBooster wikiBooster;
+    private final String templatePrefix;
 
     public TemplateFinder(List<TemplateFindItem> findItems, NirvanaWiki wiki,
-            WikiBooster wikiBooster) {
+            WikiBooster wikiBooster) throws IOException {
 		this.findItems = findItems;
-		this.wiki = wiki;
         this.wikiBooster = wikiBooster;
+        templatePrefix = wiki.namespaceIdentifier(Wiki.TEMPLATE_NAMESPACE) + ":";
 	}
 
     public boolean find(String article) throws IOException {
-        List<String> templates = wikiBooster.getTemplates(article, Wiki.TEMPLATE_NAMESPACE);
-        if (templates.isEmpty()) {
-    		return false;
-    	}
-        List<String> templatesNoNs = new ArrayList<>(templates.size());
-        for (String template: templates) {
-            String ns = wiki.namespaceIdentifier(Wiki.TEMPLATE_NAMESPACE);
-            templatesNoNs.add(StringUtils.removeStart(template, ns + ":"));
-        }
-    	for(TemplateFindItem findItem: findItems) {
-            if (findItem(findItem, article, templatesNoNs)) {
+        for (TemplateFindItem findItem: findItems) {
+            if (findItem(findItem, article)) {
     			return true;
     		}
     	}
     	return false;
     }
-    
-    private boolean findItem(TemplateFindItem item, String article, List<String> templates)
+
+    private boolean findItem(TemplateFindItem item, String article)
             throws IOException {
-        if (!templates.contains(item.template)) {
+        if (!wikiBooster.hasTemplate(article, templatePrefix + item.template)) {
             return false;
         }
         if (item.isSimple()) {

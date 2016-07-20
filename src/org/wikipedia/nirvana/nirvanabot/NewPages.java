@@ -605,7 +605,9 @@ public class NewPages implements PortalModule{
 			return pageInfoList;
 		}
         ArrayList<Revision> list = new ArrayList<>();
-        WikiBooster booster = WikiBooster.create(wiki, pageInfoList);
+        String templatePrefix = wiki.namespaceIdentifier(Wiki.TEMPLATE_NAMESPACE) + ":";
+        WikiBooster booster = WikiBooster.create(wiki, pageInfoList, 
+                StringTools.addPrefixToList(templateFilter.getTemplates(), templatePrefix));
         TemplateFinder finder =
                 new TemplateFinder(templateFilter.getParamFilterItems(), wiki, booster);
 		for (Revision r: pageInfoList) {

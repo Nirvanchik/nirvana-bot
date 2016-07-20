@@ -1,6 +1,6 @@
 /**
  *  @(#)StringTools.java
- *  Copyright © 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright © 2011-2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author kin
- *
+ * Some utility methods for strings manipulations which you won't find in
+ * the {@link org.apache.commons.lang3.StringUtils}
  */
 public class StringTools {
 
@@ -125,5 +125,19 @@ public class StringTools {
     	}
     	return false;
     }
-    
+
+    /**
+     * Adds same prefix to all list items.
+     *
+     * @param list a list of strings to add prefix
+     * @param prefix the prefix
+     * @return new list of prefixed strings
+     */
+    public static List<String> addPrefixToList(List<String> list, String prefix) {
+        List<String> result = new ArrayList<String>(list.size());
+        for (String str: list) {
+            result.add(prefix + str);
+        }
+        return result;
+    }
 }
