@@ -579,6 +579,10 @@ public class Wiki implements Serializable
         return slowmax;
     }
 
+    public void setUrlMaxLength(int maxLength) {
+        urlMaxLength = maxLength;
+    }
+
     public void setSlowmax(int slowmax) {
         this.slowmax = slowmax;
     }
