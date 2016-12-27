@@ -5944,7 +5944,7 @@ public class Wiki implements Serializable
 
         // tidy up
         int size = pages.size();
-        log(Level.INFO, "listPages", "Successfully retrieved page list (" + size + " pages)");
+        log(Level.INFO, "listPages", "Successfully retrieved page list (" + size + " pages) for prefix: " + prefix);
         return pages.toArray(new String[size]);
     }
 
