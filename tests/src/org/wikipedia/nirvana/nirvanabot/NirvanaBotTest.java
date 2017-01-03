@@ -30,12 +30,13 @@ import org.wikipedia.nirvana.WikiTools.Service;
 import org.wikipedia.nirvana.WikiTools.ServiceFeatures;
 import org.wikipedia.nirvana.nirvanabot.MockNirvanaBot.TestError;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.File;
 
 import junit.framework.Assert;
 
@@ -53,7 +54,6 @@ public class NirvanaBotTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        Logger.getRootLogger().removeAllAppenders();  // NirvanaBot has it's own console appender.
     }
 
     @AfterClass
@@ -72,8 +72,10 @@ public class NirvanaBotTest {
     // Ensure test infrastructure is not broken
     @Test
     public void testDataFound() {
-        String str = FileTools.readFileSilently("tests/test_data/test.xml");
-        Assert.assertNotNull(str);
+        File f = new File(TEST_DATA_PATH);
+        Assert.assertTrue(f.exists() && f.isDirectory());
+        String str = FileTools.readFileSilently(TEST_DATA_PATH + "test.xml");
+        Assert.assertNotNull("test.xml not found. Something is wrong with test_data!!!", str);
     }
 
     /**
@@ -92,7 +94,7 @@ public class NirvanaBotTest {
     public void newPages_updateWithDefaultValues_firstTime() throws TestError {
         String config = "001_new_pages_update_with_default_vals_first_time.js";
         MockNirvanaBot bot =
-                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
         bot.validateQueries();
         bot.validateEdits();
@@ -111,7 +113,7 @@ public class NirvanaBotTest {
     public void newPages_templateWithParams1() throws TestError {
         String config = "002_new_pages_template_with_params_1.js";
         MockNirvanaBot bot =
-                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
         bot.validateQueries();
         bot.validateEdits();
@@ -129,7 +131,7 @@ public class NirvanaBotTest {
     public void pages_templates1() throws TestError {
         String config = "003_pages_templates_1.js";
         MockNirvanaBot bot =
-                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
         bot.validateQueries();
         bot.validateEdits();
@@ -149,7 +151,7 @@ public class NirvanaBotTest {
     public void pages_templateWithParams1() throws TestError {
         String config = "004_pages_template_with_params_1.js";
         MockNirvanaBot bot =
-                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
         bot.validateQueries();
         bot.validateEdits();
@@ -168,7 +170,7 @@ public class NirvanaBotTest {
     public void newPages_templateWithParams2() throws TestError {
         String config = "005_new_pages_template_with_params_2.js";
         MockNirvanaBot bot =
-                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
         bot.validateQueries();
         bot.validateEdits();
@@ -188,7 +190,7 @@ public class NirvanaBotTest {
     public void pages_templateWithParams2() throws TestError {
         String config = "006_pages_template_with_params_2.js";
         MockNirvanaBot bot =
-                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
         bot.validateQueries();
         bot.validateEdits();
@@ -206,7 +208,7 @@ public class NirvanaBotTest {
     public void pages_templates_any() throws TestError {
         String config = "007_pages_templates_any.js";
         MockNirvanaBot bot =
-                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
         bot.validateQueries();
         bot.validateEdits();
@@ -224,7 +226,7 @@ public class NirvanaBotTest {
     public void pages_templates_all() throws TestError {
         String config = "008_pages_templates_all.js";
         MockNirvanaBot bot =
-                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
         bot.validateQueries();
         bot.validateEdits();
@@ -242,7 +244,7 @@ public class NirvanaBotTest {
     public void pages_templates_none() throws TestError {
         String config = "009_pages_templates_none.js";
         MockNirvanaBot bot =
-                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
         bot.validateQueries();
         bot.validateEdits();
@@ -260,7 +262,7 @@ public class NirvanaBotTest {
     public void newPages_templates1() throws TestError {
         String config = "010_new_pages_templates_1.js";
         MockNirvanaBot bot =
-                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
         bot.validateQueries();
         bot.validateEdits();
@@ -286,7 +288,7 @@ public class NirvanaBotTest {
         //         .thenReturn(false);
         Service.setTestFeatures(ServiceFeatures.NEWPAGES | ServiceFeatures.FAST_MODE);
         MockNirvanaBot bot =
-                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
         bot.validateQueries();
         bot.validateEdits();
@@ -313,7 +315,7 @@ public class NirvanaBotTest {
         //         .thenReturn(false);
         Service.setTestFeatures(ServiceFeatures.NEWPAGES | ServiceFeatures.FAST_MODE);
         MockNirvanaBot bot =
-                new MockNirvanaBot(NirvanaBasicBot.FLAG_CONSOLE_LOG, TEST_DATA_PATH + config);
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
         bot.validateQueries();
         bot.validateEdits();

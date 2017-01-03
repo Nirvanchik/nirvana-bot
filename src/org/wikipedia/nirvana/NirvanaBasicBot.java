@@ -23,6 +23,15 @@
 
 package org.wikipedia.nirvana;
 
+import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.PropertyConfigurator;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -37,13 +46,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.security.auth.login.FailedLoginException;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * How to use this bot framework?
@@ -65,8 +67,15 @@ import org.apache.log4j.PropertyConfigurator;
  * and call {@link run()} to run bot.
  */
 public abstract class NirvanaBasicBot {
-	public static final int FLAG_SHOW_LICENSE = 0b01;
-	public static final int FLAG_CONSOLE_LOG = 0b010;
+    public static final int FLAG_SHOW_LICENSE = 0b001;
+    /**
+     * Please use log4j.properties and {@value #FLAG_DEFAULT_LOG} to configure default logger.
+     */
+    @Deprecated
+    public static final int FLAG_CONSOLE_LOG = 0b0010;
+    public static final int FLAG_DEFAULT_LOG = 0b0100;
+    public static final int FLAG_NO_LOG      = 0b1000;
+
 	protected static final boolean DEBUG_BUILD = false;
 	protected static org.apache.log4j.Logger log = null;
 	
@@ -87,6 +96,7 @@ public abstract class NirvanaBasicBot {
 	protected String COMMENT = "обновление";
 	protected int flags = 0;
 
+    @Deprecated
     private ConsoleAppender consoleAppender = null;
 
 	public static String LICENSE = 
@@ -122,12 +132,11 @@ public abstract class NirvanaBasicBot {
 		this.flags = flags;
 	}
 
-
 	public int getFlags() {
 		return flags;
 	}
-	
-	public void run(String args[]) {
+
+    public int run(String args[]) {
 		showInfo();
 		if((flags & FLAG_SHOW_LICENSE) != 0) {
 			showLicense();
@@ -136,10 +145,20 @@ public abstract class NirvanaBasicBot {
 		String configFile = getConfig(args);		
 		System.out.println("applying config file: "+configFile);
 		Map<String,String> launch_params = getLaunchArgs(args);
-		startWithConfig(configFile, launch_params);
+        int exitCode = 0;
+        try {
+            startWithConfig(configFile, launch_params);
+        } catch (BotFatalError e) {
+            System.err.println("Error: " + e.toString());
+            e.printStackTrace();
+            exitCode = 1;
+        }
 
         cleanup();
-        System.out.print("----------------------< BOT FINISHED > -----------------------------\n");
+        System.out.print(String.format(
+                "----------------------< BOT FINISHED (%d) > -----------------------------\n",
+                exitCode));
+        return exitCode;
     }
 
     private void cleanup() {
@@ -167,9 +186,9 @@ public abstract class NirvanaBasicBot {
 	 * this is an example of main function
 	 */
     /**
-	public static void main(String[] args) {
-		NirvanaBasicBot bot = new NirvanaBasicBot(FLAG_CONSOLE_LOG);
-		bot.run(args);
+    public static void main(String[] args) {
+        NirvanaBasicBot bot = new NirvanaBasicBot(FLAG_DEFAULT_LOG);
+        System.exit(bot.run(args));
 	}*/
     
 	public String getConfig(String[] args) {
@@ -185,8 +204,9 @@ public abstract class NirvanaBasicBot {
 		}
 		return configFile;
 	}
-	
-	public void startWithConfig(String cfg, Map<String,String> launch_params) {
+
+    public void startWithConfig(String cfg, Map<String,String> launch_params)
+            throws BotFatalError {
 		properties = new Properties();
 		try {
 			InputStream in = new FileInputStream(cfg);
@@ -196,16 +216,12 @@ public abstract class NirvanaBasicBot {
 				properties.load(in);		
 			}
 			in.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("ABORT: file "+cfg+" not found");
-			return;
-		} catch (IOException e) {			
-			System.out.println("ABORT: Error reading config: "+cfg);
-			return;
+        } catch (IOException e) {
+            throw new BotFatalError(e);
 		}
-		
+
 		initLog();
-		
+
 		String login = properties.getProperty("wiki-login");
 		String pw = properties.getProperty("wiki-password");
 		if(login==null || pw==null || login.isEmpty() || pw.isEmpty()) {
@@ -319,29 +335,37 @@ public abstract class NirvanaBasicBot {
 	protected boolean loadCustomProperties(Map<String,String> launch_params) {
 		return true;
 	}
-	
-	protected void initLog() {
-		String log4jSettings = properties.getProperty("log4j-settings");
-		if(log4jSettings==null || log4jSettings.isEmpty() || !(new File(log4jSettings)).exists()) {
-			Properties properties = new Properties();
-			if((flags & FLAG_CONSOLE_LOG)!=0) {
-				System.out.println("INFO: console logs enabled");			
-				ConsoleAppender console = new ConsoleAppender(); //create appender
-				  //configure the appender
-				  String PATTERN = "%d [%p|%C{1}] %m%n"; //%c will giv java path
-				  console.setLayout(new PatternLayout(PATTERN)); 
-				  console.setThreshold(Level.DEBUG);
-				  console.activateOptions();
-                consoleAppender = console;
-				  //add appender to any Logger (here is root)
-				  Logger.getRootLogger().addAppender(console);
-				  //properties.setProperty("log4j.rootLogger", "DEBUG, stdout");					
-			} else {
-				System.out.println("INFO: logs disabled");			
-				properties.setProperty("log4j.rootLogger", "OFF");
-				PropertyConfigurator.configure(properties);
-			}
-		} else {
+
+    protected void initLog() throws BotFatalError {
+        if ((flags & FLAG_DEFAULT_LOG) != 0) {
+            System.out.println(
+                    "INFO: logs must be configured automatically from log4j.properties");
+        } else if ((flags & FLAG_NO_LOG) != 0) {
+            System.out.println("INFO: logs disabled");
+            properties.setProperty("log4j.rootLogger", "OFF");
+            PropertyConfigurator.configure(properties);
+        } else if ((flags & FLAG_CONSOLE_LOG) != 0) {
+            System.out.println("INFO: console logs enabled");
+            ConsoleAppender consoleAppender = new ConsoleAppender();
+            // %c will giv java path
+            String PATTERN = "%d [%p|%C{1}] %m%n";
+            consoleAppender.setLayout(new PatternLayout(PATTERN)); 
+            consoleAppender.setThreshold(Level.DEBUG);
+            consoleAppender.activateOptions();
+            Logger.getRootLogger().addAppender(consoleAppender);
+        } else {
+            String log4jSettings = properties.getProperty("log4j-settings", "");
+            if (log4jSettings.isEmpty()) {
+                throw new BotFatalError("You must specify log4j settings file in " +
+                        "log4j-settings\" property of bot configuration.");
+            }
+            File f = new File(log4jSettings);
+            if (!f.exists()) {
+                throw new BotFatalError(String.format("File \"%s\" not found.", log4jSettings));
+            }
+            if (!f.isFile()) {
+                throw new BotFatalError(String.format("\"%s\" must be a file.", log4jSettings));
+            }
 			PropertyConfigurator.configure(log4jSettings);
 			System.out.println("INFO: using log settings : " + log4jSettings);
 		}

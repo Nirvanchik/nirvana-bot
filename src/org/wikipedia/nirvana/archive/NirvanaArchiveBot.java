@@ -61,12 +61,10 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+    public static void main(String[] args) {
 		NirvanaBasicBot bot = new NirvanaArchiveBot();
-		bot.run(args);
+        System.exit(bot.run(args));
 	}
-	
-	
 
 	protected void go() {
 		//log.info("Bot");
