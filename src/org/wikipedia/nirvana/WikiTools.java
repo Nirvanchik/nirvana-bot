@@ -37,7 +37,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  */
 public class WikiTools {
-	private static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(WikiTools.class.getName());
+    private static org.apache.log4j.Logger log = null;
 	private static final String CAT_SEPARATOR = "\r\n";
 	private static final String TOOLSERVER_DOMAIN = "toolserver.org";
 	private static final String LABS_DOMAIN = "tools.wmflabs.org";
@@ -60,6 +60,10 @@ public class WikiTools {
     
     private static final String ERR_SERVICE_DOESNT_SUPPORT_FEATURE =
             "Service %s doesn't support this feature.";
+
+    static {
+        log = org.apache.log4j.Logger.getLogger(WikiTools.class.getName());
+    }
 
 	public static class ServiceFeatures {
     	public static final int PAGES = 0b1;

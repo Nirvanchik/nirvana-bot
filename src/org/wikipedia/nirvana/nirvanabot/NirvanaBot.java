@@ -232,12 +232,12 @@ public class NirvanaBot extends NirvanaBasicBot{
 	public NirvanaBot(int flags) {
 		super(flags);
 	}
-	
-	public static void main(String[] args) {
+
+    public static void main(String[] args) {
 		NirvanaBasicBot bot = new NirvanaBot(NirvanaBasicBot.FLAG_SHOW_LICENSE);
-		bot.run(args);
+        System.exit(bot.run(args));
 	}
-	
+
 	@Override
 	protected boolean loadCustomProperties(Map<String,String> launch_params) {
 		String str = properties.getProperty("new-pages-template");

@@ -80,15 +80,12 @@ public class StatisticsBot extends NirvanaBasicBot {
 	public StatisticsBot() {
 		// TODO Auto-generated constructor stub
 	}
-	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
+
+    public static void main(String[] args) {
 		NirvanaBasicBot bot = new StatisticsBot();
-		bot.run(args);
+        System.exit(bot.run(args));
 	}
-	
+
 	@Override
 	protected boolean loadCustomProperties(Map<String,String> launch_params) {
 		statSettingsTemplate = properties.getProperty("stat-settings-template");
