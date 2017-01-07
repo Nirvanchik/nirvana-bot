@@ -27,13 +27,21 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.wikipedia.nirvana.NirvanaWiki;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * @author kin
  *
  */
 public class ArchiveFactory {
 
-	protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(ArchiveFactory.class.getName());
+    protected static final Logger log;
+
+    static {
+        log = LogManager.getLogger(ArchiveFactory.class.getName());
+    }
+
 	/**
 	 * @throws IOException 
 	 * 

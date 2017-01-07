@@ -28,26 +28,22 @@ import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.RECHECK
 import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.RECHECK_DELAY_2;
 import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.TIMEOUT;
 
+import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
-
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
 
 /**
  * @author kin
  *
  */
 public class ServicePingerTest {
-    private ConsoleAppender consoleAppender = null;
 
 	private static class TestService extends BasicService {
 		protected boolean checkOkCalled = false;
@@ -122,17 +118,6 @@ public class ServicePingerTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		if (!Logger.getRootLogger().getAllAppenders().hasMoreElements()) {
-    		ConsoleAppender console = new ConsoleAppender(); //create appender
-    		//configure the appender
-    		String PATTERN = "%d [%p|%C{1}] %m%n"; //%c will giv java path
-    		console.setLayout(new PatternLayout(PATTERN)); 
-    		console.setThreshold(Level.DEBUG);
-    		console.activateOptions();
-    		//add appender to any Logger (here is root)
-    		Logger.getRootLogger().addAppender(console);
-            consoleAppender = console;
-		}
 	}
 
 	/**
@@ -140,9 +125,6 @@ public class ServicePingerTest {
 	 */
 	@After
 	public void tearDown() throws Exception {
-        if (consoleAppender != null) {
-            Logger.getRootLogger().removeAppender(consoleAppender);
-        }
 	}
 
 	@Test

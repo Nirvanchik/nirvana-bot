@@ -34,6 +34,9 @@ import javax.security.auth.login.LoginException;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaWiki;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -44,9 +47,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 public class BotReporter {
+    private static final Logger log;
+
 	public static final String DEFAULT_CACHE_FOLDER = "cache";
 	public static final String DEFAULT_CACHE_FILE = "report_cache.js";
-	private static org.apache.log4j.Logger log;
+
 	NirvanaWiki wiki;
 	ArrayList<ReportItem> reportItems;
 	Calendar timeStarted;
@@ -62,10 +67,10 @@ public class BotReporter {
 
     private String preambula = "";
 
-	static {
-		log = org.apache.log4j.Logger.getLogger(BotReporter.class.getName());
-	}
-	
+    static {
+        log = LogManager.getLogger(BotReporter.class.getName());
+    }
+
 	public BotReporter(NirvanaWiki wiki, int capacity, boolean started, String version, String preambulaFile) {
 		this.wiki = wiki;
 		this.version = version;

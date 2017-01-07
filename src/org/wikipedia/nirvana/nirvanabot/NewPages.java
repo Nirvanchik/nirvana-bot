@@ -53,6 +53,8 @@ import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFinder;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,6 +77,9 @@ import javax.security.auth.login.LoginException;
  *
  */
 public class NewPages implements PortalModule{
+    protected static final Logger sLog;
+    protected final Logger log;
+
 	private static final int WIKI_API_BUNCH_SIZE = 10;
 	public static final String PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE = "\\[\\[(?<article>[^\\]|]+)(|[^\\]]+)?\\]\\]";
 	public static final String PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM = "\\{\\{(?<template>.+)\\}\\}";
@@ -114,9 +119,7 @@ public class NewPages implements PortalModule{
 	
     protected Map<String,String> pageLists;
     protected Map<String,String> pageListsToIgnore;
-    
-    protected static org.apache.log4j.Logger log;
-    
+
     protected GetRevisionMethod getRevisionMethod = GetRevisionMethod.GET_REV;
     
     protected boolean UPDATE_FROM_OLD = true;
@@ -140,9 +143,9 @@ public class NewPages implements PortalModule{
     protected boolean needsCustomTemlateFiltering = false;
 
     static {
-    	log = org.apache.log4j.Logger.getLogger(NewPages.class);
+        sLog = LogManager.getLogger(NewPages.class);
     }
-    
+
     protected enum GetRevisionMethod {
     	GET_FIRST_REV,
     	GET_FIRST_REV_IF_NEED,
@@ -200,10 +203,10 @@ public class NewPages implements PortalModule{
     	this.fastMode = param.fastMode;
         this.templateFilter = param.templateFilter;
 
-    	log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
-    	log.debug("Portal module created for portal subpage [["+this.pageName+"]]");
+        log = LogManager.getLogger(this.getClass().getName());
+        log.debug("Portal module created for portal subpage [[" + this.pageName + "]]");
 	}
-    
+
     protected String getFormatString() {
     	return formatString;
     }
@@ -1092,8 +1095,7 @@ public class NewPages implements PortalModule{
 			try {
 				r = wiki.getFirstRevision(article,true);
 			} catch (IOException e) {				
-				//e.printStackTrace();
-				log.warn("article "+article+" not found");
+                sLog.warn(String.format("Article %s not found", article));
 			}
 			if(r!=null) {
 				return r.getTimestamp();
@@ -1124,7 +1126,7 @@ public class NewPages implements PortalModule{
 					r = wiki.getFirstRevision(s,true);
 					//r = null;
 				} catch (IOException e) {
-					log.warn("page "+s+ " not found");
+                    sLog.warn(String.format("Page %s not found", s));
 				}
 				if(r!=null) return r.getTimestamp();
 			}

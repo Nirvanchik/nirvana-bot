@@ -30,12 +30,17 @@ import javax.security.auth.login.LoginException;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 /**
  * @author kin
  *
  */
 public class Archive {
+    protected final Logger log;
+
 	protected boolean addToTop = true;
 	//private String latestItemHeader = null;
 	protected int newLines = 0;
@@ -44,9 +49,6 @@ public class Archive {
 	//protected boolean globalEnumeration = false;
 	//protected String archiveName = "";
 	protected Enumeration enumeration = Enumeration.NONE;
-	
-	protected static org.apache.log4j.Logger log = null;	
-	
 	public static final String OL = "<ol>";
 	public static final String OL_END = "</ol>";
 
@@ -59,11 +61,11 @@ public class Archive {
 	}
 	
 	public int newItemsCount() { return newLines; }
-	
-	public Archive() {
-		log = org.apache.log4j.Logger.getLogger(Archive.class.getName());
-	}
-	
+
+    public Archive() {
+        log = LogManager.getLogger(Archive.class.getName());
+    }
+
 	public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
 		
 	}

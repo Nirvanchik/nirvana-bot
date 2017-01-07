@@ -40,12 +40,16 @@ import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.WikiTools;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * @author kin
  *
  */
 public abstract class BasicProcessor implements PageListProcessor {
-	protected static org.apache.log4j.Logger log = null;
+    protected final Logger log;
+
 	protected WikiTools.Service service;
     protected List<String> categories;
 	protected List<String> categoriesToIgnore;
@@ -59,7 +63,7 @@ public abstract class BasicProcessor implements PageListProcessor {
     // We will not check every line if output has thousands lines for better performance
     protected final int LINES_TO_CHECK = 25;
 
-	/**
+    /**
 	 * 
 	 */
 	public BasicProcessor(WikiTools.Service service, List<String> cats, List<String> ignore, 
@@ -75,7 +79,7 @@ public abstract class BasicProcessor implements PageListProcessor {
 		if (service.LINE_RULE != null) {
 			this.LINE_RULE = service.LINE_RULE;
 		}
-		log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
+        log = LogManager.getLogger(this.getClass().getName());
 	}
 
 	public void parsePageList(NirvanaWiki wiki, HashSet<String> pages, ArrayList<Revision> pageInfoList, HashSet<String> ignore, String pageList) throws IOException, ServiceError {

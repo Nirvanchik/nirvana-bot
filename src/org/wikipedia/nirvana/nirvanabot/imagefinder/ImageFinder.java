@@ -29,13 +29,24 @@ import java.util.regex.Pattern;
 
 import org.wikipedia.nirvana.NirvanaWiki;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * @author kin
  *
  */
 public abstract class ImageFinder {
+    protected static final Logger log;
+
+    static {
+        log = LogManager.getLogger(ImageFinder.class.getName());
+    }
+
+    public ImageFinder() {
+    }
+
 	public abstract String findImage(NirvanaWiki wiki, NirvanaWiki commons, String article) throws IOException;
-	protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(ImageFinder.class.getName());
 	private static final Pattern IMAGE_PART_TEMPLATE_IMAGE_FIND_REGEX = 
 			Pattern.compile("\\|\\s*изобр\\s*=\\s*(?<image>[^\\|\\}]+)");
 	public static final String DEFAULT_REGEX_IMAGE_TAG = "filename";
@@ -103,9 +114,5 @@ public abstract class ImageFinder {
 			return true;
 		}
 		return false;
-	}
-	
-	ImageFinder() {
-		//log = org.apache.log4j.Logger.getLogger(ImageFinder.class.getName());
 	}
 }

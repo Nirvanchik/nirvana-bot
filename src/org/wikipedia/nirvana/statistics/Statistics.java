@@ -36,12 +36,17 @@ import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 /**
  * @author kin
  *
  */
 public class Statistics {	
+    protected final Logger log;
+
 	public static final String DELIMETER = "\n";
 	public static final String DEFAULT_INI_FOLDER = "statistics";
 	public static final String DEFAULT_CACHE_FOLDER = "cache";
@@ -59,7 +64,6 @@ public class Statistics {
 	protected List<StatItem> items;
 	protected Map<String,Integer> totalUserStat;
 	protected TotalItem total;
-	protected org.apache.log4j.Logger log = null;
 	protected NirvanaWiki wiki = null;
 	
 	protected class StatItem {
@@ -151,6 +155,7 @@ public class Statistics {
 	Statistics(NirvanaWiki wiki, String type) throws FileNotFoundException, BadAttributeValueExpException {
 		this.wiki = wiki;
 		this.type = type;
+        log = LogManager.getLogger(this.getClass().getName());
 		init();
 	}
 	
@@ -165,8 +170,7 @@ public class Statistics {
 		}
 	}
 	
-	protected void init() throws FileNotFoundException, BadAttributeValueExpException {
-		log = org.apache.log4j.Logger.getLogger(this.getClass().getName());		
+	protected void init() throws FileNotFoundException, BadAttributeValueExpException {				
 		items = new ArrayList<StatItem>(100);
 		totalUserStat = new HashMap<String,Integer>(200);
 		createTotal();

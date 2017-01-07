@@ -31,13 +31,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author kin
  *
  */
 public class WikiTools {
-    private static org.apache.log4j.Logger log = null;
+    private static final Logger log;
 	private static final String CAT_SEPARATOR = "\r\n";
 	private static final String TOOLSERVER_DOMAIN = "toolserver.org";
 	private static final String LABS_DOMAIN = "tools.wmflabs.org";
@@ -62,7 +64,7 @@ public class WikiTools {
             "Service %s doesn't support this feature.";
 
     static {
-        log = org.apache.log4j.Logger.getLogger(WikiTools.class.getName());
+        log = LogManager.getLogger(WikiTools.class.getName());
     }
 
 	public static class ServiceFeatures {

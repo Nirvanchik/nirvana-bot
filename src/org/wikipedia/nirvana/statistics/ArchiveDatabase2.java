@@ -33,7 +33,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.wikipedia.nirvana.FileTools;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -47,6 +48,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * must be marked by calling markYearBegin()
  */
 public class ArchiveDatabase2 {
+    private final Logger log;
+
 //	public static enum Version {
 //		V1,
 //		V2
@@ -76,7 +79,6 @@ public class ArchiveDatabase2 {
 	private int version = V1;
 	//boolean withSize = false;
 	///int lastYearFound = 0;
-	private Logger log;
 	
 	public static class JsonDb {
 		public int version;
@@ -183,7 +185,7 @@ public class ArchiveDatabase2 {
 		this.cacheFolder = cache;		
 		//this.withSize = withSize;
 		dbPath = cacheFolder+"\\"+FileTools.normalizeFileName(name)+".js";
-		log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
+        log = LogManager.getLogger(this.getClass().getName());
 		items = new ArrayList<ArchiveItem>(50000);
 		yearIndexes = new HashMap<Integer,Integer>(5);
 		if (withSize)

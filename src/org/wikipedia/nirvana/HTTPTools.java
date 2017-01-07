@@ -18,6 +18,9 @@
 
 package org.wikipedia.nirvana;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -35,7 +38,7 @@ import java.net.URLConnection;
 public class HTTPTools {
 	private static final String USER_AGENT = "NirvanaBot";
 	private static final String DEFAULT_ENCODING = "UTF-8";
-	private static org.apache.log4j.Logger log = null;	
+    private static final Logger log;
 	// time to open a connection
     private static final int CONNECTION_CONNECT_TIMEOUT_MSEC_LONG = 120000; // 120 seconds
     // time for the read to take place. (needs to be longer, some connections are slow
@@ -46,9 +49,9 @@ public class HTTPTools {
     private static final int CONNECTION_READ_TIMEOUT_MSEC_SHORT = 60*1000;
 
     static {
-    	log = org.apache.log4j.Logger.getLogger(HTTPTools.class.getName());		
+        log = LogManager.getLogger(HTTPTools.class.getName());
     }
-    
+
     public static String fetch(String url) throws IOException {
     	return fetch(url, false, false, true);
     }
