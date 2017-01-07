@@ -42,6 +42,9 @@ import javax.security.auth.login.LoginException;
 
 import org.wikipedia.Wiki;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * based on Wiki.java version 0.31   
  */
@@ -51,14 +54,17 @@ public class NirvanaWiki extends Wiki {
 	
     private static final long serialVersionUID = -8745212681497644127L;
 
-	private static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(NirvanaWiki.class.getName());	
-	
+    private static Logger log;	
+
 	private boolean dumpMode = false;
 	private String dumpFolder = "dump";
 	private boolean logDomain = false;
 	//rev_comment` varbinary(767) NOT NULL, Summaries longer than 200 characters are
     //*  truncated server-side.
 
+    static {
+        log = LogManager.getLogger(NirvanaWiki.class.getName());
+    }
 	/**
 	 * @param domain
 	 */
@@ -163,18 +169,6 @@ public class NirvanaWiki extends Wiki {
         log.debug(method + "() - fetching URL: " + url);
     }
     
-	 /**
-     *  Change the logging level of this object's Logger object.
-     *  @param Level
-     *  @since 0.24
-     */
-    public void setLogLevel(org.apache.log4j.Level level)
-    {
-    	//logger.setLevel(level);
-    	//log.setLevel(org.apache.log4j.Level.OFF);
-    	log.setLevel(level);
-    }
-
     @Override
     public synchronized void edit(String title, String text, String summary, boolean minor,
             boolean bot, int section, Calendar basetime) throws IOException, LoginException {

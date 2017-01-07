@@ -23,6 +23,9 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 
 /**
@@ -30,7 +33,8 @@ package org.wikipedia.nirvana.nirvanabot.serviceping;
  *
  */
 public class BasicService implements OnlineService {
-	protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(BasicService.class.getName());
+    protected final Logger log;
+
 	BasicService dependantOn = null;
 	private String name;
 	@Deprecated
@@ -45,10 +49,12 @@ public class BasicService implements OnlineService {
 	public BasicService(String name, int priority) {
 		this.name = name;
 		this.priority = priority;
+        log = LogManager.getLogger(getClass().getName());
 	}
 
 	public BasicService(String name) {
 		this.name = name;
+        log = LogManager.getLogger(getClass().getName());
 	}
 
 	/* (non-Javadoc)

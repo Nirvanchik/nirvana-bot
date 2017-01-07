@@ -23,6 +23,9 @@
 
 package org.wikipedia.nirvana;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
@@ -47,9 +50,13 @@ public class DateTools {
 	
 	public static int MINIMAL_DAYS_IN_FIRST_WEEK = MINIMAL_DAYS_IN_FIRST_WEEK_DEFAULT;
 	public static int FIRST_DAY_OF_WEEK = FIRST_DAY_OF_WEEK_DEFAULT;
-	
-	public static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(DateTools.class.getName());;
-	
+
+	public static final Logger log;
+
+    static {
+        log = LogManager.getLogger(DateTools.class.getName());
+    }
+
 	/**
 	 * 
 	 */

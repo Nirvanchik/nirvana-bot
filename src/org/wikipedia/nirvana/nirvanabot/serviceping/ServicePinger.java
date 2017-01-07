@@ -30,6 +30,9 @@ import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
 
 /**
@@ -37,7 +40,9 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
  *
  */
 public class ServicePinger {
-	protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(ServicePinger.class.getName());
+    protected static final Logger sLog;
+    protected final Logger log;
+
 	static final long RECHECK_DELAY_1 = 10L*60L*1000L;
 	static final long RECHECK_DELAY_2 = 60L*60L*1000L;
 	
@@ -52,8 +57,13 @@ public class ServicePinger {
 	
 	private long timeout = TIMEOUT;
 
+    static {
+        sLog = LogManager.getLogger(ServicePinger.class.getName());
+    }
+
     public ServicePinger(OnlineService... servicesList) {
         services = new ArrayList<>(Arrays.asList(servicesList));
+        log = LogManager.getLogger(getClass().getName());
     	log.debug("Build ServicePinger of services: " + StringUtils.join(services, ", "));
     }
     
@@ -165,8 +175,8 @@ public class ServicePinger {
     
     static void logDetailedStatusIfFailed(OnlineService service) throws InterruptedException {
     	if (service.isOk() != Status.OK) {
-    		//log.warn(String.format(Locale.ENGLISH, SERVICE_STATUS_STRING_DETAILED, service.getName(), service.isAvailable(), service.isWorking()));
-    		log.warn(String.format(Locale.ENGLISH, SERVICE_STATUS_STRING_DETAILED, service.getName(), service.getLastError()));
+            sLog.warn(String.format(Locale.ENGLISH, SERVICE_STATUS_STRING_DETAILED, service.getName(),
+                    service.getLastError()));
     	}
     }
 }

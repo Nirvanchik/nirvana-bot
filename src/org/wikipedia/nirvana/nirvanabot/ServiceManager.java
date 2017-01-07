@@ -42,18 +42,26 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * @author kin
  *
  */
 public class ServiceManager {
-	protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(ServiceManager.class.getName());
+    protected static final Logger log;
+
 	private final ServicePinger servicePinger;
     private ServiceGroup<CatscanService> pageListFetchServiceGroup = null;
 	private WikiTools.Service activeService = null;
     private WikiService mainWiki = null;
     private InternetService internet = null;
     private OnlineService catscan = null;
+
+    static {
+        log = LogManager.getLogger(ServiceManager.class.getName());
+    }
 
 	public ServiceManager(String defaultServiceName, String selectedServiceName, NirvanaWiki wiki, NirvanaWiki commons) throws BotFatalError {
         this(wiki, commons);

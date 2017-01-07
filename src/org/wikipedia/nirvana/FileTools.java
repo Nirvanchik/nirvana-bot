@@ -26,7 +26,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -39,12 +38,12 @@ public class FileTools {
 	public static final String UTF8 = "UTF-8";
 	public static final String CP1251 = "CP1251";
 	public static String DEFAULT_ENCODING = UTF8;
-	
-	protected static org.apache.log4j.Logger log4j;
+
+    protected static org.apache.logging.log4j.Logger log4j;
 	protected static Logger logger;
 	static {
 		try {
-			log4j = org.apache.log4j.Logger.getLogger(FileTools.class.getName());
+            log4j = org.apache.logging.log4j.LogManager.getLogger(FileTools.class.getName());
 		} catch (java.lang.NoClassDefFoundError e) {
 			logger = Logger.getLogger("FileTools");
 		}

@@ -26,17 +26,15 @@ package org.wikipedia.nirvana;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -74,11 +72,16 @@ public abstract class NirvanaBasicBot {
     @Deprecated
     public static final int FLAG_CONSOLE_LOG = 0b0010;
     public static final int FLAG_DEFAULT_LOG = 0b0100;
+    /**
+     * Not supported. Works the same as {@link #FLAG_DEFAULT_LOG}
+     */
+    @Deprecated
     public static final int FLAG_NO_LOG      = 0b1000;
 
 	protected static final boolean DEBUG_BUILD = false;
-	protected static org.apache.log4j.Logger log = null;
-	
+
+    protected static Logger log = null;
+
 	protected static Properties properties = null;
 	protected boolean DEBUG_MODE = false;
 	
@@ -95,9 +98,6 @@ public abstract class NirvanaBasicBot {
 	protected String PROTOCOL = "https://";
 	protected String COMMENT = "обновление";
 	protected int flags = 0;
-
-    @Deprecated
-    private ConsoleAppender consoleAppender = null;
 
 	public static String LICENSE = 
 			"This program is free software: you can redistribute it and/or modify\n" +
@@ -149,7 +149,11 @@ public abstract class NirvanaBasicBot {
         try {
             startWithConfig(configFile, launch_params);
         } catch (BotFatalError e) {
-            System.err.println("Error: " + e.toString());
+            if (log == null) {
+                System.err.println("Error: " + e.toString());
+            } else {
+                log.fatal(e);
+            }
             e.printStackTrace();
             exitCode = 1;
         }
@@ -162,10 +166,6 @@ public abstract class NirvanaBasicBot {
     }
 
     private void cleanup() {
-        if (consoleAppender != null) {
-            Logger.getRootLogger().removeAppender(consoleAppender);
-            consoleAppender = null;
-        }
     }
 
     private Map<String, String> getLaunchArgs(String[] args) {
@@ -290,14 +290,12 @@ public abstract class NirvanaBasicBot {
 		try {
 			wiki.login(login, pw.toCharArray());
 		} catch (FailedLoginException e) {
-			log.fatal("Failed to login to "+LANGUAGE+ ".wikipedia.org, login: "+login+", password: "+pw);
-			return;
-		} catch (IOException e) {			
-			log.fatal(e.toString());
-			e.printStackTrace();
-			return;
+            throw new BotFatalError(String.format("Failed to login to %s, login: %s, password: %s",
+                    domain, login, pw));
+        } catch (IOException e) {
+            throw new BotFatalError(e);
 		}
-		
+
 		if(DEBUG_MODE) {
 			wiki.setDumpMode();
 		}	
@@ -339,20 +337,12 @@ public abstract class NirvanaBasicBot {
     protected void initLog() throws BotFatalError {
         if ((flags & FLAG_DEFAULT_LOG) != 0) {
             System.out.println(
-                    "INFO: logs must be configured automatically from log4j.properties");
+                    "INFO: logs must be configured automatically from log4j2.properties");
         } else if ((flags & FLAG_NO_LOG) != 0) {
-            System.out.println("INFO: logs disabled");
-            properties.setProperty("log4j.rootLogger", "OFF");
-            PropertyConfigurator.configure(properties);
+            System.out.println("INFO: skip log4j configuration.");
         } else if ((flags & FLAG_CONSOLE_LOG) != 0) {
-            System.out.println("INFO: console logs enabled");
-            ConsoleAppender consoleAppender = new ConsoleAppender();
-            // %c will giv java path
-            String PATTERN = "%d [%p|%C{1}] %m%n";
-            consoleAppender.setLayout(new PatternLayout(PATTERN)); 
-            consoleAppender.setThreshold(Level.DEBUG);
-            consoleAppender.activateOptions();
-            Logger.getRootLogger().addAppender(consoleAppender);
+            System.out.println("INFO: skip log4j configuration. " +
+                    "Will be configured from log4j2.properties or console logger will be used.");
         } else {
             String log4jSettings = properties.getProperty("log4j-settings", "");
             if (log4jSettings.isEmpty()) {
@@ -366,10 +356,10 @@ public abstract class NirvanaBasicBot {
             if (!f.isFile()) {
                 throw new BotFatalError(String.format("\"%s\" must be a file.", log4jSettings));
             }
-			PropertyConfigurator.configure(log4jSettings);
+            System.setProperty("log4j.configurationFile", log4jSettings);
 			System.out.println("INFO: using log settings : " + log4jSettings);
 		}
-		log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
+        log = LogManager.getLogger(this.getClass().getName());
 	}
 
 	protected static int validateIntegerSetting(Properties pop, String name, int def, boolean notifyNotFound) {

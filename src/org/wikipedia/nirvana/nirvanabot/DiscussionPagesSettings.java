@@ -23,6 +23,9 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,15 +34,14 @@ import java.util.List;
  *
  */
 public class DiscussionPagesSettings {
-    protected static org.apache.log4j.Logger log = null;
+    protected static Logger log = null;
     public static final DiscussionPagesSettings EMPTY = new DiscussionPagesSettings();
 
     private static void initLog() {
         if (log == null) {
-            log = org.apache.log4j.Logger.getLogger(DiscussionPagesSettings.class);
+            log = LogManager.getLogger(DiscussionPagesSettings.class);
         }
     }
-
 
 	List<DiscussionPageTemplate> templates;
 

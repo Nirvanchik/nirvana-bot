@@ -28,6 +28,9 @@ import java.util.Map;
 
 import org.apache.commons.collections.keyvalue.MultiKey;
 import org.apache.commons.collections.map.MultiKeyMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.wikipedia.nirvana.NirvanaWiki;
 
 /**
@@ -39,8 +42,11 @@ public class StatisticsFabric {
 	private static Map<String,Class> reporterClass;
 	private static Map<String,Statistics> reporters;
 	private static MultiKeyMap reportersYear;
-	private static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(StatisticsFabric.class.getName());
-	
+    private static final Logger log;
+
+    static {
+        log = LogManager.getLogger(StatisticsFabric.class.getName());
+    }
 	/**
 	 * 
 	 */

@@ -38,13 +38,17 @@ import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Get new pages archives from wiki, parse it, put data from archive to database
  *
  */
 public class ArchiveParser {
 	private boolean DEBUG = false;
-	protected org.apache.log4j.Logger log = null;
+    protected final Logger log;
+
 	private ArchiveSettings archiveSettings;
 	private ArchiveDatabase2 db;
 	NirvanaWiki wiki;
@@ -54,7 +58,7 @@ public class ArchiveParser {
 	 * Constructor
 	 */
 	public ArchiveParser(ArchiveSettings archiveSettings, ArchiveDatabase2 db, NirvanaWiki wiki) {
-		log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
+        log = LogManager.getLogger(this.getClass().getName());
 		this.archiveSettings = archiveSettings;
 		this.db = db;
 		this.wiki = wiki;

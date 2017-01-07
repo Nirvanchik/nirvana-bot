@@ -27,7 +27,8 @@ import org.wikipedia.Wiki.Revision;
 
 import org.apache.commons.collections.keyvalue.MultiKey;
 import org.apache.commons.collections.map.MultiKeyMap;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ import java.util.Set;
  * each one. That will take about 100 MB of memory.
  */
 public class WikiBooster {
-    private static final Logger log = Logger.getLogger(WikiBooster.class.getName());
+    private static final Logger log;
     private final NirvanaWiki wiki;
     private final List<String> pages;
     private final List<String> templates;
@@ -60,7 +61,11 @@ public class WikiBooster {
     private Map<String, String> pageTextCache = null;
     private int templatesNs = -1;
     private MultiKeyMap hasTemplatesCache = null;
-    
+
+    static {
+        log = LogManager.getLogger(WikiBooster.class.getName());
+    }
+
     /**
      * Constructor taking a wiki instance and page list as an array.
      * If you need a booster for another set of pages, please create a new instance for that.

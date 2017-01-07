@@ -31,12 +31,16 @@ import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * @author kin
  *
  */
 public class ProcessorCombinator implements PageListProcessor {
-	protected static org.apache.log4j.Logger log = null;
+    protected final Logger log;
+
 	private List<PageListProcessor> fetchers;
 
 	/**
@@ -49,7 +53,7 @@ public class ProcessorCombinator implements PageListProcessor {
 	 */
 	public ProcessorCombinator(List<PageListProcessor> fetchers) {
 		this.fetchers = fetchers;
-		log = org.apache.log4j.Logger.getLogger(this.getClass().getName());
+        log = LogManager.getLogger(this.getClass().getName());
 	}
 
 	/* (non-Javadoc)

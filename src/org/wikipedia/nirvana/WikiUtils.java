@@ -23,6 +23,9 @@
 
 package org.wikipedia.nirvana;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,10 +35,14 @@ import java.util.regex.Pattern;
  *
  */
 public class WikiUtils {
-	protected static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(WikiUtils.class.getName());
-	
+    protected static final Logger log;
+
 	private static final Pattern COMMENT_PATTERN = Pattern.compile("<!--(.+?)-->", Pattern.DOTALL);
-	
+
+    static {
+        log = LogManager.getLogger(WikiUtils.class.getName());
+    }
+
 	public static int findMatchingBraceOfTemplate(String text, int start) {
 		int begin = start;
         int end = -1;
