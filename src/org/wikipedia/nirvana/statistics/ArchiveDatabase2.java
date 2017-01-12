@@ -33,6 +33,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wikipedia.nirvana.FileTools;
@@ -66,8 +68,6 @@ public class ArchiveDatabase2 {
 	 * - added size to ArchiveItem
 	 */
 	public static final int V2 = 2;
-	public static final String DEFAULT_CACHE_FOLDER = "cache";
-	String cacheFolder = DEFAULT_CACHE_FOLDER;
 	String name;
 	String dbPath;
 	ArrayList<ArchiveItem> items;
@@ -180,10 +180,10 @@ public class ArchiveDatabase2 {
 				
 	};
 	
-	ArchiveDatabase2(String name, boolean loadFromCache, String cache, boolean withSize) {
+    ArchiveDatabase2(String name, boolean loadFromCache, String cacheFolder, boolean withSize) {
 		this.name = name;
-		this.cacheFolder = cache;		
-		//this.withSize = withSize;
+        checkCreateDir(cacheFolder);
+
 		dbPath = cacheFolder+"\\"+FileTools.normalizeFileName(name)+".js";
         log = LogManager.getLogger(this.getClass().getName());
 		items = new ArrayList<ArchiveItem>(50000);
@@ -196,7 +196,16 @@ public class ArchiveDatabase2 {
 		}
 		
 	}
-	
+
+    private void checkCreateDir(String dir) {
+        File f = new File(dir);
+        if (!f.exists()) {
+            f.mkdirs();
+            return;
+        }
+        Assert.assertTrue(f.isDirectory());
+    }
+
 	public boolean withSize() {
 		return (version==V2);
 	}

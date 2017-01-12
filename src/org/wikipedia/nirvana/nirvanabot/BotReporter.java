@@ -49,8 +49,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class BotReporter {
     private static final Logger log;
 
-	public static final String DEFAULT_CACHE_FOLDER = "cache";
 	public static final String DEFAULT_CACHE_FILE = "report_cache.js";
+
+    private final String cacheDir;
 
 	NirvanaWiki wiki;
 	ArrayList<ReportItem> reportItems;
@@ -71,7 +72,8 @@ public class BotReporter {
         log = LogManager.getLogger(BotReporter.class.getName());
     }
 
-	public BotReporter(NirvanaWiki wiki, int capacity, boolean started, String version, String preambulaFile) {
+    public BotReporter(NirvanaWiki wiki, String cacheDir, int capacity, boolean started,
+            String version, String preambulaFile) {
 		this.wiki = wiki;
 		this.version = version;
 		reportItems = new ArrayList<ReportItem>(capacity);
@@ -84,6 +86,7 @@ public class BotReporter {
                 preambula += "\n";
             }
         }
+        this.cacheDir = cacheDir;
 	}
 	
 	public void botStarted(boolean log) {
@@ -149,6 +152,11 @@ public class BotReporter {
     }
     
     public void reportTXT(String fileName) {
+        File f = new File(fileName);
+        File dir = f.getParentFile();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
     	if (timeFinished == null) {
     		timeFinished = Calendar.getInstance();
     	}
@@ -175,7 +183,7 @@ public class BotReporter {
     
     public void reportWiki(String reportPage, boolean mainLaunch) {
     	// 1) Load old data (if any)
-    	String path = DEFAULT_CACHE_FOLDER + "\\" + DEFAULT_CACHE_FILE;
+        String path = cacheDir + "/" + DEFAULT_CACHE_FILE;
     	File file = new File(path);
     	List<ReportItem> oldData = null;		
     	if (file.exists()) {

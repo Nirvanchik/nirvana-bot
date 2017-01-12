@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.FileTools;
+import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.StringTools;
@@ -92,8 +93,6 @@ public abstract class BasicProcessor implements PageListProcessor {
 		if (namespace!=0) {
 			namespaceIdentifier = wiki.namespaceIdentifier(namespace);
 		}
-		
-		//FileTools.dump(pageList, "dump", "pageList_"+category+".txt");
 		StringReader sr = new StringReader(pageList);
 		BufferedReader b = new BufferedReader(sr);
 		for(int j=0;j<service.SKIP_LINES;j++) b.readLine();
@@ -106,7 +105,7 @@ public abstract class BasicProcessor implements PageListProcessor {
         	if (line.isEmpty()) continue;
         	if (j<LINES_TO_CHECK && !p.matcher(line).matches()) {
         		log.error("Invalid service output line: "+line);
-        		FileTools.dump(pageList, "dump", "last_service_out_wit_error.txt");
+                FileTools.dump(pageList, "last_service_out_wit_error.txt");
         		throw new ServiceError("Invalid output of service: "+service.getName());
         	}
             String[] groups = line.split("\t");

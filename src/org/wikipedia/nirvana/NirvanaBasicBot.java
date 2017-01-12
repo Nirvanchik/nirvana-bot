@@ -78,11 +78,13 @@ public abstract class NirvanaBasicBot {
     @Deprecated
     public static final int FLAG_NO_LOG      = 0b1000;
 
-	protected static final boolean DEBUG_BUILD = false;
+    public static final boolean DEBUG_BUILD = false;
+    public static final String DEFAULT_DUMP_DIR = "dump";
 
     protected static Logger log = null;
 
 	protected static Properties properties = null;
+
 	protected boolean DEBUG_MODE = false;
 	
 	public static final String YES = "yes";
@@ -92,6 +94,9 @@ public abstract class NirvanaBasicBot {
 	protected int THROTTLE_TIME_MS = 10000;
 	
 	protected NirvanaWiki wiki;
+
+    protected String outDir = ".";
+    protected String dumpDir = DEFAULT_DUMP_DIR;
 	protected String LANGUAGE= "ru";
 	protected String DOMAIN = ".wikipedia.org";
 	protected String SCRIPT_PATH = "/w";
@@ -219,8 +224,13 @@ public abstract class NirvanaBasicBot {
         } catch (IOException e) {
             throw new BotFatalError(e);
 		}
+        outDir = properties.getProperty("out-dir", outDir);
+        checkWorkDir();
 
 		initLog();
+        log.info("Work directory: " + outDir);
+        dumpDir = outDir + "/" + DEFAULT_DUMP_DIR;
+        FileTools.setDefaultOut(dumpDir);
 
 		String login = properties.getProperty("wiki-login");
 		String pw = properties.getProperty("wiki-password");
@@ -259,7 +269,7 @@ public abstract class NirvanaBasicBot {
 		}
 		
 		log.info("login="+login+",password=(not shown)");
-		
+
 		LANGUAGE = properties.getProperty("wiki-lang", LANGUAGE);
 		log.info("language=" + LANGUAGE);
 		DOMAIN = properties.getProperty("wiki-domain", DOMAIN);
@@ -297,7 +307,7 @@ public abstract class NirvanaBasicBot {
 		}
 
 		if(DEBUG_MODE) {
-			wiki.setDumpMode();
+            wiki.setDumpMode(dumpDir);
 		}	
 		
 		log.warn("BOT STARTED");
@@ -311,6 +321,19 @@ public abstract class NirvanaBasicBot {
 		wiki.logout();		
 		log.warn("EXIT");
 	}
+
+    private void checkWorkDir() throws BotFatalError {
+        File d = new File(outDir);
+        if (!d.exists()) {
+            d.mkdirs();
+            return;
+        }
+        if (!d.isDirectory()) {
+            throw new BotFatalError(String.format(
+                    "Directory %s specified in \"work-dir\" parameter must be a directory",
+                    outDir));
+        }
+    }
 
     protected NirvanaWiki createWiki(String domain, String path, String protocol) {
         return new NirvanaWiki(domain, path, protocol);
@@ -357,6 +380,7 @@ public abstract class NirvanaBasicBot {
                 throw new BotFatalError(String.format("\"%s\" must be a file.", log4jSettings));
             }
             System.setProperty("log4j.configurationFile", log4jSettings);
+            System.setProperty("log4j.nirvana.outdir", outDir);
 			System.out.println("INFO: using log settings : " + log4jSettings);
 		}
         log = LogManager.getLogger(this.getClass().getName());

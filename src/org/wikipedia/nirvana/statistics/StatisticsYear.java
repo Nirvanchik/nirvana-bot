@@ -46,9 +46,9 @@ public class StatisticsYear extends Statistics {
 	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
 	 */
-	public StatisticsYear(NirvanaWiki wiki, String type) throws FileNotFoundException,
-			BadAttributeValueExpException {
-		super(wiki,type);		
+    public StatisticsYear(NirvanaWiki wiki, String cacheDir, String type)
+            throws FileNotFoundException, BadAttributeValueExpException {
+        super(wiki, cacheDir, type);
 		startYear = 2008;
 	}
 	

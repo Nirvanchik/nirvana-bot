@@ -32,6 +32,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
@@ -129,7 +130,9 @@ public class NewPagesWithImages extends NewPages {
                 	log.warn(e.toString()+" "+page.getPage()); // page was created and renamed or deleted after that
                 	continue;
                 }
-            	//FileTools.dump(article, "dump", page.getPage());
+                if (NirvanaBasicBot.DEBUG_BUILD) {
+                    FileTools.dump(article, page.getPage());
+                }
             }
             String image = imageFinder.findImage(wiki, commons, article);
             if (image != null && checkImageFree(wiki, image)) {	
@@ -216,7 +219,9 @@ public class NewPagesWithImages extends NewPages {
 		    {
 		        oldText = oldText.substring(header.length());
 		    }
-		    //FileTools.dump(footer, "dump", this.pageName +".footer.txt");
+            if (NirvanaBasicBot.DEBUG_BUILD) {
+                FileTools.dump(footer, this.pageName + ".footer.txt");
+            }
 		    if (!footer.isEmpty() && oldText.endsWith(footer))
 		    {
 		        oldText = oldText.substring(0, oldText.length() - footer.length());

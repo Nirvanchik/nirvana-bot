@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import junit.framework.Assert;
+
 /**
  * @author kin
  *
@@ -38,6 +40,7 @@ public class FileTools {
 	public static final String UTF8 = "UTF-8";
 	public static final String CP1251 = "CP1251";
 	public static String DEFAULT_ENCODING = UTF8;
+    private static String sDefaultOut = null;
 
     protected static org.apache.logging.log4j.Logger log4j;
 	protected static Logger logger;
@@ -52,7 +55,16 @@ public class FileTools {
 	public void setDefaultEncoding(String encoding) {
 		DEFAULT_ENCODING = encoding;
 	}
-	
+
+    public static void setDefaultOut(String folder) {
+        sDefaultOut = folder;
+    }
+
+    public static void dump(String text, String file) throws IOException {
+        Assert.assertNotNull(sDefaultOut);
+        dump(text, sDefaultOut, file, DEFAULT_ENCODING);
+    }
+
 	public static void dump(String text, String folder, String file) throws IOException {
 		dump(text, folder, file, DEFAULT_ENCODING);
 	}

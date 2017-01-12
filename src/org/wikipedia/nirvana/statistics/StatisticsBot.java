@@ -1,7 +1,7 @@
 /**
- *  @(#)StatisticsBot.java 1.2 19.10.2014
- *  Copyright © 2012-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
- *    
+ *  @(#)StatisticsBot.java 1.3 10.01.2017
+ *  Copyright © 2012-2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -46,6 +46,7 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
  *
  */
 public class StatisticsBot extends NirvanaBasicBot {
+    public static final String DEFAULT_CACHE_FOLDER = "cache";
 	boolean DEBUG = false;
 	//public static final int START_YEAR = 2008;
 	private static boolean TASK = false;
@@ -60,14 +61,13 @@ public class StatisticsBot extends NirvanaBasicBot {
 	private static final int MIN_SIZE = 14 * 1024;  // 14 Kb
 	
 	private static String statSettingsTemplate = null;
-	
-	
-	//public static String COMMENT = "Проставление заголовков и нумерации в архиве";
-	
+
+    private static final String VERSION = "v1.3";
+
 	public static final String INFO = 
-		"StatisticsBot v1.2 Makes statistics of new created pages and ratings\n" +
-		"Copyright (C) 2012-2014 Dmitry Trofimovich (KIN)\n" +
-		"\n";
+        "StatisticsBot " + VERSION + " Makes statistics of new created pages and ratings\n" +
+        "Copyright (C) 2012-2017 Dmitry Trofimovich (KIN)\n" +
+        "\n";
 	private static boolean USE_CACHE_ONLY = false;
 	private static boolean USE_CACHE = true;
 	
@@ -178,9 +178,9 @@ public class StatisticsBot extends NirvanaBasicBot {
 				watch.start();
 				
 				String portalSettingsText = wiki.getPageText(portalName);
-				
-				if(DEBUG_MODE) {					
-					FileTools.dump(portalSettingsText, "dump", portalName+".settings.txt");
+
+                if (DEBUG_MODE || NirvanaBasicBot.DEBUG_BUILD) {
+                    FileTools.dump(portalSettingsText, portalName + ".settings.txt");
 				}
 
 				
@@ -205,15 +205,17 @@ public class StatisticsBot extends NirvanaBasicBot {
     			
     			//log.info("parameter processing finished, time: "+watch.toString());
     			showStatus("parameter processing finished",watch);
-    			
-    			// do not load from cache if archive is single -> we will rebuild db from scratch
-    			ArchiveDatabase2 db = new ArchiveDatabase2(name, params.cache /*&& !archiveSettings.isSingle()*/, "cache", params.filterBySize);
-    			
+
+                String cacheDir = outDir + "/" + DEFAULT_CACHE_FOLDER;
+                ArchiveDatabase2 db = new ArchiveDatabase2(name, params.cache, cacheDir,
+                        params.filterBySize);
+
     			//log.info("database created, time: "+watch.toString());
     			showStatus("database created", watch);
     			
     			if(!params.cacheonly) {
-    				ArchiveParser parser = new ArchiveParser(params.archiveSettings, db, wiki);
+                    ArchiveParser parser =
+                            new ArchiveParser(params.archiveSettings, db, wiki, cacheDir);
     				try {
     					parser.getData(params.cache);
     				} catch (IOException e) {			
@@ -274,7 +276,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 					if(destination.contains("%(год)")) {
 						for(int year=params.archiveSettings.startYear;year<=endYear;year++) {
 							log.info("creating report of type: "+type + " for year: "+String.valueOf(year));
-							stat = StatisticsFabric.createReporter(wiki,type,year);						
+                            stat = StatisticsFabric.createReporter(wiki, cacheDir, type, year);
 							if(stat==null) {
 								log.error("Report type "+type+" is not defined");
 								break;
@@ -292,7 +294,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 						}
 					} else {				
 						log.info("creating report of type: "+type);
-						stat = StatisticsFabric.createReporter(wiki,type);					
+                        stat = StatisticsFabric.createReporter(wiki, cacheDir, type);
 						if(stat==null) {
 							log.error("Report type "+type+" is not defined");
 							continue;

@@ -70,17 +70,16 @@ public class StatisticsFabric {
 	}
 	
 	@SuppressWarnings("unchecked")
-	static Statistics createReporter(NirvanaWiki wiki,String type) {
+    static Statistics createReporter(NirvanaWiki wiki, String cacheDir, String type) {
 		Statistics ob = null;
 		ob = reporters.get(type);
 		if(ob==null) {
 			Class cl = reporterClass.get(type);
 			if(cl==null) return null;			
 			try {
-				Class params[] = new Class[2];
-				params[0] = NirvanaWiki.class;
-				params[1] = String.class;
-				ob = (Statistics) cl.getDeclaredConstructor(params).newInstance(wiki,type);
+                Class params[] = new Class[]{NirvanaWiki.class, String.class, String.class};
+                ob = (Statistics) cl.getDeclaredConstructor(params)
+                        .newInstance(wiki, cacheDir, type);
 				reporters.put(type, ob);
 			} catch (Exception e) {
 				log.error(e);
@@ -91,7 +90,7 @@ public class StatisticsFabric {
 	}
 	
 	@SuppressWarnings("unchecked")
-	static Statistics createReporter(NirvanaWiki wiki, String type, int year) {
+    static Statistics createReporter(NirvanaWiki wiki, String cacheDir, String type, int year) {
 		Statistics ob = null;
 		MultiKey multiKey = new MultiKey(type, new Integer(year));
 		ob = (Statistics) reportersYear.get(multiKey);
@@ -99,9 +98,10 @@ public class StatisticsFabric {
 			Class cl = reporterClass.get(type);
 			if(cl==null) return null;
 			try {
-				Class params[] = new Class[]{NirvanaWiki.class,String.class,int.class};
+                Class params[] = new Class[]{
+                        NirvanaWiki.class, String.class, String.class, int.class};
 				Constructor c = cl.getDeclaredConstructor(params); 
-				ob = (Statistics) c.newInstance(wiki,type,year);
+                ob = (Statistics) c.newInstance(wiki, cacheDir, type, year);
 				reportersYear.put(multiKey,ob);
 			} catch (Exception e) {
 				log.error(e.toString());

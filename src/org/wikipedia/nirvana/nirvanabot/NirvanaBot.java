@@ -1,7 +1,7 @@
 /**
- *  @(#)NirvanaBot.java 1.15 01.04.2016
- *  Copyright © 2011 - 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
- *    
+ *  @(#)NirvanaBot.java 1.16 10.01.2017
+ *  Copyright © 2011 - 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -208,12 +208,12 @@ public class NirvanaBot extends NirvanaBasicBot{
 		return DEFAULT_MIDDLE;
 	}
 
-    private static final String VERSION = "v1.15";
+    private static final String VERSION = "v1.16";
 
 	public static String PROGRAM_INFO = 
 			"NirvanaBot " + VERSION + " Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
 			"See also http://ru.wikipedia.org/User:NirvanaBot\n" +
-			"Copyright (C) 2011-2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)\n" +
+            "Copyright (C) 2011-2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)\n" +
 			"\n";
 			
 	public void showInfo() {
@@ -575,7 +575,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 	        return;
         }
 
-        BotReporter reporter = new BotReporter(wiki, 1000, true, getVersion(), reportPreambulaFile);
+        String cacheDir = outDir + "/" + "cache";
+        BotReporter reporter = new BotReporter(wiki, cacheDir, 1000, true, getVersion(),
+                reportPreambulaFile);
         if (UPDATE_STATUS) {
         	try {
 	            reporter.updateStartStatus(STATUS_WIKI_PAGE, STATUS_WIKI_TEMPLATE);
@@ -717,11 +719,11 @@ public class NirvanaBot extends NirvanaBasicBot{
     				serviceManager.timeToFixProblems();
     				
     				String portalSettingsText = wiki.getPageText(portalName);
-    				
-    				if(DEBUG_MODE) {					
-    					FileTools.dump(portalSettingsText, "dump", portalName+".settings.txt");
+
+                    if (DEBUG_MODE || NirvanaBasicBot.DEBUG_BUILD) {
+                        FileTools.dump(portalSettingsText, dumpDir, portalName + ".settings.txt");
     				}
-    				
+
     				if (!wiki.allowEditsByCurrentBot(portalSettingsText)) {
     					log.info("SKIP portal: "+portalName);	reportItem.skip(); i++; continue;
     				}
@@ -760,7 +762,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     						}
     						reportItem.errors = data.errors.size();
     						String errorText = StringUtils.join(data.errors, "\n");
-    						FileTools.dump(errorText, "dump", portalName+".err");
+                            FileTools.dump(errorText, dumpDir, portalName + ".err");
     						if(ERROR_NOTIFICATION) {
     							for(String err:data.errors) {
     								log.info(err);
@@ -860,7 +862,7 @@ public class NirvanaBot extends NirvanaBasicBot{
         reporter.logStatus();
         if (GENERATE_REPORT) {
         	if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "txt")) {        			
-        		reporter.reportTXT(REPORT_FILE_NAME);
+                reporter.reportTXT(outDir + "/" + REPORT_FILE_NAME);
         	}
             if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "wiki")) {
                 if (serviceManager.getMainWikiService().isOk() == Status.OK) {

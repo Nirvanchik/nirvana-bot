@@ -2,6 +2,7 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>no comments</comment>
+<entry key="out-dir">out/ru</entry>
 <entry key="log4j-settings">config/log4j-log-stat-dev.properties</entry>
 <entry key="wiki-login">NirvanaBot</entry>
 <entry key="wiki-password"></entry>
