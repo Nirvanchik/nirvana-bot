@@ -52,16 +52,18 @@ public class ArchiveParser {
 	private ArchiveSettings archiveSettings;
 	private ArchiveDatabase2 db;
 	NirvanaWiki wiki;
-	
+    private final String cacheDir;
 
 	/**
 	 * Constructor
 	 */
-	public ArchiveParser(ArchiveSettings archiveSettings, ArchiveDatabase2 db, NirvanaWiki wiki) {
+    public ArchiveParser(ArchiveSettings archiveSettings, ArchiveDatabase2 db, NirvanaWiki wiki,
+            String cacheDir) {
         log = LogManager.getLogger(this.getClass().getName());
 		this.archiveSettings = archiveSettings;
 		this.db = db;
 		this.wiki = wiki;
+        this.cacheDir = cacheDir;
 	}
 	
 	private interface PurgeDatabase{
@@ -225,7 +227,7 @@ public class ArchiveParser {
 		if(purgeFunc!=null) {
 			String dump = null;
 			try {
-				dump = FileTools.readWikiFile("cache", archive+".txt");
+                dump = FileTools.readWikiFile(cacheDir, archive + ".txt");
 			} catch (FileNotFoundException e) {
 				// ignore
 				log.info(e);
@@ -254,7 +256,7 @@ public class ArchiveParser {
 		// Скинуть сохраненный текст архива в файл
 		// Тоже своего рода уровень кэширования
 		try {
-		FileTools.dump(text,"cache",archive+".txt");
+            FileTools.dump(text, cacheDir, archive + ".txt");
 		} catch (UnsupportedEncodingException e) {
 			log.error(e);
 		}

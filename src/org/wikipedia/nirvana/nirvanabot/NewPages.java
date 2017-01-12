@@ -26,6 +26,7 @@ package org.wikipedia.nirvana.nirvanabot;
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.DateTools;
+import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
@@ -721,9 +722,11 @@ public class NewPages implements PortalModule{
 		oldText = trimRight(oldText, footerLastUsed);		    	    
 		oldText = trimLeft(oldText, headerLastUsed);	
 		oldText = trimMiddle(oldText, middleLastUsed);
-	    
-	    //FileTools.dump(footer, "dump", this.pageName +".footer.txt");
-	   
+
+        if (NirvanaBasicBot.DEBUG_BUILD) {
+            FileTools.dump(footer, this.pageName + ".footer.txt");
+        }
+
 	    oldItems = StringUtils.splitByWholeSeparator(oldText, delimeter); // removes empty items
 	    if(delimeter.equals("\n")) log.debug("delimeter is \\n");
 	    else if(delimeter.equals("\r")) log.debug("delimeter is \\r");

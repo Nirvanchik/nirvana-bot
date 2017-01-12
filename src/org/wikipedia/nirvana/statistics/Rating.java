@@ -72,9 +72,9 @@ public class Rating extends Statistics {
 	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
 	 */
-	public Rating(NirvanaWiki wiki, String type) throws FileNotFoundException,
+    public Rating(NirvanaWiki wiki, String cacheDir, String type) throws FileNotFoundException,
 			BadAttributeValueExpException {
-		super(wiki,type);
+        super(wiki, cacheDir, type);
 		year = 0;
 	}
 	
@@ -83,9 +83,9 @@ public class Rating extends Statistics {
 	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
 	 */
-	public Rating(NirvanaWiki wiki, String type, int year) throws FileNotFoundException,
-			BadAttributeValueExpException {
-		super(wiki,type);
+    public Rating(NirvanaWiki wiki, String cacheDir, String type, int year)
+            throws FileNotFoundException, BadAttributeValueExpException {
+        super(wiki, cacheDir, type);
 		this.year = year;		
 	}
 	
@@ -274,7 +274,7 @@ public class Rating extends Statistics {
 	}
 
 	private void calcProgress() {
-		Path startingDir = Paths.get(Statistics.cacheFolder);
+        Path startingDir = Paths.get(cacheDir);
         String pattern = FileTools.normalizeFileName(portal)+"."+this.type+".????-??-??.js";
 
         Finder finder = new Finder(pattern);
@@ -322,7 +322,7 @@ public class Rating extends Statistics {
         for(StatItem item:this.items) {
 			data.put(item.user,item.number);
 		}
-        file = Statistics.cacheFolder+"\\"+String.format("%1$s.%2$s.%3$tF.js",
+        file = cacheDir + "\\" + String.format("%1$s.%2$s.%3$tF.js",
         		FileTools.normalizeFileName(Statistics.portal),
         		type,
         		Calendar.getInstance());

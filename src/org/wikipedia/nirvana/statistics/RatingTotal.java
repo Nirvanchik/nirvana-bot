@@ -86,9 +86,9 @@ public class RatingTotal extends Rating {
 	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
 	 */
-	public RatingTotal(NirvanaWiki wiki,String type) throws FileNotFoundException,
-			BadAttributeValueExpException {
-		super(wiki,type);
+    public RatingTotal(NirvanaWiki wiki, String cacheDir, String type)
+            throws FileNotFoundException, BadAttributeValueExpException {
+        super(wiki, cacheDir, type);
 		startYear = DEFAULT_START_YEAR;
 		endYear = Calendar.getInstance().get(Calendar.YEAR);
 		userstatByYear = new HashMap<Integer,Map<String,Integer>>(5);

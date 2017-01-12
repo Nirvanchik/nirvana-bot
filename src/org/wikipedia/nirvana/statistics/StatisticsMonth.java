@@ -45,9 +45,9 @@ public class StatisticsMonth extends Statistics {
 	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
 	 */
-	public StatisticsMonth(NirvanaWiki wiki,String type) throws FileNotFoundException,
-			BadAttributeValueExpException {
-		super(wiki,type);
+    public StatisticsMonth(NirvanaWiki wiki, String cacheDir, String type)
+            throws FileNotFoundException, BadAttributeValueExpException {
+        super(wiki, cacheDir, type);
 		year = 0;
 	}
 	
@@ -56,9 +56,9 @@ public class StatisticsMonth extends Statistics {
 	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
 	 */
-	public StatisticsMonth(NirvanaWiki wiki,String type, int year) throws FileNotFoundException,
-			BadAttributeValueExpException {
-		super(wiki,type);
+    public StatisticsMonth(NirvanaWiki wiki,  String cacheDir, String type, int year)
+            throws FileNotFoundException, BadAttributeValueExpException {
+        super(wiki, cacheDir, type);
 		this.year = year;
 	}
 	

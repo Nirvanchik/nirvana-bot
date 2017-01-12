@@ -49,8 +49,7 @@ public class Statistics {
 
 	public static final String DELIMETER = "\n";
 	public static final String DEFAULT_INI_FOLDER = "statistics";
-	public static final String DEFAULT_CACHE_FOLDER = "cache";
-	public static String cacheFolder = DEFAULT_CACHE_FOLDER;
+    protected final String cacheDir;
 	public static String iniFolder = DEFAULT_INI_FOLDER;
 	public static String portal = "";
 	String header;
@@ -152,10 +151,12 @@ public class Statistics {
 		total = new TotalItem();
 	}
 	
-	Statistics(NirvanaWiki wiki, String type) throws FileNotFoundException, BadAttributeValueExpException {
+    Statistics(NirvanaWiki wiki, String cacheDir, String type) throws FileNotFoundException,
+            BadAttributeValueExpException {
 		this.wiki = wiki;
 		this.type = type;
         log = LogManager.getLogger(this.getClass().getName());
+        this.cacheDir = cacheDir;
 		init();
 	}
 	
@@ -169,8 +170,8 @@ public class Statistics {
 			customFooter = options.get(key).replace("\\n", "\n");
 		}
 	}
-	
-	protected void init() throws FileNotFoundException, BadAttributeValueExpException {				
+
+    private void init() throws FileNotFoundException, BadAttributeValueExpException {
 		items = new ArrayList<StatItem>(100);
 		totalUserStat = new HashMap<String,Integer>(200);
 		createTotal();

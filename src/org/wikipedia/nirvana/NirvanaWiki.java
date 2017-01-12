@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaWiki.java 0.09
- *  Copyright © 2011-2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)NirvanaWiki.java 0.10
+ *  Copyright © 2011-2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ public class NirvanaWiki extends Wiki {
     private static Logger log;	
 
 	private boolean dumpMode = false;
-	private String dumpFolder = "dump";
+    private String dumpFolder = null;
 	private boolean logDomain = false;
 	//rev_comment` varbinary(767) NOT NULL, Summaries longer than 200 characters are
     //*  truncated server-side.
@@ -89,11 +89,15 @@ public class NirvanaWiki extends Wiki {
 		dumpMode = true;
 		dumpFolder = folder;
 	}
-	
+
+    /**
+     *  Don't use hardcoded output folders.
+     */
+    @Deprecated
 	public void setDumpMode() {
 		setDumpMode(DEFULT_DUMP_FOLDER);
 	}
-	
+
 	/**
      *  Logs a successful result.
      *  @param text string the string to log
@@ -179,8 +183,8 @@ public class NirvanaWiki extends Wiki {
     		String fileOld = title+".old.txt";
     		String old = null;
     		try {old=this.getPageText(title);} catch (FileNotFoundException e) {old="";}
-   			FileTools.dump(old, dumpFolder, fileOld);
-    		FileTools.dump(text, dumpFolder, fileNew);
+            FileTools.dump(old, dumpFolder, fileOld);
+            FileTools.dump(text, dumpFolder, fileNew);
     	}
     }
     

@@ -83,13 +83,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 		
 		if(task==null)
 			return;
-		
-		/*
-		try {
-			FileTools.dump(task, "dump", "task.txt");
-		} catch (IOException e) {			
-			e.printStackTrace();
-		}*/
+
 		Map<String, String> options = new HashMap<String, String>();
 		if(!textOptionsToMap(task,options)) {
 			log.error("incorrect settings");
