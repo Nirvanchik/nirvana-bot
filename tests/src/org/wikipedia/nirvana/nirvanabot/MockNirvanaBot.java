@@ -342,7 +342,7 @@ public class MockNirvanaBot extends NirvanaBot {
     }
 
     @Override
-    protected void go() throws InterruptedException {
+    protected void go() throws InterruptedException, BotFatalError {
         super.go();
     }
 

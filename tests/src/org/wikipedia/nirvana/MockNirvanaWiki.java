@@ -49,6 +49,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     private Map<String, Revision> topRevMap = new HashMap<>();
     private Map<String, Revision> firstRevMap = new HashMap<>();
     private Map<String, String []> pageTemplatesMap = new HashMap<>();
+    private Map<String, Boolean> pageExistsMap = new HashMap<>();
 
     private User user;
 
@@ -316,5 +317,17 @@ public class MockNirvanaWiki extends NirvanaWiki {
             results[i] = thisResult;
         }
         return results;
+    }
+
+    @Override
+    public boolean exists(String title) throws IOException {
+        if (pageExistsMap.containsKey(title)) {
+            return pageExistsMap.get(title);
+        }
+        return false;
+    }
+
+    public void mockExists(String title, boolean exists) {
+        pageExistsMap.put(title, exists);
     }
 }

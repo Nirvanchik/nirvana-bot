@@ -47,6 +47,8 @@
 <!--<entry key="status-wiki-format">Участник:NirvanaBot/test/Новые статьи/Отображение статуса</entry>-->
 <entry key="statistics-format">txt</entry>
 <!--<entry key="statistics-format">txt,wiki</entry>-->
+<entry key="wiki-translation-page">Участник:NirvanaBot/test/Локализация</entry>
+<entry key="custom-translation-file">translations/devel.ini</entry>
 <entry key="type">all</entry>
 <entry key="default-service">petscan</entry>
 <entry key="service">auto</entry>

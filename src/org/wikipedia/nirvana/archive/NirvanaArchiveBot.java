@@ -35,7 +35,10 @@ import javax.security.auth.login.LoginException;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.TextUtils;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.localization.Localizer;
+import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
@@ -66,7 +69,8 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
         System.exit(bot.run(args));
 	}
 
-	protected void go() {
+    @Override
+    protected void go() throws InterruptedException, BotFatalError {
 		//log.info("Bot");
 		// исходные данные:
 		// 1) архив который нужно обновить
@@ -77,15 +81,15 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 		// ~4) удалять старые заголовки?
 		// ~5) шапка
 		// ~6) подвал
-		
-		
+
+        Localizer.init(Localizer.NO_LOCALIZATION);
 		String task = FileTools.readFileSilently(TASK_LIST_FILE);
-		
+
 		if(task==null)
 			return;
 
 		Map<String, String> options = new HashMap<String, String>();
-		if(!textOptionsToMap(task,options)) {
+        if (!TextUtils.textOptionsToMap(task, options)) {
 			log.error("incorrect settings");
 			return;
 		}

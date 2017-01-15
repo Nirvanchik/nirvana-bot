@@ -33,6 +33,7 @@ import org.wikipedia.nirvana.WikiTools.EnumerationType;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.localization.LocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInBody;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInCard;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderUniversal;
@@ -170,6 +171,9 @@ public class NirvanaBot extends NirvanaBasicBot{
     private int botTimeout = 0;
 
     private int servicesTimeout = 0;
+
+    private String wikiTranslationPage = null;
+    private String customTranslationFile = null;
 
     public void setRetryCount(int count) {
         if (count < 0) throw new RuntimeException("retry count must be 0 or positive value");
@@ -335,6 +339,9 @@ public class NirvanaBot extends NirvanaBasicBot{
 
         botTimeout = validateIntegerSetting(properties, "bot-timeout", botTimeout, false);
         servicesTimeout = validateIntegerSetting(properties, "services-timeout", servicesTimeout, false);
+
+        wikiTranslationPage = properties.getProperty("wiki-translation-page", null);
+        customTranslationFile = properties.getProperty("custom-translation-file", null);
 
 		return true;
 	}
@@ -556,28 +563,38 @@ public class NirvanaBot extends NirvanaBasicBot{
     }
 
 	@SuppressWarnings("unused")
-	protected void go() throws InterruptedException {
+    protected void go() throws InterruptedException, BotFatalError {
+        String cacheDir = outDir + "/" + "cache";
+
         long startMillis = Calendar.getInstance().getTimeInMillis();
         commons = createCommonsWiki();
 		commons.setMaxLag( MAX_LAG );
 
-		try {
-            serviceManager = createServiceManager();
-        } catch (BotFatalError e) {
-	        log.fatal(e);
-	        return;
-        }
+        serviceManager = createServiceManager();
 
         serviceManager.setTimeout(servicesTimeout);
 
 		if (!serviceManager.checkServices()) {
-	        log.fatal("Some services are down. Exiting. ");
-	        return;
+            throw new BotFatalError("Some services are down.");
         }
 
-        String cacheDir = outDir + "/" + "cache";
+        LocalizationManager localizationManager = new LocalizationManager(outDir, cacheDir,
+                LocalizationManager.DEFAULT_TRANSLATIONS_DIR, LANGUAGE, customTranslationFile);
+
         BotReporter reporter = new BotReporter(wiki, cacheDir, 1000, true, getVersion(),
                 reportPreambulaFile);
+        
+        if (wikiTranslationPage != null && !wikiTranslationPage.isEmpty()) {
+            try {
+                localizationManager.load(wiki, wikiTranslationPage);
+            } catch (IOException e) {
+                log.error("Failed to load translations. Try to use default translations");
+                localizationManager.loadDefault();
+            }
+        } else {
+            localizationManager.loadDefault();
+        }
+
         if (UPDATE_STATUS) {
         	try {
 	            reporter.updateStartStatus(STATUS_WIKI_PAGE, STATUS_WIKI_TEMPLATE);
@@ -880,6 +897,13 @@ public class NirvanaBot extends NirvanaBasicBot{
             }
         }
         reporter.botFinished(true);
+        if (wikiTranslationPage != null && !wikiTranslationPage.isEmpty()) {
+            try {
+                localizationManager.refreshWikiTranslations(wiki, wikiTranslationPage);
+            } catch (LoginException | IOException e) {
+                throw new BotFatalError(e);
+            }
+        }
 	}
 
 	public boolean createPortalModule(Map<String, String> options, NewPagesData data) throws 

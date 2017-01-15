@@ -22,6 +22,14 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
+import org.wikipedia.nirvana.DateTools;
+import org.wikipedia.nirvana.FileTools;
+import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.TextUtils;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.FileNotFoundException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -30,14 +38,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.management.BadAttributeValueExpException;
-
-import org.wikipedia.nirvana.DateTools;
-import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaBasicBot;
-import org.wikipedia.nirvana.NirvanaWiki;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -182,7 +182,7 @@ public class Statistics {
 			throw new FileNotFoundException(ini);
 		}
 		Map<String, String> options = new HashMap<String, String>();
-		if(!NirvanaBasicBot.textOptionsToMap(file,options)) {
+        if (!TextUtils.textOptionsToMap(file, options)) {
 			log.error("incorrect settings for statistics");
 			throw new BadAttributeValueExpException(file);
 		}
