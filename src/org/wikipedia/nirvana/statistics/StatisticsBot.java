@@ -39,6 +39,8 @@ import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NumberTools;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.localization.Localizer;
+import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
 /**
@@ -126,8 +128,10 @@ public class StatisticsBot extends NirvanaBasicBot {
 		log.info(String.format(STATUS_INFO_FORMAT,status,w));
 		w.reset();w.start();
 	}
-	
-	protected void go() {
+
+    @Override
+    protected void go() throws InterruptedException, BotFatalError {
+        Localizer.init(Localizer.NO_LOCALIZATION);
 		String [] portalSettingsPages = null;
 		String userNamespace;
         try {

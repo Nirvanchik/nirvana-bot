@@ -25,7 +25,6 @@ package org.wikipedia.nirvana;
 
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,7 +33,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -309,17 +307,16 @@ public abstract class NirvanaBasicBot {
 		if(DEBUG_MODE) {
             wiki.setDumpMode(dumpDir);
 		}	
-		
-		log.warn("BOT STARTED");
-		
+
+        log.info("BOT STARTED");
 		try {
 	        go();
         } catch (InterruptedException e) {
         	onInterrupted(e);
-        }		
-		
-		wiki.logout();		
-		log.warn("EXIT");
+        } finally {
+            wiki.logout();
+        }
+        log.info("EXIT");
 	}
 
     private void checkWorkDir() throws BotFatalError {
@@ -351,8 +348,8 @@ public abstract class NirvanaBasicBot {
 		wiki.setThrottle(THROTTLE_TIME_MS);
     }
 
-	protected abstract void go() throws InterruptedException;
-	
+    protected abstract void go() throws InterruptedException, BotFatalError;
+
 	protected boolean loadCustomProperties(Map<String,String> launch_params) {
 		return true;
 	}
@@ -406,29 +403,6 @@ public abstract class NirvanaBasicBot {
 		}
 		return val;
 	}
-	
-	public static boolean textOptionsToMap(String text, Map<String, String> parameters)
-    {		
-		return textOptionsToMap(text, parameters, "#", "//");
-    }
-	
-	public static boolean textOptionsToMap(String text, Map<String, String> parameters, String... commentSeparators)
-    {
-		String lines[] = text.split("\r|\n");
-		for(String line: lines) {			
-			if(line.trim().isEmpty()) continue;
-			log.debug(line);
-			if (commentSeparators != null && commentSeparators.length > 0) {
-				if (StringUtils.startsWithAny(line.trim(), commentSeparators)) {
-					continue;
-				}
-			}
-			int index = line.indexOf("=");
-			if(index<0) return false;
-			parameters.put(line.substring(0,index).trim(), line.substring(index+1).trim());
-		}
-		return true;
-    }
 	
 	protected void logPortalSettings(Map<String, String> parameters) {
 		Set<Entry<String,String>> set = parameters.entrySet();

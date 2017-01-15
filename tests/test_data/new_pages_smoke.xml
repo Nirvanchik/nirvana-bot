@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<!--
+<comment>no comments</comment>
+<entry key="log4j-settings">config/log4j-log-fulldebug.cfg</entry>
+-->
+<entry key="wiki-login">TestBot</entry>
+<entry key="wiki-password">no password</entry>
+<!--
+<entry key="wiki-account-file">loginNirvanaBot.xml</entry>
+-->
+<entry key="new-pages-template">Участник:NirvanaBot/Новые статьи, Участник:ClaymoreBot/Новые статьи</entry>
+<!--
+<entry key="overriden-properties-page">Участник:NirvanaBot/Новые статьи/Настройки по умолчанию</entry>
+-->
+<entry key="wiki-lang">ru</entry>
+<entry key="wiki-java-loglevel">OFF</entry>
+<!--
+<entry key="update-comment">обновление</entry>
+-->
+
+<!--
+<entry key="default-depth">6</entry>
+<entry key="default-hours">350</entry>
+<entry key="default-maxitems">20</entry>
+-->
+
+<!--
+<entry key="picture-search-tags">image file,Фото,портрет,Изображение</entry>
+<entry key="fair-use-image-templates">Обоснование добросовестного использования, Disputed-fairuse, ОДИ, Несвободный файл/ОДИ</entry>
+<entry key="discussion-pages-templates">
+	К удалению = Википедия:К удалению/%(дата)#%(название), к удалению
+	К переименованию = Википедия:К переименованию/%(дата)#%(текст_с_названием), к переименованию
+	К объединению = Википедия:К объединению/%(дата)#%(текст_с_названием), к объединению
+	К улучшению = Википедия:К улучшению/%(дата)#%(название), к улучшению
+	Rq =
+</entry>
+<entry key="discussion-pages-settings-wikipage">Участник:NirvanaBot/Новые статьи/Настройки обсуждаемых статей.js</entry>
+-->
+
+<!--
+<entry key="error-notification">no</entry>
+<entry key="debug-mode">yes</entry>
+<entry key="update-limit">0</entry>
+<entry key="start-from">0</entry>
+<entry key="update-pause">1000</entry>
+<entry key="type">all</entry>
+<entry key="update-status">no</entry>
+<entry key="statistics">yes</entry>
+<entry key="statistics-file">report/report-%(date).txt</entry>
+<entry key="statistics-format">txt</entry>
+<entry key="task-list">yes</entry>
+<entry key="task-list-file">task_debug.txt</entry>
+<entry key="default-service">catscan2</entry>
+<entry key="service">auto</entry>
+<entry key="fast-mode">yes</entry>
+<entry key="long-task">no</entry>
+-->
+
+</properties>

@@ -43,6 +43,7 @@ import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSimple;
 import org.wikipedia.nirvana.archive.ArchiveWithEnumeration;
 import org.wikipedia.nirvana.archive.ArchiveWithHeaders;
+import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
@@ -80,11 +81,14 @@ import javax.security.auth.login.LoginException;
 public class NewPages implements PortalModule{
     protected static final Logger sLog;
     protected final Logger log;
+    protected final Localizer localizer;
 
 	private static final int WIKI_API_BUNCH_SIZE = 10;
 	public static final String PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE = "\\[\\[(?<article>[^\\]|]+)(|[^\\]]+)?\\]\\]";
 	public static final String PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM = "\\{\\{(?<template>.+)\\}\\}";
 	private static final String COMMENT_DELETED = "<span style=\"color:#966963\"> — '''Статья удалена'''</span>";
+    private static final String SUMMARY_NEW_PAGES = "+%d новых";
+
 	protected String language;
 	protected List<String> categories;
 	protected List<String> categoriesToIgnore;
@@ -160,6 +164,7 @@ public class NewPages implements PortalModule{
 	 *  Constructor
 	 */
     public NewPages(PortalParam param) {
+        this.localizer = Localizer.getInstance();
     	this.language = param.lang;
     	this.categories = param.categories;
     	this.categoriesToIgnore = param.categoriesToIgnore;
@@ -913,8 +918,7 @@ public class NewPages implements PortalModule{
 				!d.newText.isEmpty() && 
 				!(d.newText.equals(text) || d.newText.equals(text.trim())))
 		{
-		    
-		    String str = "+"+String.valueOf(d.newPagesCount)+" новых";
+            String str = String.format(localizer.localize(SUMMARY_NEW_PAGES), d.newPagesCount);
 		    if(UPDATE_ARCHIVE && archive!=null && d.archiveCount>0) {
 		    	str = str + ", -"+d.archiveCount+" в архив";
 		    }

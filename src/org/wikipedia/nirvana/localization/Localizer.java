@@ -1,0 +1,117 @@
+/**
+ *  @(#)Localizer.java 14.01.2017
+ *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * WARNING: This file may contain Russian characters.
+ * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * */
+
+package org.wikipedia.nirvana.localization;
+
+import org.junit.Assert;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Localization module for bot.
+ *
+ * <p>For provided word returns a version translated to current language (or the provided word if
+ * translation not found).
+ * Must be initialized with any of the provided initializing methods. 
+ */
+public class Localizer {
+    /**
+     * Use this with {@link #init(Localizer)} method if you want to disable localization.
+     */
+    public static final Localizer NO_LOCALIZATION = new Localizer() {
+        @Override
+        void addTranslations(Map<String, String> translations) {
+            
+        }
+
+        Map<String, String> getTranslations() {
+            return Collections.emptyMap();
+        }
+
+        @Override
+        public String localize(String word) {
+            return word;
+        }
+    };
+
+    private static Localizer sInstance = null;
+
+    private boolean initialized = false;
+    private Map<String, String> translations = new HashMap<>();
+
+    /**
+     * Singleton getter.
+     *
+     * @return {@link Localizer} instance.
+     */
+    public static Localizer getInstance() {
+        if (sInstance == null) {
+            sInstance = new Localizer();
+        }
+        return sInstance;
+    }
+
+    static void resetFromTests() {
+        sInstance = null;
+    }
+
+    /**
+     * Initialize with a special {@link Localizer} instance.
+     */
+    public static void init(Localizer instance) {
+        Assert.assertNull(sInstance);
+        Assert.assertNotNull(instance);
+        sInstance = instance;
+    }
+
+    void setInitialized() {
+        initialized = true;
+    }
+
+    void addTranslations(Map<String, String> translations) {
+        this.translations.putAll(translations);
+    }
+
+    Map<String, String> getTranslations() {
+        return Collections.unmodifiableMap(translations);
+    }
+
+    /**
+     * Translates a word to current language. 
+     *
+     * @param word word to translate
+     * @return translated version for this word
+     */
+    public String localize(String word) {
+        Assert.assertTrue(initialized);
+        if (translations.containsKey(word)) {
+            String localizedWord = translations.get(word);
+            if (localizedWord != null) return localizedWord;
+        } else {
+            translations.put(word, null);
+        }
+        return word;
+    }
+}

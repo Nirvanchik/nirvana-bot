@@ -23,6 +23,7 @@
 
 package org.wikipedia.nirvana;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -190,7 +191,15 @@ public class WikiUtils {
     public static String removeComments(String text) {
     	return COMMENT_PATTERN.matcher(text).replaceAll("");
     }
-    
+
+    public static String removePreTags(String text) {
+        return text.replace("<pre>", "").replace("</pre>", "");
+    }
+
+    public static String addPreTags(String text) {
+        return "<pre>\n" + text + "</pre>\n";
+    }
+
     public static String addTextToTemplateLastNoincludeSectionBeforeCats(
     		String categoryKey, String templateText, String insertText) {
     	String text;
