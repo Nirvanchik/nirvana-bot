@@ -281,7 +281,6 @@ public abstract class NirvanaBasicBot {
 		DEBUG_MODE = properties.getProperty("debug-mode",DEBUG_MODE?YES:NO).equals(YES);
 		log.info("DEBUG_MODE="+DEBUG_MODE);
 		
-		
 		if (!loadCustomProperties(launch_params)) {
 			log.fatal("Failed to load all required properties. Exiting...");
 			return;

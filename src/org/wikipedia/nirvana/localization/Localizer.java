@@ -23,6 +23,8 @@
 
 package org.wikipedia.nirvana.localization;
 
+import org.wikipedia.nirvana.annotation.VisibleForTesting;
+
 import org.junit.Assert;
 
 import java.util.Collections;
@@ -73,6 +75,7 @@ public class Localizer {
         return sInstance;
     }
 
+    @VisibleForTesting
     static void resetFromTests() {
         sInstance = null;
     }
@@ -105,7 +108,7 @@ public class Localizer {
      * @return translated version for this word
      */
     public String localize(String word) {
-        Assert.assertTrue(initialized);
+        Assert.assertTrue("Localizer is used when it's not initialized.", initialized);
         if (translations.containsKey(word)) {
             String localizedWord = translations.get(word);
             if (localizedWord != null) return localizedWord;

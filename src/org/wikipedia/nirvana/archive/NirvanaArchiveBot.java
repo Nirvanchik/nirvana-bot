@@ -205,6 +205,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 	}
 	
 	private void updateAllArchives(String archive, ArchiveSettings archiveSettings, boolean bot, boolean minor) {
+        DateTools dateTools = DateTools.getInstance();
 		//ArrayList<String> archive_list = new ArrayList<String>();
 		if(archiveSettings.archivePeriod==Period.NONE) {
 			//archive_list.add(archive);
@@ -232,16 +233,17 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 					end_quarter = 0;
 				}
 				for(int q=start_quarter;q<=end_quarter;q++) {
-					String page = archive.replace(Period.YEAR.template(), String.valueOf(year)).
-							replace(Period.SEASON.template(),DateTools.russianSeasons[q]).
+                    String page = archive.
+                            replace(Period.YEAR.template(), String.valueOf(year)).
+                            replace(Period.SEASON.template(), dateTools.seasonString(q)).
 							replace(Period.QUARTER.template(),String.valueOf(q+1));
 					try {
 						updateArchive(page, archiveSettings, bot, minor);
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
+                        // TODO Handle this error correctly
 						e.printStackTrace();
 					} catch (LoginException e) {
-						// TODO Auto-generated catch block
+                        // TODO Handle this error correctly
 						e.printStackTrace();
 					}
 				}

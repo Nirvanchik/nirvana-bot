@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>no comments</comment>
+<entry key="out-dir">out/be</entry>
+<entry key="log4j-settings">config/log4j-log-dev.properties</entry>
+<entry key="wiki-login">NirvanaBot</entry>
+<entry key="wiki-password"></entry>
+<entry key="wiki-account-file">loginNirvanaBot.xml</entry>
+<entry key="new-pages-template">
+    Удзельнік:NirvanaBot/test/Новыя артыкулы
+</entry>
+<entry key="overriden-properties-page"></entry>
+<entry key="wiki-lang">be</entry>
+<entry key="wiki-java-loglevel">OFF</entry>
+<entry key="update-comment"></entry>
+<entry key="default-depth">6</entry>
+<entry key="default-hours">350</entry>
+<entry key="default-maxitems">20</entry>
+<entry key="default-comment"></entry>
+<entry key="default-comment-new"></entry>
+<entry key="default-comment-new-archive"></entry>
+<entry key="picture-search-tags">image file, выява, фатаграфія, партрэт</entry>
+<entry key="fair-use-image-templates">Несвабодны файл/АДВ, Disputed-fairuse</entry>
+<entry key="discussion-pages-templates"></entry>
+<entry key="discussion-pages-settings-wikipage"></entry>
+<entry key="error-notification">no</entry>
+<entry key="debug-mode">yes</entry>
+<entry key="stop-after">0</entry>
+<entry key="start-from">0</entry>
+<entry key="update-pause">2000</entry>
+<entry key="time-format">short</entry>
+<entry key="task-list">yes</entry>
+<entry key="task-list-file">task_dev_be.txt</entry>
+<entry key="statistics">yes</entry>
+<entry key="update-status">no</entry>
+<entry key="statistics-file">report/report_%(date).txt</entry>
+<entry key="statistics-wiki">Удзельнік:NirvanaBot/test/Новыя артыкулы/Справаздача</entry>
+<entry key="status-wiki">Удзельнік:NirvanaBot/test/Новыя артыкулы/Статус</entry>
+<entry key="status-wiki-template">Удзельнік:NirvanaBot/Новыя артыкулы/Адлюстраванне статусу</entry>
+<!--<entry key="status-wiki-format">Участник:NirvanaBot/test/Новые статьи/Отображение статуса</entry>-->
+<entry key="statistics-format">txt</entry>
+<!--<entry key="statistics-format">txt,wiki</entry>-->
+<entry key="wiki-translation-page">Удзельнік:NirvanaBot/Лакалізацыя</entry>
+<entry key="custom-translation-file">translations/be.ini</entry>
+<entry key="type">all</entry>
+<entry key="default-service">petscan</entry>
+<entry key="service">auto</entry>
+<entry key="fast-mode">yes</entry>
+<entry key="starts-per-day">1</entry>
+<entry key="long-task">no</entry>
+<entry key="bot-timeout">0</entry>
+<entry key="services-timeout">0</entry>
+
+</properties>
