@@ -22,6 +22,8 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
+import org.wikipedia.nirvana.NirvanaWiki;
+
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -30,9 +32,6 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import javax.management.BadAttributeValueExpException;
-
-import org.wikipedia.nirvana.DateTools;
-import org.wikipedia.nirvana.NirvanaWiki;
 
 /**
  * @author kin
@@ -68,8 +67,8 @@ public class StatisticsWeek extends Statistics {
 		
 	public void put(ArchiveDatabase2 db) throws IllegalStateException {
 		Calendar c = Calendar.getInstance();
-		c.setFirstDayOfWeek(DateTools.FIRST_DAY_OF_WEEK);
-		c.setMinimalDaysInFirstWeek(DateTools.MINIMAL_DAYS_IN_FIRST_WEEK);	
+        c.setFirstDayOfWeek(dateTools.getFirstDayOfWeek());
+        c.setMinimalDaysInFirstWeek(dateTools.getMinimalDaysInFirstWeek());
 		
 		
 		// 1) find out period of the first week
@@ -147,7 +146,7 @@ public class StatisticsWeek extends Statistics {
 	void addStat(int year, int week, int total, int articlestat[],Map<String,Integer> userstat) {
 		StatItem weekStat = new StatItem();
 		weekStat.number = week;			
-		weekStat.month = DateTools.weekToMonth(year,week);
+        weekStat.month = dateTools.weekToMonth(year,week);
 		weekStat.year = year;
 		weekStat.articles = total;
 		
@@ -180,9 +179,7 @@ public class StatisticsWeek extends Statistics {
 		this.items.add(weekStat);
 		addUserStat(userstat);
 	}
-	
-	
-	
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(customHeader);
@@ -202,6 +199,4 @@ public class StatisticsWeek extends Statistics {
 		sb.append(customFooter);
 		return sb.toString();
 	}
-	
-
 }

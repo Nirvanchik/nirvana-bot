@@ -1,6 +1,6 @@
 /**
  *  @(#)ArchiveSettings.java 02/07/2012
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2011 - 2017 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -130,7 +130,7 @@ public class ArchiveSettings {
 		}
 		return p_min;
 	}
-	
+
 	public String getArchiveForDate(Calendar c) {
 		if(archivePeriod==Period.NONE) {
 			return archive;
@@ -139,32 +139,34 @@ public class ArchiveSettings {
 		if(name.contains(Period.YEAR.template))
 			name = name.replace(Period.YEAR.template, String.valueOf(c.get(Calendar.YEAR)));
 		if(name.contains(Period.SEASON.template))
-			name = name.replace(Period.SEASON.template, DateTools.russianSeasons[c.get(Calendar.MONTH)/3]);
+            name = name.replace(Period.SEASON.template,
+                    DateTools.getInstance().seasonString(c.get(Calendar.MONTH)/3));
 		if(name.contains(Period.QUARTER.template))
 			name = name.replace(Period.QUARTER.template, String.valueOf(c.get(Calendar.MONTH)/3+1));
 		if(name.contains(Period.MONTH.template))
-			name = name.replace(Period.MONTH.template, DateTools.russianMonths[c.get(Calendar.MONTH)]);
+            name = name.replace(Period.MONTH.template,
+                    DateTools.getInstance().monthString(c.get(Calendar.MONTH)));
 		return name;
 	}
-	
 
 	public static String getHeaderForDate(Calendar c, String format) {
 		String header=format;
 		if(header==null)
 			return header;
-		String year,month,season,quarter,week,day,month_monat;
+        DateTools dateTools = DateTools.getInstance();
+        String year, month, season, quarter, week, day, monthMonat;
 		year = String.valueOf(c.get(Calendar.YEAR));
-		season = DateTools.russianSeasons[c.get(Calendar.MONTH)/3];
+        season = dateTools.seasonString(c.get(Calendar.MONTH)/3);
 		quarter = String.valueOf(c.get(Calendar.MONTH)/3);
-		month = DateTools.russianMonths[c.get(Calendar.MONTH)];
-		month_monat = DateTools.russianMonat[c.get(Calendar.MONTH)];
+        month = dateTools.monthString(c.get(Calendar.MONTH));
+        monthMonat = dateTools.monthMonatString(c.get(Calendar.MONTH));
 		week = String.valueOf(c.get(Calendar.WEEK_OF_YEAR));
 		day = String.valueOf(c.get(Calendar.DAY_OF_MONTH));
 		return header.replace(Period.YEAR.template, year).
 				replace(Period.SEASON.template, season).
 				replace(Period.QUARTER.template, quarter).
 				replace(Period.MONTH.template, month).
-				replace(Period.MONTHRP.template, month_monat).
+                replace(Period.MONTHRP.template, monthMonat).
 				replace(Period.WEEK.template, week).
 				replace(Period.DAY.template, day);
 	}

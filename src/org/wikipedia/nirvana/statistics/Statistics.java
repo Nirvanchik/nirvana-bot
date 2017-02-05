@@ -64,7 +64,8 @@ public class Statistics {
 	protected Map<String,Integer> totalUserStat;
 	protected TotalItem total;
 	protected NirvanaWiki wiki = null;
-	
+    protected final DateTools dateTools;
+
 	protected class StatItem {
 		public int number;
 		public int year;
@@ -89,7 +90,7 @@ public class Statistics {
 				mid = new DecimalFormat("#.#").format(this.articlesDayMid);
 			log.debug("item to String "+number +" year "+year+" month "+month);
 			String str = itemTemplate.replace("%(номер)", String.valueOf(this.number)).
-					replace("%(мес€ц)",DateTools.russianMonths[this.month]).
+                    replace("%(мес€ц)", dateTools.monthString(this.month)).
 					replace("%(год)",String.valueOf(this.year)).
 					replace("%(статей)",String.valueOf(this.articles)).
 					replace("%(прогресс)",progress).
@@ -157,6 +158,7 @@ public class Statistics {
 		this.type = type;
         log = LogManager.getLogger(this.getClass().getName());
         this.cacheDir = cacheDir;
+        dateTools = DateTools.getInstance();
 		init();
 	}
 	

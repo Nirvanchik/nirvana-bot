@@ -147,6 +147,8 @@ public class NewPages implements PortalModule{
      */
     protected boolean needsCustomTemlateFiltering = false;
 
+    protected DateTools dateTools;
+
     static {
         sLog = LogManager.getLogger(NewPages.class);
     }
@@ -209,6 +211,8 @@ public class NewPages implements PortalModule{
     	this.fastMode = param.fastMode;
         this.templateFilter = param.templateFilter;
 
+        dateTools = DateTools.getInstance();
+
         log = LogManager.getLogger(this.getClass().getName());
         log.debug("Portal module created for portal subpage [[" + this.pageName + "]]");
 	}
@@ -266,7 +270,7 @@ public class NewPages implements PortalModule{
 		if (item.isEmpty()) return item;
 		String portal = getPortalName();
 		Calendar c = Calendar.getInstance();
-		String date = DateTools.printDateDayMonthYearGenitiveRussian(c);
+        String date = dateTools.printDateDayMonthYearGenitive(c);
 		String str = item.replace("%(бот)", getCurrentUser())
 				.replace("%(проект)", portal)
 				.replace("%(портал)", portal)

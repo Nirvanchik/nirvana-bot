@@ -24,10 +24,12 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.Wiki;
+import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.WikiTools.EnumerationType;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
@@ -594,6 +596,7 @@ public class NirvanaBot extends NirvanaBasicBot{
         } else {
             localizationManager.loadDefault();
         }
+        DateTools.init(LANGUAGE);
 
         if (UPDATE_STATUS) {
         	try {
@@ -983,6 +986,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		Period p1 = Period.NONE;
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			str = options.get(key);
+            str = StringTools.trimDoubleQuoteIfFound(str);
 			p1 = ArchiveSettings.getHeaderPeriod(str);
 			if(p1==Period.NONE) {
 				data.errors.add("¬ параметре \"формат заголовка в архиве\" не задан переменный параметр. «начение этого параметра не прин€то.");
@@ -995,6 +999,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 		Period p2 = Period.NONE;
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			str = options.get(key); 
+            str = StringTools.trimDoubleQuoteIfFound(str);
 			p2 = ArchiveSettings.getHeaderPeriod(str);
 			if(p2==Period.NONE) {
 				data.errors.add("¬ параметре \"формат подзаголовка в архиве\" не задан переменный параметр. «начение этого параметра не прин€то.");

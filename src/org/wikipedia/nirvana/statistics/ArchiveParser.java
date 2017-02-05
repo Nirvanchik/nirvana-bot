@@ -76,6 +76,7 @@ public class ArchiveParser {
 	 * @throws IOException
 	 */
 	public void getData(boolean cache) throws IOException {
+        DateTools dateTools = DateTools.getInstance();
 		// јрхив состоит из одной единственной страницы
 		if(archiveSettings.isSingle()) {
 			PurgeDatabase purge = null;
@@ -163,7 +164,7 @@ public class ArchiveParser {
 						String archive = archiveThisYear.replace(
 								Period.QUARTER.template(), String.valueOf(q));
 						archive = archive.replace(
-								Period.SEASON.template(), DateTools.russianSeasons[q-1]);
+                                Period.SEASON.template(), dateTools.seasonString(q - 1));
 						PurgeDatabase purge = null;
 						if(last!=null && year==last.year && q==last.getQuarter()) {
 							//checkLast = true;

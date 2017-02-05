@@ -23,16 +23,6 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.DateTools;
@@ -42,6 +32,15 @@ import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.DiscussionPagesSettings.DiscussionPageTemplate;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * @author kin
  *
@@ -50,6 +49,7 @@ public class DiscussedPages extends Pages {
 	String prefix;
 	DiscussionPagesSettings settings;
 	List<DiscussionPageTemplate> discussionTemplates;
+    private final DateTools dateTools;
 
 	protected class DiscussedPagesBuffer extends NewPagesBuffer {
 
@@ -59,7 +59,7 @@ public class DiscussedPages extends Pages {
         
         @Override
         protected String formatTimeString(Revision rev) {
-        	return DateTools.printDateDayMonthYearGenitiveRussian(rev.getTimestamp());
+            return dateTools.printDateDayMonthYearGenitive(rev.getTimestamp());
 		}
         
         @Override
@@ -157,8 +157,9 @@ public class DiscussedPages extends Pages {
 		this.settings = settings;
 		getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL;
 		this.discussionTemplates = filterDiscussionTemplates();
+        dateTools = DateTools.getInstance();
 	}
-	
+
 	private List<DiscussionPageTemplate> filterDiscussionTemplates() {
 		List<DiscussionPageTemplate> list = new ArrayList<>();
 		for (DiscussionPageTemplate t:this.settings.templates) {
@@ -214,7 +215,7 @@ public class DiscussedPages extends Pages {
 				for (DiscussionPageTemplate template: discussionTemplates) {
 					if (template.hasLink() && linked.startsWith(template.prefix)) {
 						String right = linked.substring(template.prefix.length());
-						Calendar c = DateTools.parseDateStringDayMonthYearGenitiveRussian(right, new Locale("ru"));
+                        Calendar c = dateTools.parseDateStringDayMonthYearGenitive(right);
 						if (c != null) {
 							discussionSet.add(new DiscussionInfo(c, linked, template));
 						}

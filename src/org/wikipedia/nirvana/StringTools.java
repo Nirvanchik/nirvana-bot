@@ -18,6 +18,8 @@
 
 package org.wikipedia.nirvana;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,15 +28,20 @@ import java.util.List;
  * the {@link org.apache.commons.lang3.StringUtils}
  */
 public class StringTools {
+    public static final String DOUBLE_QUOTE = "\"";
 
-	/**
-	 * 
-	 */
-	
+    public static String trimDoubleQuoteIfFound(String str) {
+        if (str.startsWith(DOUBLE_QUOTE) && str.endsWith(DOUBLE_QUOTE)) {
+            str = StringUtils.removeStart(str, DOUBLE_QUOTE);
+            str = StringUtils.removeEnd(str, DOUBLE_QUOTE);
+        }
+        return str;
+    }
+
 	public static int howMany(String s, char c) {
 		return howMany(s,c,false);
 	}
-	
+
 	public static int howMany(String s, char c, boolean continuous) {
 		int n = 0;
 		for(char x : s.toCharArray()) {

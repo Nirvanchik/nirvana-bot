@@ -5,7 +5,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/jackson-core-2.0.6.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-databind-2.0.6.jar"/>
-	<classpathentry kind="lib" path="lib/commons-lang3-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.0.1.jar" sourcepath="/commons-lang3/src/main/java"/>
 	<classpathentry kind="lib" path="lib/jackson-annotations-2.0.6.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="tests/lib/json-simple-1.1.1.jar"/>

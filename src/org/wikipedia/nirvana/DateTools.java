@@ -23,6 +23,8 @@
 
 package org.wikipedia.nirvana;
 
+import org.wikipedia.nirvana.localization.Localizer;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,9 +36,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import junit.framework.Assert;
+
 /**
- * @author kin
- *
+ * Utilities for printing/converting dates (localized with {@link
+ * org.wikipedia.nirvana.localization.Localizer Localizer}).
+ * Also provides localized date strings (months, seasons, etc.).
  */
 public class DateTools {
 	/** Настройки недели по ГОСТ ИСО 8601-2001 п. 2.17 неделя календарная.
@@ -45,23 +50,27 @@ public class DateTools {
 	 * Первой календарной неделей года считают первую неделю, содержащую первый четверг текущего года.
 	 * В григорианском календаре - это неделя, содержащая 4 января.
 	 */
+    private static final String DEFAULT_LANGUAGE = "ru";
 	public static final int MINIMAL_DAYS_IN_FIRST_WEEK_DEFAULT = 4;	
-	public static int FIRST_DAY_OF_WEEK_DEFAULT = Calendar.MONDAY; 
-	
-	public static int MINIMAL_DAYS_IN_FIRST_WEEK = MINIMAL_DAYS_IN_FIRST_WEEK_DEFAULT;
-	public static int FIRST_DAY_OF_WEEK = FIRST_DAY_OF_WEEK_DEFAULT;
+    public static final int FIRST_DAY_OF_WEEK_DEFAULT = Calendar.MONDAY; 
 
-	public static final Logger log;
+    public static final Logger sLog;
+
+    private static DateTools sInstance;
+
+    private final Localizer localizer;
+    private final int minimalDaysInFirstWeek = MINIMAL_DAYS_IN_FIRST_WEEK_DEFAULT;
+    private final int firstDayOfWeek = FIRST_DAY_OF_WEEK_DEFAULT;
+    private final Locale locale;
+    private final String[] monat;
+    private final String[] months;
+    private final String[] seasons;
 
     static {
-        log = LogManager.getLogger(DateTools.class.getName());
+        sLog = LogManager.getLogger(DateTools.class.getName());
     }
 
-	/**
-	 * 
-	 */
-	
-	public static final String[] russianMonat = 
+    private static final String[] MONAT_RU = 
 		{
 		   "января", 
 		   "февраля", 
@@ -76,8 +85,8 @@ public class DateTools {
 		   "ноября", 
 		   "декабря"
 		};
-	
-	public static final String[] russianMonths = 
+
+    public static final String[] MONTHS_RU = 
 		{
 		   "январь", 
 		   "февраль", 
@@ -92,8 +101,8 @@ public class DateTools {
 		   "ноябрь", 
 		   "декабрь"
 		};
-	
-	public static final String[] russianSeasons = 
+
+    public static final String[] SEASONS_RU = 
 		{
 		   "зима", 
 		   "весна", 
@@ -102,15 +111,62 @@ public class DateTools {
 		};
 	
 
-	public DateTools() {
-		
-	}
+    DateTools(String language) {
+        locale = new Locale(language);
+        localizer = Localizer.getInstance();
+        if (DEFAULT_LANGUAGE.equals(language)) {
+            monat = MONAT_RU;
+            months = MONTHS_RU;
+            seasons = SEASONS_RU;
+            return;
+        }
+        monat = localizeArray(MONAT_RU);
+        months = localizeArray(MONTHS_RU);
+        seasons = localizeArray(SEASONS_RU);
+    }
 
-	public static String printDateDayMonthYearGenitiveRussian(Calendar c) {
-		
-		DateFormatSymbols russSymbol = new DateFormatSymbols(new Locale("ru"));
-		russSymbol.setMonths(russianMonat);
-		SimpleDateFormat sdf = new SimpleDateFormat("d MMMM yyyy", russSymbol);
+    private String[] localizeArray(String[] array) {
+        String[] localized = new String[array.length];
+        for (int i = 0; i < array.length; i++) {
+            localized[i] = localizer.localize(array[i]);
+        }
+        return localized;
+    }
+
+    public static void init(String language) {
+        Assert.assertNull(sInstance);
+        sInstance = new DateTools(language);
+    }
+
+    public static DateTools getInstance() {
+        Assert.assertNotNull("Looks like DateTools is not initialized yet.", sInstance);
+        return sInstance;
+    }
+
+    public String seasonString(int number) {
+        return seasons[number];
+    }
+
+    public String monthString(int number) {
+        return months[number];
+    }
+
+    public String monthMonatString(int number) {
+        return monat[number];
+    }
+
+    public int getFirstDayOfWeek() {
+        return firstDayOfWeek;
+    }
+
+    public int getMinimalDaysInFirstWeek() {
+        return minimalDaysInFirstWeek;
+    }
+
+    public String printDateDayMonthYearGenitive(Calendar c) {
+        DateFormatSymbols symbols = new DateFormatSymbols(locale);
+        symbols.setMonths(monat);
+        SimpleDateFormat sdf = new SimpleDateFormat("d MMMM yyyy", symbols);
 		Date date = c.getTime();
 		return sdf.format(date);
 	}
@@ -159,13 +215,10 @@ public class DateTools {
 		return c;		 
 	}
 	
-	public static Calendar parseDateStringDayMonthYearGenitiveRussian(String dateStr, Locale locale) {
+    public Calendar parseDateStringDayMonthYearGenitive(String dateStr) {
 		Calendar c = null;
-		if (!locale.getLanguage().equals("ru")) {
-			throw new IllegalArgumentException("Only Russian locale supported");
-		}
 		DateFormatSymbols russSymbol = new DateFormatSymbols(locale);
-		russSymbol.setMonths(russianMonat);
+        russSymbol.setMonths(monat);
 		DateFormat formatter = new SimpleDateFormat("d MMMM yyyy", russSymbol);
 		Date date;
 		try {
@@ -176,24 +229,24 @@ public class DateTools {
 		}
 		return c;
 	}
-	
-	public static int dayToWeek(int year, int month, int day) {
+
+    public int dayToWeek(int year, int month, int day) {
 		Calendar c = Calendar.getInstance();
 		c.set(year, month, day);
-		c.setFirstDayOfWeek(DateTools.FIRST_DAY_OF_WEEK);
-		c.setMinimalDaysInFirstWeek(DateTools.MINIMAL_DAYS_IN_FIRST_WEEK);		
+        c.setFirstDayOfWeek(firstDayOfWeek);
+        c.setMinimalDaysInFirstWeek(minimalDaysInFirstWeek);
 		int week = c.get(Calendar.WEEK_OF_YEAR);
 		if(month==0 && day<=7 && week>50) {
 			week = 0;
 		}
 		return week;
 	}
-	
-	public static int weekToMonth(int year, int week) {
+
+    public int weekToMonth(int year, int week) {
 		if(week<=1) return 0;
 		Calendar c = Calendar.getInstance();
-		c.setFirstDayOfWeek(DateTools.FIRST_DAY_OF_WEEK);
-		c.setMinimalDaysInFirstWeek(DateTools.MINIMAL_DAYS_IN_FIRST_WEEK);
+        c.setFirstDayOfWeek(firstDayOfWeek);
+        c.setMinimalDaysInFirstWeek(minimalDaysInFirstWeek);
 		c.setWeekDate(year, week, 7); //sunday
 		int month = c.get(Calendar.MONTH);
 		int md = c.get(Calendar.DAY_OF_MONTH);
