@@ -92,7 +92,7 @@ public class LocalizationManager {
     public void load(NirvanaWiki wiki, String wikiTranslationPage) throws IOException,
             BotFatalError {
         if (lang.equals(DEFAULT_LANG) && !NirvanaBasicBot.DEBUG_BUILD) {
-            Localizer.init(Localizer.NO_LOCALIZATION);
+            Localizer.init(Localizer.DEFAULT_LOCALIZATION);
             return;
         }
         loadDefaultImpl();

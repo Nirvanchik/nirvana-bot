@@ -289,7 +289,7 @@ public abstract class NirvanaBasicBot {
 		if (domain.startsWith(".")) {
 			domain = LANGUAGE + DOMAIN;
 		}
-        wiki = createWiki(domain, SCRIPT_PATH, PROTOCOL);
+        wiki = createWiki(domain, SCRIPT_PATH, PROTOCOL, LANGUAGE);
 
 		configureWikiBeforeLogin();
 		
@@ -331,8 +331,9 @@ public abstract class NirvanaBasicBot {
         }
     }
 
-    protected NirvanaWiki createWiki(String domain, String path, String protocol) {
-        return new NirvanaWiki(domain, path, protocol);
+    protected NirvanaWiki createWiki(String domain, String path, String protocol,
+            String language) {
+        return new NirvanaWiki(domain, path, protocol, language);
     }
 
 	protected void onInterrupted(InterruptedException e) {

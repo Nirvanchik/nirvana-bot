@@ -117,7 +117,7 @@ public class NewPagesWithImages extends NewPages {
             	log.warn(e.toString()+" "+r.getPage()); // page was created and renamed or deleted after that
             	continue;
             }
-            if(NirvanaWiki.isRedirect(article)) {            
+            if (wiki.isRedirect(article)) {            
             	if(pageListProcessor.revisionAvailable()) {
             		page = new RevisionWithImage(wiki,wiki.getRevision(revId),id, null);
             	} else {
