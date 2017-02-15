@@ -41,6 +41,7 @@ import java.util.zip.GZIPInputStream;
 import javax.security.auth.login.LoginException;
 
 import org.wikipedia.Wiki;
+import org.wikipedia.nirvana.localization.Localizer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,13 +50,18 @@ import org.apache.logging.log4j.Logger;
  * based on Wiki.java version 0.31   
  */
 public class NirvanaWiki extends Wiki {
-	
+    private static final String DEFAULT_LANGUAGE = "en";
+    private static final String REDIRECT_NAME_RU = "перенаправление";
+
 	protected static final String DEFULT_DUMP_FOLDER = "dump";
 	
     private static final long serialVersionUID = -8745212681497644127L;
 
     private static Logger log;	
 
+    private final String language;
+    private Localizer localizer;
+    Pattern redirectPattern;
 	private boolean dumpMode = false;
     private String dumpFolder = null;
 	private boolean logDomain = false;
@@ -70,6 +76,7 @@ public class NirvanaWiki extends Wiki {
 	 */
 	public NirvanaWiki(String domain) {
 		super(domain);
+        language = DEFAULT_LANGUAGE;
 	}
 	
 	/**
@@ -78,12 +85,48 @@ public class NirvanaWiki extends Wiki {
 	 */
 	public NirvanaWiki(String domain, String scriptPath) {
 		super(domain, scriptPath);
+        language = DEFAULT_LANGUAGE;
 	}
 
 	public NirvanaWiki(String domain, String scriptPath, String protocol) {
-		super(domain, scriptPath, protocol);
+        this(domain, scriptPath, protocol, DEFAULT_LANGUAGE);
 	}
-	
+
+    public NirvanaWiki(String domain, String scriptPath, String protocol, String language) {
+        super(domain, scriptPath, protocol);
+        if (language == null) {
+            this.language = DEFAULT_LANGUAGE;
+        } else {
+            this.language = language;
+        }
+    }
+
+    private void checkLocalizer() {
+        if (localizer == null) {
+            localizer = Localizer.getInstance();
+        }
+    }
+
+    private void checkRedirectPattern() {
+        if (redirectPattern == null) {
+            String localizedRedirectMarker = "";
+            if (language != null && !language.equals(DEFAULT_LANGUAGE)) {
+                checkLocalizer();
+                localizedRedirectMarker = localizer.localizeStrict(REDIRECT_NAME_RU);
+                if (localizedRedirectMarker == null) {
+                    localizedRedirectMarker = "";
+                }
+            }
+            int unicode = 0;
+            if (!localizedRedirectMarker.isEmpty()) {
+                localizedRedirectMarker = "|" + localizedRedirectMarker;
+                unicode = Pattern.UNICODE_CASE;
+            }
+            String pattern = "^\\#(REDIRECT" + localizedRedirectMarker + ")\\s*\\[\\[.+\\]\\].*$";
+            redirectPattern = Pattern.compile(pattern,
+                    Pattern.CASE_INSENSITIVE | Pattern.DOTALL | unicode);
+        }
+    }
 
 	public void setDumpMode(String folder) {
 		dumpMode = true;
@@ -269,14 +312,13 @@ public class NirvanaWiki extends Wiki {
         text.append(stuff);
         this.edit(title, text.toString(), comment, minor, bot);
     }
-    
-    public static boolean isRedirect(String article) {    	
-    	Pattern p = Pattern.compile("^\\#(REDIRECT|перенаправление)\\s*\\[\\[.+\\]\\].*$",
-    			Pattern.CASE_INSENSITIVE | Pattern.DOTALL /*| Pattern.UNIX_LINES*/);
-    	Matcher m = p.matcher(article);    	
-    	return m.matches();
+
+    public boolean isRedirect(String article) {
+        checkRedirectPattern();
+        Matcher m = redirectPattern.matcher(article);
+        return m.matches();
     }
-    
+
     public boolean allowEditsByCurrentBot(String text) {
     	return NirvanaWiki.allowBots(text, this.getCurrentUser().getUsername());
     }

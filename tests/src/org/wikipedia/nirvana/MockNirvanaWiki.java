@@ -164,6 +164,10 @@ public class MockNirvanaWiki extends NirvanaWiki {
         super(domain, scriptPath, protocol);
     }
 
+    public MockNirvanaWiki(String domain, String scriptPath, String protocol, String language) {
+        super(domain, scriptPath, protocol, language);
+    }
+
     /**
      * Sometimes we want to allow edits just becauze we use {@link NirvanaWiki}
      * class with debug mode enabled when <code>edit()</code> is already mocked and do not really

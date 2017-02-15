@@ -56,6 +56,35 @@ public class Localizer {
         public String localize(String word) {
             return word;
         }
+        
+        @Override
+        public String localizeStrict(String word) {
+            return null;
+        }
+    };
+
+    /**
+     * Use this with {@link #init(Localizer)} method if you set default localization.
+     * Default localization doesn't need to be localized.
+     */
+    public static final Localizer DEFAULT_LOCALIZATION = new Localizer() {
+        @Override
+        void addTranslations(Map<String, String> translations) {
+        }
+
+        Map<String, String> getTranslations() {
+            return Collections.emptyMap();
+        }
+
+        @Override
+        public String localize(String word) {
+            return word;
+        }
+
+        @Override
+        public String localizeStrict(String word) {
+            return word;
+        }
     };
 
     private static Localizer sInstance = null;
@@ -105,9 +134,23 @@ public class Localizer {
      * Translates a word to current language. 
      *
      * @param word word to translate
-     * @return translated version for this word
+     * @return translated version for this word or original word if no translation found
      */
-    public String localize(String word) {
+    public String localize(String word) {        
+        return localizeImpl(word, word);
+    }
+
+    /**
+     * Translates a word to current language. 
+     *
+     * @param word word to translate
+     * @return translated version for this word or null if no translation found
+     */
+    public String localizeStrict(String word) {
+        return localizeImpl(word, null);
+    }
+
+    private String localizeImpl(String word, String defaultWord) {
         Assert.assertTrue("Localizer is used when it's not initialized.", initialized);
         if (translations.containsKey(word)) {
             String localizedWord = translations.get(word);
@@ -115,6 +158,6 @@ public class Localizer {
         } else {
             translations.put(word, null);
         }
-        return word;
+        return defaultWord;
     }
 }

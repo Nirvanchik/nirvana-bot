@@ -34,6 +34,11 @@ public class TestLocalizationManager {
         Localizer.getInstance().setInitialized();
     }
 
+    public static void init(Localizer localizer) {
+        Localizer.init(localizer);
+        Localizer.getInstance().setInitialized();
+    }
+
     public static void reset() {
         Localizer.resetFromTests();
     }
