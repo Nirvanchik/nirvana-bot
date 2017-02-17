@@ -23,12 +23,15 @@
 
 package org.wikipedia.nirvana;
 
+import org.wikipedia.nirvana.annotation.LocalizedByHardcode;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author kin
  *
  */
+@LocalizedByHardcode
 public class NumberTools {
 	public static final int K = 1024;
 	public static final int M = K*K;
