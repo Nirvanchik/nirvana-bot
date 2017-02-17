@@ -23,6 +23,7 @@
 
 package org.wikipedia.nirvana;
 
+import org.wikipedia.nirvana.annotation.LocalizedBySettings;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 
 import org.apache.logging.log4j.LogManager;
@@ -99,6 +100,7 @@ public abstract class NirvanaBasicBot {
 	protected String DOMAIN = ".wikipedia.org";
 	protected String SCRIPT_PATH = "/w";
 	protected String PROTOCOL = "https://";
+    @LocalizedBySettings
 	protected String COMMENT = "обновление";
 	protected int flags = 0;
 
