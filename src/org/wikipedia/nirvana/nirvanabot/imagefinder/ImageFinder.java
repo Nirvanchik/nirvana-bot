@@ -47,19 +47,22 @@ public abstract class ImageFinder {
     }
 
 	public abstract String findImage(NirvanaWiki wiki, NirvanaWiki commons, String article) throws IOException;
-	private static final Pattern IMAGE_PART_TEMPLATE_IMAGE_FIND_REGEX = 
-			Pattern.compile("\\|\\s*изобр\\s*=\\s*(?<image>[^\\|\\}]+)");
 	public static final String DEFAULT_REGEX_IMAGE_TAG = "filename";
 
-	public static String findImageByRegex(NirvanaWiki wiki, NirvanaWiki commons, String article, Pattern pattern, String tag) throws IOException {
-		return findImageByRegex(wiki, commons, article, pattern, tag, true, true);
-	}
-	
-	public static String findImageByRegexSimple(String text, Pattern pattern) throws IOException {
-		return findImageByRegex(null, null, text, pattern, DEFAULT_REGEX_IMAGE_TAG, false, false);
+    public static String findImageByRegex(NirvanaWiki wiki, NirvanaWiki commons,
+            ImageFinderInTemplates finderInTemplates, String article, Pattern pattern, String tag)
+                    throws IOException {
+        return findImageByRegex(wiki, commons, finderInTemplates, article, pattern, tag, true, true);
 	}
 
-	public static String findImageByRegex(NirvanaWiki wiki, NirvanaWiki commons, String article, Pattern pattern, String tag, boolean checkImageTemplates, boolean checkExists) throws IOException {
+	public static String findImageByRegexSimple(String text, Pattern pattern) throws IOException {
+        return findImageByRegex(null, null, null, text, pattern, DEFAULT_REGEX_IMAGE_TAG, false,
+                false);
+	}
+
+    public static String findImageByRegex(NirvanaWiki wiki, NirvanaWiki commons,
+            ImageFinderInTemplates finderInTemplates, String article, Pattern pattern, String tag,
+            boolean checkImageTemplates, boolean checkExists) throws IOException {
 		if (article == null || article.isEmpty()) {
 			return null;
 		}
@@ -67,8 +70,8 @@ public abstract class ImageFinder {
         while(m.find()) {
         	String image = m.group(tag).trim();
         	// иногда вставляют не просто изображение а шаблон {{часть изображения}}
-        	if (checkImageTemplates) {
-        		image = checkImageIsImageTemplate(image);
+            if (checkImageTemplates && finderInTemplates != null) {
+                image = finderInTemplates.checkImageIsImageTemplate(image);
         	}
     		
         	log.debug("image: "+image);
@@ -86,21 +89,6 @@ public abstract class ImageFinder {
         	}
         }
 		return null;
-	}
-	
-	protected static String checkImageIsImageTemplate(String image) {
-		if (image.contains("{{часть изображения")) {
-		// {{часть изображения|изобр=UC1755381 Subularia aquatica var. americana.jpg|позиция=center|ширина=280|общая=800|верх=470|низ=400|лево=60|рамка=нет|помехи=да}}
-			Matcher m1 = IMAGE_PART_TEMPLATE_IMAGE_FIND_REGEX.matcher(image);
-			if (m1.find()) {
-				image = m1.group("image");
-			} else {
-				image = null;
-			}
-		} else if (image.contains("{{") || image.contains("}}")) {
-			image = null;
-		}
-		return image;
 	}
 	
 	protected static boolean checkImageExists(NirvanaWiki wiki, NirvanaWiki commons, String image) throws IOException {

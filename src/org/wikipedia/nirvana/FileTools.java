@@ -198,18 +198,24 @@ public class FileTools {
 		File file = new File(fileName);		
 		
         StringBuilder sb = new StringBuilder(10000);
-        FileInputStream fis = new FileInputStream(file);
-        InputStreamReader reader = new InputStreamReader(fis, encoding);
-        char buf[] = new char[1000];
-        while (true) {
-            int readCount = reader.read(buf);
-            if (readCount < 0) {
-              break;
-            }
-            sb.append(buf, 0, readCount);
-          }
-        text = sb.toString();
-        reader.close();
+        FileInputStream fis = null;
+        InputStreamReader reader = null;
+        try {
+            fis = new FileInputStream(file);
+            reader = new InputStreamReader(fis, encoding);
+            char buf[] = new char[1000];
+            while (true) {
+                int readCount = reader.read(buf);
+                if (readCount < 0) {
+                  break;
+                }
+                sb.append(buf, 0, readCount);
+              }
+            text = sb.toString();
+        } finally {
+            if (reader != null) reader.close();
+            if (fis != null) fis.close();
+        }
 		return text;
 	}
 	

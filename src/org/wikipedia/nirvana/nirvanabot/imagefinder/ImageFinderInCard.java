@@ -41,6 +41,7 @@ import org.wikipedia.nirvana.NirvanaWiki;
 public class ImageFinderInCard extends ImageFinder {
 	private Map<String,List<String>> customKeys;
 	private List<String> defaultKeys;
+    private ImageFinderInTemplates finderInTemplates;
 
 	/**
 	 * 
@@ -65,6 +66,7 @@ public class ImageFinderInCard extends ImageFinder {
 		}
 		log.debug(customKeys.toString());
 		log.debug(defaultKeys.toString());
+        finderInTemplates = new ImageFinderInTemplates();
 	}
 	
 	private List<String> parseKeys(String keysList) {
@@ -96,16 +98,19 @@ public class ImageFinderInCard extends ImageFinder {
 			}
 		}		
 		if(defaultKeys.size()>0) {
-			String regexToFindImage = "\\| *("+
-					StringUtils.join(defaultKeys,"|")+
-					") *= *(?<filename>.+?) *\n";
+            final String defaultKeysRe = StringUtils.join(defaultKeys, "|");
+            String regexToFindImage =
+                    "\\|\\s*(" + defaultKeysRe + ")\\s*=\\s*(?<filename>.+?)\\s*\n";
 			return checkImage(wiki,commons,article,regexToFindImage);
 		}
 		return null;
 	}
 
 	private String checkImage(NirvanaWiki wiki, NirvanaWiki commons, String article, String regexToFindImage) throws IOException {
-		Matcher m = Pattern.compile(regexToFindImage).matcher(article);
+        Matcher m = Pattern.compile(
+                regexToFindImage,
+                Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.MULTILINE
+                ).matcher(article);
 		while(m.find()) {
         	String image = m.group(DEFAULT_REGEX_IMAGE_TAG).trim();
         	log.debug("image: "+image);
@@ -119,7 +124,7 @@ public class ImageFinderInCard extends ImageFinder {
     			continue;
     		}
     		if (image.contains("{{")) {
-    			image = checkImageIsImageTemplate(image);
+                image = finderInTemplates.checkImageIsImageTemplate(image);
     		} else if (image.contains("[[")) {
     			image = findImageByRegexSimple(image, ImageFinderInBody.PATTERN_TO_FIND_IMAGE);
     		} 

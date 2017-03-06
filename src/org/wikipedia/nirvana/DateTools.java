@@ -23,6 +23,7 @@
 
 package org.wikipedia.nirvana;
 
+import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.localization.Localizer;
 
 import org.apache.logging.log4j.LogManager;
@@ -136,6 +137,11 @@ public class DateTools {
     public static void init(String language) {
         Assert.assertNull(sInstance);
         sInstance = new DateTools(language);
+    }
+
+    @VisibleForTesting
+    static void resetFromTests() {
+        sInstance = null;
     }
 
     public static DateTools getInstance() {
