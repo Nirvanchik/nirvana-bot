@@ -24,10 +24,12 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.nirvana.FileTools;
+import org.wikipedia.nirvana.MockDateTools;
 import org.wikipedia.nirvana.MockWikiTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.WikiTools.Service;
 import org.wikipedia.nirvana.WikiTools.ServiceFeatures;
+import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.MockNirvanaBot.TestError;
 
 import org.junit.After;
@@ -67,6 +69,8 @@ public class NirvanaBotTest {
     @After
     public void tearDown() throws Exception {
         MockWikiTools.reset();
+        TestLocalizationManager.reset();
+        MockDateTools.reset();
     }
 
     // Ensure test infrastructure is not broken

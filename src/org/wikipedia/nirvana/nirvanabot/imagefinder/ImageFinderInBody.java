@@ -45,7 +45,7 @@ public class ImageFinderInBody extends ImageFinder {
 
 	@Override
 	public String findImage(NirvanaWiki wiki, NirvanaWiki commons, String article) throws IOException {
-		return findImageByRegex(wiki, commons, article, PATTERN_TO_FIND_IMAGE, "filename");
+        return findImageByRegex(wiki, commons, null, article, PATTERN_TO_FIND_IMAGE, "filename");
 	}
 	
 
