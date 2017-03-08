@@ -324,4 +324,100 @@ public class NirvanaBotTest {
         bot.validateQueries();
         bot.validateEdits();
     }
+
+    /**
+     * Test case 013.
+     * Similar tests: 014.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи с изображениями в карточке"
+     * SERVICE SETTINGS:
+     */
+    @Test
+    public void newPages_imagesInCard() throws TestError {
+        String config = "013_new_pages_with_images_in_card.js";
+        // TODO(Nirvanchik): mock it with Mockito.
+        // Not possible to mock with Mockito currently.
+        // Service spyService = Mockito.spy(Service.PETSCAN);
+        // Mockito.when(spyService.supportsFeature(ServiceFeatures.NEWPAGES_WITH_TEMPLATE))
+        //         .thenReturn(false);
+        Service.setTestFeatures(ServiceFeatures.NEWPAGES | ServiceFeatures.FAST_MODE);
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 014.
+     * Similar tests: 013.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи с изображениями в тексте"
+     * SERVICE SETTINGS:
+     */
+    @Test
+    public void newPages_imagesInText() throws TestError {
+        String config = "014_new_pages_with_images_in_text.js";
+        // TODO(Nirvanchik): mock it with Mockito.
+        // Not possible to mock with Mockito currently.
+        // Service spyService = Mockito.spy(Service.PETSCAN);
+        // Mockito.when(spyService.supportsFeature(ServiceFeatures.NEWPAGES_WITH_TEMPLATE))
+        //         .thenReturn(false);
+        Service.setTestFeatures(ServiceFeatures.NEWPAGES | ServiceFeatures.FAST_MODE);
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 015.
+     * Similar tests: 013, 014.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи с изображениями"
+     * SERVICE SETTINGS:
+     */
+    @Test
+    public void newPages_images() throws TestError {
+        String config = "015_new_pages_with_images_everywhere.js";
+        // TODO(Nirvanchik): mock it with Mockito.
+        // Not possible to mock with Mockito currently.
+        // Service spyService = Mockito.spy(Service.PETSCAN);
+        // Mockito.when(spyService.supportsFeature(ServiceFeatures.NEWPAGES_WITH_TEMPLATE))
+        //         .thenReturn(false);
+        Service.setTestFeatures(ServiceFeatures.NEWPAGES | ServiceFeatures.FAST_MODE);
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 016.
+     * Similar tests: 013.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи с изображениями в карточке"
+     * SERVICE SETTINGS:
+     */
+    @Test
+    public void newPages_imagesInCardInTemplate() throws TestError {
+        String config = "016_new_pages_with_images_in_template_in_card.js";
+        // TODO(Nirvanchik): mock it with Mockito.
+        // Not possible to mock with Mockito currently.
+        // Service spyService = Mockito.spy(Service.PETSCAN);
+        // Mockito.when(spyService.supportsFeature(ServiceFeatures.NEWPAGES_WITH_TEMPLATE))
+        //         .thenReturn(false);
+        Service.setTestFeatures(ServiceFeatures.NEWPAGES | ServiceFeatures.FAST_MODE);
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
 }
