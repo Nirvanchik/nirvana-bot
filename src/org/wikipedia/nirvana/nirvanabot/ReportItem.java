@@ -25,6 +25,9 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import java.util.TimeZone;
 
+import org.wikipedia.nirvana.annotation.VisibleForTesting;
+import org.wikipedia.nirvana.localization.LocalizedTemplate;
+import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotError;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -41,6 +44,14 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 @JsonIgnoreProperties({"getHeaderTXT","getHeaderWiki","getFooterTXT","getFooterWiki"})
 public class ReportItem {
 	private static final int MAX_LEN = 90;
+    @JsonIgnore
+    private static LocalizedTemplate templateYes;
+    @JsonIgnore
+    private static LocalizedTemplate templateNo;
+    @JsonIgnore
+    private static String wordNo;
+    @JsonIgnore
+    private static boolean initialized;
 	String template;
 	String portal;
 	Status status;
@@ -106,21 +117,38 @@ public class ReportItem {
 	}
 	
 	private static String wikiYesNoStringRu(boolean b) {
-		return b?"{{Да}}":"Нет";
+        initStatics();
+        return b ? ("{{" + templateYes.localizeName() + "}}") : wordNo;
 	}
-	
+
+    private static void initStatics() {
+        if (!initialized) {
+            Localizer localizer = Localizer.getInstance();
+            templateYes = localizer.localizeTemplate("Да");
+            templateNo = localizer.localizeTemplate("Нет");
+            wordNo = localizer.localize("Нет");
+            initialized = true;
+        }
+    }
+
+    @VisibleForTesting
+    static void resetFromTests() {
+        initialized = false;
+    }
+
 	private static String wikiYesNoCancelStringRu(String str, boolean yes, boolean no) {
+        initStatics();
 		if (yes) {
-			return String.format("{{Да|%s}}", str);
+            return String.format("{{%s|%s}}", templateYes.localizeName(), str);
 		} else if (no) {
-			return String.format("{{Нет|%s}}", str);
+            return String.format("{{%s|%s}}", templateNo.localizeName(), str);
 		} else {
 			return str;
 		}
 	}
 	private static String wikiErrorStringRu(String error, boolean isError) {
 		if (isError) {
-			return String.format("{{Нет|%s}}", error);
+            return String.format("{{%s|%s}}", templateNo.localizeName(), error);
 		}
 		return "-";
 	}
@@ -132,12 +160,24 @@ public class ReportItem {
 		header += String.format("%1$114s %2$s     %3$s  %4$s"," ", "upd.","arch.","Error");
 		return header;
 	}
-	
+
 	public static String getHeaderWiki() {
-		String header = "{| class=\"wikitable sortable\" style=\"text-align:center\"\n" +
-				"|-\n" +
-                "! № !! портал/проект !! проходов !! статус !! время !! новых статей !! н.с. обновлены !! статей в архив !! архив обновлен !! ошибок !! ошибка";
-		return header;
+        Localizer localizer = Localizer.getInstance();
+        StringBuilder sb = new StringBuilder();
+        sb.append("{| class=\"wikitable sortable\" style=\"text-align:center\"\n");
+        sb.append("|-\n");
+        sb.append("! №")
+                .append(" !! ").append(localizer.localize("портал/проект"))
+                .append(" !! ").append(localizer.localize("проходов"))
+                .append(" !! ").append(localizer.localize("статус"))
+                .append(" !! ").append(localizer.localize("время"))
+                .append(" !! ").append(localizer.localize("новых статей"))
+                .append(" !! ").append(localizer.localize("н. статьи обновлены"))
+                .append(" !! ").append(localizer.localize("статей в архив"))
+                .append(" !! ").append(localizer.localize("архив обновлен"))
+                .append(" !! ").append(localizer.localize("ошибок"))
+                .append(" !! ").append(localizer.localize("ошибка"));
+        return sb.toString();
 	}
 	
 	public static String getFooterTXT() {

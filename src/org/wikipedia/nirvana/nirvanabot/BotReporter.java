@@ -23,16 +23,9 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import javax.security.auth.login.LoginException;
-
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.localization.Localizer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,6 +34,14 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
+import javax.security.auth.login.LoginException;
 
 /**
  * @author kin
@@ -67,6 +68,7 @@ public class BotReporter {
 	String version;
 
     private String preambula = "";
+    private Localizer localizer;
 
     static {
         log = LogManager.getLogger(BotReporter.class.getName());
@@ -133,18 +135,26 @@ public class BotReporter {
     public void report() {
     	
     }
-    
+
+    public void initLocalizer() {
+        if (localizer == null) {
+            localizer = Localizer.getInstance();
+        }
+    }
+
     public void updateStartStatus(String page, String template) throws LoginException, IOException {
+        initLocalizer();
     	String text = String.format("{{%1$s|status=1|starttime=%2$tF %2$tT|version=%3$s}}", template, timeStarted, version);
-    	wiki.edit(page, text, "Бот запущен");
+        wiki.edit(page, text, localizer.localize("Бот запущен"));
     }
     
     public void updateEndStatus(String page, String template) throws LoginException, IOException {
+        initLocalizer();
     	String text = String.format("{{%1$s|status=0|starttime=%2$tF %2$tT|endtime=%3$tF %3$tT|time=%4$s"+
     			"|total=%5$d|checked=%6$d|processed=%7$d|updated=%8$d|errors=%9$d|version=%10$s}}", 
     			template, timeStarted, timeFinished, printTimeDiff(timeStarted, timeFinished),
     			portalsTotal, portalsChecked, portalsProcessed, portalsUpdated, portalsError, version);
-    	wiki.edit(page, text, "Бот остановлен");
+        wiki.edit(page, text, localizer.localize("Бот остановлен"));
     }
 
     public void updateStatus() {
@@ -235,6 +245,7 @@ public class BotReporter {
     
     
     public void doReportWiki(String reportPage) {
+        initLocalizer();
     	if (timeFinished == null) {
     		timeFinished = Calendar.getInstance();
     	}
@@ -251,15 +262,13 @@ public class BotReporter {
 		sb.append(ReportItem.getFooterWiki());
 		
 		try {
-	        wiki.edit(reportPage, sb.toString(), "Отчёт по работе бота за сутки");
+            wiki.edit(reportPage, sb.toString(),
+                    localizer.localize("Отчёт по работе бота за сутки"));
         } catch (LoginException | IOException e) {
 	        log.error("Failed to update report.", e);
         }    	
     }
-	/**
-     * 
-     */
-    
+
     private void logStartStatus() {
     	log.info(String.format("BOT STARTED %1$tF %1$tT version: %2$s", timeStarted, version));
     }
