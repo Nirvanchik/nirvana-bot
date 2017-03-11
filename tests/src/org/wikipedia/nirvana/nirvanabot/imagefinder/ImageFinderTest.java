@@ -28,6 +28,8 @@ import static org.mockito.Mockito.when;
 
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.localization.Localizer;
+import org.wikipedia.nirvana.localization.TestLocalizationManager;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -77,10 +79,12 @@ public class ImageFinderTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
     }
 
     @After
     public void tearDown() throws Exception {
+        TestLocalizationManager.reset();
     }
 
     @Test
