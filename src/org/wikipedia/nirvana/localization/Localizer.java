@@ -56,9 +56,19 @@ public class Localizer {
         public String localize(String word) {
             return word;
         }
-        
+
         @Override
         public String localizeStrict(String word) {
+            return null;
+        }
+
+        @Override
+        public LocalizedTemplate localizeTemplate(String template) {
+            return new LocalizedTemplate.Default(template);
+        }
+
+        @Override
+        public LocalizedTemplate localizeTemplateStrict(String template) {
             return null;
         }
     };
@@ -85,12 +95,23 @@ public class Localizer {
         public String localizeStrict(String word) {
             return word;
         }
+
+        @Override
+        public LocalizedTemplate localizeTemplate(String template) {
+            return new LocalizedTemplate.Default(template);
+        }
+
+        @Override
+        public LocalizedTemplate localizeTemplateStrict(String template) {
+            return new LocalizedTemplate.Default(template);
+        }
     };
 
     private static Localizer sInstance = null;
 
     private boolean initialized = false;
     private Map<String, String> translations = new HashMap<>();
+    private Map<String, LocalizedTemplate> localizedTemplates = new HashMap<>();
 
     /**
      * Singleton getter.
@@ -126,8 +147,16 @@ public class Localizer {
         this.translations.putAll(translations);
     }
 
+    void addLocalizedTemplates(Map<String, LocalizedTemplate> localizedTemplates) {
+        this.localizedTemplates.putAll(localizedTemplates);
+    }
+
     Map<String, String> getTranslations() {
         return Collections.unmodifiableMap(translations);
+    }
+
+    Map<String, LocalizedTemplate> getLocalizedTemplates() {
+        return Collections.unmodifiableMap(localizedTemplates);
     }
 
     /**
@@ -141,6 +170,16 @@ public class Localizer {
     }
 
     /**
+     * Translates a template (with params) to current language. 
+     *
+     * @param template template name to translate
+     * @return translated version for this template wrapped into {@link LocalizedTemplate}.
+     */
+    public LocalizedTemplate localizeTemplate(String template) {        
+        return localizeTemplateImpl(template, new LocalizedTemplate.Default(template));
+    }
+
+    /**
      * Translates a word to current language. 
      *
      * @param word word to translate
@@ -148,6 +187,16 @@ public class Localizer {
      */
     public String localizeStrict(String word) {
         return localizeImpl(word, null);
+    }
+
+    /**
+     * Translates a template (with params) to current language. 
+     *
+     * @param template template name to translate
+     * @return translated version for this template wrapped into {@link LocalizedTemplate}.
+     */
+    public LocalizedTemplate localizeTemplateStrict(String template) {
+        return localizeTemplateImpl(template, null);
     }
 
     private String localizeImpl(String word, String defaultWord) {
@@ -159,5 +208,17 @@ public class Localizer {
             translations.put(word, null);
         }
         return defaultWord;
+    }
+
+    private LocalizedTemplate localizeTemplateImpl(String template,
+            LocalizedTemplate defaultTemplate) {
+        Assert.assertTrue("Localizer is used when it's not initialized.", initialized);
+        if (localizedTemplates.containsKey(template)) {
+            LocalizedTemplate localizedTemplate = localizedTemplates.get(template);
+            if (localizedTemplate != null) return localizedTemplate;
+        } else {
+            localizedTemplates.put(template, null);
+        }
+        return defaultTemplate;
     }
 }

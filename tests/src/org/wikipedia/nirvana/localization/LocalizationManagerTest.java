@@ -49,6 +49,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -331,7 +334,7 @@ public class LocalizationManagerTest {
                         "apple = Apfel\ncoconut = \n</pre>\n"),
                 Mockito.anyString());
     }
-    
+
     @Test
     public void refreshWikiTranslations_createWiki() throws Exception {
         writeFile(translationFile, "");
@@ -346,5 +349,86 @@ public class LocalizationManagerTest {
         verify(wiki, atLeastOnce()).edit(eq(WIKI_TRANSLATIONS),
                 eq("<pre>\nСоздание страницы локализации = \ncoconut = \n</pre>\n"),
                 Mockito.anyString());
+    }
+
+    @Test
+    public void parseTranslations_parsesSimpleTranslations() {
+        LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
+                TRANSLATIONS_DIR, LANG);
+        String text = "key1 = val1 \nkey2 = val2 with many words";
+        Localizer localizer = new Localizer();
+        localizationManager.parseTranslationsToLocalizer(text, localizer);
+
+        Map<String, String> expected = new HashMap<>();
+        expected.put("key1", "val1");
+        expected.put("key2", "val2 with many words");
+        Assert.assertEquals(expected, localizer.getTranslations());
+    }
+
+    @Test
+    public void parseTranslations_readsMissingTranslations() {
+        LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
+                TRANSLATIONS_DIR, LANG);
+        String text = "key1 = val1 \nkey2 = \nkey3 = ";
+        Localizer localizer = new Localizer();
+        localizationManager.parseTranslationsToLocalizer(text, localizer);
+
+        Map<String, String> expected = new HashMap<>();
+        expected.put("key1", "val1");
+        expected.put("key2", null);
+        expected.put("key3", null);
+        Assert.assertEquals(expected, localizer.getTranslations());
+    }
+
+    @Test
+    public void parseTranslations_parsesSimpleTemplateTranslations() {
+        LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
+                TRANSLATIONS_DIR, LANG);
+        String text = "{{template1}} = {{localized1}} ";
+        Localizer localizer = new Localizer();
+        localizationManager.parseTranslationsToLocalizer(text, localizer);
+
+        Map<String, LocalizedTemplate> expected = new HashMap<>();
+        expected.put("template1", new LocalizedTemplate("template1", "localized1"));
+        Assert.assertEquals(expected, localizer.getLocalizedTemplates());
+    }
+
+    @Test
+    public void parseTranslations_empty() {
+        LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
+                TRANSLATIONS_DIR, LANG);
+        String text = "{{template1}} = ";
+        Localizer localizer = new Localizer();
+        localizationManager.parseTranslationsToLocalizer(text, localizer);
+
+        Assert.assertEquals(Collections.EMPTY_MAP, localizer.getLocalizedTemplates());
+    }
+
+    @Test
+    public void parseTranslations_ignoresCorruptTranslations() {
+        LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
+                TRANSLATIONS_DIR, LANG);
+        String text = "{{template1|param1|param2}} = {{localized1}} \n" +
+                "{{template2|param1|param2}} = {{localized2|1|2|3|4}}";
+        Localizer localizer = new Localizer();
+        localizationManager.parseTranslationsToLocalizer(text, localizer);
+
+        Assert.assertEquals(Collections.EMPTY_MAP, localizer.getLocalizedTemplates());
+    }
+
+    @Test
+    public void parseTranslations_parsesComplexTemplateTranslations() {
+        LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
+                TRANSLATIONS_DIR, LANG);
+        String text = "{{template1|param1|param2}} = {{localized1|loc_p1|loc_p2}} ";
+        Localizer localizer = new Localizer();
+        localizationManager.parseTranslationsToLocalizer(text, localizer);
+
+        Map<String, LocalizedTemplate> expected = new HashMap<>();
+        LocalizedTemplate lt = new LocalizedTemplate("template1", "localized1");
+        lt.putParam("param1", "loc_p1");
+        lt.putParam("param2", "loc_p2");
+        expected.put("template1", lt);
+        Assert.assertEquals(expected, localizer.getLocalizedTemplates());
     }
 }

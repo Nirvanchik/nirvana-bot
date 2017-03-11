@@ -23,6 +23,9 @@
 
 package org.wikipedia.nirvana.nirvanabot.imagefinder;
 
+import org.wikipedia.nirvana.localization.Localizer;
+import org.wikipedia.nirvana.localization.TestLocalizationManager;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -45,10 +48,12 @@ public class ImageFinderInTemplatesTest {
 
     @Before
     public void setUp() throws Exception {
+        TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
     }
 
     @After
     public void tearDown() throws Exception {
+        TestLocalizationManager.reset();
     }
 
     @Test

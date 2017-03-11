@@ -29,6 +29,7 @@ import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.TextUtils;
 import org.wikipedia.nirvana.WikiUtils;
+import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 
 import org.apache.logging.log4j.LogManager;
@@ -38,7 +39,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
 
@@ -53,6 +57,9 @@ public class LocalizationManager {
     public static final String DEFAULT_TRANSLATIONS_DIR = "translations";
 
     private static final String ERR_TRANSLATION_NOT_FOUND = "Translation file %s not found";
+    
+    private static final String ERR_INVALID_TRANSLATION =
+            "Invalid template expression: %s. Translation ignored.";
 
     private final Logger log;
     @SuppressWarnings("unused")
@@ -98,13 +105,10 @@ public class LocalizationManager {
         loadDefaultImpl();
         String wikiTranslationText = getWikiTranslationPage(wiki, wikiTranslationPage);
         if (wikiTranslationText != null) {
-            Map<String, String> translations = new HashMap<>();
             wikiTranslationText = WikiUtils.removeComments(wikiTranslationText);
             wikiTranslationText = WikiUtils.removePreTags(wikiTranslationText);
-            TextUtils.textOptionsToMap(wikiTranslationText, translations, true);
-            Localizer.getInstance().addTranslations(translations);
-            log.info(String.format("%d translations loaded from %s", translations.size(),
-                    wikiTranslationPage));
+            int cnt = parseTranslationsToLocalizer(wikiTranslationText, Localizer.getInstance());
+            log.info(String.format("%d translations loaded from %s", cnt, wikiTranslationPage));
         }
         Localizer.getInstance().setInitialized();
     }
@@ -158,6 +162,7 @@ public class LocalizationManager {
             log.info("Updating translations page: " + wikiTranslationPage);
             wiki.edit(wikiTranslationPage, text, editComment);
             FileTools.dump(text, cacheDir, wikiTranslationPage);
+            // TODO : Make the same system for templates translations. 
         }
     }
 
@@ -215,7 +220,7 @@ public class LocalizationManager {
      */
     public void loadDefault() throws BotFatalError {
         if (lang.equals(DEFAULT_LANG) && !NirvanaBasicBot.DEBUG_BUILD) {
-            Localizer.init(Localizer.NO_LOCALIZATION);
+            Localizer.init(Localizer.DEFAULT_LOCALIZATION);
             return;
         }
         loadDefaultImpl();
@@ -240,9 +245,80 @@ public class LocalizationManager {
             throw new BotFatalError(e);
         }
         Assert.assertNotNull(text);
+        int cnt = parseTranslationsToLocalizer(text, Localizer.getInstance());
+        log.info(String.format("%d translations loaded from %s", cnt, path));
+    }
+    
+    @VisibleForTesting
+    int parseTranslationsToLocalizer(String text, Localizer localizer) {
         Map<String, String> translations = new HashMap<>();
         TextUtils.textOptionsToMap(text, translations, true);
-        Localizer.getInstance().addTranslations(translations);
-        log.info(String.format("%d translations loaded from %s", translations.size(), path));
+        Map<String, LocalizedTemplate> templateTranslations =
+                findRemoveTemplateTranslations(translations);
+        localizer.addTranslations(translations);
+        localizer.addLocalizedTemplates(templateTranslations);
+        return translations.size() + templateTranslations.size();
     }
+
+    private Map<String, LocalizedTemplate> findRemoveTemplateTranslations(
+            Map<String, String> translations) {
+        Map<String, String> templateTranslationsRaw = new HashMap<>();
+        Iterator<Map.Entry<String, String>> it = translations.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, String> translation = it.next();
+            String key = translation.getKey();
+            if (key.contains("{{")) {
+                templateTranslationsRaw.put(key, translations.get(key));
+                it.remove();
+            }
+        }
+        Map<String, LocalizedTemplate> templateTranslations = new HashMap<>();
+        Pattern templatePattern = Pattern.compile("\\s*\\{\\{(?<params>[^\\{\\}]+)\\}\\}\\s*");
+        for (Map.Entry<String, String> pair: templateTranslationsRaw.entrySet()) {
+            if (pair.getValue() == null || pair.getValue().trim().isEmpty()) {
+                log.info("Translation not found for %s. Localization skipped.", pair.getKey());
+                continue;
+            }
+            Matcher matcherLeft = templatePattern.matcher(pair.getKey());
+            Matcher matcherRight = templatePattern.matcher(pair.getValue());
+            if (!matcherLeft.matches()) {
+                log.error(ERR_INVALID_TRANSLATION, pair.getKey());
+                continue;
+            }
+            if (!matcherRight.matches()) {
+                log.error(ERR_INVALID_TRANSLATION, pair.getValue());
+                continue;
+            }
+            String paramsLeftStr = matcherLeft.group("params");
+            String paramsRightStr = matcherRight.group("params");
+            String [] paramsLeft = paramsLeftStr.split("\\|");
+            String [] paramsRight = paramsRightStr.split("\\|");
+            String name = paramsLeft[0].trim();
+            String localizedName = paramsRight[0].trim();
+            if (name.isEmpty()) {
+                log.error(ERR_INVALID_TRANSLATION, pair.getKey());
+                continue;
+            }
+            if (localizedName.isEmpty()) {
+                log.error(ERR_INVALID_TRANSLATION, pair.getValue());
+                continue;
+            }
+            if (paramsLeft.length != paramsRight.length) {
+                log.error("Incomplete template translation: %s. \nLeft string contains %d parts " +
+                        "but right string contains %d parts. Translation ignored.",
+                        pair.getValue(), paramsLeft.length, paramsRight.length);
+                continue;
+            }
+            LocalizedTemplate localizedTemplate = new LocalizedTemplate(name, localizedName);
+            for (int i = 1; i < paramsLeft.length; i++) {
+                String param = paramsLeft[i].trim();
+                if (param.isEmpty()) continue;
+                String right = paramsRight[i].trim();
+                localizedTemplate.putParam(param, right);
+            }
+            templateTranslations.put(name, localizedTemplate);
+        }
+        return templateTranslations;
+    }
+
 }
