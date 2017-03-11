@@ -56,6 +56,7 @@ public class NirvanaBotTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
+        TestLocalizationManager.reset();
     }
 
     @AfterClass
