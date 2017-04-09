@@ -46,18 +46,21 @@ import javax.security.auth.login.LoginException;
 public class NewPagesWeek extends NewPages {
 
 	public static final int HOURS = 7 * 24;
-	private static final String PAGE_NAME_FORMAT = "%s/День %d";
 	private static final int FIRST_DAY = 0;
 	private static final int DAYS = 7;
 	private static final int LAST_DAY = FIRST_DAY-DAYS+1;
-	/**
+
+    private final String PAGE_NAME_FORMAT;
+
+    /**
 	 * @param param	 
 	 */
 	public NewPagesWeek(PortalParam param) {
 		super(param);
 		UPDATE_FROM_OLD = false;
+        PAGE_NAME_FORMAT = "%1$s/" + localizer.localize("День") + "%2$d";
 	}
-	
+
 	public class WeekData extends Data {
 		Map<String, Data> days = new HashMap<String, Data>(DAYS);
 		public WeekData() {			
@@ -110,7 +113,7 @@ public class NewPagesWeek extends NewPages {
 		pattern = pattern.replace("{", "\\{")
 				.replace("}", "\\}")
 				.replace("|", "\\|")
-				.replace("%(дата)", "\\d{1,2}\\s[\\p{InCyrillic}\\w]+\\s\\d{4}");
+                .replace(BotVariables.DATE, "\\d{1,2}\\s[\\p{InCyrillic}\\w]+\\s\\d{4}");
 		return pattern;
 	}
 	
@@ -204,7 +207,7 @@ public class NewPagesWeek extends NewPages {
 			Data d = entry.getValue();
 			String str;
 			if (d.newPagesCount>0) {
-				str = "+"+String.valueOf(d.newPagesCount)+" статей";
+				str = "+" + String.valueOf(d.newPagesCount) + " " + localizer.localize("статей");
 			} else {
 				str = comment;
 			} 
@@ -227,5 +230,4 @@ public class NewPagesWeek extends NewPages {
 		//reportData.newPagesFound = count;	    
 		return updated;
 	}
-	
 }

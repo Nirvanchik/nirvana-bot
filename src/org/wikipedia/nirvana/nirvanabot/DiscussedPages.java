@@ -25,6 +25,7 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.BotUtils;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
@@ -73,8 +74,8 @@ public class DiscussedPages extends Pages {
 	    	DiscussionInfo discussion = revDisc.getDiscussion();
 
 	    	if (discussion != null) {
-	    		if (format.contains("%(обсуждение)")) {
-	    			String formatExt = formatString.replace("%(обсуждение)", "%4$s");
+                if (format.contains(BotVariables.DISCUSSION)) {
+                    String formatExt = formatString.replace(BotVariables.DISCUSSION, "%4$s");
 	    			String link = discussion.template.formatLinkForPage(
 	    					discussion.discussionPage, title, stripFragment(discussion.discussionFragment));
 	    			element = String.format(formatExt, titleToInsert, HTTPTools.removeEscape(user), time, link);
@@ -169,7 +170,7 @@ public class DiscussedPages extends Pages {
 		}
 		if (this.prefix != null && !prefix.isEmpty()) {
 			List<DiscussionPageTemplate> list2 = new ArrayList<>();
-			List<String> prefixes = NirvanaBasicBot.optionToStringArray(prefix);
+            List<String> prefixes = BotUtils.optionToList(prefix);
 			for (String prefix:prefixes) {
 				boolean found = false;
 				for (DiscussionPageTemplate t:list) {

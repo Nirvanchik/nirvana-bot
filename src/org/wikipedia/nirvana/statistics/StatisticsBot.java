@@ -27,13 +27,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.wikipedia.Wiki;
+import org.wikipedia.nirvana.BotUtils;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NumberTools;
@@ -348,16 +351,14 @@ public class StatisticsBot extends NirvanaBasicBot {
 		}
 		
 	}
-	
-	private static ArrayList<String> optionToStringArray(Map<String, String> options, String key) {
-		ArrayList<String> list = new ArrayList<String>();
+
+    private static List<String> optionToList(Map<String, String> options, String key) {
 		if (options.containsKey(key)) {			
-			return NirvanaBasicBot.optionToStringArray(options.get(key), false);
+            return BotUtils.optionToList(options.get(key), false);
 		}
-		return list;
+        return Collections.emptyList();
 	}
 
-	
 	private boolean readPortalSettings(Map<String, String> options, StatisticsParam params) {
 		params.archiveSettings = new ArchiveSettings();
 		params.archive = null;
@@ -394,7 +395,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 		params.reportTypes = null;
 		key = "тип";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
-			params.reportTypes = optionToStringArray(options, key);
+            params.reportTypes = optionToList(options, key);
 			//archiveSettings.headerFormat = options.get(key); 
 		} else {
 			log.error("Параметр \"тип\" не найден в настройках");
@@ -418,7 +419,8 @@ public class StatisticsBot extends NirvanaBasicBot {
 			try {
 				params.archiveSettings.startYear = Integer.parseInt(options.get(key));
 			} catch(NumberFormatException e) {
-				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+                log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING_EN, key,
+                        options.get(key)));
 			}
 		}
 		
@@ -434,10 +436,11 @@ public class StatisticsBot extends NirvanaBasicBot {
 			try {
 				params.archiveSettings.startYear2 = Integer.parseInt(options.get(key));
 			} catch(NumberFormatException e) {
-				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+                log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING_EN, key,
+                        options.get(key)));
 			}
 		}
-		
+
 		params.sort = SORT_DEFAULT;
 		key = "сортировать";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
@@ -467,10 +470,11 @@ public class StatisticsBot extends NirvanaBasicBot {
 			try {
 				params.minSize = NumberTools.parseFileSize(options.get(key));
 			} catch(NumberFormatException e) {
-				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+                log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING_EN, key,
+                        options.get(key)));
 			}
 		}
-		
+
 		params.header = DEFAULT_HEADER;
 		key = "шапка";
 		if (options.containsKey(key) && !options.get(key).isEmpty())

@@ -35,8 +35,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -413,32 +416,6 @@ public abstract class NirvanaBasicBot {
 			Entry<String,String> next = it.next();
 			log.debug(next.getKey()+" = "+next.getValue());
 		}
-	}
-	
-	public static ArrayList<String> optionToStringArray(String option) {
-		return optionToStringArray(option, false, ",");
-	}
-	
-	public static ArrayList<String> optionToStringArray(String option, boolean withDQuotes) {
-		return optionToStringArray(option, withDQuotes, ",");
-	}
-	
-	public static ArrayList<String> optionToStringArray(String option, boolean withDQuotes, String separator) {
-		ArrayList<String> list = new ArrayList<String>();
-		String separatorPattern;
-		if (withDQuotes && option.contains("\"")) {
-			separatorPattern = "(\"\\s*"+separator+"\\s*\"|^\\s*\"|\"\\s*$)"; 
-		} else {
-			separatorPattern = separator;
-		}
-		String[] items = option.split(separatorPattern);
-		for (int i = 0; i < items.length; ++i) {
-			String cat = items[i].trim();
-			if (!cat.isEmpty()) {
-				list.add(cat);
-			}
-		}
-		return list;
 	}
 
 	public static boolean TryParseTemplate(String template, 

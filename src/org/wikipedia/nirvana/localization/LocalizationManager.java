@@ -228,6 +228,7 @@ public class LocalizationManager {
     }
 
     private void loadDefaultImpl() throws BotFatalError {
+        Localizer localizer = new Localizer();
         String path;
         if (customTranslation != null && !customTranslation.isEmpty()) {
             path = customTranslation;
@@ -245,7 +246,8 @@ public class LocalizationManager {
             throw new BotFatalError(e);
         }
         Assert.assertNotNull(text);
-        int cnt = parseTranslationsToLocalizer(text, Localizer.getInstance());
+        int cnt = parseTranslationsToLocalizer(text, localizer);
+        Localizer.init(localizer);
         log.info(String.format("%d translations loaded from %s", cnt, path));
     }
     

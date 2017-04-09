@@ -119,9 +119,11 @@ public class Localizer {
      * @return {@link Localizer} instance.
      */
     public static Localizer getInstance() {
+        /*
         if (sInstance == null) {
             sInstance = new Localizer();
-        }
+        }*/
+        assert sInstance != null;
         return sInstance;
     }
 

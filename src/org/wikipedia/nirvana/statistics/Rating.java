@@ -96,7 +96,8 @@ public class Rating extends Statistics {
 			try {
 				this.size = Integer.parseInt(options.get(key));
 			} catch(NumberFormatException e) {
-				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+                log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING_EN, key,
+                        options.get(key)));
 			}					
 		}
 		key = "статьи от";
@@ -105,7 +106,8 @@ public class Rating extends Statistics {
 			try {
 				this.minSize = NumberTools.parseFileSize(options.get(key));
 			} catch(NumberFormatException e) {
-				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+                log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING_EN, key,
+                        options.get(key)));
 			}
 		}
 	}
@@ -404,8 +406,4 @@ public class Rating extends Statistics {
 	            return FileVisitResult.CONTINUE;
 	        }
 	    }
-
-	
-	
-
 }

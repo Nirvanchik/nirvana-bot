@@ -30,8 +30,10 @@ import java.util.Map;
  */
 public class TestLocalizationManager {
     public static void init(Map<String, String> translations) {
-        Localizer.getInstance().addTranslations(translations);
-        Localizer.getInstance().setInitialized();
+        Localizer localizer = new Localizer();
+        localizer.addTranslations(translations);
+        localizer.setInitialized();
+        Localizer.init(localizer);
     }
 
     public static void init(Localizer localizer) {

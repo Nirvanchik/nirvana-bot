@@ -43,6 +43,7 @@ import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSimple;
 import org.wikipedia.nirvana.archive.ArchiveWithEnumeration;
 import org.wikipedia.nirvana.archive.ArchiveWithHeaders;
+import org.wikipedia.nirvana.localization.LocalizedTemplate;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
@@ -86,8 +87,31 @@ public class NewPages implements PortalModule{
 	private static final int WIKI_API_BUNCH_SIZE = 10;
 	public static final String PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE = "\\[\\[(?<article>[^\\]|]+)(|[^\\]]+)?\\]\\]";
 	public static final String PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM = "\\{\\{(?<template>.+)\\}\\}";
-	private static final String COMMENT_DELETED = "<span style=\"color:#966963\"> — '''Статья удалена'''</span>";
-    private static final String SUMMARY_NEW_PAGES = "+%d новых";
+
+    private static String COMMENT_DELETED;
+    private static String SUMMARY_NEW_PAGES;
+    private static String NEW_PAGES_LISTS_CATEGORY;
+    private static String CATEGORY_NAMESPACE;
+    private static String CATEGORY_NAMESPACE_EN = "Category:";
+    private static String USER_NAMESPACE;
+    private static String USER_NAMESPACE_EN = "User:";
+    private static String USER_TALK_NAMESPACE;
+    private static String USER_TALK_NAMESPACE_EN = "User_talk:";
+    private static String USER_TALK_NAMESPACE2;
+
+    private static LocalizedTemplate templateNewPageItem;
+    private static LocalizedTemplate templateNewPageItem2;
+
+    private static Pattern deletedNewPageItemRegex;
+    private static Pattern newPageItemRegex;
+    private static Pattern newPageItemSimpleRegex;
+    private static String deletedPageMarkerParam;
+    private static String deletedPageParamPostfix;
+
+    private static String pageDeletedString;
+    private static String pageDeletedSimpleMarker;
+
+    private static boolean initialized; 
 
 	protected String language;
 	protected List<String> categories;
@@ -161,13 +185,16 @@ public class NewPages implements PortalModule{
     	GET_TOP_REV
     	//GET_LAST_REV_BY_PAGE_NAME
     }
-    
+
 	/**
 	 *  Constructor
 	 */
     public NewPages(PortalParam param) {
         this.localizer = Localizer.getInstance();
-    	this.language = param.lang;
+        BotVariables.init();
+        initStatics();
+
+        this.language = param.lang;
     	this.categories = param.categories;
     	this.categoriesToIgnore = param.categoriesToIgnore;
     	categoryGroups = param.categoryGroups;
@@ -179,9 +206,11 @@ public class NewPages implements PortalModule{
     	this.maxItems = param.maxItems;
     	this.format = param.format;
 
-        this.formatString = format.replace("%(название)", "%1$s").replace("%(дата)", "%3$s");
+        this.formatString = format
+                .replace(BotVariables.TITLE, "%1$s")
+                .replace(BotVariables.DATE, "%3$s");
         if (supportAuthor) {
-            formatString = formatString.replace("%(автор)", "%2$s");
+            formatString = formatString.replace(BotVariables.AUTHOR, "%2$s");
         }
     	/*
     	TODO(Nirvanchik): I don't understand what is this for?
@@ -216,6 +245,44 @@ public class NewPages implements PortalModule{
         log = LogManager.getLogger(this.getClass().getName());
         log.debug("Portal module created for portal subpage [[" + this.pageName + "]]");
 	}
+
+    public static void initStatics() {
+        if (initialized) return;
+        Localizer localizer = Localizer.getInstance();
+        SUMMARY_NEW_PAGES = "+%d " + localizer.localize("новых");
+        NEW_PAGES_LISTS_CATEGORY =
+                localizer.localize("Категория:Википедия:Списки новых статей по темам");
+        CATEGORY_NAMESPACE = localizer.localize("Категория:");
+        USER_NAMESPACE = localizer.localize("Участник:");
+        USER_TALK_NAMESPACE = localizer.localize("Обсуждение участника:");
+        USER_TALK_NAMESPACE2 = USER_TALK_NAMESPACE.replace(" ", "_");
+
+        templateNewPageItem = localizer.localizeTemplate("Новая статья");
+        templateNewPageItem2 = localizer.localizeTemplate("Новая статья2");
+
+        deletedPageMarkerParam = templateNewPageItem.localizeParam("уд");
+        deletedNewPageItemRegex = Pattern.compile(".*\\{\\{(" + 
+                templateNewPageItem.localizeName() + "|" + templateNewPageItem2.localizeName() +
+                ")\\|.+\\|.+\\|.+\\|" + deletedPageMarkerParam + "\\}\\}.*");
+        deletedPageParamPostfix = "|" + deletedPageMarkerParam + "}}";
+
+        newPageItemRegex = Pattern.compile(".*\\{\\{(" +
+                templateNewPageItem.localizeName() + "|" + templateNewPageItem2.localizeName() +
+                ")\\|[^\\}\\|]+\\|[^\\}\\|]+\\|[^\\}]+\\}\\}.*");
+
+        pageDeletedString = localizer.localize("Статья удалена");
+        pageDeletedSimpleMarker = "'''" + pageDeletedString + "'''"; 
+        COMMENT_DELETED = "<span style=\"color:#966963\"> — " + pageDeletedSimpleMarker +
+                "</span>";
+
+        newPageItemSimpleRegex = Pattern.compile(".*\\[\\[(.+)\\]\\].*");
+
+        initialized = true;
+    }
+
+    public static void resetFromTests() {
+        initialized = false;
+    }
 
     protected String getFormatString() {
     	return formatString;
@@ -271,18 +338,19 @@ public class NewPages implements PortalModule{
 		String portal = getPortalName();
 		Calendar c = Calendar.getInstance();
         String date = dateTools.printDateDayMonthYearGenitive(c);
-		String str = item.replace("%(бот)", getCurrentUser())
-				.replace("%(проект)", portal)
-				.replace("%(портал)", portal)
-				.replace("%(страница)", pageName);
+        String str = item
+                .replace(BotVariables.BOT, getCurrentUser())
+                .replace(BotVariables.PROJECT, portal)
+                .replace(BotVariables.PORTAL, portal)
+                .replace(BotVariables.PAGE, pageName);
 		if (archiveSettings != null) {
     		String archive = archiveSettings.getArchiveForDate(c);
     		if (archive != null) {
-    			str = str.replace("%(архив)", archive);
+                str = str.replace(BotVariables.ARCHIVE, archive);
     		}
 		}
 		if (!constantOnly) {
-			str = str.replace("%(дата)", date);
+            str = str.replace(BotVariables.DATE, date);
 		}
 		return str;
 	}
@@ -924,10 +992,10 @@ public class NewPages implements PortalModule{
 		{
             String str = String.format(localizer.localize(SUMMARY_NEW_PAGES), d.newPagesCount);
 		    if(UPDATE_ARCHIVE && archive!=null && d.archiveCount>0) {
-		    	str = str + ", -"+d.archiveCount+" в архив";
+                str = str + ", -" + d.archiveCount + " " + localizer.localize("в архив");
 		    }
 		    if(this.deletedFlag == PortalParam.Deleted.REMOVE && d.deletedCount>0) {
-		    	str = str + ", -"+d.deletedCount+ " удаленных";
+                str = str + ", -" + d.deletedCount + " " + localizer.localize("удаленных");
 		    }
 		    log.info("Updating [[" + this.pageName+"]] " + str);
 		    wiki.edit(pageName, d.newText, str, this.minor, this.bot);
@@ -980,31 +1048,25 @@ public class NewPages implements PortalModule{
 	    	headerLastUsed = NirvanaBot.getDefaultHeader();
 	    	footerLastUsed = NirvanaBot.getDefaultFooter();
 	    	middleLastUsed = NirvanaBot.getDefaultMiddle();
-	    	String key = "шапка";
-	    	if (options.containsKey(key) && !options.get(key).isEmpty())
-			{
-	    		headerLastUsed = options.get(key).replace("\\n", "\n");
+            PortalConfig portalConfig = new PortalConfig(options);
+            if (portalConfig.hasKey(PortalConfig.KEY_HEADER)) {
+                headerLastUsed = portalConfig.getUnescaped(PortalConfig.KEY_HEADER);
 			}
-						
-			key = "подвал";
-			if (options.containsKey(key) && !options.get(key).isEmpty())
-			{
-				footerLastUsed = options.get(key).replace("\\n", "\n");
+            if (portalConfig.hasKey(PortalConfig.KEY_FOOTER)) {
+                footerLastUsed = portalConfig.getUnescaped(PortalConfig.KEY_FOOTER);
 			}
-			key = "середина";
-			if (options.containsKey(key) && !options.get(key).isEmpty())
-			{
-				middleLastUsed = options.get(key).replace("\\n", "\n");
+            if (portalConfig.hasKey(PortalConfig.KEY_MIDDLE)) {
+                middleLastUsed = portalConfig.getUnescaped(PortalConfig.KEY_MIDDLE);
 			}
-			
+
 			if(headerLastUsed == null) {
 				headerLastUsed = "";
 			}
-			
+
 			if(footerLastUsed == null) {
 				footerLastUsed = "";
 			}
-			
+
 			if(middleLastUsed == null) {
 				middleLastUsed = "";
 			}
@@ -1015,7 +1077,8 @@ public class NewPages implements PortalModule{
     	if(archiveSettings==null || archiveSettings.isSimple()) {	
     		log.debug("archive has simple format");
     		log.info("Updating "+archive);
-    		wiki.prependOrCreate(archive, d.archiveText, "+"+d.archiveCount+" статей", this.minor, this.bot);
+            String summary = "+" + d.archiveCount + " " + localizer.localize("статей");
+            wiki.prependOrCreate(archive, d.archiveText, summary, this.minor, this.bot);
     		reportData.archived = true;
 	    	return;
     	}
@@ -1089,6 +1152,7 @@ public class NewPages implements PortalModule{
 	}
 		
 	public static Calendar getNewPagesItemDate(NirvanaWiki wiki, String item) {
+	    assert initialized;
 		Calendar c = null;
 		//NewPagesItem itemData = null;
 		Pattern p = Pattern.compile(PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
@@ -1098,7 +1162,7 @@ public class NewPages implements PortalModule{
 			String article = m.group("article");
 			if(article.startsWith(":"))
 				article = article.substring(1); // special case when title starts from : this : is not included in title
-			if(article.contains("Категория:Википедия:Списки новых статей по темам")) {
+            if (article.contains(NEW_PAGES_LISTS_CATEGORY)) {
 				// foundBrackets should stay false for this case
 				continue;
 			}
@@ -1144,17 +1208,20 @@ public class NewPages implements PortalModule{
 		}
 		return null;
 	}
-	
+
 	public static boolean userNamespace(String article) {
-		return (article.startsWith("Участник:") ||
-				article.startsWith("Обсуждение_участника") ||
-				article.startsWith("Обсуждение участника") ||
-				article.startsWith("User:") ||
-				article.startsWith("User_talk:"));
+        assert initialized;
+        return (article.startsWith(USER_NAMESPACE) ||
+                article.startsWith(USER_TALK_NAMESPACE) ||
+                article.startsWith(USER_TALK_NAMESPACE2) ||
+                article.startsWith(USER_NAMESPACE_EN) ||
+                article.startsWith(USER_TALK_NAMESPACE_EN));
 	}
+
 	public static boolean categoryNamespace(String article) {
-		return (article.startsWith("Категория:") ||
-				article.startsWith("Category:") );
+        assert initialized;
+        return (article.startsWith(CATEGORY_NAMESPACE) ||
+                article.startsWith(CATEGORY_NAMESPACE_EN) );
 	}
 
 	// TODO протестировать эту функцию на другие пространства имён!!!
@@ -1165,7 +1232,7 @@ public class NewPages implements PortalModule{
 			String article = m.group("article");
 			if(article.startsWith(":"))
 				article = article.substring(1); // special case when title starts from : this : is not included in title
-			if(article.contains("Категория:Википедия:Списки новых статей по темам")) {				
+            if (article.contains(NEW_PAGES_LISTS_CATEGORY)) {
 				continue;			
 			}
 			if(!userNamespace(article))
@@ -1190,53 +1257,55 @@ public class NewPages implements PortalModule{
 		}
 		return null;
 	}
+
 	public static String unmarkDeleted(String item) {
+        assert initialized;
 		String str = item;
 		int pos = str.indexOf(COMMENT_DELETED);
-		if(pos>=0) {			
-			str = str.substring(0, pos)+
-					((pos+COMMENT_DELETED.length())<str.length()?str.substring(pos+COMMENT_DELETED.length()):"");
+		if(pos>=0) {
+            String end = "";
+            if ((pos + COMMENT_DELETED.length()) < str.length()) {
+                end = str.substring(pos + COMMENT_DELETED.length());
+            }
+            str = str.substring(0, pos) + end;
 			return str;
 		}
-		Pattern p = Pattern.compile(".*\\{\\{(Новая статья|Новая статья2)\\|.+\\|.+\\|.+\\|уд\\}\\}.*");
-		Matcher m = p.matcher(item);
-		if(m.matches()) {
-			pos = str.indexOf("|уд}}");
+        if (deletedNewPageItemRegex.matcher(item).matches()) {
+            pos = str.indexOf(deletedPageParamPostfix);
 			if(pos>=0) {
 				str = str.substring(0,pos)+str.substring(pos+3);
 			}
 		}
 		return str;
 	}
+
 	public static String markDeleted(String item) {
+        assert initialized;
 		String str = item;
-		if(str.contains("'''Статья удалена'''") || str.contains("|уд}}"))
+        if (str.contains(pageDeletedSimpleMarker) ||
+                str.contains(deletedPageParamPostfix)) {
 			return str;
-		Pattern p = Pattern.compile(".*\\[\\[(.+)\\]\\].*");
-		Matcher m = p.matcher(item);
-		if(m.matches()) {
+        }
+        if (newPageItemSimpleRegex.matcher(item).matches()) {
 			str = str + COMMENT_DELETED;
-		}
-		p = Pattern.compile(".*\\{\\{(Новая статья|Новая статья2)\\|.+\\|.+\\|.+\\|\\}\\}.*");
-		m = p.matcher(item);
-		if(m.matches() && str.contains("{{Новая статья")) {
+            return str;
+        } else if (newPageItemRegex.matcher(item).matches()) {
+            String toAdd = deletedPageMarkerParam;
 			int pos = str.indexOf("}}");
-			str = str.substring(0, pos)+"уд"+str.substring(pos);
+            if (str.charAt(pos - 1) != '|') {
+                toAdd = "|" + toAdd;
+            }
+            str = str.substring(0, pos) + toAdd + str.substring(pos);
 		} else {
-			p = Pattern.compile(".*\\{\\{(Новая статья|Новая статья2)\\|.+\\|.+\\|.+\\}\\}.*");
-			m = p.matcher(item);
-			if(m.matches() && str.contains("{{Новая статья")) {
-				int pos = str.indexOf("}}");
-				str = str.substring(0, pos)+"|уд"+str.substring(pos);
-			}
+            sLog.error("Cannot mark this item with \"deleted\" tag: " + item);
 		}
 		return str;
 	}
-	
+
 	public static String pageTitleNormalToEscaped(String str) {
 		return str.replace("=", "&#61;");
 	}
-	
+
 	public static String pageTitleEscapedToNormal(String str) {
 		return str.replace("&#61;","=");
 	}
