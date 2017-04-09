@@ -32,6 +32,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.BotUtils;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
@@ -81,10 +82,10 @@ public class NewPagesWithImages extends NewPages {
 		if(this.archiveSettings!=null) {
 			this.archiveSettings = null;
 		}
-		this.formatString = formatString.replace("%(имя файла)", "%4$s");
+        this.formatString = formatString.replace(BotVariables.FILE_NAME, "%4$s");
 		this.imageFinder = imageFinder;
 		this.commons = commons;
-		this.fairUseImageTemplates = NirvanaBasicBot.optionToStringArray(param.fairUseImageTemplates);
+        this.fairUseImageTemplates = BotUtils.optionToList(param.fairUseImageTemplates);
 		/*if(inCard) {
 			regexToFindImage = "\\| *(image file|Аверс|Реверс|Изображение аверса|Изображение реверса) *= *(?<filename>.+?) *\n";
 		} else {

@@ -52,7 +52,9 @@ import junit.framework.Assert;
 public class NirvanaBotTest {
     public static final String TEST_DATA_PATH = "tests/test_data/";
     public static final String BOT_CONFIG_DEFAULT = "bot_config_ru_default.xml";
+    public static final String BOT_CONFIG_BE = "bot_config_be.xml";
     public static final String BOT_CONFIG_DEFAULT_PATH = TEST_DATA_PATH + BOT_CONFIG_DEFAULT;
+    public static final String BOT_CONFIG_BE_PATH = TEST_DATA_PATH + BOT_CONFIG_BE;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -101,6 +103,24 @@ public class NirvanaBotTest {
         MockNirvanaBot bot =
                 new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 017.
+     * Similar tests: 001
+     * Conditions:
+     * Same as 001
+     * BOT SETTINGS:
+     * 1) language = be
+     */
+    @Test
+    public void newPages_updateWithDefaultValues_firstTimeBe() throws TestError {
+        String config = "017_new_pages_update_with_default_vals_first_time_be.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_BE_PATH});
         bot.validateQueries();
         bot.validateEdits();
     }

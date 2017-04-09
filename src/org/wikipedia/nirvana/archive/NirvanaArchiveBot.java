@@ -163,24 +163,17 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 			}
 			//archiveSettings.headerFormat = options.get(key); 
 		}
-		
+
 		key = "первый год";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			try {
 				archiveSettings.startYear = Integer.parseInt(options.get(key));
 			} catch(NumberFormatException e) {
-				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+                String format = NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING_EN;
+                log.warn(String.format(format, key, options.get(key)));
 			}
 		}
 
-		
-		/*
-		String prefix = "";
-		if (options.containsKey("префикс"))
-		{
-			prefix = options.get("префикс");
-		}*/
-		
 		//boolean markEdits = true;
 		boolean bot = true;
 		boolean minor = true;

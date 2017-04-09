@@ -63,7 +63,8 @@ public class StatisticsYear extends Statistics {
 			try {
 				this.startYear = Integer.parseInt(options.get(key));
 			} catch(NumberFormatException e) {
-				log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING, key, options.get(key)));
+                log.warn(String.format(NirvanaBot.ERROR_PARSE_INTEGER_FORMAT_STRING_EN, key,
+                        options.get(key)));
 			}					
 		}
 	}

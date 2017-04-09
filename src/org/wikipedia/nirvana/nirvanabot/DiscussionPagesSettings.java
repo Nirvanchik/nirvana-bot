@@ -23,6 +23,8 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import org.wikipedia.nirvana.localization.Localizer;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -54,6 +56,14 @@ public class DiscussionPagesSettings {
 		String linkText;
 		String prefix;
 		//String regex;
+
+        DiscussionPageTemplate(String template) {
+            this.template = template;
+            linkFormatString = null;
+            linkText = null;
+            prefix = null;
+        }
+
 		public boolean hasLink() {
 			return prefix!=null && linkFormatString != null;
 		}
@@ -65,12 +75,13 @@ public class DiscussionPagesSettings {
 			if (linkFormatString.contains("#")) {
 				int hash = linkFormatString.indexOf("#");
 				String right = linkFormatString.substring(hash + 1);
-				String fragmentString = right.replace("%(название)", page);
+                String fragmentString = right.replace(BotVariables.TITLE, page);
 				if (needsToSearchFragment()) {
 					if (fragment == null) {
 						return String.format(LINK_FORMAT, link, linkText);
 					}	
-					fragmentString = fragmentString.replace("%(текст_с_названием)", fragment);
+                    fragmentString = fragmentString.replace(BotVariables.TEXT_WITH_TITLE,
+                            fragment);
 				}
 				return String.format(LINK_FORMAT_WITH_FRAGMENT, link, fragmentString, linkText);
 			} else {
@@ -79,14 +90,8 @@ public class DiscussionPagesSettings {
 		}
 		
 		public boolean needsToSearchFragment() {
-			return linkFormatString != null && linkFormatString.contains("%(текст_с_названием)");
-		}
-		
-		DiscussionPageTemplate(String template) {
-			this.template = template;
-			linkFormatString = null;
-			linkText = null;
-			prefix = null;
+            return linkFormatString != null &&
+                    linkFormatString.contains(BotVariables.TEXT_WITH_TITLE);
 		}
 		
 		public static DiscussionPageTemplate fromSettingString(String str) {
@@ -126,8 +131,8 @@ public class DiscussionPagesSettings {
 			DiscussionPageTemplate newTempl = null;
 			newTempl = new DiscussionPageTemplate(null);
 			newTempl.prefix = prefix;
-			newTempl.linkText = "обсуждение";
-			newTempl.linkFormatString = prefix + "%(дата)";
+            newTempl.linkText = Localizer.getInstance().localize("обсуждение");
+            newTempl.linkFormatString = prefix + BotVariables.DATE;
 			return newTempl;
 		}
 	}
