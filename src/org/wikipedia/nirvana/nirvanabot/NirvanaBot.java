@@ -941,8 +941,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     private void initLocalizedStrings() {
     }
 
-	public boolean createPortalModule(Map<String, String> options, NewPagesData data) throws 
-			NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    private boolean createPortalModule(Map<String, String> options, NewPagesData data) {
         log.debug("Scan portal settings...");
 
 		PortalParam param = new PortalParam();
