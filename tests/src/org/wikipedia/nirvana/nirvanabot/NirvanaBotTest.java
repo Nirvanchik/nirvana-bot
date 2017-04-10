@@ -74,6 +74,7 @@ public class NirvanaBotTest {
         MockWikiTools.reset();
         TestLocalizationManager.reset();
         MockDateTools.reset();
+        TestPortalConfig.reset();
     }
 
     // Ensure test infrastructure is not broken

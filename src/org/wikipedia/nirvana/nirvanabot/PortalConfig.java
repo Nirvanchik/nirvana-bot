@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.nirvana.StringTools;
+import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.localization.Localizer;
 
 import java.util.Map;
@@ -208,6 +209,11 @@ public class PortalConfig {
         STR_YES = localizer.localize("да");
         
         initialized = true;
+    }
+
+    @VisibleForTesting
+    static void resetFromTests() {
+        initialized = false;
     }
 
     /**
