@@ -151,7 +151,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     private static final String ERROR_ABSENT_PARAMETER =
             "Ошибка в параметрах. Параметр \"%1$s\" не задан";
     private static final String ERROR_AUTHOR_PARAMETER_INVALID_USAGE =
-            "Неверный параметр \"%1$s\". Поле %(автор) не поддерживается для данного типа типа " +
+            "Неверный параметр \"%1$s\". Поле %2$s не поддерживается для данного типа " +
             "списков. Удалите его!";
     private static final String ERROR_PARAMETER_MISSING_VARIABLE =
             "В параметре бота \"%1$s\" не задан ключ с переменным значением. " +
@@ -1100,7 +1100,8 @@ public class NirvanaBot extends NirvanaBasicBot{
         if (param.format.contains(BotVariables.AUTHOR)) {
             if (isTypePages(type) || isTypeDiscussedPages(type)) {
                 String format = localizer.localize(ERROR_AUTHOR_PARAMETER_INVALID_USAGE);
-                data.errors.add(String.format(format, PortalConfig.KEY_FORMAT));
+                data.errors.add(String.format(format, PortalConfig.KEY_FORMAT,
+                        BotVariables.AUTHOR));
                 param.format.replace(BotVariables.AUTHOR, "");
             }
         }
