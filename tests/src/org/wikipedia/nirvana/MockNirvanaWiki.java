@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.junit.Assert;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,8 +36,6 @@ import java.util.Map;
 
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
-
-import junit.framework.Assert;
 
 /**
  * Mocks a lot of methods of {@link NirvanaWiki} and {@link org.wikipedia.Wiki}
@@ -266,6 +265,24 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     public List<EditInfo> getEdits() {
         return edits;
+    }
+
+    /**
+     * Will validate that there was made 1 edit and edit page title and text
+     * equal to what is expected. 
+     */
+    public void validateEdit(String page, String text) {
+        List<EditInfoMinimal> edits = new ArrayList<>();
+        EditInfoMinimal edit = new EditInfoMinimal(page, text, -2);
+        edits.add(edit);
+        Assert.assertEquals(edits, getEdits());
+    }
+
+    /**
+     * Will validate that there were made no edits.
+     */
+    public void validateNoEdits() {
+        Assert.assertTrue(getEdits().isEmpty());
     }
 
     @Override

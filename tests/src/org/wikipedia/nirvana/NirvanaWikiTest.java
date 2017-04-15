@@ -23,6 +23,7 @@
 
 package org.wikipedia.nirvana;
 
+import org.wikipedia.nirvana.MockNirvanaWiki.EditInfoMinimal;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 
@@ -33,8 +34,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.security.auth.login.LoginException;
 
 /**
  * Unit-tests for {@link NirvanaWiki}.
@@ -108,5 +114,109 @@ public class NirvanaWikiTest {
         Assert.assertFalse(wiki.isRedirect("#перанакираванне [[Военно-воздушные силы]]\n"));
         Assert.assertFalse(wiki.isRedirect("#ПЕРАНАКИРАВАННЕ [[Военно-воздушные силы]]\n"));
         Assert.assertFalse(wiki.isRedirect("Some article text\n"));
+    }
+
+    @Test
+    public void addTopicToDiscussionPage_addsTopicToBottom() throws LoginException, IOException {
+        TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
+        MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz", "/w", "https://", "ru");
+        wiki.login("AlphaBot", "123456", true);
+        String discussion = 
+                "= Some topic =\n" +
+                "Hello. This is it. Vasya Pupkin, 27 April 2017.\n";
+        wiki.mockPageText("Project talk:A", discussion);
+        String message =
+                "= Warning =\n" +
+                "Here god comes.";
+        wiki.addTopicToDiscussionPage("Project talk:A", message, false, false, "Add message");
+
+        String expected = 
+                "= Some topic =\n" +
+                "Hello. This is it. Vasya Pupkin, 27 April 2017.\n" +
+                "\n" +
+                "= Warning =\n" +
+                "Here god comes.";
+        wiki.validateEdit("Project talk:A", expected);
+    }
+
+    @Test
+    public void addTopicToDiscussionPage_duplicates() throws LoginException, IOException {
+        TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
+        MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz", "/w", "https://", "ru");
+        wiki.login("AlphaBot", "123456", true);
+        String discussion = 
+                "= Some topic =\n" +
+                "Hello. This is it. Vasya Pupkin, 27 April 2017.\n" +
+                "\n" +
+                "= Warning =\n" +
+                "Here god comes." +
+                "\n" +
+                "= Other topic =\n" +
+                "Other thing.\n";
+        wiki.mockPageText("Project talk:A", discussion);
+        String message =
+                "= Warning =\n" +
+                "Here god comes.";
+        wiki.addTopicToDiscussionPage("Project talk:A", message, false, false, "Add message");
+
+        String expected = 
+                "= Some topic =\n" +
+                "Hello. This is it. Vasya Pupkin, 27 April 2017.\n" +
+                "\n" +
+                "= Warning =\n" +
+                "Here god comes." +
+                "\n" +
+                "= Other topic =\n" +
+                "Other thing.\n" +
+                "\n" +
+                "= Warning =\n" +
+                "Here god comes.";
+        wiki.validateEdit("Project talk:A", expected);
+    }
+
+    @Test
+    public void addTopicToDiscussionPage_doesNotDuplicate() throws LoginException, IOException {
+        TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
+        MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz", "/w", "https://", "ru");
+        wiki.login("AlphaBot", "123456", true);
+        String discussion = 
+                "= Some topic =\n" +
+                "Hello. This is it. Vasya Pupkin, 27 April 2017.\n" +
+                "\n" +
+                "= Warning =\n" +
+                "Here god comes." +
+                "\n" +
+                "= Other topic =\n" +
+                "Other thing.\n";
+        wiki.mockPageText("Project talk:A", discussion);
+        String message =
+                "= Warning =\n" +
+                "Here god comes.";
+        wiki.addTopicToDiscussionPage("Project talk:A", message, false, true, "Add message");
+        
+        wiki.validateNoEdits();
+    }
+
+    @Test
+    public void addTopicToDiscussionPage_addsSignature() throws LoginException, IOException {
+        TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
+        MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz", "/w", "https://", "ru");
+        wiki.login("AlphaBot", "123456", true);
+        String discussion = 
+                "= Some topic =\n" +
+                "Hello. This is it. Vasya Pupkin, 27 April 2017.\n";
+        wiki.mockPageText("Project talk:A", discussion);
+        String message =
+                "= Warning =\n" +
+                "Here god comes.";
+        wiki.addTopicToDiscussionPage("Project talk:A", message, true, false, "Add message");
+        
+        String expected = 
+                "= Some topic =\n" +
+                "Hello. This is it. Vasya Pupkin, 27 April 2017.\n" +
+                "\n" +
+                "= Warning =\n" +
+                "Here god comes. ~~~~\n";
+        wiki.validateEdit("Project talk:A", expected);
     }
 }

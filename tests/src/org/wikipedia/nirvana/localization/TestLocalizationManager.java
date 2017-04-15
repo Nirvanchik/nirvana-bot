@@ -30,8 +30,24 @@ import java.util.Map;
  */
 public class TestLocalizationManager {
     public static void init(Map<String, String> translations) {
+        init(translations, null);
+    }
+
+    /**
+     * Initializes {@link Localizer} with predefined translations and/or localized templates.
+     *
+     * @param translations map with regular translations
+     * @param localizedTemplates map with templates localizations
+     */
+    public static void init(Map<String, String> translations,
+            Map<String, LocalizedTemplate> localizedTemplates) {
         Localizer localizer = new Localizer();
-        localizer.addTranslations(translations);
+        if (translations != null) {
+            localizer.addTranslations(translations);
+        }
+        if (localizedTemplates != null) {
+            localizer.addLocalizedTemplates(localizedTemplates);
+        }
         localizer.setInitialized();
         Localizer.init(localizer);
     }

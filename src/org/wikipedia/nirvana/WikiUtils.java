@@ -23,6 +23,9 @@
 
 package org.wikipedia.nirvana;
 
+import org.wikipedia.nirvana.localization.LocalizedTemplate;
+import org.wikipedia.nirvana.localization.Localizer;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -200,6 +203,17 @@ public class WikiUtils {
         return "<pre>\n" + text + "</pre>\n";
     }
 
+    /**
+     * Removes categories from page text (usually specified at the bottom of a page).
+     */
+    public static String removeCategories(String text) {
+        Localizer localizer = Localizer.getInstance();
+        String categoryKey = localizer.localize("Категория:");
+        String re = "\\[\\[(Category:|" + categoryKey + ")[^\\]]+\\]\\]";
+        Pattern p = Pattern.compile(re);
+        return p.matcher(text).replaceAll("");
+    }
+
     public static String addTextToTemplateLastNoincludeSectionBeforeCats(
     		String categoryKey, String templateText, String insertText) {
     	String text;
@@ -259,5 +273,64 @@ public class WikiUtils {
     		return index;
     	}
     	return end;
+    }
+
+    /**
+     * Adds text to talk page.
+     * Respects "newer at top" or "newer at bottom" rule specified via templates.
+     * Doesn't respect {{Nobots}} mark, it should be checked somewhere else. 
+     */
+    public static String addTextToDiscussion(String text, String discussion) {
+        if (discussion == null) {
+            discussion = "";
+        }
+        if (discussion.isEmpty()) return text;
+
+        Localizer localizer = Localizer.getInstance();
+        boolean toBottom = true;
+        LocalizedTemplate template = localizer.localizeTemplateStrict("Новые сверху");
+        if (template != null) {
+            toBottom = !containsTemplate(discussion, template.localizeName());
+        }
+        if (toBottom) {
+            template = localizer.localizeTemplateStrict("Новые сверху 2");
+            if (template != null) {
+                toBottom = !containsTemplate(discussion, template.localizeName());
+            }
+        }
+        StringBuilder result = new StringBuilder();
+        if (toBottom) {
+            result.append(discussion);
+            if (!discussion.endsWith("\n")) {
+                result.append('\n');
+            }
+            result.append('\n').append(text);
+        } else {
+            result.append(text).append('\n').append(discussion);
+        }
+        return result.toString();
+    }
+
+    /**
+     * Checks if specified text contains specified template. 
+     */
+    public static boolean containsTemplate(String text, String template) {
+        assert template != null && !template.isEmpty();
+        if (text == null) return false;
+        if (text.isEmpty()) return false;
+        return text.contains("{{" + StringUtils.capitalize(template)) ||
+                text.contains("{{" + StringUtils.uncapitalize(template));
+    }
+
+    /**
+     * Extracts portal title from portal section update settings page.
+     * For example for title "Project:Project A/New pages/Settings"
+     * it will give  "Project:Project A".
+     */
+    public static String getPortalFromSettingsSubPage(String subPage) {
+        int lastSlash = subPage.lastIndexOf('/');
+        if (lastSlash < 0 ) return null;
+        int secondLastSlash = subPage.lastIndexOf('/', lastSlash - 1);
+        return subPage.substring(0, secondLastSlash >= 0 ? secondLastSlash : lastSlash);
     }
 }

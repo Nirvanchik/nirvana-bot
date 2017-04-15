@@ -23,6 +23,12 @@
 
 package org.wikipedia.nirvana;
 
+import org.wikipedia.Wiki;
+import org.wikipedia.nirvana.localization.Localizer;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,18 +46,13 @@ import java.util.zip.GZIPInputStream;
 
 import javax.security.auth.login.LoginException;
 
-import org.wikipedia.Wiki;
-import org.wikipedia.nirvana.localization.Localizer;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
  * based on Wiki.java version 0.31   
  */
 public class NirvanaWiki extends Wiki {
     private static final String DEFAULT_LANGUAGE = "en";
     private static final String REDIRECT_NAME_RU = "перенаправление";
+    private static final String SIGN = " ~~~~";
 
 	protected static final String DEFULT_DUMP_FOLDER = "dump";
 	
@@ -512,4 +513,34 @@ public class NirvanaWiki extends Wiki {
         return r;
     }
 
+    /**
+     * Adds a new topic to a specified page in Wiki.
+     *
+     * @param page Page title where to add new topic.
+     * @param message Message that will be added.
+     * @param addSignature If <code>true</code> signature (~~~~) will be added after message.
+     * @param noDuplicate If <code>true</code> message will not be added to the page if the latter
+     *        has it already.
+     * @param summary Edit summary.
+     */
+    public void addTopicToDiscussionPage(String page, String message, boolean addSignature,
+            boolean noDuplicate, String summary) throws IOException, LoginException {
+        String discussion = null;
+        try {
+            discussion = getPageText(page);
+        } catch (FileNotFoundException e) {
+            // ignore
+        }
+        if (noDuplicate && discussion != null && discussion.contains(message)) {
+            log.info("Message already exists at %s", page);
+            return;
+        }
+        if (discussion != null && !allowEditsByCurrentBot(discussion)) {
+            log.info("People don't allow edits for this bot on the page %s", page);
+            return;
+        }
+        if (addSignature) message = message + SIGN + '\n';
+        discussion = WikiUtils.addTextToDiscussion(message, discussion);
+        edit(page, discussion, summary);
+    }
 }
