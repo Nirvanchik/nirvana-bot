@@ -24,7 +24,7 @@
 <entry key="fair-use-image-templates">Несвабодны файл/АДВ, Disputed-fairuse</entry>
 <entry key="discussion-pages-templates"></entry>
 <entry key="discussion-pages-settings-wikipage"></entry>
-<entry key="error-notification">no</entry>
+<entry key="error-notification">yes</entry>
 <entry key="debug-mode">yes</entry>
 <entry key="stop-after">0</entry>
 <entry key="start-from">0</entry>

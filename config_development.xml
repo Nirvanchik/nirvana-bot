@@ -30,7 +30,7 @@
 	Rq =
 </entry>
 <entry key="discussion-pages-settings-wikipage">Участник:NirvanaBot/Новые статьи/Настройки обсуждаемых статей.js</entry>
-<entry key="error-notification">no</entry>
+<entry key="error-notification">yes</entry>
 <entry key="debug-mode">yes</entry>
 <entry key="stop-after">0</entry>
 <entry key="start-from">0</entry>

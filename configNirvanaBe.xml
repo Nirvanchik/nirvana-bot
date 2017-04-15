@@ -14,7 +14,7 @@
 <entry key="default-hours">350</entry>
 <entry key="default-maxitems">20</entry>
 <entry key="picture-search-tags">image file, выява, фатаграфія, партрэт</entry>
-<entry key="error-notification">no</entry>
+<entry key="error-notification">yes</entry>
 <entry key="update-pause">1000</entry>
 <entry key="statistics">yes</entry>
 <entry key="statistics-file">report/report.NirvanaBot.be-%(date).txt</entry>
@@ -26,5 +26,5 @@
 <entry key="long-task">yes</entry>
 <entry key="bot-timeout">7200000</entry>
 <entry key="services-timeout">3600000</entry>
-	
+
 </properties>

@@ -123,7 +123,7 @@ public class Localizer {
         if (sInstance == null) {
             sInstance = new Localizer();
         }*/
-        assert sInstance != null;
+        Assert.assertNotNull(sInstance);
         return sInstance;
     }
 

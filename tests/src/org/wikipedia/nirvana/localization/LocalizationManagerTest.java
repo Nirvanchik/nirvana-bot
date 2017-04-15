@@ -200,6 +200,24 @@ public class LocalizationManagerTest {
     }
 
     @Test
+    public void loadsTranslationsFromWiki_ignoresCategoies() throws Exception {
+        writeFile(translationFile, "apple = Apfel");
+        NirvanaWiki wiki = makeWikiWithTranslation(
+                "<pre>\n" +
+                "parrot = Birne\n" +
+                "</pre>\n" +
+                "[[Категория:Некая категория]]");
+
+        LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
+                TRANSLATIONS_DIR, LANG);
+        localizationManager.load(wiki, WIKI_TRANSLATIONS);
+
+        verify(wiki, Mockito.atLeastOnce()).getPageText(eq(WIKI_TRANSLATIONS));
+        Assert.assertEquals("Apfel", Localizer.getInstance().localize("apple"));
+        Assert.assertEquals("Birne", Localizer.getInstance().localize("parrot"));
+    }
+
+    @Test
     public void loadsTranslationsFromWiki_hasManyTranslations() throws Exception {
         writeFile(translationFile, "");
         NirvanaWiki wiki = makeWikiWithTranslation(
@@ -321,7 +339,10 @@ public class LocalizationManagerTest {
     public void refreshWikiTranslations_updateWiki() throws Exception {
         writeFile(translationFile, "");
         NirvanaWiki wiki = makeWikiWithTranslation(
-                "<pre>\nДобавление новых ключей для перевода=\napple = Apfel\n</pre>\n");
+                "<pre>\nДобавление новых ключей для перевода=\n" +
+                "apple = Apfel\n" +
+                "Категория:\n" +
+                "</pre>\n");
 
         LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
                 TRANSLATIONS_DIR, LANG);
@@ -331,7 +352,35 @@ public class LocalizationManagerTest {
 
         verify(wiki, atLeastOnce()).edit(eq(WIKI_TRANSLATIONS),
                 eq("<pre>\nДобавление новых ключей для перевода=\n" +
-                        "apple = Apfel\ncoconut = \n</pre>\n"),
+                        "apple = Apfel\n" +
+                        "Категория:\n" +
+                        "coconut = \n</pre>\n"),
+                Mockito.anyString());
+    }
+
+    @Test
+    public void refreshWikiTranslations_updateWikiDoesntBreakCategory() throws Exception {
+        writeFile(translationFile, "");
+        NirvanaWiki wiki = makeWikiWithTranslation(
+                "<pre>\nДобавление новых ключей для перевода=\n" +
+                "apple = Apfel\n" +
+                "Категория:\n" +
+                "</pre>\n" +
+                "[[Категория:Странная категория]]\n");
+
+        LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
+                TRANSLATIONS_DIR, LANG);
+        localizationManager.load(wiki, WIKI_TRANSLATIONS);
+        Localizer.getInstance().localize("coconut");
+        localizationManager.refreshWikiTranslations(wiki, WIKI_TRANSLATIONS);
+
+        verify(wiki, atLeastOnce()).edit(eq(WIKI_TRANSLATIONS),
+                eq("<pre>\nДобавление новых ключей для перевода=\n" +
+                        "apple = Apfel\n" +
+                        "Категория:\n" +
+                        "coconut = \n" +
+                        "</pre>\n" +
+                        "[[Категория:Странная категория]]\n"),
                 Mockito.anyString());
     }
 

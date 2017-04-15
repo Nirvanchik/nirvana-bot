@@ -102,11 +102,16 @@ public class LocalizationManager {
             Localizer.init(Localizer.DEFAULT_LOCALIZATION);
             return;
         }
-        loadDefaultImpl();
-        String wikiTranslationText = getWikiTranslationPage(wiki, wikiTranslationPage);
+        long lastModified = loadDefaultImpl();
+        // WikiUtils.removeCategories() below calls localizer
+        // so it must be initialized.
+        Localizer.getInstance().setInitialized();
+        String wikiTranslationText = getWikiTranslationPage(wiki, wikiTranslationPage,
+                lastModified);
         if (wikiTranslationText != null) {
             wikiTranslationText = WikiUtils.removeComments(wikiTranslationText);
             wikiTranslationText = WikiUtils.removePreTags(wikiTranslationText);
+            wikiTranslationText = WikiUtils.removeCategories(wikiTranslationText);
             int cnt = parseTranslationsToLocalizer(wikiTranslationText, Localizer.getInstance());
             log.info(String.format("%d translations loaded from %s", cnt, wikiTranslationPage));
         }
@@ -123,7 +128,8 @@ public class LocalizationManager {
         if (lang.equals(DEFAULT_LANG) && !NirvanaBasicBot.DEBUG_BUILD) {
             return;
         }
-        String wikiTranslationText = getWikiTranslationPage(wiki, wikiTranslationPage);
+        // 1492210800 = Fri, 14 Apr 2017 23:00:00 GMT
+        String wikiTranslationText = getWikiTranslationPage(wiki, wikiTranslationPage, 1492210800);
         if (wikiTranslationText == null) {
             String editComment = Localizer.getInstance().localize("Создание страницы локализации");
             Map<String, String> translations = Localizer.getInstance().getTranslations();
@@ -187,8 +193,8 @@ public class LocalizationManager {
         return buf.toString();
     }
 
-    private String getWikiTranslationPage(NirvanaWiki wiki, String wikiTranslationPage)
-            throws IOException {
+    private String getWikiTranslationPage(NirvanaWiki wiki, String wikiTranslationPage,
+            long minCacheTimestamp) throws IOException {
         if (!wiki.exists(wikiTranslationPage)) {
             return null;
         }
@@ -201,6 +207,9 @@ public class LocalizationManager {
             Calendar modified = Calendar.getInstance();
             modified.setTimeInMillis(file.lastModified());
             if (r.getTimestamp().after(modified)) {
+                cacheIsDirty = true;
+            }
+            if (file.lastModified() < minCacheTimestamp) {
                 cacheIsDirty = true;
             }
         } else {
@@ -227,7 +236,7 @@ public class LocalizationManager {
         Localizer.getInstance().setInitialized();
     }
 
-    private void loadDefaultImpl() throws BotFatalError {
+    private long loadDefaultImpl() throws BotFatalError {
         Localizer localizer = new Localizer();
         String path;
         if (customTranslation != null && !customTranslation.isEmpty()) {
@@ -240,6 +249,7 @@ public class LocalizationManager {
             throw new BotFatalError(String.format(ERR_TRANSLATION_NOT_FOUND, path));
         }
         String text;
+        long lastModified = file.lastModified();
         try {
             text = FileTools.readFile(path);
         } catch (IOException e) {
@@ -249,8 +259,9 @@ public class LocalizationManager {
         int cnt = parseTranslationsToLocalizer(text, localizer);
         Localizer.init(localizer);
         log.info(String.format("%d translations loaded from %s", cnt, path));
+        return lastModified;
     }
-    
+
     @VisibleForTesting
     int parseTranslationsToLocalizer(String text, Localizer localizer) {
         Map<String, String> translations = new HashMap<>();

@@ -76,6 +76,7 @@ import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.WikiTools.EnumerationType;
+import org.wikipedia.nirvana.WikiUtils;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
@@ -134,10 +135,21 @@ public class NirvanaBot extends NirvanaBasicBot{
     private static final String ERROR_INTEGER_TOO_BIG_STRING =
             "Значение параметра \"%1$s\" слишком велико (%2$s). " +
             "Использовано максимальное значение (%3$s). Укажите разумную величину.";
-    @SuppressWarnings("unused")
-    private static final String ERROR_NOTIFICATION_TEXT =
-            "При проверке параметров были обнаружены ошибки. " + 
-            "%1$s Напишите [[%1$s|мне]], если нужна помощь в настройке параметров. ~~~~";
+    private static final String ERROR_NOTIFICATION_TITLE = "Ошибки в настройках бота";
+    private static final String ERROR_NOTIFICATION_TEXT_BEGIN =
+            "При проверке [[%1$s|параметров]] для обновления секции были обнаружены ошибки:";
+    private static final String ERROR_NOTIFICATION_TEXT_END =
+            "Пожалуйста исправьте ошибки, чтобы секция обновлялась корректно.";
+    private static final String ERROR_NOTIFICATION_TEXT_ROBOT =
+            "''Это сообщение написано роботом, не нужно на него отвечать!''";
+    private static final String ERROR_NOTIFICATION_TEXT_LOCALISATION_HINT =
+            "<small>Если вы видите здесь текст на русском языке, значит, в программе бота " +
+            "не хватает переводов. Обратитесь к ботоводу. </small>";
+    private static final String ERROR_NOTIFICATION_SUMMARY =
+            "Бот обнаружил ошибки в настройках обновления автоматического списка.";
+    private static final String ERROR_NOTIFICATION_TEXT_LOCALISATION_HINT2 =
+            "<small>Если вы видите здесь текст на русском языке, значит, локализация бота " +
+            "не завершена. Вы можете помочь, добавив переводы [[%1$s|на этой странице]].</small>";
     private static final String ERROR_PARAMETER_HAS_MULTIPLE_VALUES =
             "Для параметра \"%1$s\" дано несколько значений. Использовано значение по умолчанию.";
     private static final String ERROR_INVALID_PARAMETER_EN =
@@ -188,7 +200,11 @@ public class NirvanaBot extends NirvanaBasicBot{
     private static String DEFAULT_FORMAT = "* [[%1$s]]";
 	public static String DEFAULT_FORMAT_STRING = "* [[%1$s]]";
 
-	private String listTypeDefault = LIST_TYPE_NEW_PAGES;
+    /**
+     * This list type is used when user specified invalid list type or didn't specify any list type
+     * at all.
+     */
+    private String listTypeDefault;
 
     private String enabledTypesString = TYPE_ALL;
     Set<String> enabledTypes;
@@ -619,10 +635,11 @@ public class NirvanaBot extends NirvanaBasicBot{
         }
         localizer = Localizer.getInstance();
 
-        initLocalizedStrings();
         BotVariables.init();
         PortalConfig.initStatics();
         DateTools.init(LANGUAGE);
+
+        initLocalizedStrings();
 
         if (UPDATE_STATUS) {
         	try {
@@ -805,17 +822,17 @@ public class NirvanaBot extends NirvanaBasicBot{
     					}
 
     					if(!data.errors.isEmpty()) {
-    						log.warn("errors occured during checking settings");
+                            log.warn("Errors occured during checking settings");
     						for(String str:data.errors) {
     							log.info(str);
     						}
     						reportItem.errors = data.errors.size();
     						String errorText = StringUtils.join(data.errors, "\n");
                             FileTools.dump(errorText, dumpDir, portalName + ".err");
-    						if(ERROR_NOTIFICATION) {
-    							for(String err:data.errors) {
-    								log.info(err);
-    							}
+                            if (ERROR_NOTIFICATION) {
+                                log.info("Portal has errors. " +
+                                        "Try send error message to discussion page.");
+                                sendErrorNotification(portalName, data.errors);
     						}
     					}
     				} else {
@@ -938,7 +955,37 @@ public class NirvanaBot extends NirvanaBasicBot{
         }
 	}
 
+    private void sendErrorNotification(String portalSettingsPage, ArrayList<String> errors)
+            throws IOException, LoginException {
+        String portal = WikiUtils.getPortalFromSettingsSubPage(portalSettingsPage);
+        String portalTalkPage = wiki.getTalkPage(portal);
+        StringBuilder sb = new StringBuilder();
+        String title = localizer.localize(ERROR_NOTIFICATION_TITLE);
+        sb.append("== ").append(title).append(" ==\n");
+        String format = localizer.localize(ERROR_NOTIFICATION_TEXT_BEGIN);
+        sb.append(String.format(format, portalSettingsPage)).append('\n');
+        for (String error: errors) {
+            sb.append("* ").append(error).append('\n');
+        }
+        sb.append(localizer.localize(ERROR_NOTIFICATION_TEXT_END)).append(" ");
+        sb.append(localizer.localize(ERROR_NOTIFICATION_TEXT_ROBOT));
+        if (!LANGUAGE.equals(LocalizationManager.DEFAULT_LANG)) {
+            // Add hint that message may be localized.
+            String hint;
+            if (wikiTranslationPage != null && !wikiTranslationPage.isEmpty()) {
+                format = localizer.localize(ERROR_NOTIFICATION_TEXT_LOCALISATION_HINT2);
+                hint = String.format(format, wikiTranslationPage);
+            } else {
+                hint = localizer.localize(ERROR_NOTIFICATION_TEXT_LOCALISATION_HINT);
+            }
+            sb.append('\n').append(hint);
+        }        
+        String summary = localizer.localize(ERROR_NOTIFICATION_SUMMARY);
+        wiki.addTopicToDiscussionPage(portalTalkPage, sb.toString(), true, true, summary);
+    }
+
     private void initLocalizedStrings() {
+        listTypeDefault = LIST_TYPE_NEW_PAGES;
     }
 
     private boolean createPortalModule(Map<String, String> options, NewPagesData data) {
