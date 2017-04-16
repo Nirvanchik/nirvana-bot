@@ -127,6 +127,30 @@ public class NirvanaBotTest {
     }
 
     /**
+     * Test case 018.
+     * Similar tests: 001
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     * 2) All portal settings are default
+     * 3) No archive
+     * 4) Invalid placeholders in format string
+     * BOT SETTINGS:
+     * 1) All bot settings are default
+     * WIKI state:
+     * 1) New pages page doesn't exist
+     */
+    @Test
+    public void newPages_updateWithBadPlaceholders() throws TestError {
+        String config = "018_new_pages_update_with_bad_placeholders.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
      * Test case 002.
      * Info: smoke
      * Conditions:
@@ -442,4 +466,5 @@ public class NirvanaBotTest {
         bot.validateQueries();
         bot.validateEdits();
     }
+
 }

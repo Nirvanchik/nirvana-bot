@@ -870,6 +870,21 @@ public class NirvanaBot extends NirvanaBasicBot{
     					//e.printStackTrace();
     					log.error("OOOOPS!!!", e); // print stack trace
     				}
+                } catch (InvalidLineFormatException e) {
+                    log.error(e.toString());
+                    reporter.portalError();
+                    reportItem.error(BotError.SETTINGS_ERROR);
+                    if (ERROR_NOTIFICATION) {
+                        log.info("Portal has errors. " +
+                                "Try send error message to discussion page.");
+                        try {
+                            sendErrorNotification(portalName, e.toString());
+                        } catch (LoginException e1) {
+                            mayBeSomeServiceProblem = true;
+                        } catch (IOException e1) {
+                            mayBeSomeServiceProblem = true;
+                        }
+                    }
     			} catch (LoginException e) {
     				log.fatal(e.toString());
     				fatalProblem = true;
@@ -954,6 +969,13 @@ public class NirvanaBot extends NirvanaBasicBot{
             }
         }
 	}
+
+    private void sendErrorNotification(String portalSettingsPage, String error)
+            throws IOException, LoginException {
+        ArrayList<String> errors = new ArrayList<>();
+        errors.add(error);
+        sendErrorNotification(portalSettingsPage, errors);
+    }
 
     private void sendErrorNotification(String portalSettingsPage, ArrayList<String> errors)
             throws IOException, LoginException {

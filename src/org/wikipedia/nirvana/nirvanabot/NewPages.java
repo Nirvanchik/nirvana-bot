@@ -959,8 +959,14 @@ public class NewPages implements PortalModule{
 		
 	@Override
     public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment)
-            throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError {
+            throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError,
+            InvalidLineFormatException {
 		log.debug("=> update()");
+
+        if (formatString.contains("%(")) {
+            throw new InvalidLineFormatException(PortalConfig.KEY_FORMAT, formatString);
+        }
+
 		this.namespaceIdentifier = wiki.namespaceIdentifier(this.namespace);
 		boolean updated = false;
 		String text = getOldText(wiki);
