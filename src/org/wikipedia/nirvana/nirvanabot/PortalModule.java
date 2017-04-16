@@ -1,6 +1,6 @@
 /**
- *  @(#)PortalModule.java 07/04/2012
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)PortalModule.java 16/04/2017
+ *  Copyright © 2011 - 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,19 +23,19 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
+
 import java.io.IOException;
 
 import javax.security.auth.login.LoginException;
 
-import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.ServiceError;
-
 /**
- * @author kin
- *
+ * Basic interface for portal module updaters.
  */
 public interface PortalModule {
     public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment)
-            throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError;
+            throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError,
+            InvalidLineFormatException;
 }
 
