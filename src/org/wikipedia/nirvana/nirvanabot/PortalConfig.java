@@ -258,7 +258,16 @@ public class PortalConfig {
      */
     public String getUnescaped(String key, String defaultValue) {
         if (!hasKey(key)) return defaultValue;
-        return options.get(key).replace("\\\"", "").replace("\\n", "\n");
+        return options.get(key).replace("\\n", "\n");
+    }
+
+    /**
+     * Get unescaped value from config for the specified key or default value if that key not
+     * found.
+     */
+    public String getUnescapedUnquoted(String key, String defaultValue) {
+        if (!hasKey(key)) return defaultValue;
+        return StringTools.trimDoubleQuoteIfFound(options.get(key)).replace("\\n", "\n");
     }
 
     /**

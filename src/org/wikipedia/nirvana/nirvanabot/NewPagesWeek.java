@@ -58,7 +58,7 @@ public class NewPagesWeek extends NewPages {
 	public NewPagesWeek(PortalParam param) {
 		super(param);
 		UPDATE_FROM_OLD = false;
-        PAGE_NAME_FORMAT = "%1$s/" + localizer.localize("Δενό") + "%2$d";
+        PAGE_NAME_FORMAT = "%1$s/" + localizer.localize("Δενό") + " %2$d";
 	}
 
 	public class WeekData extends Data {
