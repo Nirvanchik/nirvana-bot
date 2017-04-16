@@ -16,7 +16,7 @@
 <entry key="default-hours">350</entry>
 <entry key="default-maxitems">20</entry>
 <entry key="default-comment">обновление</entry>
-<entry key="picture-search-tags">image file,Фото,портрет,Изображение</entry>
+<entry key="picture-search-tags">image file, выява, фатаграфія, партрэт</entry>
 <entry key="error-notification">yes</entry>
 <entry key="debug-mode">yes</entry>
 <entry key="update-limit">0</entry>
@@ -27,10 +27,11 @@
 <entry key="statistics-file">report/report-%(date).txt</entry>
 <entry key="statistics-format">txt</entry>
 <entry key="task-list">yes</entry>
-<entry key="task-list-file">task_eval_nirvana_be.txt</entry>
+<entry key="task-list-file">task_debug_be.txt</entry>
 <entry key="default-service">petscan</entry>
 <entry key="service">auto</entry>
 <entry key="fast-mode">yes</entry>
 <entry key="long-task">no</entry>
+<entry key="wiki-translation-page">Удзельнік:NirvanaBot/Лакалізацыя</entry>
 
 </properties>
