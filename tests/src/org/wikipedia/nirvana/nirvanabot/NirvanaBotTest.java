@@ -151,6 +151,23 @@ public class NirvanaBotTest {
     }
 
     /**
+     * Test case 019.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     * 2) разделитель = "\n"
+     */
+    @Test
+    public void newPages_updateWithDelimiter() throws TestError {
+        String config = "019_new_pages_update_with_delimiter.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
      * Test case 002.
      * Info: smoke
      * Conditions:

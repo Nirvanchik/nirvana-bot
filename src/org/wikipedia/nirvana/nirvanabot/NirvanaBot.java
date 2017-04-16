@@ -484,7 +484,8 @@ public class NirvanaBot extends NirvanaBasicBot{
             return false;
 		}
         PortalConfig config = new PortalConfig(options);
-        DEFAULT_DELIMETER = config.getUnescaped(PortalConfig.KEY_SEPARATOR, DEFAULT_DELIMETER);
+        DEFAULT_DELIMETER = config.getUnescapedUnquoted(PortalConfig.KEY_SEPARATOR,
+                DEFAULT_DELIMETER);
         DEFAULT_FORMAT = config.get(PortalConfig.KEY_FORMAT, DEFAULT_FORMAT);
 
         List<String> errors = new ArrayList<String>();
@@ -1202,7 +1203,8 @@ public class NirvanaBot extends NirvanaBasicBot{
         param.updatesPerDay = parseIntegerKeyWithMaxVal(config, PortalConfig.KEY_UPDATES_PER_DAY,
                 data.errors, DEFAULT_UPDATES_PER_DAY, MAX_UPDATES_PER_DAY);
 
-        param.delimeter = config.getUnescaped(PortalConfig.KEY_SEPARATOR, DEFAULT_DELIMETER);
+        param.delimeter = config.getUnescapedUnquoted(PortalConfig.KEY_SEPARATOR,
+                DEFAULT_DELIMETER);
 
         param.imageSearchTags = config.get(PortalConfig.KEY_IMAGE_SEARCH, PICTURE_SEARCH_TAGS);
 
