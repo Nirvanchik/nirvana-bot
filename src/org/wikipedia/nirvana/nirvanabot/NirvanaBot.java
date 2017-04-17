@@ -96,7 +96,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -842,7 +841,9 @@ public class NirvanaBot extends NirvanaBasicBot{
     					log.error("validate portal settings FAILED");
     				}
     				
-    			} catch (IllegalArgumentException | IndexOutOfBoundsException | NullPointerException | java.util.zip.ZipException e) { 
+                } catch (IllegalArgumentException | IndexOutOfBoundsException |
+                        NullPointerException | java.util.zip.ZipException |
+                        UnsupportedOperationException e) {
     				// includes ArrayIndexOfBoundsException
     				log.error(e.toString()); 
                     if (retry_count < retryMax) {
@@ -1494,7 +1495,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 			}
             return BotUtils.optionToList(option, true);
 		}
-        return Collections.emptyList();
+        return new ArrayList<>();
 	}
 
 	protected static ArrayList<List<String>> multiOptionToArray(Map<String, String> options, String key, int start, int end) {
