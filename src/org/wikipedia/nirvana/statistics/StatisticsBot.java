@@ -356,7 +356,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 		if (options.containsKey(key)) {			
             return BotUtils.optionToList(options.get(key), false);
 		}
-        return Collections.emptyList();
+        return new ArrayList<>();
 	}
 
 	private boolean readPortalSettings(Map<String, String> options, StatisticsParam params) {

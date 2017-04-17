@@ -168,6 +168,24 @@ public class NirvanaBotTest {
     }
 
     /**
+     * Test case 029.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     * 2) разделитель = "\n"
+     * 3) категория = Собаки
+     */
+    @Test
+    public void newPages_updateWith1CategoryOldWay() throws TestError {
+        String config = "020_new_pages_update_with_1_category_old.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
      * Test case 002.
      * Info: smoke
      * Conditions:
