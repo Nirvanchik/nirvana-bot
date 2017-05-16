@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>no comments</comment>
+<entry key="out-dir">out/uk</entry>
+<entry key="log4j-settings">config/log4j-log-fulldebug.properties</entry>
+<entry key="wiki-login">NirvanaBot</entry>
+<entry key="wiki-password"></entry>
+<entry key="wiki-account-file">loginNirvanaBot.xml</entry>
+<entry key="new-pages-template">User:NirvanaBot/Нові статті</entry>
+<entry key="overriden-properties-page">Користувач:NirvanaBot/Нові статті/Налаштування за замовчуванням</entry>
+<entry key="discussion-pages-templates">
+Delete = Вікіпедія:Статті-кандидати на вилучення/%(дата)#%(назва)
+</entry>
+<entry key="discussion-pages-settings-wikipage">Користувач:NirvanaBot/Нові статті/Налаштування списків статтей, що обговорюють.js</entry>
+<entry key="wiki-lang">uk</entry>
+<entry key="default-depth">6</entry>
+<entry key="default-hours">350</entry>
+<entry key="default-maxitems">20</entry>
+<entry key="picture-search-tags">image file</entry>
+<entry key="error-notification">yes</entry>
+<entry key="update-pause">1000</entry>
+<entry key="statistics">yes</entry>
+<entry key="statistics-file">report/report.NirvanaBot.uk-%(date).txt</entry>
+<entry key="statistics-format">txt</entry>
+<entry key="start-from">0</entry>
+<entry key="default-service">petscan</entry>
+<entry key="service">auto</entry>
+<entry key="fast-mode">yes</entry>
+<entry key="long-task">yes</entry>
+<entry key="bot-timeout">7200000</entry>
+<entry key="services-timeout">3600000</entry>
+<entry key="wiki-translation-page">Користувач:NirvanaBot/Локалізація</entry>
+<entry key="debug-mode">yes</entry>
+<entry key="start-from">0</entry>
+<entry key="task-list">yes</entry>
+<entry key="task-list-file">task_debug_uk.txt</entry>
+
+</properties>
