@@ -256,6 +256,7 @@ public class ArchiveParser {
 		}	
 		// Скинуть сохраненный текст архива в файл
 		// Тоже своего рода уровень кэширования
+        // TODO: Why do we do try-catch here? Get rid of it.
 		try {
             FileTools.dump(text, cacheDir, archive + ".txt");
 		} catch (UnsupportedEncodingException e) {
@@ -298,6 +299,8 @@ public class ArchiveParser {
 			String article = m.group("article");
 			if(article.contains("Категория:Википедия:Списки новых статей по темам")) 				
 				continue;	
+            // TODO: Move this out of NewPages!
+            NewPages.initStatics();
 			if(	NewPages.userNamespace(article) || NewPages.categoryNamespace(article))
 				continue;
 			item = getArchiveItemFromTitle(article, getSize);
