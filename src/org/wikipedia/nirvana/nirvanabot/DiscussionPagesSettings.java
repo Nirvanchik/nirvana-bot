@@ -114,7 +114,7 @@ public class DiscussionPagesSettings {
 				newTempl.prefix = parts[1].substring(0, replacementStart);
 				int comma = parts[1].indexOf(",");
 				if (comma >= 0) {
-					newTempl.linkText = parts[1].substring(comma).trim();
+                    newTempl.linkText = parts[1].substring(comma + 1).trim();
 					parts[1] = parts[1].substring(0,comma).trim();
 				} else {
 					newTempl.linkText = newTempl.template.toLowerCase();

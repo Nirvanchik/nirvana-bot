@@ -28,14 +28,16 @@ import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.BotUtils;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.HTTPTools;
-import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.DiscussionPagesSettings.DiscussionPageTemplate;
 
+import org.junit.Assert;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -62,9 +64,11 @@ public class DiscussedPages extends Pages {
         protected String formatTimeString(Revision rev) {
             return dateTools.printDateDayMonthYearGenitive(rev.getTimestamp());
 		}
-        
+
         @Override
-        String formatItemString(String title, boolean deleted, Revision rev) {
+        String formatItemString(String title, boolean deleted, Revision rev)
+                throws InvalidLineFormatException {
+            log.debug("Format item for page: {}", title);
 			String element;
 			String user = rev.getUser();
 			String time = formatTimeString(rev);	    	
@@ -74,8 +78,12 @@ public class DiscussedPages extends Pages {
 	    	DiscussionInfo discussion = revDisc.getDiscussion();
 
 	    	if (discussion != null) {
+                log.debug("This item has discussion link");
+                // TODO: Why do we check this every time? Move it somewhere else.
                 if (format.contains(BotVariables.DISCUSSION)) {
+                    log.debug("format has discussion placeholder -> add discussion");
                     String formatExt = formatString.replace(BotVariables.DISCUSSION, "%4$s");
+                    checkPlaceholders(formatExt);
 	    			String link = discussion.template.formatLinkForPage(
 	    					discussion.discussionPage, title, stripFragment(discussion.discussionFragment));
 	    			element = String.format(formatExt, titleToInsert, HTTPTools.removeEscape(user), time, link);
@@ -108,8 +116,10 @@ public class DiscussedPages extends Pages {
 	        wiki.super(r.getRevid(), r.getTimestamp(), r.getPage(), r.getSummary(), r.getUser(),
 	        		r.isMinor(), r.isBot(), r.isNew(), r.getSize());
 	        this.discussion = discussion;
+            sLog.debug("Created RevisionWithDiscussion for page {}: {}", r.getPage(),
+                    discussion == null? "none": discussion.discussionPage);
         }
-        
+
         @Override
         public Calendar getTimestamp()
         {
@@ -159,6 +169,7 @@ public class DiscussedPages extends Pages {
 		getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL;
 		this.discussionTemplates = filterDiscussionTemplates();
         dateTools = DateTools.getInstance();
+        this.checkPlaceholdersBeforeUpdate = false;
 	}
 
 	private List<DiscussionPageTemplate> filterDiscussionTemplates() {
@@ -209,15 +220,19 @@ public class DiscussedPages extends Pages {
 		for (int i = 0; i < pageInfoList.size() && pageInfoListNew.size() < maxItems; ++i)
 		{
 			Revision r = pageInfoList.get(i);
+            log.debug("Search discussion links for page {}", r.getPage());
 			String[] linkedPages = wiki.whatLinksHere(r.getPage(), Wiki.PROJECT_NAMESPACE);
+
 			SortedSet<DiscussionInfo> discussionSet = new TreeSet<DiscussionInfo>();
 			for (String linked:linkedPages) {
-				//linked = linked.substring(wiki.namespaceIdentifier(Wiki.PROJECT_NAMESPACE).length()+1);
 				for (DiscussionPageTemplate template: discussionTemplates) {
+                    log.debug("Search discussion links at linked page {} for template: {}", linked,
+                            template.template);
 					if (template.hasLink() && linked.startsWith(template.prefix)) {
 						String right = linked.substring(template.prefix.length());
                         Calendar c = dateTools.parseDateStringDayMonthYearGenitive(right);
 						if (c != null) {
+                            log.debug("Found discussion link: {}", linked);
 							discussionSet.add(new DiscussionInfo(c, linked, template));
 						}
 					}
@@ -225,6 +240,7 @@ public class DiscussedPages extends Pages {
 			}
 			DiscussionInfo lastDiscussion = null;
 			if (discussionSet.size() > 0) {
+                log.debug("Search last discussion for page {}", r.getPage());
 				lastDiscussion = discussionSet.last();
 				if (lastDiscussion.template.needsToSearchFragment()) {
 					lastDiscussion.discussionFragment = searchFragment(wiki, lastDiscussion.discussionPage, r.getPage());
@@ -232,22 +248,48 @@ public class DiscussedPages extends Pages {
 			}
 			pageInfoListNew.add(new RevisionWithDiscussion(wiki, r, lastDiscussion));
 		}
-		sortPagesByDate(pageInfoListNew);
+		sortPagesCustom(pageInfoListNew);
 		return pageInfoListNew;
 	}
-	
+
+    public void sortPagesCustom(ArrayList<Revision> pageInfoList) {
+        // TODO Isn't it better to make compareTo() ?
+        java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
+
+            @Override
+            public int compare(Revision r1, Revision r2) {
+                Assert.assertTrue(r1 instanceof RevisionWithDiscussion);
+                Assert.assertTrue(r2 instanceof RevisionWithDiscussion);
+                RevisionWithDiscussion rL = (RevisionWithDiscussion) r1;
+                RevisionWithDiscussion rR = (RevisionWithDiscussion) r2;
+                if (rL.getDiscussion() != null && rR.getDiscussion() != null) {
+                    return r2.getTimestamp().compareTo(r1.getTimestamp());
+                } else if (rL.getDiscussion() != null && rR.getDiscussion() == null) {
+                    return 1;
+                } else if (rL.getDiscussion() == null && rR.getDiscussion() != null) {
+                    return -1;
+                } else {
+                    return r1.getPage().compareToIgnoreCase(r2.getPage());
+                }
+            }
+        });
+    }
+
 	//private static final S
 	public static String searchFragment(NirvanaWiki wiki, String discussionPage, String page) throws IOException {
+        sLog.debug("Search fragment for page {} on page {}", page, discussionPage);
 		String lines[] = wiki.getPageLinesArray(discussionPage);
 		Pattern p = Pattern.compile("\\s*===?\\s*([^=]+\\s*)=?==\\s*");
 		for (String line:lines) {
 			if (line.contains(page)) {
 				Matcher m = p.matcher(line);
 				if (m.matches()) {
+                    sLog.debug("Found fragment on line: {}", line);
 					return m.group(1);
 				}
 			}
 		}		
+        sLog.debug("Fragment not found.");
 		return null;
 	}
 }

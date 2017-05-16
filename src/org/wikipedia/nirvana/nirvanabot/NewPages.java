@@ -58,6 +58,7 @@ import org.wikipedia.nirvana.nirvanabot.templates.TemplateFinder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -153,7 +154,8 @@ public class NewPages implements PortalModule{
     
     protected boolean UPDATE_FROM_OLD = true;
     protected boolean UPDATE_ARCHIVE = true;
-    
+    protected boolean checkPlaceholdersBeforeUpdate = true;
+
     protected String currentUser = null;
     
     protected boolean supportsTemplateFilter = true;
@@ -440,8 +442,9 @@ public class NewPages implements PortalModule{
 	    	}
 	    	return titleToInsert;
 		}
-		
-		String formatItemString(String title, boolean deleted, Revision rev) {
+
+        String formatItemString(String title, boolean deleted, Revision rev)
+                throws InvalidLineFormatException {
 			String element;
 			String user = rev.getUser();
 			String time = formatTimeString(rev);	    	
@@ -453,8 +456,9 @@ public class NewPages implements PortalModule{
 	    	}
 	    	return element;
 		}
-		
-		protected void addNewItem(String title, boolean deleted, Revision rev) throws IOException {
+
+        protected void addNewItem(String title, boolean deleted, Revision rev) throws IOException,
+                InvalidLineFormatException {
 			String element = formatItemString(title, deleted, rev);    	
 	    	
 	        if (!subset.contains(element))
@@ -479,7 +483,8 @@ public class NewPages implements PortalModule{
 	        }
 		}*/
 
-		protected void addNewPage(NirvanaWiki wiki, Revision pageInfo) throws IOException {
+        protected void addNewPage(NirvanaWiki wiki, Revision pageInfo) throws IOException,
+                InvalidLineFormatException {
 			Revision page = null;
 		    switch(getRevisionMethod) {
 		    	case GET_FIRST_REV:
@@ -872,7 +877,7 @@ public class NewPages implements PortalModule{
 	}
 	
     public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException,
-            ServiceError, BotFatalError {
+            ServiceError, BotFatalError, InvalidLineFormatException {
 		log.info("Get data for [[" + this.pageName+"]]");
 
         List<Revision> pageInfoList = getNewPages(wiki);
@@ -956,15 +961,21 @@ public class NewPages implements PortalModule{
 		}
 		return true;
 	}
-		
+
+    public void checkPlaceholders(String formatString) throws InvalidLineFormatException {
+        if (formatString.contains("%(")) {
+            throw new InvalidLineFormatException(PortalConfig.KEY_FORMAT, formatString);
+        }
+    }
+
 	@Override
     public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment)
             throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError,
             InvalidLineFormatException {
 		log.debug("=> update()");
 
-        if (formatString.contains("%(")) {
-            throw new InvalidLineFormatException(PortalConfig.KEY_FORMAT, formatString);
+        if (checkPlaceholdersBeforeUpdate) {
+            checkPlaceholders(formatString);
         }
 
 		this.namespaceIdentifier = wiki.namespaceIdentifier(this.namespace);
@@ -1216,7 +1227,8 @@ public class NewPages implements PortalModule{
 	}
 
 	public static boolean userNamespace(String article) {
-        assert initialized;
+        Assert.assertTrue(initialized);
+        Assert.assertNotNull(article);
         return (article.startsWith(USER_NAMESPACE) ||
                 article.startsWith(USER_TALK_NAMESPACE) ||
                 article.startsWith(USER_TALK_NAMESPACE2) ||
