@@ -182,7 +182,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	private static int DEFAULT_MAXITEMS = 20;
 	private static int DEFAULT_HOURS = 500;
 
-    private static String DEFAULT_SERVICE_NAME = WikiTools.Service.PETSCAN.name();
+    private static String DEFAULT_SERVICE_NAME = WikiTools.Service.PETSCAN.name;
 	private static String SELECTED_SERVICE_NAME = SERVICE_AUTO;
 
 	private static boolean DEFAULT_USE_FAST_MODE = true;
@@ -354,6 +354,8 @@ public class NirvanaBot extends NirvanaBasicBot{
 		log.info("hours="+DEFAULT_HOURS);
 		DEFAULT_MAXITEMS = validateIntegerSetting(properties,"default-maxitems",DEFAULT_MAXITEMS,true);
 		log.info("maxitems="+DEFAULT_MAXITEMS);		
+        MAX_MAXITEMS = validateIntegerSetting(properties, "max-maxitems", MAX_MAXITEMS, true);
+        log.info("maxmaxitems=" + MAX_MAXITEMS);
 		START_FROM = validateIntegerSetting(properties,"start-from",START_FROM,false);
 		STOP_AFTER = validateIntegerSetting(properties,"stop-after",STOP_AFTER,false);		
 		UPDATE_PAUSE = validateIntegerSetting(properties,"update-pause",UPDATE_PAUSE,false);
