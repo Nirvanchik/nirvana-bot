@@ -37,6 +37,7 @@ import javax.security.auth.login.LoginException;
 import org.apache.commons.lang3.time.StopWatch;
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.BotUtils;
+import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NumberTools;
@@ -135,6 +136,7 @@ public class StatisticsBot extends NirvanaBasicBot {
     @Override
     protected void go() throws InterruptedException, BotFatalError {
         Localizer.init(Localizer.NO_LOCALIZATION);
+        DateTools.init(LANGUAGE);
 		String [] portalSettingsPages = null;
 		String userNamespace;
         try {
