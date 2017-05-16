@@ -87,7 +87,8 @@ public class NewPagesWeek extends NewPages {
 		}
 		
 		@Override
-		protected void addNewItem(String title, boolean deleted, Revision rev) throws IOException {
+        protected void addNewItem(String title, boolean deleted, Revision rev) throws IOException,
+                InvalidLineFormatException {
 			String element = formatItemString(title, deleted, rev);
 	    	
 	        if (!subset.contains(element))
@@ -130,7 +131,7 @@ public class NewPagesWeek extends NewPages {
 	}
 
     public Data getData(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError,
-            BotFatalError {
+            BotFatalError, InvalidLineFormatException {
 		log.info("Processing data for [[" + this.pageName+"]]");		
 
         List<Revision> pageInfoList = getNewPages(wiki);
@@ -186,7 +187,8 @@ public class NewPagesWeek extends NewPages {
 
 	@Override
     public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment)
-            throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError {
+            throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError,
+            InvalidLineFormatException {
 		boolean updated = false;
 
 		String text = getOldText(wiki);

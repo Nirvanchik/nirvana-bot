@@ -52,6 +52,8 @@ import junit.framework.Assert;
 public class NirvanaBotTest {
     public static final String TEST_DATA_PATH = "tests/test_data/";
     public static final String BOT_CONFIG_DEFAULT = "bot_config_ru_default.xml";
+    public static final String BOT_CONFIG_RU_WITH_DISUSSION_TEMPLATES =
+            "bot_config_ru_discussion_templates.xml";
     public static final String BOT_CONFIG_BE = "bot_config_be.xml";
     public static final String BOT_CONFIG_DEFAULT_PATH = TEST_DATA_PATH + BOT_CONFIG_DEFAULT;
     public static final String BOT_CONFIG_BE_PATH = TEST_DATA_PATH + BOT_CONFIG_BE;
@@ -502,4 +504,21 @@ public class NirvanaBotTest {
         bot.validateEdits();
     }
 
+    /**
+     * Test case 021.
+     * Similar tests: .
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "обсуждаемые статьи"
+     * SERVICE SETTINGS:
+     */
+    @Test
+    public void discussedPages_smoke() throws TestError {
+        String config = "021_pages_templates_with_discussion.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(NirvanaBasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{TEST_DATA_PATH + BOT_CONFIG_RU_WITH_DISUSSION_TEMPLATES});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
 }

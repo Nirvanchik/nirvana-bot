@@ -259,6 +259,16 @@ public class MockNirvanaBot extends NirvanaBot {
                 wiki.mockExists(title, true);
             }
         }
+
+        JSONArray whatLinksHereJsonList = (JSONArray) wikiJson.get("whatLinksHere");
+        if (whatLinksHereJsonList != null) {
+            Iterator<?> it = whatLinksHereJsonList.iterator();
+            while (it.hasNext()) {
+                JSONObject whatLinksHereJson = (JSONObject) it.next();
+                wiki.mockWhatLinksHere((String) whatLinksHereJson.get("title"),
+                        readStringList(whatLinksHereJson, "links"));
+            }
+        }
     }
 
     private Revision parseRevision(MockNirvanaWiki wiki, JSONObject revisionJson) {
