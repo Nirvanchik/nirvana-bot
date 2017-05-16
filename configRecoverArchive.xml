@@ -4,16 +4,17 @@
 <comment>no comments</comment>
 <entry key="out-dir">out/ru</entry>
 <entry key="log4j-settings">config/log4j-log.properties</entry>
-<entry key="wiki-login">NirvanaBot</entry>
+<entry key="wiki-login">NirvanaTestBot</entry>
 <entry key="wiki-password"></entry>
-<entry key="wiki-account-file">loginNirvanaBot.xml</entry>
+<entry key="wiki-account-file">loginNirvanaTestBot.xml</entry>
 <entry key="new-pages-template">Участник:NirvanaBot/Новые статьи</entry>
 <entry key="wiki-lang">ru</entry>
 <entry key="default-depth">15</entry>
 <entry key="default-hours">720</entry>
-<entry key="default-maxitems">1</entry>
+<entry key="default-maxitems">100000</entry>
+<entry key="max-maxitems">100000</entry>
 <entry key="error-notification">no</entry>
-<entry key="debug-mode">no</entry>
+<entry key="debug-mode">yes</entry>
 <entry key="stop-after">0</entry>
 <entry key="start-from">0</entry>
 <entry key="update-pause">1000</entry>

@@ -132,7 +132,7 @@ public class WikiTools {
                 false),
         PETSCAN ("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
                 1, 3, 1, -1, 2,
-                true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
+                true, true, false, 17856,  // 2 year = 24*31*12*2 = 8928*2;
                 ServiceFeatures.PETSCAN_FEATURES,
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s&combination=union&ns[%5$d]=1&sortby=title&format=tsv&doit=",
@@ -147,7 +147,7 @@ public class WikiTools {
                     "&sortorder=descending&format=tsv&doit=",
                 "^\\d+\\s+\\S+\\s+\\d+\\s+(\\S+\\s+)?\\d+\\s+\\d+\\s*$",
                 false);
-		private final String name;
+        public final String name;
 		public final String DOMAIN;
 		public final String PATH;
 		public final int SKIP_LINES;
