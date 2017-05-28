@@ -67,19 +67,20 @@ public class ArchiveSimpleSorted extends ArchiveSimple {
 		else
 			itemsSorted = new TreeMap<Calendar, String>(compA); // ascending
 		for(String line:lines) {
-			add(line);
+            Calendar c = NewPages.getNewPagesItemDate(wiki, line);
+            add(line, c);
 		}
 	}
-	
-	public void add(String item) {
-		Calendar c = NewPages.getNewPagesItemDate(wiki, item);
+
+    @Override
+    public void add(String item, Calendar c) {
 		if(c==null) {
-			super.add(item);
+            super.add(item, c);
 		} else {
 			this.itemsSorted.put(c, item);
 		}
 	}
-	
+
 	public String toString() {
 		Iterator<Calendar> it = itemsSorted.keySet().iterator();
 		StringBuffer sb = new StringBuffer(10000);		

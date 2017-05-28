@@ -26,6 +26,7 @@ package org.wikipedia.nirvana.archive;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.nirvanabot.BotVariables;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -97,24 +98,21 @@ public class ArchiveFactory {
 					//log.info("archive "+arname+" is empty");
 				}
 			}
-			if(archiveSettings.headerFormat.contains(ArchiveWithHeadersWithItemsCount.template) /*||
-					(archiveSettings.headerHeaderFormat!=null &&
-					archiveSettings.headerHeaderFormat.contains(ArchiveWithHeadersWithItemsCount.template))*/	) {
-				
-				archive = new ArchiveWithHeadersWithItemsCount(lines,
-						archiveSettings.parseCount,
-						archiveSettings.addToTop,delimeter,
-						archiveSettings.enumeration,archiveSettings.headerFormat);
+            if (archiveSettings.headerFormat.contains(BotVariables.COUNT) ||
+                    (archiveSettings.superHeaderFormat != null &&
+                    archiveSettings.superHeaderFormat.contains(BotVariables.COUNT))) {
+
+                archive = new ArchiveWithHeadersWithItemsCount(lines, archiveSettings.parseCount,
+                        archiveSettings.addToTop,delimeter, archiveSettings.enumeration,
+                        archiveSettings.headerFormat, archiveSettings.superHeaderFormat);
 			} else {
-				
-				archive = new ArchiveWithHeaders(lines,
-						archiveSettings.parseCount,
-						archiveSettings.addToTop,delimeter,
-						archiveSettings.enumeration);
+
+                archive = new ArchiveWithHeaders(lines, archiveSettings.parseCount,
+                        archiveSettings.addToTop, delimeter, archiveSettings.enumeration,
+                        archiveSettings.headerFormat, archiveSettings.superHeaderFormat);
 			}
 			((ArchiveWithHeaders)archive).initLatestItemHeaderHeader(wiki,archiveSettings);
 		}
 		return archive;
 	}
-
 }

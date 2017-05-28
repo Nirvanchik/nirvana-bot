@@ -40,59 +40,48 @@ import org.wikipedia.nirvana.nirvanabot.NewPages;
 public class ArchiveWithHeaders extends Archive{
 	//private String archiveFullText;
 	private String archivePartialText = "";
-	//private String archiveBottom;
-	private List<Section> parts;	
+
+    protected List<Section> parts;
 	public static int HOW_MANY_ITEMS_TO_PARSE_DEFAULT = 100;	
 	protected int HOW_MANY_ITEMS_TO_PARSE = HOW_MANY_ITEMS_TO_PARSE_DEFAULT;	
 	private String latestItemHeaderHeader = null;
-	
-	//private boolean localEnumeration = false;
-	//private boolean addOL = false;	
-	
-	/*
-	private static class Header {
-		public String header = null;
-		public String headerString = "";
-		public String headerForComparison = null;
-		boolean hasVariable = false;
-		public boolean compareHeader(String h) {
-			
-		}
-		public boolean compareTo(Header h) {
-			if(headerForComparison!=null) {
-				return (headerForComparison.compareTo(anotherString)==0)
-			}
-		}
-		/*
-		public boolean compareHeaderString(String hs) {
-			
-		}
-	}*/
-	
+
+    /**
+     * @see ArchiveSettings#headerFormat
+     */
+    public String headerFormat;
+
+    /**
+     * @see ArchiveSettings#superHeaderFormat
+     */
+    public String superHeaderFormat;
+
 	protected Section createSection(Enumeration enumeration, boolean old) {
 		return new Section(enumeration,old);		
 	}
-	
+
 	protected Section createSection(Enumeration enumeration,
 			String header,	String headerText,	boolean old) {
 		return new Section(enumeration,header,headerText,old);		
 	}
-	
-	protected Section createSection(Enumeration enumeration,
-			String header,String headerText,
-			String sHeader, String sHeaderText,
-			boolean old) {
-		return new Section(enumeration,header,headerText,sHeader,sHeaderText,old);		
+
+    protected Section createSection(Enumeration enumeration, String header, String headerText,
+            String superHeader, String superHeaderText, boolean old) {
+        return new Section(enumeration, header, headerText, superHeader, superHeaderText, old);
 	}
 
-	
 	protected class Section {
-		//private ArchiveWithHeaders parent = null;
 		private Enumeration enumeration = Enumeration.NONE;
+        /**
+         * Single header, or low-level header.
+         */
 		protected String header;
 		protected String headerText;
-		protected String headerHeader;
-		protected String headerHeaderText;
+        /**
+         * Top-level header.
+         */
+        protected String superHeader;
+        protected String superHeaderText;
 		private ArrayList<String> items;
 		private boolean hasOL = false;
 		private boolean old;
@@ -102,8 +91,8 @@ public class ArchiveWithHeaders extends Archive{
 			this.enumeration = enumeration;
 			header = null;
 			headerText = "";
-			headerHeader = null;
-			headerHeaderText = "";
+            superHeader = null;
+            superHeaderText = "";
 			items = new ArrayList<String>();
 			this.old = old;
 			trancated = old;			 
@@ -113,20 +102,22 @@ public class ArchiveWithHeaders extends Archive{
 			this.enumeration = enumeration;
 			this.header = header;
 			this.headerText = headerText;
-			headerHeader = null;
-			headerHeaderText = "";
+            superHeader = null;
+            superHeaderText = "";
 			items = new ArrayList<String>();
 			this.old = old;
 			trancated = old;	
 		}
-		Section(Enumeration enumeration,String header,String headerText,String hHeader, String hHeaderText,boolean old) {
+
+        Section(Enumeration enumeration, String header, String headerText, String superHeader,
+                String superHeaderText, boolean old) {
 			log.debug("section created, "+headerText);
-			log.debug("super header: "+hHeaderText);
+            log.debug("super header: " + superHeaderText);
 			this.enumeration = enumeration;
 			this.header = header;
 			this.headerText = headerText;
-			headerHeader = hHeader;
-			headerHeaderText = hHeaderText;
+            this.superHeader = superHeader;
+            this.superHeaderText = superHeaderText;
 			items = new ArrayList<String>();
 			this.old = old;
 			trancated = old;	
@@ -137,17 +128,19 @@ public class ArchiveWithHeaders extends Archive{
 		public String getHeaderText() {
 			return headerText;
 		}
-		public String getHeaderHeader() {
-			return headerHeader;
+		public String getSuperHeader() {
+			return superHeader;
 		}
-		public void clearHeaderHeader() {
-			this.headerHeader = null;
-			this.headerHeaderText = "";
+
+        public void clearSuperHeader() {
+            this.superHeader = null;
+            this.superHeaderText = "";
 		}
+
 		public String toString() {
 			StringBuffer buf = new StringBuffer();
-			if(!this.headerHeaderText.isEmpty()) {
-				buf.append(headerHeaderText);
+            if(!this.superHeaderText.isEmpty()) {
+                buf.append(superHeaderText);
 				buf.append(delimeter);
 			}
 			if(!this.headerText.isEmpty()) {
@@ -219,25 +212,24 @@ public class ArchiveWithHeaders extends Archive{
 		public void addItemToBegin(String item) {
 			items.add(0, enumItem(item));
 		}
-		
+
 		public void pushHeader(String h, String hText) {
-			if(headerHeader!=null)
-				return;
+            if (superHeader != null) return;
 			if(this.header==null){
 				this.header = h;
 				this.headerText = hText;
 			} else {
-				this.headerHeader = this.header;
-				this.headerHeaderText = this.headerText;
+                this.superHeader = this.header;
+                this.superHeaderText = this.headerText;
 				this.header = h;
 				this.headerText = hText;
 			}
 		}
-		public void pushHeaderHeader(String h, String hText) {
-			if(headerHeader!=null)
-				return;
-			this.headerHeader = h;
-			this.headerHeaderText = hText;
+
+        public void pushSuperHeader(String h, String hText) {
+            if (superHeader != null) return;
+            this.superHeader = h;
+            this.superHeaderText = hText;
 		}
 		public boolean isEmpty() {
 			return (this.items.size()==0);
@@ -251,11 +243,16 @@ public class ArchiveWithHeaders extends Archive{
 		public String getLast() {
 			return this.items.get(items.size()-1);
 		}
+
+        /**
+         * @return items count in this section loaded by bot. It may not count all items when bot
+         *         reads section partially.
+         */
 		public int getSize() {
 			return this.items.size();
 		}
 	}
-	
+
 	public String toString() {
 		//StringBuilder b;
 		StringBuilder buf = new StringBuilder();
@@ -338,7 +335,7 @@ public class ArchiveWithHeaders extends Archive{
 //            	if(part!=null) {
 //            		parts.add(part);
 //            	}
-            	if(part!=null && part.getHeaderHeader()==null && part.isEmpty() &&
+                if (part != null && part.getSuperHeader() == null && part.isEmpty() &&
             			( StringTools.howMany(part.getHeaderText(), '=', true)<
             			  StringTools.howMany(item, '=', true)        )            ) {
             		part.pushHeader(m.group("headername").trim(),item);         
@@ -420,10 +417,10 @@ public class ArchiveWithHeaders extends Archive{
             	part.trancated = false;
             	if(part.getHeader()==null) {
             		part.pushHeader(m.group("headername").trim(),item);
-            	} else if(part.getHeader()!=null && part.getHeaderHeader()==null &&
+                } else if(part.getHeader() != null && part.getSuperHeader() == null &&
             			( StringTools.howMany(part.getHeaderText(), '=', true)>
                   			  StringTools.howMany(item, '=', true)        )     ) {
-            		part.pushHeaderHeader(m.group("headername").trim(),item);
+                    part.pushSuperHeader(m.group("headername").trim(),item);
             	} else {
             		part = createSection(enumeration,m.group("headername").trim(),item,true);
             		part.trancated = trancated;
@@ -455,12 +452,14 @@ public class ArchiveWithHeaders extends Archive{
 	}
 	
 	public ArchiveWithHeaders(String text, int parseCount, boolean addToTop, String delimeter,
-			Enumeration enumeration) {
+            Enumeration enumeration, String headerFormat, String superHeaderFormat) {
 		log.debug("ArchiveWithHeaders created, enumeration: "+enumeration.toString()+ " top:"+addToTop);
 		this.addToTop = addToTop;
 		this.delimeter = delimeter;
 		archivePartialText = "";	
 		this.enumeration = enumeration;		
+        this.headerFormat = headerFormat;
+        this.superHeaderFormat = superHeaderFormat;
 		parts = new ArrayList<Section>();
 		if(parseCount>=0)
 			HOW_MANY_ITEMS_TO_PARSE = parseCount;
@@ -476,26 +475,30 @@ public class ArchiveWithHeaders extends Archive{
 			parseBottom(oldText);
 		}		
 	}
-	
+
 	public ArchiveWithHeaders(int parseCount, boolean addToTop, String delimeter,
-			Enumeration enumeration) {
+            Enumeration enumeration, String headerFormat, String superHeaderFormat) {
 		log.debug("ArchiveWithHeaders created, enumeration: "+enumeration.toString()+ " top:"+addToTop);
 		this.addToTop = addToTop;
 		this.delimeter = delimeter;
 		archivePartialText = "";	
 		this.enumeration = enumeration;
+        this.headerFormat = headerFormat;
+        this.superHeaderFormat = superHeaderFormat;
 		if(parseCount>=0)
 			this.HOW_MANY_ITEMS_TO_PARSE = parseCount;
 		parts = new ArrayList<Section>();		
 	}
 	
 	public ArchiveWithHeaders(String lines[], int parseCount, boolean addToTop, String delimeter,
-			Enumeration enumeration) {
+            Enumeration enumeration, String headerFormat, String superHeaderFormat) {
 		log.debug("ArchiveWithHeaders created, enumeration: "+enumeration.toString()+ " top:"+addToTop);
 		this.addToTop = addToTop;
 		this.delimeter = delimeter;
 		archivePartialText = "";	
 		this.enumeration = enumeration;
+        this.headerFormat = headerFormat;
+        this.superHeaderFormat = superHeaderFormat;
 		if(parseCount>=0)
 			this.HOW_MANY_ITEMS_TO_PARSE = parseCount;
 		parts = new ArrayList<Section>();
@@ -511,8 +514,22 @@ public class ArchiveWithHeaders extends Archive{
 		}		
 	}
 
+    @Override
+    public void add(String item, Calendar c) {
+        if (c == null) {
+            addNoDate(item);
+        } else {
+            String thisHeader = ArchiveSettings.getHeaderForDate(c, headerFormat);
+            String superHeader = ArchiveSettings.getHeaderForDate(c, superHeaderFormat);
+            if (superHeader==null) {
+                addWithHeader(item, thisHeader);
+            } else {
+                addWithHeaderAndSuperHeader(item, thisHeader, superHeader);
+            }
+        }
+    }
 
-	public void add(String item) {
+    protected void addNoDate(String item) {
 		newLines++;
 		if(parts.isEmpty()) {
 			Section section = createSection(enumeration, false);
@@ -526,74 +543,78 @@ public class ArchiveWithHeaders extends Archive{
 			parts.get(parts.size()-1).addItemToEnd(item);
 		}
 	}
-	
-	//public int findHeader()
-	
-	public void add(String item, String header) {
+
+    protected void addWithHeader(String item, String header) {
 		newLines++;
 		Section part= null;
-		String headerStripped = StringUtils.strip(header, "=").trim();
+        String headerName = StringUtils.strip(header, "=").trim();
 		if(addToTop) {
-			boolean found = false;
-			for(int i=0;i<parts.size();i++) {
-				part = parts.get(i);
-				if(part.getHeader()!=null && part.getHeader().compareTo(headerStripped)==0) {
-					found = true;
-					break;
-				}
+            part = findFirstSectionByName(headerName);
+            if (part == null) {
+                part = createSection(enumeration, headerName, header, false);
+                parts.add(0, part);
 			}
-			if(found) {
-				part.addItemToBegin(item);
-			} else {
-				part = createSection(enumeration, headerStripped,header,false);
-				parts.add(0, part);
-				part.addItemToBegin(item);
-			}
+            part.addItemToBegin(item);
 		} else {
-			boolean found = false;
-			for(int i=parts.size()-1;i>=0;i--) {
-				part = parts.get(i);
-				if(part.getHeader()!=null && part.getHeader().compareTo(headerStripped)==0) {
-					found = true;
-					break;
-				}
-			}
-			if(found) {
-				part.addItemToEnd(item);
-			} else {
-				part = createSection(enumeration, headerStripped,header,false);
+            part = findLastSectionByName(headerName);
+            if(part == null) {
+                part = createSection(enumeration, headerName, header, false);
 				parts.add(part);
-				part.addItemToEnd(item);
 			}
+            part.addItemToEnd(item);
 		}
 	}
-	
-	public void add(String item, String header, String headerHeader) {
+
+    Section findFirstSectionByName(String name) {
+        Section section = null;
+        for (int i = 0; i < parts.size(); i++) {
+            section = parts.get(i);
+            if (name.equals(section.getHeader())) {
+                break;
+            }
+        }
+        return section;
+    }
+
+    Section findLastSectionByName(String name) {
+        Section section = null;
+        for (int i = parts.size() - 1; i >= 0; i--) {
+            section = parts.get(i);
+            if (name.equals(section.getHeader())) {
+                break;
+            }
+        }
+        return section;
+    }
+
+    public void addWithHeaderAndSuperHeader(String item, String header, String superHeader) {
 		newLines++;
-		String headerHeaderStripped = StringUtils.strip(headerHeader, "=").trim();
+        String superHeaderName = StringUtils.strip(superHeader, "=").trim();
 		String headerStripped = StringUtils.strip(header, "=").trim();
 		Section part = null;
 		int hhIndex = -1;
-		hhIndex = findSuperHeader(headerHeaderStripped);
+		hhIndex = findSuperHeader(superHeaderName);
 		// если заголовок верхнего уровня не найден,
 		// значит его нужно создать
 		if(hhIndex<0) {
 			if(addToTop) {		
-				part = createSection(enumeration, headerStripped,header,headerHeaderStripped,headerHeader,false);
+                part = createSection(enumeration, headerStripped, header, superHeaderName,
+                        superHeader, false);
 				parts.add(0, part);
 				part.addItemToBegin(item);
 				return;
 			} else  {
 				boolean createNewSection = true;
-				if(parts.size()!=0 && parts.get(0).getHeaderHeader()==null) {					
+                if (parts.size() != 0 && parts.get(0).getSuperHeader() == null) {
 					// нужно проверить, последние хедэры наши(относятся к заголовку) или нет					
 					if(latestItemHeaderHeader!=null && 
-							latestItemHeaderHeader.compareTo(headerHeader)==0) {
+                            latestItemHeaderHeader.compareTo(superHeader) == 0) {
 						createNewSection = false;						
 					} 
 				} 
 				if(createNewSection) {
-					part = createSection(enumeration, headerStripped,header,headerHeaderStripped,headerHeader,false);
+                    part = createSection(enumeration, headerStripped, header, superHeaderName,
+                            superHeader, false);
 					parts.add(part);
 					part.addItemToEnd(item);
 					return;
@@ -611,8 +632,9 @@ public class ArchiveWithHeaders extends Archive{
 			// создать подсекцию
 			if(addToTop) {		
 				part = parts.get(hhIndex);
-				part.clearHeaderHeader();
-				part = createSection(enumeration, headerStripped,header,headerHeaderStripped,headerHeader,false);
+                part.clearSuperHeader();
+                part = createSection(enumeration, headerStripped, header, superHeaderName,
+                        superHeader, false);
 				parts.add(hhIndex, part);
 				part.addItemToBegin(item);				
 			} else {
@@ -629,19 +651,17 @@ public class ArchiveWithHeaders extends Archive{
 			}				
 		}
 	}
-	
-	
-	
+
 	void initLatestItemHeaderHeader(NirvanaWiki wiki, ArchiveSettings aSettings) {
 		latestItemHeaderHeader = null;
 		if(!addToTop) {
 			if(this.parts.size()>0) {
 				Section items = parts.get(0);
-				if(items.getHeaderHeader()==null) {
+                if (items.getSuperHeader() == null) {
 					for(int i=items.getSize()-1;i>=0;i--) {
 						Calendar c = NewPages.getNewPagesItemDate(wiki, items.getItem(i));
 						if(c!=null) {
-							latestItemHeaderHeader = aSettings.getHeaderHeaderForDate(c);
+                            latestItemHeaderHeader = aSettings.getSuperHeaderForDate(c);
 							log.debug("latestItemHeaderHeader : "+latestItemHeaderHeader+" for date: "+c.toString());
 							return;
 						}
@@ -650,15 +670,14 @@ public class ArchiveWithHeaders extends Archive{
 			}
 		}
 	}
-	
-	
+
 	public int findSuperHeader(String hh) {
 		int index = -1;
 		Section part = null;
 		if(addToTop) {
 			for(int i=0;i<parts.size();i++) {
 				part = parts.get(i);
-				if(part.getHeaderHeader()!=null && part.getHeaderHeader().compareTo(hh)==0) {
+                if (part.getSuperHeader() != null && part.getSuperHeader().equals(hh)) {
 					index = i;
 					break;
 				}
@@ -666,7 +685,7 @@ public class ArchiveWithHeaders extends Archive{
 		} else {
 			for(int i=parts.size()-1;i>=0;i--) {
 				part = parts.get(i);
-				if(part.getHeaderHeader()!=null && part.getHeaderHeader().compareTo(hh)==0) {
+                if (part.getSuperHeader() != null && part.getSuperHeader().equals(hh)) {
 					index = i;
 					break;
 				}
@@ -674,36 +693,38 @@ public class ArchiveWithHeaders extends Archive{
 		}
 		return index;
 	}
-	
-	
+
 	public int findHeaderInSuperSection(String header, int startFrom) {
-		//int index = -1;
 		Section part = parts.get(startFrom);
-		String hh = part.getHeaderHeader();
+        String hh = part.getSuperHeader();
 		for(int i = startFrom;i<this.parts.size();i++) {
 			part = parts.get(i);
-			if(hh==null && part.getHeaderHeader()!=null) return -1;
-			else if (hh!=null && part.getHeaderHeader()!=null && part.getHeaderHeader().compareTo(hh)!=0) return -1;
-			if(part.getHeader()!=null && part.getHeader().compareTo(header)==0) return i;
+            if (part.getSuperHeader() != null) {
+                if (hh == null) return -1;
+                else if (!part.getSuperHeader().equals(hh)) return -1;
+            }
+            if (part.getHeader() != null && part.getHeader().equals(header)) return i;
 		}		
 		return -1;
 	}
+
 	public int findLastSectionInSuperSection(int startFrom) {
 		Section part = parts.get(startFrom);
-		String hh = part.getHeaderHeader();
+        String hh = part.getSuperHeader();
 		int i = 0;
 		for(i = startFrom;i<this.parts.size();i++) {
 			part = parts.get(i);
-			if(hh==null && part.getHeaderHeader()!=null) break;
-			else if (hh!=null && part.getHeaderHeader()!=null && part.getHeaderHeader().compareTo(hh)!=0) break;			
+            if (part.getSuperHeader() != null) {
+                if (hh == null) break;
+                else if (!part.getSuperHeader().equals(hh)) break;
+            }
 		}		
 		return (i-1);
 	}
-	
+
 	public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
 		String text = this.toString();
 		if(!text.isEmpty())
 			wiki.edit(archiveName, text,"+"+newItemsCount()+" статей", minor, bot);
 	}
-	
 }

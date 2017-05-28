@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.archive;
 
 import java.io.IOException;
+import java.util.Calendar;
 
 import javax.security.auth.login.LoginException;
 
@@ -35,10 +36,10 @@ import org.apache.logging.log4j.Logger;
 
 
 /**
- * @author kin
+ * Abstract class for archive pages of different types. 
  *
  */
-public class Archive {
+public abstract class Archive {
     protected final Logger log;
 
 	protected boolean addToTop = true;
@@ -55,10 +56,14 @@ public class Archive {
 	public String toString() {
 		return "";
 	}
-	
-	public void add(String item) {
-		
-	}
+
+    /**
+     * Adds list item to this archive according to this archive rules (settings).
+     *
+     * @param item list item (from "New pages" wiki list).
+     * @param c list item date, or null if it's not possible to find out the date.
+     */
+    public abstract void add(String item, Calendar c);
 	
 	public int newItemsCount() { return newLines; }
 

@@ -43,6 +43,7 @@ public class BotVariables {
     public static String PORTAL;
     public static String PAGE;
     public static String ARCHIVE;
+    public static String COUNT;
 
     /**
      * Initialization. Must be called before using any constants of this class.
@@ -63,6 +64,7 @@ public class BotVariables {
         PORTAL = localizer.localize("%(портал)");
         PAGE = localizer.localize("%(страница)");
         ARCHIVE = localizer.localize("%(архив)");
+        COUNT = localizer.localize("%(количество)");
 
         initialized = true;
     }

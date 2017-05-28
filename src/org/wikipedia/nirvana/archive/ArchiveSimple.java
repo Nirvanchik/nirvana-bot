@@ -25,6 +25,7 @@ package org.wikipedia.nirvana.archive;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import javax.security.auth.login.LoginException;
 
@@ -46,8 +47,9 @@ public class ArchiveSimple extends Archive {
 		this.delimeter = delimeter;
 		items = new ArrayList<String>();
 	}
-	
-	public void add(String item) {
+
+    @Override
+    public void add(String item, Calendar c) {
 		this.newLines++;
 		if(this.addToTop) {
 			items.add(0, item);
