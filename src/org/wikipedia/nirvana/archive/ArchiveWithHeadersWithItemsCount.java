@@ -23,19 +23,23 @@
 package org.wikipedia.nirvana.archive;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import junit.framework.Assert;
 
 import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.nirvanabot.BotVariables;
+import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
 /**
- * @author kin
- *
+ * Archive that has "count" (or "%(количество)") placeholder in its headers.
+ * "count" is a count of articles in the next header. 
  */
 public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
-	public static final String template = "%(количество)";
-	//protected String headerFormat;
-	public HeaderFormatItem patternOfHeader[] = null;
+    private List<HeaderFormatItem> patternOfHeader = null;
+    private List<HeaderFormatItem> patternOfSuperHeader = null;
 
 	public class HeaderFormatItem {		
 		public Period period = Period.NONE;
@@ -47,35 +51,34 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 			period = p;
 		}
 	}
+
 	/**
-	 * @param text
-	 * @param addToTop
-	 * @param delimeter
-	 * @param enumeration
+     * Constructor to use when archive is available as bare string.
 	 */
 	public ArchiveWithHeadersWithItemsCount(String text, int parseCount, boolean addToTop,
-			String delimeter, Enumeration enumeration, String headerFormat) {		
-		//this.headerFormat = headerFormat;
-		super(parseCount, addToTop, delimeter, enumeration);		
-		initPattern(headerFormat);
+            String delimeter, Enumeration enumeration, String headerFormat,
+            String superHeaderFormat) {
+        super(parseCount, addToTop, delimeter, enumeration, headerFormat, superHeaderFormat);
+        log.debug("ArchiveWithHeadersWithItemsCount created");
+        patternOfHeader = parsePattern(headerFormat);
+        patternOfSuperHeader = parsePattern(superHeaderFormat);
 		init(text);		
 	}
-	
+
 	/**
-	 * @param lines
-	 * @param addToTop
-	 * @param delimeter
-	 * @param enumeration
+     * Constructor to use when archive is available as string array. 
 	 */
 	public ArchiveWithHeadersWithItemsCount(String[] lines, int parseCount, boolean addToTop,
-			String delimeter, Enumeration enumeration, String headerFormat) {
-		super(parseCount, addToTop, delimeter, enumeration);	
-		log.debug("ArchiveWithHeadersWithItemsCount created");
-		initPattern(headerFormat);
+            String delimeter, Enumeration enumeration, String headerFormat,
+            String superHeaderFormat) {
+        super(parseCount, addToTop, delimeter, enumeration, headerFormat, superHeaderFormat);
+        log.debug("ArchiveWithHeadersWithItemsCount created");
+        patternOfHeader = parsePattern(headerFormat);
+        patternOfSuperHeader = parsePattern(superHeaderFormat);
 		init(lines);		
 	}
-	
-	private void initPattern(String headerFormat) {
+
+    private List<HeaderFormatItem> parsePattern(String headerFormat) {
 		ArrayList<HeaderFormatItem> pattern = new ArrayList<HeaderFormatItem>();
 		int first = 0;
 		//int index = 0;
@@ -97,12 +100,13 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 				}
 			
 			}
-			if(headerFormat.regionMatches(pos, template, 0, template.length())) {
+            if (headerFormat.regionMatches(pos, BotVariables.COUNT, 0,
+                    BotVariables.COUNT.length())) {
 				if(first<pos) {
 					pattern.add(new HeaderFormatItem(headerFormat.substring(first,pos)));						
 				}
-				pattern.add(new HeaderFormatItem(template));
-				pos+=template.length();
+                pattern.add(new HeaderFormatItem(BotVariables.COUNT));
+                pos += BotVariables.COUNT.length();
 				first=pos;
 				wasPeriod = true;
 			}
@@ -113,25 +117,26 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 		if(first<pos) {
 			pattern.add(new HeaderFormatItem(headerFormat.substring(first,pos)));
 		}
-		this.patternOfHeader = pattern.toArray(new HeaderFormatItem[0]);
+        return pattern;
 	}
-	
+
 	public class IntAndString {
 		public int val=-1;
 		public String str = null;
 	}
-	
-	public String headerVariableToConstant(String header,IntAndString data) {
+
+    public String headerVariableToConstant(String header, List<HeaderFormatItem> headerPattern,
+            IntAndString data) {
 		String str = header;
 		int pos = 0;
-		for(HeaderFormatItem item : patternOfHeader) {
+        for (HeaderFormatItem item : headerPattern) {
 			if(item.period==Period.NONE) {
-				if(item.string.equals(template)) {
+                if (item.string.equals(BotVariables.COUNT)) {
 					int start = pos;
 					while(Character.isDigit(str.charAt(pos)))
 						pos++;
-					
-					str = header.substring(0, start) + template + str.substring(pos);
+
+                    str = header.substring(0, start) + BotVariables.COUNT + str.substring(pos);
 					if(data!=null) {
 						data.val = Integer.parseInt(header.substring(start, pos));
 						data.str = str;
@@ -160,14 +165,14 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 	protected class SectionWithItemsCount extends Section {
 		int oldCount = -1;
 		SectionWithItemsCount(Enumeration enumeration, String header,
-				String headerText, String hHeader, String hHeaderText,
+                String headerText, String superHeader, String superHeaderText,
 				boolean old) {
-			super(enumeration, header, headerText, hHeader, hHeaderText, old);			
+            super(enumeration, header, headerText, superHeader, superHeaderText, old);
 		}
 		SectionWithItemsCount(Enumeration enumeration, String header,
-				String headerText, String hHeader, String hHeaderText,
+                String headerText, String superHeader, String superHeaderText,
 				boolean old, int count) {
-			super(enumeration, header, headerText, hHeader, hHeaderText, old);
+            super(enumeration, header, headerText, superHeader, superHeaderText, old);
 			this.oldCount = count;
 		}
 
@@ -188,19 +193,44 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 		
 		public String toString() {
 			if(!this.headerText.isEmpty()) {
-				if(this.trancated) {
-					this.headerText = this.headerText.replace(
-							template, String.valueOf(this.oldCount));
-				} else {
-					this.headerText = this.headerText.replace(
-						template, String.valueOf(this.getSize()));
-				}
+                this.headerText = this.headerText.replace(
+                        BotVariables.COUNT, String.valueOf(getSize()));
 			}
+            if (!superHeaderText.isEmpty()) {
+                int size = getSuperSectionSize(superHeader);
+                log.debug("Calculated size for section {} was: {}", superHeader, size);
+                superHeaderText = superHeaderText.replace(BotVariables.COUNT, String.valueOf(size));
+            }
 			return super.toString();
 		}
-		
+
+        @Override
+        public int getSize() {
+            if (trancated) return oldCount;
+            else return super.getSize();
+        }
+
 	};
-	
+
+    private int getSuperSectionSize(String superHeaderName) {
+        int start = -1;
+        int size = 0;
+        start = findSuperHeader(superHeaderName);
+        if (start < 0) {
+            log.error("This is not possible! I can't find this header..");
+            if (NirvanaBot.DEBUG_BUILD) {
+                Assert.fail("This is not possible! I can't find this header..");
+            }
+            return 0;
+        }
+        int end = findLastSectionInSuperSection(start);
+        log.debug("Super-section range is: {}:{}.", start, end);
+        for (int i = start; i <= end; i++) {
+            size += parts.get(i).getSize();
+        }
+        return size;
+    }
+
 	protected Section createSection(Enumeration enumeration, boolean old) {
 		return new SectionWithItemsCount(enumeration,old);		
 	}
@@ -209,7 +239,7 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 			String header,	String headerText,	boolean old) {
 		if(old) {
 			IntAndString data = new IntAndString();
-			String ht = headerVariableToConstant(headerText,data);
+            String ht = headerVariableToConstant(headerText, patternOfHeader, data);
 			String h = StringUtils.strip(ht, "=").trim();
 			return new SectionWithItemsCount(enumeration,h,ht,old,data.val);	
 		}
@@ -222,11 +252,12 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 			boolean old) {
 		if(old) {
 			IntAndString data = new IntAndString();
-			String ht = headerVariableToConstant(headerText,data);
+            String ht = headerVariableToConstant(headerText, patternOfHeader, data);
 			String h = StringUtils.strip(ht, "=").trim();
-			return new SectionWithItemsCount(enumeration,h,ht,sHeader,sHeaderText,old,data.val);	
+            String sht = headerVariableToConstant(headerText, patternOfSuperHeader, data);
+            String sh = StringUtils.strip(sht, "=").trim();
+            return new SectionWithItemsCount(enumeration, h, ht, sh, sht, old, data.val);
 		}
 		return new SectionWithItemsCount(enumeration,header,headerText,sHeader,sHeaderText,old);		
 	}
-
 }

@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.archive;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -65,8 +66,9 @@ public class ArchiveUnique extends ArchiveSimple {
 		uniqueItemIndexes = new HashMap<String,Integer>();
 		uniqueItemRevisions = new HashMap<String,Revision>();
 	}
-	
-	public void add(String item) {
+
+    @Override
+    public void add(String item, Calendar c) {
 		//this.newLines++;
 		String title = NewPages.getNewPagesItemArticle(item);
 		//boolean skip = false;

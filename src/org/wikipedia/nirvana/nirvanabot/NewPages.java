@@ -1123,7 +1123,7 @@ public class NewPages implements PortalModule{
     		log.debug("archiving item: "+item);
     		Calendar c = getNewPagesItemDate(wiki,item);
     		if(c==null) {
-    			defaultArchive.add(item);
+                defaultArchive.add(item, null);
     			continue;
     		} 
     		// 1) get archive object for this item
@@ -1136,23 +1136,7 @@ public class NewPages implements PortalModule{
     				hmap.put(arname, thisArchive);
     			}
     		}
-    		// find where to put this item
-    		if(archiveSettings.withoutHeaders()) {
-    			if(!archiveSettings.hasHtmlEnumeration()) {
-    				((ArchiveSimple)thisArchive).add(item);
-    			} else {
-    				((ArchiveWithEnumeration)thisArchive).add(item);
-    			}
-    		} else {
-	    		String thisHeader = archiveSettings.getHeaderForDate(c);
-	    		String superHeader = archiveSettings.getHeaderHeaderForDate(c);
-	    		if(superHeader==null) {
-	    			((ArchiveWithHeaders)thisArchive).add(item, thisHeader);
-	    		} else {
-	    			((ArchiveWithHeaders)thisArchive).add(item, thisHeader,superHeader);
-	    		}
-    		}
-    		
+            thisArchive.add(item, c);
     	}    	
     	
     	Iterator<Entry<String, Archive>> it = hmap.entrySet().iterator();

@@ -122,7 +122,7 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 				archiveSettings.headerFormat = str;
 			}
 		}
-		
+
 		key = "формат подзаголовка в архиве";
 		Period p2 = Period.NONE;
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
@@ -132,11 +132,11 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 				log.error("В параметре \"формат подзаголовка в архиве\" не задан переменный параметр. Значение этого параметра не принято.");
 				return;
 			} else {
-				archiveSettings.headerHeaderFormat = archiveSettings.headerFormat;
+                archiveSettings.superHeaderFormat = archiveSettings.headerFormat;
 				archiveSettings.headerFormat = str;
 			}			
 		}
-		
+
 		if(p1!=Period.NONE && p2!=Period.NONE && p1==p2) {
 			log.error("Параметр \"формат заголовка в архиве\" и параметр \"формат подзаголовка в архиве\" имеют одинаковый период повторения "+p1.template());
 			return;
@@ -281,32 +281,8 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 					(	item.compareToIgnoreCase(Archive.OL)!=0 &&
 					 	item.compareToIgnoreCase(Archive.OL_END)!=0 &&
 					 	!p.matcher(item).matches())	) {
-				if(archiveSettings.removeDuplicates) {
-					((ArchiveUnique)thisArchive).add(item);
-				} else if(archiveSettings.withoutHeaders()) {
-	    			if(!archiveSettings.hasHtmlEnumeration()) {
-	    				if(archiveSettings.sorted)
-	    					((ArchiveSimpleSorted)thisArchive).add(item);
-	    				else
-	    					((ArchiveSimple)thisArchive).add(item);
-	    			} else {
-	    				((ArchiveWithEnumeration)thisArchive).add(item);
-	    			}
-	    		} else {
-	    			Calendar c = NewPages.getNewPagesItemDate(wiki,item);
-		    		if(c==null) {
-		    			thisArchive.add(item);
-		    			//continue;
-		    		} else {
-			    		String thisHeader = archiveSettings.getHeaderForDate(c);
-			    		String superHeader = archiveSettings.getHeaderHeaderForDate(c);
-			    		if(superHeader==null) {
-			    			((ArchiveWithHeaders)thisArchive).add(item, thisHeader);
-			    		} else {
-			    			((ArchiveWithHeaders)thisArchive).add(item, thisHeader,superHeader);
-			    		}
-		    		}
-	    		}
+                Calendar c = NewPages.getNewPagesItemDate(wiki, item);
+                thisArchive.add(item, c);
 			}
 		}
 		wiki.edit(archive, thisArchive.toString(), COMMENT, minor, bot);

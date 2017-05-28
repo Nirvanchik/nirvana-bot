@@ -1402,7 +1402,13 @@ public class NirvanaBot extends NirvanaBasicBot{
             String str = config.getUnquoted(key2);
             p2 = ArchiveSettings.getHeaderPeriod(str);
             if (p2 != Period.NONE) {
-                archiveSettings.headerHeaderFormat = archiveSettings.headerFormat;
+                archiveSettings.superHeaderFormat = archiveSettings.headerFormat;
+                if (archiveSettings.superHeaderFormat != null &&
+                        archiveSettings.superHeaderFormat.contains(BotVariables.COUNT)) {
+                    // Skip optimization if favor of correct calculation of items count in large
+                    // sections.
+                    archiveSettings.parseCount = Integer.MAX_VALUE;
+                }
                 archiveSettings.headerFormat = str;
             } else {
                 String format = localizer.localize(ERROR_PARAMETER_MISSING_VARIABLE);

@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.archive;
 
 import java.io.IOException;
+import java.util.Calendar;
 
 import javax.security.auth.login.LoginException;
 
@@ -58,16 +59,18 @@ public class ArchiveWithEnumeration extends ArchiveSimple {
 		if(lines[j].compareToIgnoreCase(OL_END)==0) j--;
 		oldText = StringUtils.join(lines,delimeter,i,j+1);
 	}
-	public void add(String item) {
+
+    @Override
+    public void add(String item, Calendar c) {
 		String str = item;
 		if(str.startsWith("*") || str.startsWith("#")) {
 			str = "<li>"+str.substring(1);
 		} else {
 			str = "<li> " + str;
 		}
-		super.add(str);
+        super.add(str, c);
 	}
-	
+
 	public String toString() {
 		if(addToTop) {
 			if(oldText.isEmpty()) 

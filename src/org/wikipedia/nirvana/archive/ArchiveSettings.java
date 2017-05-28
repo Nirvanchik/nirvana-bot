@@ -33,8 +33,15 @@ import org.wikipedia.nirvana.DateTools;
 public class ArchiveSettings {
 	private static int START_YEAR_DEFAULT = 2003;
 	public String archive;
+    /**
+     * Archive header format if archive has headers of 1 level.
+     * Archive header format of the second level if archive has headers of 2 levels.
+     */
 	public String headerFormat;
-	public String headerHeaderFormat;
+    /**
+     * Archive top-level header format if archive has headers of 2 levels.
+     */
+    public String superHeaderFormat;
 	public boolean addToTop;
 	public boolean removeDeleted;
 	public Period archivePeriod;
@@ -85,14 +92,14 @@ public class ArchiveSettings {
 		public boolean isNumeric() { return numeric; }
 		//public String 
 	};
-	
+
 	public ArchiveSettings() {
 		archive = null;
 		archivePeriod = Period.NONE;
 		addToTop = true;
 		removeDeleted = false;
 		headerFormat = null;
-		headerHeaderFormat = null;
+        superHeaderFormat = null;
 		enumeration = Enumeration.NONE;
 		sorted = false;
 		removeDuplicates = false;
@@ -102,7 +109,7 @@ public class ArchiveSettings {
 		firstArchive = null;
 		//supportCategory = false;
 	}
-	
+
 	public boolean isSingle() {
 		return (archivePeriod==Period.NONE);
 	}
@@ -174,9 +181,9 @@ public class ArchiveSettings {
 	public String getHeaderForDate(Calendar c) {
 		return ArchiveSettings.getHeaderForDate(c, headerFormat);
 	}
-	
-	public String getHeaderHeaderForDate(Calendar c) {
-		return ArchiveSettings.getHeaderForDate(c, headerHeaderFormat);
+
+    public String getSuperHeaderForDate(Calendar c) {
+        return ArchiveSettings.getHeaderForDate(c, superHeaderFormat);
 	}
 
 }
