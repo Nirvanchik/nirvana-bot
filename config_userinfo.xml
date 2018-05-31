@@ -7,6 +7,7 @@
 <entry key="wiki-password"></entry>
 <entry key="wiki-account-file">loginNirvanaBot.xml</entry>
 <entry key="wiki-lang">ru</entry>
+<entry key="wiki-maxlag">5</entry>
 <entry key="debug-mode">yes</entry>
 <entry key="task-list-file">userlist.txt</entry>
 </properties>

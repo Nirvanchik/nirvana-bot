@@ -8,6 +8,7 @@
 <entry key="wiki-password"></entry>
 <entry key="wiki-account-file">loginNirvanaBot.xml</entry>
 <entry key="wiki-lang">ru</entry>
+<entry key="wiki-maxlag">5</entry>
 <entry key="stat-settings-template">Участник:NirvanaBot/test/Параметры статистики</entry>
 <entry key="update-comment">Обновление статистики</entry>
 <entry key="default-comment">Обновление статистики</entry>

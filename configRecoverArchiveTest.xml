@@ -9,6 +9,7 @@
 <entry key="wiki-account-file">loginNirvanaBot.xml</entry>
 <entry key="new-pages-template">Участник:NirvanaBot/test/Новые статьи</entry>
 <entry key="wiki-lang">ru</entry>
+<entry key="wiki-maxlag">5</entry>
 <entry key="default-depth">15</entry>
 <entry key="default-hours">720</entry>
 <entry key="default-maxitems">1</entry>
