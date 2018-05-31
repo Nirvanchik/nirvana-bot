@@ -95,10 +95,15 @@ public abstract class BasicBot {
 	
 	public static final String YES = "yes";
 	public static final String NO = "no";
-	
-	protected int MAX_LAG = 15;
+
+    /**
+     * This is maxlag parameter they are talking about here:
+     * https://www.mediawiki.org/wiki/Manual:Maxlag_parameter
+     * Specified in seconds.
+     */
+    protected int MAX_LAG = 5;
 	protected int THROTTLE_TIME_MS = 10000;
-	
+
 	protected NirvanaWiki wiki;
 
     protected String outDir = ".";
