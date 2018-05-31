@@ -34,12 +34,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -53,18 +49,26 @@ import javax.security.auth.login.FailedLoginException;
  * Write your config file in xml: config.xml
  * You may choose another file name, but specify it in command line when starting the bot:
  * java - <package_name_of_your_bot>.<YourBotClassName> <your_config_file_name>.xml
- * If you have special properties, load them in redefined {@link loadCustomProperties()}
- * Use {@link properties} to load your properties
+ * If you have special properties, load them in redefined {@link #loadCustomProperties()}
+ * Use {@link #properties} to load your properties
  * 2) Bot INFO, LICENSE, USAGE
- * Redefine {@link showLicense()} if your prefer license other than GNU GPL
- * Redefine {@link showInfo()}. Redefine {@link showUsage()}.
+ * Redefine {@link #showLicense()} if your prefer license other than GNU GPL
+ * Redefine {@link #showInfo()}. Redefine {@link #showUsage()}.
  * 3) CONSTRUCTOR
  * Write your constructor and pass int flags to default constructor
  * 4) GO
  * Implement the body of {@link go()} - the main code of what your bot
  * 5) MAIN
  * Implement <code>public static void main()</code> where create your bot instance with specified flags
- * and call {@link run()} to run bot.
+ * and call {@link run()} to run bot. Example of typical main() function:
+ * <pre>
+ * {@code
+ * public static void main(String[] args) {
+ *     NirvanaBasicBot bot = new NirvanaArchiveBot();
+ *     System.exit(bot.run(args));
+ * }
+ * }
+ * </pre>
  */
 public abstract class NirvanaBasicBot {
     public static final int FLAG_SHOW_LICENSE = 0b001;
