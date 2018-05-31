@@ -7,6 +7,7 @@
 <entry key="wiki-login">NirvanaBot</entry>
 <entry key="wiki-password"></entry>
 <entry key="wiki-account-file">loginNirvanaBot.xml</entry>
+<entry key="wiki-maxlag">5</entry>
 <entry key="new-pages-template">
 	Участник:NirvanaBot/Новые статьи,
 	Участник:ClaymoreBot/Новые статьи

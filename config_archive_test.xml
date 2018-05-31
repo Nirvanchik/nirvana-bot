@@ -9,6 +9,7 @@
 <entry key="wiki-account-file">loginNirvanaBot.xml</entry>
 <entry key="wiki-lang">ru</entry>
 <entry key="wiki-java-loglevel">OFF</entry>
+<entry key="wiki-maxlag">5</entry>
 <entry key="update-comment">обработка архива (заголовки, нумерация, сортировка)</entry>
 <entry key="default-comment">обновление</entry>
 <entry key="debug-mode">yes</entry>

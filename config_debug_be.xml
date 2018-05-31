@@ -11,6 +11,7 @@
 <entry key="overriden-properties-page">User:NirvanaBot/Новыя артыкулы/Налады па змаўчанні</entry>
 <entry key="wiki-lang">be</entry>
 <entry key="wiki-java-loglevel">OFF</entry>
+<entry key="wiki-maxlag">5</entry>
 <entry key="update-comment">обновление</entry>
 <entry key="default-depth">6</entry>
 <entry key="default-hours">350</entry>

@@ -10,6 +10,7 @@
 <entry key="new-pages-template">User:NirvanaBot/Новыя артыкулы</entry>
 <entry key="overriden-properties-page">User:NirvanaBot/Новыя артыкулы/Налады па змаўчанні</entry>
 <entry key="wiki-lang">be</entry>
+<entry key="wiki-maxlag">5</entry>
 <entry key="default-depth">6</entry>
 <entry key="default-hours">350</entry>
 <entry key="default-maxitems">20</entry>
