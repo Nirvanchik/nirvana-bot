@@ -609,7 +609,7 @@ public class NirvanaBot extends BasicBot{
 
         long startMillis = Calendar.getInstance().getTimeInMillis();
         commons = createCommonsWiki();
-		commons.setMaxLag( MAX_LAG );
+        commons.setMaxLag(maxLag);
 
         serviceManager = createServiceManager();
 
