@@ -133,10 +133,15 @@ public abstract class BasicBot {
 	public void showUsage() {
 		
 	}
+
+    /**
+     * Prints basic information about bot (name, version, copyright, purpose) when the bot starts
+     * with {@link #run(String[])} method. Override it to print information about your bot. 
+     */
 	public void showInfo() {
-		System.out.print("NirvanaBasicBot v1.2 Copyright (C) 2012-2013 Dmitry Trofimovich (KIN)\n\n");
-		
+        System.out.print("BasicBot v1.2 Copyright (C) 2018 Dmitry Trofimovich (KIN)\n\n");
 	}
+
 	public void showLicense() {		
 		System.out.print(LICENSE);
 	}
@@ -199,15 +204,7 @@ public abstract class BasicBot {
 	    }
 	    return params;
     }
-	/**
-	 * this is an example of main function
-	 */
-    /**
-    public static void main(String[] args) {
-        NirvanaBasicBot bot = new NirvanaBasicBot(FLAG_DEFAULT_LOG);
-        System.exit(bot.run(args));
-	}*/
-    
+
 	public String getConfig(String[] args) {
 		String configFile = null;
 		if(args.length==0) {
