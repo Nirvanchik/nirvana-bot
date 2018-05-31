@@ -101,7 +101,7 @@ public abstract class BasicBot {
      * https://www.mediawiki.org/wiki/Manual:Maxlag_parameter
      * Specified in seconds.
      */
-    protected int MAX_LAG = 5;
+    protected int maxLag = 5;
 	protected int THROTTLE_TIME_MS = 10000;
 
 	protected NirvanaWiki wiki;
@@ -289,7 +289,7 @@ public abstract class BasicBot {
 		PROTOCOL = properties.getProperty("wiki-protocol", PROTOCOL);
 		log.info("protocol=" + PROTOCOL);
 		COMMENT = properties.getProperty("update-comment",COMMENT);
-		MAX_LAG = Integer.valueOf(properties.getProperty("wiki-maxlag", String.valueOf(MAX_LAG)));
+        maxLag = Integer.valueOf(properties.getProperty("wiki-maxlag", String.valueOf(maxLag)));
 		THROTTLE_TIME_MS = Integer.valueOf(properties.getProperty("wiki-throttle", String.valueOf(THROTTLE_TIME_MS)));
 		log.info("comment="+COMMENT);
 		DEBUG_MODE = properties.getProperty("debug-mode",DEBUG_MODE?YES:NO).equals(YES);
@@ -353,12 +353,12 @@ public abstract class BasicBot {
 	protected void onInterrupted(InterruptedException e) {
 		
 	}
-	
-	/**
-     * 
+
+    /**
+     * Override it to customize {@link #wiki} before wiki.login() will be called.
      */
     protected void configureWikiBeforeLogin() {
-		wiki.setMaxLag( MAX_LAG );
+        wiki.setMaxLag(maxLag);
 		wiki.setThrottle(THROTTLE_TIME_MS);
     }
 
