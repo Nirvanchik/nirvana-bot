@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 
 import org.junit.After;
@@ -300,7 +300,7 @@ public class LocalizationManagerTest {
 
     @Test
     public void skipLocalizationForDefaultLang_default() throws Exception {
-        Assume.assumeTrue(!NirvanaBasicBot.DEBUG_BUILD);
+        Assume.assumeTrue(!BasicBot.DEBUG_BUILD);
 
         LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
                 TRANSLATIONS_DIR, LocalizationManager.DEFAULT_LANG);
@@ -311,7 +311,7 @@ public class LocalizationManagerTest {
 
     @Test
     public void skipLocalizationForDefaultLang_wiki() throws Exception {
-        Assume.assumeTrue(!NirvanaBasicBot.DEBUG_BUILD);
+        Assume.assumeTrue(!BasicBot.DEBUG_BUILD);
         NirvanaWiki wiki = makeWikiWithTranslation("<pre>\napple = Apfel\n</pre>\n");
 
         LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
@@ -324,7 +324,7 @@ public class LocalizationManagerTest {
 
     @Test
     public void refreshWikiTranslations_defaultLang() throws Exception {
-        Assume.assumeTrue(!NirvanaBasicBot.DEBUG_BUILD);
+        Assume.assumeTrue(!BasicBot.DEBUG_BUILD);
         NirvanaWiki wiki = makeWikiWithTranslation("<pre>\napple = Apfel\n</pre>\n");
 
         LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,

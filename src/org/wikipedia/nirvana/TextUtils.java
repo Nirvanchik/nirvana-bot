@@ -68,7 +68,7 @@ public class TextUtils {
         for (String line: lines) {
             String trimLine = line.trim();
             if (trimLine.isEmpty()) continue;
-            if (NirvanaBasicBot.DEBUG_BUILD) {
+            if (BasicBot.DEBUG_BUILD) {
                 sLog.debug(trimLine);
             }
             if (commentSeparators != null && commentSeparators.length > 0) {

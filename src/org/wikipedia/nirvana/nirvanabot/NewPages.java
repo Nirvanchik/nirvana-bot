@@ -25,10 +25,10 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.HTTPTools;
-import org.wikipedia.nirvana.NirvanaBasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.StringTools;
@@ -40,9 +40,6 @@ import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveFactory;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
-import org.wikipedia.nirvana.archive.ArchiveSimple;
-import org.wikipedia.nirvana.archive.ArchiveWithEnumeration;
-import org.wikipedia.nirvana.archive.ArchiveWithHeaders;
 import org.wikipedia.nirvana.localization.LocalizedTemplate;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;
@@ -805,7 +802,7 @@ public class NewPages implements PortalModule{
 		oldText = trimLeft(oldText, headerLastUsed);	
 		oldText = trimMiddle(oldText, middleLastUsed);
 
-        if (NirvanaBasicBot.DEBUG_BUILD) {
+        if (BasicBot.DEBUG_BUILD) {
             FileTools.dump(footer, this.pageName + ".footer.txt");
         }
 
@@ -1061,7 +1058,7 @@ public class NewPages implements PortalModule{
 	    String settingsText = r.getText();
 	    Map<String, String> options = new HashMap<String,String>();
 	    String userNamespace = wiki.namespaceIdentifier(Wiki.USER_NAMESPACE);
-	    if(NirvanaBasicBot.TryParseTemplate(template, userNamespace, settingsText, options, true)) {
+        if (BasicBot.TryParseTemplate(template, userNamespace, settingsText, options, true)) {
 	    	headerLastUsed = NirvanaBot.getDefaultHeader();
 	    	footerLastUsed = NirvanaBot.getDefaultFooter();
 	    	middleLastUsed = NirvanaBot.getDefaultMiddle();

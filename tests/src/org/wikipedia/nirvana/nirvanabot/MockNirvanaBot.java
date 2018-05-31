@@ -112,7 +112,7 @@ public class MockNirvanaBot extends NirvanaBot {
     /**
      * Constructs mocked NirvanaBot.
      *
-     * @param flags global bot run flags, see {@link org.wikipedia.nirvana.NirvanaBasicBot}
+     * @param flags global bot run flags, see {@link org.wikipedia.nirvana.BasicBot}
      * @param testConfigPath path to js config from which to read mock data
      * @throws TestError in the case when test json data are corrupt or unavailable
      */

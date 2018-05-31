@@ -23,6 +23,17 @@
 
 package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
+import org.wikipedia.Wiki;
+import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.FileTools;
+import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.StringTools;
+import org.wikipedia.nirvana.WikiTools;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -31,18 +42,6 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import org.wikipedia.Wiki;
-import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaBasicBot;
-import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.ServiceError;
-import org.wikipedia.nirvana.StringTools;
-import org.wikipedia.nirvana.WikiTools;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * @author kin
