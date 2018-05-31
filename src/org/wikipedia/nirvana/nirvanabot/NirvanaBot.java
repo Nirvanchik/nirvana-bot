@@ -71,7 +71,7 @@ import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.BotUtils;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.WikiTools;
@@ -107,7 +107,7 @@ import javax.security.auth.login.LoginException;
  * @author kin
  *
  */
-public class NirvanaBot extends NirvanaBasicBot{
+public class NirvanaBot extends BasicBot{
 	static final String SERVICE_AUTO = "auto";
     private static final String TYPE_ALL = "all";
 	private String userNamespace;
@@ -324,7 +324,7 @@ public class NirvanaBot extends NirvanaBasicBot{
 	}
 
     public static void main(String[] args) {
-		NirvanaBasicBot bot = new NirvanaBot(NirvanaBasicBot.FLAG_SHOW_LICENSE);
+        BasicBot bot = new NirvanaBot(BasicBot.FLAG_SHOW_LICENSE);
         System.exit(bot.run(args));
 	}
 
@@ -785,7 +785,7 @@ public class NirvanaBot extends NirvanaBasicBot{
     				
     				String portalSettingsText = wiki.getPageText(portalName);
 
-                    if (DEBUG_MODE || NirvanaBasicBot.DEBUG_BUILD) {
+                    if (DEBUG_MODE || BasicBot.DEBUG_BUILD) {
                         FileTools.dump(portalSettingsText, dumpDir, portalName + ".settings.txt");
     				}
 

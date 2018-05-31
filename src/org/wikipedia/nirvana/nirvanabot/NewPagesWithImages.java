@@ -35,7 +35,7 @@ import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.BotUtils;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.HTTPTools;
-import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinder;
@@ -131,7 +131,7 @@ public class NewPagesWithImages extends NewPages {
                 	log.warn(e.toString()+" "+page.getPage()); // page was created and renamed or deleted after that
                 	continue;
                 }
-                if (NirvanaBasicBot.DEBUG_BUILD) {
+                if (BasicBot.DEBUG_BUILD) {
                     FileTools.dump(article, page.getPage());
                 }
             }
@@ -220,7 +220,7 @@ public class NewPagesWithImages extends NewPages {
 		    {
 		        oldText = oldText.substring(header.length());
 		    }
-            if (NirvanaBasicBot.DEBUG_BUILD) {
+            if (BasicBot.DEBUG_BUILD) {
                 FileTools.dump(footer, this.pageName + ".footer.txt");
             }
 		    if (!footer.isEmpty() && oldText.endsWith(footer))

@@ -25,7 +25,7 @@ package org.wikipedia.nirvana.localization;
 
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.TextUtils;
 import org.wikipedia.nirvana.WikiUtils;
@@ -98,7 +98,7 @@ public class LocalizationManager {
      */
     public void load(NirvanaWiki wiki, String wikiTranslationPage) throws IOException,
             BotFatalError {
-        if (lang.equals(DEFAULT_LANG) && !NirvanaBasicBot.DEBUG_BUILD) {
+        if (lang.equals(DEFAULT_LANG) && !BasicBot.DEBUG_BUILD) {
             Localizer.init(Localizer.DEFAULT_LOCALIZATION);
             return;
         }
@@ -125,7 +125,7 @@ public class LocalizationManager {
     public void refreshWikiTranslations(NirvanaWiki wiki, String wikiTranslationPage)
             throws IOException, LoginException {
         log.debug("Refresh wiki translations page?");
-        if (lang.equals(DEFAULT_LANG) && !NirvanaBasicBot.DEBUG_BUILD) {
+        if (lang.equals(DEFAULT_LANG) && !BasicBot.DEBUG_BUILD) {
             return;
         }
         // 1492210800 = Fri, 14 Apr 2017 23:00:00 GMT
@@ -228,7 +228,7 @@ public class LocalizationManager {
      * Loads default translations.
      */
     public void loadDefault() throws BotFatalError {
-        if (lang.equals(DEFAULT_LANG) && !NirvanaBasicBot.DEBUG_BUILD) {
+        if (lang.equals(DEFAULT_LANG) && !BasicBot.DEBUG_BUILD) {
             Localizer.init(Localizer.DEFAULT_LOCALIZATION);
             return;
         }

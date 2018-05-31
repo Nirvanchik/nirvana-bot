@@ -34,7 +34,7 @@ import javax.security.auth.login.LoginException;
 
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.TextUtils;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.localization.Localizer;
@@ -46,7 +46,7 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
  * @author kin
  *
  */
-public class NirvanaArchiveBot extends NirvanaBasicBot{
+public class NirvanaArchiveBot extends BasicBot{
 	public static final String delimeter = "\n";	
 
 	private static String TASK_LIST_FILE = "task.txt";
@@ -56,16 +56,16 @@ public class NirvanaArchiveBot extends NirvanaBasicBot{
 		"NirvanaArchiveBot v1.3 Updates archives of new articles lists at http://ru.wikipedia.org\n" +
 		"Copyright (C) 2011-2014 Dmitry Trofimovich (KIN)\n" +		
 		"\n";
-	
+
 	public void showInfo() {
 		System.out.print(INFO);
 	}
-	
-	/**
-	 * @param args
-	 */
+
+    /**
+     * Entry point for bot application.
+    */
     public static void main(String[] args) {
-		NirvanaBasicBot bot = new NirvanaArchiveBot();
+        BasicBot bot = new NirvanaArchiveBot();
         System.exit(bot.run(args));
 	}
 

@@ -39,7 +39,7 @@ import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.BotUtils;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaBasicBot;
+import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.NumberTools;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
@@ -51,7 +51,7 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
  * @author kin
  *
  */
-public class StatisticsBot extends NirvanaBasicBot {
+public class StatisticsBot extends BasicBot {
     public static final String DEFAULT_CACHE_FOLDER = "cache";
 	boolean DEBUG = false;
 	//public static final int START_YEAR = 2008;
@@ -88,7 +88,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 	}
 
     public static void main(String[] args) {
-		NirvanaBasicBot bot = new StatisticsBot();
+        BasicBot bot = new StatisticsBot();
         System.exit(bot.run(args));
 	}
 
@@ -188,7 +188,7 @@ public class StatisticsBot extends NirvanaBasicBot {
 				
 				String portalSettingsText = wiki.getPageText(portalName);
 
-                if (DEBUG_MODE || NirvanaBasicBot.DEBUG_BUILD) {
+                if (DEBUG_MODE || BasicBot.DEBUG_BUILD) {
                     FileTools.dump(portalSettingsText, portalName + ".settings.txt");
 				}
 
