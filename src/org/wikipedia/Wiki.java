@@ -26,6 +26,7 @@ package org.wikipedia;
 
 import java.io.*;
 import java.net.*;
+import java.nio.*;
 import java.nio.file.Files;
 import java.text.Normalizer;
 import java.util.*;
@@ -431,7 +432,6 @@ public class Wiki implements Serializable
     // preferences
     private int max = 500;
     private int slowmax = 50;
-    private boolean highLimitEnabled = true;
     private int throttle = 10000; // throttle
     protected int maxlag = 5;
     private int assertion = ASSERT_NONE; // assertion mode
@@ -569,15 +569,7 @@ public class Wiki implements Serializable
             apigen.append("redirects&");
         query = apigen.toString();
     }
-    
-    public void enableHightLimit(boolean enabled) {
-    	highLimitEnabled = enabled;
-    }
-    
-    public void setSlowmax(int slowmax) {
-    	this.slowmax = slowmax;
-    }
-    
+   
     public String getProtocol() {
     	return protocol;
     }
@@ -992,7 +984,7 @@ public class Wiki implements Serializable
         {
             user = new User(username);
             boolean apihighlimit = user.isAllowedTo("apihighlimits");
-            if (apihighlimit && highLimitEnabled)
+            if (apihighlimit)
             {
                 max = 5000;
                 slowmax = 500;
@@ -1068,6 +1060,7 @@ public class Wiki implements Serializable
     {
         login(username, password, true);
     }
+
     /**
      *  Logs out of the wiki. This method is thread safe (so that we don't log
      *  out during an edit). All operations are conducted offline, so you can
@@ -1251,8 +1244,6 @@ public class Wiki implements Serializable
      */
     public String getToken(String type) throws IOException
     {
-        // Note: not called in some methods because we can fetch additional
-        // useful information.
         String content = fetch(query + "meta=tokens&type=" + type, "getToken");
         String token = parseAttribute(content, type + "token", 0);
         
@@ -1375,7 +1366,7 @@ public class Wiki implements Serializable
      *    java.util.Map, java.lang.String) protection state} of the page. Does
      *    not cover implied protection levels (e.g. MediaWiki namespace).
      *  <li><b>token</b>: (String) an edit token for the page, must be logged in
-     *    to be non-trivial
+     *    to be non-trivial. <b>DEPRECATED</b>: use getToken() instead.
      *  <li><b>exists</b>: (Boolean) whether the page exists
      *  <li><b>lastpurged</b>: (Calendar) when the page was last purged or null
      *    if the page does not exist
@@ -1405,8 +1396,7 @@ public class Wiki implements Serializable
         String[] titles = constructTitleString(pages);
         for (String temp : titles)
         {
-        	String urlString = url.toString();
-            String line = fetch(urlString + temp, "getPageInfo");
+            String line = fetch(url.toString() + temp, "getPageInfo");
 
             // form: <page pageid="239098" ns="0" title="BitTorrent" ... >
             // <protection />
@@ -1467,16 +1457,15 @@ public class Wiki implements Serializable
                 tempmap.put("protection", protectionstate);
 
                 tempmap.put("displaytitle", parseAttribute(item, "displaytitle", 0));
-                tempmap.put("token", parseAttribute(item, "edittoken", 0));
                 tempmap.put("timestamp", makeCalendar());
 
+                // DEPRECATED, will be removed shortly
+                tempmap.put("token", parseAttribute(item, "edittoken", 0)); 
                 // watchlist token
                 if (user != null)
                 {
-                    // no longer needed now that watchInternal uses getToken(). Will be
-                    // removed shortly.
                     tempmap.put("watchtoken", parseAttribute(item, "watchtoken", 0));
-                    log(Level.WARNING, "getPageInfo", "watchtoken is deprecated and will be removed shortly.");
+                    log(Level.WARNING, "getPageInfo", "watchtoken and editoken are deprecated and will be removed shortly.");
                 }
 
                 // number of watchers
@@ -1559,7 +1548,7 @@ public class Wiki implements Serializable
 
     /**
      *  Gets the namespaces used by this wiki.
-     *  @return a map containing e.g. {"Media" => -2, "Special" => -1, ...}.
+     *  @return a map containing e.g. {"Media" : -2, "Special" : -1, ...}.
      *  Changes in this map do not propagate back to this Wiki object.
      *  @throws IOException if a network error occurs
      *  @since 0.28
@@ -1827,7 +1816,7 @@ public class Wiki implements Serializable
         // @revised 0.25 optional bot flagging
         throttle();
 
-        // protection and token
+        // protection
         Map info = getPageInfo(title);
         if (!checkRights(info, "edit") || (Boolean)info.get("exists") && !checkRights(info, "create"))
         {
@@ -1835,7 +1824,6 @@ public class Wiki implements Serializable
             log(Level.WARNING, "edit", "Cannot edit - permission denied. " + ex);
             throw ex;
         }
-        String wpEditToken = (String)info.get("token");
 
         // post data
         StringBuilder buffer = new StringBuilder(300000);
@@ -1850,7 +1838,7 @@ public class Wiki implements Serializable
             buffer.append(encode(summary, false));
         }
         buffer.append("&token=");
-        buffer.append(encode(wpEditToken, false));
+        buffer.append(encode(getToken("csrf"), false));
         if (basetime != null)
         {
             buffer.append("&starttimestamp=");
@@ -1990,7 +1978,7 @@ public class Wiki implements Serializable
         buffer.append("&reason=");
         buffer.append(encode(reason, false));
         buffer.append("&token=");
-        buffer.append(encode(deleteToken, false));
+        buffer.append(encode(getToken("csrf"), false));
         String response = post(apiUrl + "action=delete", buffer.toString(), "delete");
 
         // done
@@ -2223,8 +2211,8 @@ public class Wiki implements Serializable
 
     /**
      *  Gets the list of interwiki links a particular page has. The returned
-     *  map has the format language code => the page on the external wiki
-     *  linked to.
+     *  map has the format { language code : the page on the external wiki
+     *  linked to }.
      *
      *  @param title a page
      *  @return a map of interwiki links that page has (empty if there are no
@@ -2331,11 +2319,11 @@ public class Wiki implements Serializable
      *  the section numbering as in the table of contents with the section
      *  title, as in the following example:
      *
-     *  1 => How to nominate
-     *  1.1 => Step 1 - Evaluate
-     *  1.2 => Step 2 - Create subpage
-     *  1.2.1 => Step 2.5 - Transclude and link
-     *  1.3 => Step 3 - Update image
+     *  { 1 : How to nominate }, <br>
+     *  { 1.1 : Step 1 - Evaluate }, <br>
+     *  { 1.2 : Step 2 - Create subpage }, <br>
+     *  { 1.2.1 : Step 2.5 - Transclude and link }, <br>
+     *  { 1.3 : Step 3 - Update image }, <br>
      *  ...
      *
      *  @param page the page to get sections for
@@ -2370,7 +2358,7 @@ public class Wiki implements Serializable
     public Revision getTopRevision(String title) throws IOException
     {
         StringBuilder url = new StringBuilder(query);
-        url.append("prop=revisions&rvlimit=1&rvtoken=rollback&titles=");
+        url.append("prop=revisions&rvlimit=1&meta=tokens&type=rollback&titles=");
         url.append(encode(title, true));
         url.append("&rvprop=timestamp%7Cuser%7Cids%7Cflags%7Csize%7Ccomment");
         String line = fetch(url.toString(), "getTopRevision");
@@ -2852,7 +2840,6 @@ public class Wiki implements Serializable
             log(Level.WARNING, "move", "Cannot move - permission denied. " + ex);
             throw ex;
         }
-        String wpMoveToken = (String)info.get("token");
 
         // post data
         StringBuilder buffer = new StringBuilder(10000);
@@ -2863,7 +2850,7 @@ public class Wiki implements Serializable
         buffer.append("&reason=");
         buffer.append(encode(reason, false));
         buffer.append("&token=");
-        buffer.append(encode(wpMoveToken, false));
+        buffer.append(encode(getToken("csrf"), false));
         if (movetalk)
             buffer.append("&movetalk=1");
         if (noredirect && user.isAllowedTo("suppressredirect"))
@@ -2905,13 +2892,13 @@ public class Wiki implements Serializable
      *  be left untouched):
      *  <pre>
      *  {
-     *     edit => one of { NO_PROTECTION, SEMI_PROTECTION, FULL_PROTECTION }, // restricts editing
-     *     editexpiry => Calendar, // expiry time for edit protection, null = indefinite
+     *     edit: one of { NO_PROTECTION, SEMI_PROTECTION, FULL_PROTECTION }, // restricts editing
+     *     editexpiry: Calendar, // expiry time for edit protection, null = indefinite
      *     move, moveexpiry, // as above, prevents page moving
      *     create, createexpiry, // as above, prevents page creation (no effect on existing pages)
      *     upload, uploadexpiry, // as above, prevents uploading of files (FILE_NAMESPACE only)
-     *     cascade => Boolean // Enables cascading protection (requires edit=FULL_PROTECTION). Default: false.
-     *     cascadesource => String // souce of cascading protection (here ignored)
+     *     cascade: Boolean, // Enables cascading protection (requires edit=FULL_PROTECTION). Default: false.
+     *     cascadesource: String // souce of cascading protection (here ignored)
      *  };
      *  </pre>
      *
@@ -3214,7 +3201,8 @@ public class Wiki implements Serializable
      *  (ignored if we cannot <tt>suppressrevision</tt>, null = status quo).
      *  @param revisions the list of revisions to (un)delete
      *  @throws IOException if a network error occurs
-     *  @throws CredentialNotFoundException
+     *  @throws CredentialNotFoundException if you do not have the rights to
+     *  delete revisions or log entries
      *  @throws AccountLockedException if the user is blocked
      */
     public synchronized void revisionDelete(Boolean hidecontent, Boolean hideuser, Boolean hidereason, String reason, Boolean suppress,
@@ -3345,7 +3333,7 @@ public class Wiki implements Serializable
         if (to != null && !rev.getPage().equals(to.getPage()))
             throw new IllegalArgumentException("Cannot undo - the revisions supplied are not on the same page!");
 
-        // protection and token
+        // protection
         Map info = getPageInfo(rev.getPage());
         if (!checkRights(info, "edit"))
         {
@@ -3353,7 +3341,6 @@ public class Wiki implements Serializable
             log(Level.WARNING, "undo", "Cannot edit - permission denied." + ex);
             throw ex;
         }
-        String wpEditToken = (String)info.get("token");
 
         // send data
         StringBuilder buffer = new StringBuilder(10000);
@@ -3376,7 +3363,7 @@ public class Wiki implements Serializable
         if (bot)
             buffer.append("&bot=1");
         buffer.append("&token=");
-        buffer.append(encode(wpEditToken, false));
+        buffer.append(encode(getToken("csrf"), false));
         String response = post(apiUrl + "action=edit", buffer.toString(), "undo");
 
         // done
@@ -3903,7 +3890,7 @@ public class Wiki implements Serializable
         }
         filename = filename.replaceFirst("^(File|Image|" + namespaceIdentifier(FILE_NAMESPACE) + "):", "");
 
-        // protection and token
+        // protection
         Map info = getPageInfo("File:" + filename);
         if (!checkRights(info, "upload"))
         {
@@ -3911,7 +3898,6 @@ public class Wiki implements Serializable
             log(Level.WARNING, "upload", "Cannot upload - permission denied." + ex);
             throw ex;
         }
-        String wpEditToken = (String)info.get("token");
 
         // chunked upload setup
         long filesize = file.length();
@@ -3924,7 +3910,7 @@ public class Wiki implements Serializable
             {
                 Map<String, Object> params = new HashMap<>(50);
                 params.put("filename", filename);
-                params.put("token", wpEditToken);
+                params.put("token", getToken("csrf"));
                 params.put("ignorewarnings", "true");
                 if (chunks == 1)
                 {
@@ -3952,9 +3938,6 @@ public class Wiki implements Serializable
                     byte[] by = new byte[(int)buffersize]; // 32 bit problem. Why must array indices be ints?
                     fi.read(by);
                     params.put("chunk\"; filename=\"" + file.getName(), by);
-
-                    // Each chunk presumably requires a new edit token
-                    wpEditToken = (String)getPageInfo("File:" + filename).get("token");
                 }
 
                 // done
@@ -3995,7 +3978,7 @@ public class Wiki implements Serializable
         {
             Map<String, Object> params = new HashMap<>(50);
             params.put("filename", filename);
-            params.put("token", wpEditToken);
+            params.put("token", getToken("csrf"));
             params.put("text", contents);
             if (!reason.isEmpty())
                 params.put("comment", reason);
@@ -4192,7 +4175,7 @@ public class Wiki implements Serializable
      *  Gets the contributions of a user in a particular namespace. Equivalent
      *  to [[Special:Contributions]]. Be careful when using this method because
      *  the user may have a high edit count e.g. <tt>enWiki.contribs("MER-C",
-     *  Wiki.MAIN_NAMESPACE).length</tt> > 50000.
+     *  Wiki.MAIN_NAMESPACE).length</tt> %gt; 50000.
      *
      *  @param user the user or IP to get contributions for
      *  @param ns a list of namespaces to filter by, empty = all namespaces.
@@ -4207,42 +4190,57 @@ public class Wiki implements Serializable
     }
 
     /**
-     *  Gets the contributions by a range of IP v4 addresses. Supported ranges
-     *  are /8, /16 and /24. Do be careful with this, as calls such as
-     *  <tt>enWiki.rangeContribs("152.163.0.0/16"); // let's get all the
-     *  contributions for this AOL range!</tt> might just kill your program.
+     *  Gets the contributions by a range of IP addresses. Supported ranges are
+     *  a whole number of bytes (/8, /16, /24, /32, /40, etc.), anything not a
+     *  whole number of bytes is rounded down. WARNING: calls for large IP
+     *  ranges may not return for a VERY long time. This may also return edits
+     *  by users pretending to be IP addresses e.g. 127.0.0.l.
      *
      *  @param range the CIDR range of IP addresses to get contributions for
      *  @return the contributions of that range
      *  @throws IOException if a network error occurs
-     *  @throws NumberFormatException if we aren't able to parse the range
-     *  @deprecated doesn't support IPv6, and I am way too lazy to make it do so
+     *  @throws UnknownHostException if the IP address is not valid
+     *  @throws NumberFormatException if the subnet mask is not valid
      *  @since 0.17
      */
-    @Deprecated
     public Revision[] rangeContribs(String range) throws IOException
     {
-        // sanitize range
-        int a = range.indexOf('/');
-        if (a < 7)
-            throw new NumberFormatException("Not a valid CIDR range!");
-        int size = Integer.parseInt(range.substring(a + 1));
-        String[] numbers = range.substring(0, a).split("\\.");
-        if (numbers.length != 4)
-            throw new NumberFormatException("Not a valid CIDR range!");
-        switch (size)
+        String[] parts = range.split("/");
+        String ip = parts[0];
+        InetAddress ipaddr = InetAddress.getByName(ip);
+        byte[] bytes = ipaddr.getAddress();
+        StringBuilder contribuser = new StringBuilder();
+        if (ipaddr instanceof Inet6Address)
         {
-            case 8:
-                return contribs("", numbers[0] + ".", null, null);
-            case 16:
-                return contribs("", numbers[0] + "." + numbers[1] + ".", null, null);
-            case 24:
-                return contribs("", numbers[0] + "." + numbers[1] + "." + numbers[2] + ".", null, null);
-            case 32: // not that people are silly enough to do this...
-                return contribs(range.substring(0, range.length() - 3), "", null, null);
-            default:
-                throw new NumberFormatException("Range is not supported.");
+            // MediaWiki represents IPv6 addresses as 
+            // 0:0:0:0:0:0:0:1 or 1234:123:4567:567:AAAA:BBBB:CCCC:DDEF
+            // hex letters must be upper case
+            int numbytes = (parts.length < 2) ? 16 : (Integer.parseInt(parts[1]) >> 3);
+            bytes = Arrays.copyOf(Arrays.copyOf(bytes, numbytes), 16);
+            short[] shorts = new short[numbytes >> 1];
+            ByteBuffer.wrap(bytes, 0, numbytes).order(ByteOrder.BIG_ENDIAN)
+                .asShortBuffer().get(shorts);
+            for (int i = 0; i < shorts.length; i++)
+            {
+                contribuser.append(String.format("%X", shorts[i]));
+                if (i != 8)
+                    contribuser.append(":");
+            } 
+            if (numbytes % 2 == 1)
+                contribuser.append(String.format("%X", bytes[numbytes - 1]));
         }
+        else // IPv4
+        {
+            int numbytes = (parts.length < 2) ? 4 : (Integer.parseInt(parts[1]) >> 3);
+            bytes = Arrays.copyOf(bytes, numbytes);
+            for (int i = 0; i < bytes.length; i++)
+            {
+                contribuser.append(bytes[i]);
+                if (i != 3)
+                    contribuser.append(".");
+            }
+        }
+        return contribs("", contribuser.toString(), null, null);
     }
 
     /**
@@ -4935,8 +4933,8 @@ public class Wiki implements Serializable
                 boolean iscat = namespace(member) == CATEGORY_NAMESPACE;
                 if (maxdepth > 0 && iscat && !visitedcategories.contains(member))
                 {
-                    String[] categoryMembers = getCategoryMembers(member, --maxdepth, visitedcategories, ns);
                     visitedcategories.add(member);
+                    String[] categoryMembers = getCategoryMembers(member, maxdepth - 1, visitedcategories, ns);
                     members.addAll(Arrays.asList(categoryMembers));
                 }
 
@@ -5003,20 +5001,18 @@ public class Wiki implements Serializable
         url.append("&euoffset=");
 
         // some variables we need later
-        boolean done = false;
         List[] ret = new ArrayList[] // no reason for more than 500 links
         {
             new ArrayList<String>(667), // page titles
             new ArrayList<URL>(667) // urls
         };
-
+        String euoffset = "0";
         // begin
-        while (!done)
+        do
         {
             // if this is the last page of results then there is no euoffset parameter
-            String line = fetch(url.toString() + ret[0].size(), "linksearch");
-            if (!line.contains("euoffset=\""))
-                done = true;
+            String line = fetch(url.toString() + euoffset, "linksearch");
+            euoffset = parseAttribute(line, "euoffset", 0);
 
             // xml form: <eu ns="0" title="Main Page" url="http://example.com" />
             for (int x = line.indexOf("<eu"); x > 0; x = line.indexOf("<eu ", ++x))
@@ -5029,6 +5025,7 @@ public class Wiki implements Serializable
                     ret[1].add(new URL(link));
             }
         }
+        while (euoffset != null);
 
         // return value
         log(Level.INFO, "linksearch", "Successfully returned instances of external link " + pattern + " (" + ret[0].size() + " links)");
@@ -5165,7 +5162,7 @@ public class Wiki implements Serializable
      *  @param amount the amount of log entries to get
      *  @return the most recent set of log entries
      *  @throws IOException if a network error occurs
-     *  @throws IllegalArgumentException if amount < 1
+     *  @throws IllegalArgumentException if amount &lt; 1
      *  @since 0.08
      */
     public LogEntry[] getLogEntries(int amount) throws IOException
@@ -5729,7 +5726,7 @@ public class Wiki implements Serializable
      *  [[Special:Newpages]].
      *
      *  @param rcoptions a bitmask of HIDE_ANON etc that dictate which pages
-     *  we return (e.g. exclude patrolled pages => rcoptions = HIDE_PATROLLED).
+     *  we return (e.g. to exclude patrolled pages set rcoptions = HIDE_PATROLLED).
      *  @param amount the amount of new pages to get
      *  @return the revisions that created the pages satisfying the requirements
      *  above
@@ -5749,7 +5746,7 @@ public class Wiki implements Serializable
      *  [[Special:Newpages]].
      *
      *  @param rcoptions a bitmask of HIDE_ANON etc that dictate which pages
-     *  we return (e.g. exclude patrolled pages => rcoptions = HIDE_PATROLLED).
+     *  we return (e.g. to exclude patrolled pages set rcoptions = HIDE_PATROLLED).
      *  @param amount the amount of new pages to get
      *  @param ns a list of namespaces to filter by, empty = all namespaces.
      *  @return the revisions that created the pages satisfying the requirements
@@ -6357,17 +6354,21 @@ public class Wiki implements Serializable
          *  Gets the details of this log entry. Return values are as follows:
          *
          *  <table>
+         *  <caption>Log types and return values</caption>
          *  <tr><th>Log type <th>Return value
          *  <tr><td>MOVE_LOG
          *      <td>The new page title
          *  <tr><td>USER_RENAME_LOG
          *      <td>The new username
          *  <tr><td>BLOCK_LOG
-         *      <td>new Object[] { boolean anononly, boolean nocreate, boolean noautoblock, boolean noemail, boolean nousertalk, String duration }
+         *      <td>new Object[] { boolean anononly, boolean nocreate, boolean 
+         *      noautoblock, boolean noemail, boolean nousertalk, String duration }
          *  <tr><td>USER_RIGHTS_LOG
          *      <td>The new user rights (String[])
          *  <tr><td>PROTECTION_LOG
-         *      <td>action == "protect" or "modify" => the protection level (int, -2 if unrecognized), action == "move_prot" => the old title, else null
+         *      <td>if action == "protect" or "modify" return the protection level
+         *          (int, -2 if unrecognized) if action == "move_prot" return 
+         *          the old title, else null
          *  <tr><td>Others or RevisionDeleted
          *      <td>null
          *  </table>
@@ -7185,7 +7186,7 @@ public class Wiki implements Serializable
     }
     
     /**
-     *  Checks for database lag and sleeps if lag > maxlag.
+     *  Checks for database lag and sleeps if lag &gt; maxlag.
      *  @param connection the URL connection used in the request
      *  @return true if there was sufficient database lag.
      *  @since 0.32
@@ -7270,6 +7271,9 @@ public class Wiki implements Serializable
         if ((assertion & ASSERT_USER) == ASSERT_USER && line.contains("error code=\"assertuserfailed\""))
             // assert !line.contains("error code=\"assertuserfailed\"") : "Session expired.";
             throw new AssertionError("Session expired.");
+        // protected page errors
+        if (line.matches("(protectednamespace|customcssjsprotected|cascadeprotected|protectedpage|protectedtitle)"))
+            throw new CredentialNotFoundException("Page is protected.");
         if (line.contains("error code=\"permissiondenied\""))
             throw new CredentialNotFoundException("Permission denied."); // session expired or stupidity
         // rate limit (automatic retry), though might be a long one (e.g. email)
@@ -7357,10 +7361,18 @@ public class Wiki implements Serializable
             sb.append("%7C");
         }
         sb.append(namespaces[temp - 1]);
+        
+        // JDK 1.8:
+        // if (namespaces.length == 0)
+        //     return;
+        // StringJoiner sj = new StringJoiner("%7C");
+        // for (namespace : namespaces)
+        //     sj.add("" + namespace);
+        // sb.add(sj.toString());
     }
 
     /**
-     *  Cuts up a list of titles into batches for prop=X&titles=Y type queries.
+     *  Cuts up a list of titles into batches for prop=X&amp;titles=Y type queries.
      *  @param titles a list of titles.
      *  @return the titles ready for insertion into a URL
      *  @throws IOException if a network error occurs
@@ -7389,6 +7401,13 @@ public class Wiki implements Serializable
             else
                 buffer.append("|");
         }
+        // JDK 1.8:
+        // StringJoiner sj = new StringJoiner("|");
+        // for (int i = 0; i < titles.length; i++)
+        // {
+        //     sj.add(normalize(titles[i]));
+        //     statement of if above, removing else
+        // }
         return ret;
     }
 
