@@ -1750,7 +1750,7 @@ public class Wiki implements Serializable
                     item = item.substring(item.indexOf("<revisions>"));
                     item = item.substring(0, item.lastIndexOf("</revisions>"));
                     int begin = item.indexOf("<rev ");
-                    begin = item.indexOf(">", begin + 1);
+                    begin = item.indexOf(">", begin + 1) + 1;
                     int end = item.indexOf("</rev>");
                     item = item.substring(begin, end);
                        pagesTexts.put(parsedtitle, decode(item));
@@ -5034,9 +5034,9 @@ public class Wiki implements Serializable
      */
     public String[] whatLinksHere(String title, int... ns) throws IOException
     {
-        return whatLinksHere(title, false, ns);
+        return whatLinksHere(title, false, false, ns);
     }
-
+    
     /**
      *  Returns a list of all pages linking to this page within the specified
      *  namespaces. Alternatively, we can retrive a list of what redirects to a
@@ -5050,7 +5050,7 @@ public class Wiki implements Serializable
      *  @throws IOException if a network error occurs
      *  @since 0.10
      */
-    public String[] whatLinksHere(String title, boolean redirects, int... ns) throws IOException
+    public String[] whatLinksHere(String title, boolean redirects, boolean linksViaRedirects, int... ns) throws IOException
     {
         StringBuilder url = new StringBuilder(query);
         url.append("list=backlinks&bllimit=max&bltitle=");
@@ -5058,6 +5058,8 @@ public class Wiki implements Serializable
         constructNamespaceString(url, "bl", ns);
         if (redirects)
             url.append("&blfilterredir=redirects");
+        if (linksViaRedirects)
+        	url.append("&blredirect=1");
 
         // main loop
         List<String> pages = new ArrayList<>(6667); // generally enough
