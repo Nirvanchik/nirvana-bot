@@ -56,7 +56,6 @@ public class BotVariables {
         TEXT_WITH_TITLE = localizer.localize("%(текст_с_названием)");
         DATE = localizer.localize("%(дата)");
         DISCUSSION = localizer.localize("%(обсуждение)");
-        DISCUSSION = localizer.localize("%(обсуждение)");
         FILE_NAME = localizer.localize("%(имя файла)");
         AUTHOR = localizer.localize("%(автор)");
         BOT = localizer.localize("%(бот)");
