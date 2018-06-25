@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>no comments</comment>
+<entry key="out-dir">out/ru</entry>
+<entry key="log4j-settings">config/log4j-log-clean-debug.properties</entry>
+<entry key="wiki-login">NirvanaBot</entry>
+<entry key="wiki-password"></entry>
+<entry key="wiki-account-file">loginNirvanaBot.xml</entry>
+<entry key="wiki-lang">ru</entry>
+<entry key="wiki-java-loglevel">OFF</entry>
+<entry key="wiki-maxlag">5</entry>
+<entry key="update-comment">Очистка архивов новых статей от лишних статей</entry>
+<entry key="default-comment">обновление</entry>
+<entry key="debug-mode">no</entry>
+<entry key="task-list">no</entry>
+<entry key="task-file">clean_archive_task.txt</entry>
+</properties>
