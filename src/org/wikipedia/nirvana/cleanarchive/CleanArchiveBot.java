@@ -329,6 +329,8 @@ public class CleanArchiveBot extends BasicBot {
         List<String> archiveList = Arrays.asList(archives);
         Collections.sort(archiveList);
         int counter = 0;
+        log.info("Try to remove {} pages from {} archive pages", toCheck.size(),
+                archiveList.size());
         for (String archive: archiveList) {
             log.info("Search bad pages in archive: {}", archive);
             ArrayList<String> badPages = new ArrayList<>();
@@ -341,7 +343,7 @@ public class CleanArchiveBot extends BasicBot {
             }
             for (String page: toCheck) {
                 if (text.contains(page)) {
-                    log.debug("Fount {} in {}", page, archive);
+                    log.debug("Found {} in {}", page, archive);
                     badPages.add(page);
                 }
             }
@@ -349,13 +351,10 @@ public class CleanArchiveBot extends BasicBot {
             if (badPages.size() > 0) {                
                 cleanArchives.put(archive, badPages);
             }
-            counter++;
-            if (counter % 100 == 0) {
-                log.debug("Checked {} pages of {}", counter, toCheck.size());
-            }
+            counter += badPages.size();
         }
         log.info("--------------------------");
-        log.info("Remove {} pages from {} archive pages", toCheck.size(), cleanArchives.size());
+        log.info("Remove {} pages from {} archive pages", counter, cleanArchives.size());
         clean(cleanArchives, task, booster);
     }
 
@@ -368,7 +367,8 @@ public class CleanArchiveBot extends BasicBot {
             throws BotFatalError {
         int num = 0;
         List<String> archives = new ArrayList<>(cleanArchives.keySet());
-        Collections.sort(archives);        
+        Collections.sort(archives);
+        int total = 0;
         for (String archive: archives) {
             List<String> badPages = cleanArchives.get(archive);
             num++;
@@ -401,15 +401,24 @@ public class CleanArchiveBot extends BasicBot {
                 }
             }
             log.info("{} lines removed from {}", counter, archive);
-            text = StringUtils.join(updatedParts, task.separator);
+            if (counter > 0) {
+                text = StringUtils.join(updatedParts, task.separator);
+                // It's OK to end every wiki page with new line character
+                // If you don't add it then Mediawiki will add it anyway.
+                if (!text.endsWith("\n")) {
+                    text += "\n";
+                }
 
-            try {
-                wiki.edit(archive, text, COMMENT);
-            } catch (LoginException | IOException e) {
-                log.error("Failed to update page {}", archive);
-                throw new BotFatalError(e);
+                try {
+                    wiki.edit(archive, text, COMMENT);
+                } catch (LoginException | IOException e) {
+                    log.error("Failed to update page {}", archive);
+                    throw new BotFatalError(e);
+                }
+                total += counter;
             }
         }
+        log.info("{} lines removed in all", total);
     }
 
     private List<String> readPages(String fileName, Format format) {
