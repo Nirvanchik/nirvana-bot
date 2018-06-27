@@ -1,21 +1,24 @@
 
+# Editor temp files
 *.tmp
 *.TMP
 
-/report*.txt
-/loginNirvanaBot.xml
-
-/src/org/wikipedia/nirvana/test/*
-
+# Repository and IDE settings
 /.settings/*
 /.svn/*
-/report/*
-/tmp/*
-/log/*
-/lib/*
-/dump/*
-/cache/*
-/bin/*
-/out/*
 
+# Build system input and output dirs
+/lib/*
+/bin/*
+
+# Bot generated dirs and files
+/out/*
+/report*.txt
+
+# User popular dirs and configs
+/tmp/*
+/loginNirvanaBot.xml
 /loginNirvanaTestBot.xml
+
+# Some test code that I don't want to commit
+/src/org/wikipedia/nirvana/test/*
