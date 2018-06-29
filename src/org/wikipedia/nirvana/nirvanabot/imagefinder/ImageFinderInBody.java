@@ -1,6 +1,6 @@
 /**
  *  @(#)ImageFinderInBody.java 23/08/2012
- *  Copyright © 2013 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright Â© 2013 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot.imagefinder;
@@ -33,7 +33,8 @@ import org.wikipedia.nirvana.NirvanaWiki;
  *
  */
 public class ImageFinderInBody extends ImageFinder {
-	static final String REGEX_TO_FIND_IMAGE = "\\[\\[(Image|File|Ôàéë|Èçîáðàæåíèå):(?<filename>[^\\|\\]]+)";
+    static final String REGEX_TO_FIND_IMAGE =
+            "\\[\\[(Image|File|Ð¤Ð°Ð¹Ð»|Ð˜Ð·Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð¸Ðµ):(?<filename>[^\\|\\]]+)";
 	static final Pattern PATTERN_TO_FIND_IMAGE = Pattern.compile(REGEX_TO_FIND_IMAGE);
 
 	/**

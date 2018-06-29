@@ -1,6 +1,6 @@
 /**
  *  @(#)NewPagesWeek.java
- *  Copyright © 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright Β© 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot;
@@ -58,7 +58,7 @@ public class NewPagesWeek extends NewPages {
 	public NewPagesWeek(PortalParam param) {
 		super(param);
 		UPDATE_FROM_OLD = false;
-        PAGE_NAME_FORMAT = "%1$s/" + localizer.localize("Δενό") + " %2$d";
+        PAGE_NAME_FORMAT = "%1$s/" + localizer.localize("Π”ΠµΠ½Ρ") + " %2$d";
 	}
 
 	public class WeekData extends Data {
@@ -209,7 +209,7 @@ public class NewPagesWeek extends NewPages {
 			Data d = entry.getValue();
 			String str;
 			if (d.newPagesCount>0) {
-				str = "+" + String.valueOf(d.newPagesCount) + " " + localizer.localize("ρςΰςει");
+				str = "+" + String.valueOf(d.newPagesCount) + " " + localizer.localize("ΡΡ‚Π°Ρ‚ΠµΠΉ");
 			} else {
 				str = comment;
 			} 

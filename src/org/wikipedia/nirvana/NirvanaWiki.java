@@ -1,6 +1,6 @@
 /**
  *  @(#)NirvanaWiki.java 0.10
- *  Copyright © 2011-2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright Β© 2011-2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana;
@@ -51,7 +51,7 @@ import javax.security.auth.login.LoginException;
  */
 public class NirvanaWiki extends Wiki {
     private static final String DEFAULT_LANGUAGE = "en";
-    private static final String REDIRECT_NAME_RU = "οεπενΰοπΰβλενθε";
+    private static final String REDIRECT_NAME_RU = "ΠΏΠµΡ€ΠµΠ½Π°ΠΏΡ€Π°Π²Π»ΠµΠ½ΠΈΠµ";
     private static final String SIGN = " ~~~~";
 
 	protected static final String DEFULT_DUMP_FOLDER = "dump";

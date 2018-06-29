@@ -1,6 +1,6 @@
 /**
  *  @(#)StatisticsBot.java 1.3 10.01.2017
- *  Copyright © 2012-2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2012-2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.statistics;
@@ -52,14 +52,18 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
  *
  */
 public class StatisticsBot extends BasicBot {
+    public static final String ERR_NO_VARIABLE =
+            "Р’ РїР°СЂР°РјРµС‚СЂРµ \"{}\" РЅРµ Р·Р°РґР°РЅ РїРµСЂРµРјРµРЅРЅС‹Р№ РїР°СЂР°РјРµС‚СЂ. " +
+            "Р—РЅР°С‡РµРЅРёРµ СЌС‚РѕРіРѕ РїР°СЂР°РјРµС‚СЂР° РЅРµ РїСЂРёРЅСЏС‚Рѕ.";
+
     public static final String DEFAULT_CACHE_FOLDER = "cache";
 	boolean DEBUG = false;
 	//public static final int START_YEAR = 2008;
 	private static boolean TASK = false;
 	private static String TASK_LIST_FILE = "task.txt";
 	public static final String delimeter = "\n";
-	public static final String YES_RU = "да";
-	public static final String NO_RU = "нет";
+    public static final String YES_RU = "РґР°";
+    public static final String NO_RU = "РЅРµС‚";
 	public static final boolean SORT_DEFAULT = true;
 	private static final String STATUS_INFO_FORMAT = "%1$-40s time spent:%2$s";
 	private static final String DEFAULT_HEADER = "";
@@ -97,7 +101,7 @@ public class StatisticsBot extends BasicBot {
 		statSettingsTemplate = properties.getProperty("stat-settings-template");
 		if(statSettingsTemplate==null) {
 			if(DEBUG_BUILD)
-				statSettingsTemplate = "Участник:NirvanaBot/test/Параметры статистики";
+                statSettingsTemplate = "РЈС‡Р°СЃС‚РЅРёРє:NirvanaBot/test/РџР°СЂР°РјРµС‚СЂС‹ СЃС‚Р°С‚РёСЃС‚РёРєРё";
 			else {
 				System.out.println("ABORT: properties not found");
 				log.fatal("Statistics settings template name (stat-settings-template) is not specified in settings");
@@ -161,8 +165,8 @@ public class StatisticsBot extends BasicBot {
 				 return;
 			 }
 		}
-		
-		int i = 0;	// текущий портал
+
+        int i = 0;  // С‚РµРєСѓС‰РёР№ РїРѕСЂС‚Р°Р»
 		String portalName = null;
 		while(i < portalSettingsPages.length) {
 			portalName = portalSettingsPages[i];
@@ -266,23 +270,24 @@ public class StatisticsBot extends BasicBot {
 						log.error("Output destination for "+type+" is not defined");
 						continue;
 					}
-					
+
 					Map<String,String> suboptions = getSubOptions(options,type);
-					if(suboptions.get("первый год")==null)
-						suboptions.put("первый год",String.valueOf(params.archiveSettings.startYear));
-					if(params.header != null && suboptions.get("шапка") == null) {
-						suboptions.put("шапка", params.header);
-					}
-					if(params.footer != null && suboptions.get("подвал") == null) {
-						suboptions.put("подвал", params.footer);
-					}
-					if(params.filterBySize && suboptions.get("статьи от")==null) {
-						suboptions.put("статьи от", String.valueOf(params.minSize));
-					}
-					
-					
+                    if (suboptions.get("РїРµСЂРІС‹Р№ РіРѕРґ") == null)
+                        suboptions.put(
+                                "РїРµСЂРІС‹Р№ РіРѕРґ",
+                                String.valueOf(params.archiveSettings.startYear));
+                    if (params.header != null && suboptions.get("С€Р°РїРєР°") == null) {
+                        suboptions.put("С€Р°РїРєР°", params.header);
+                    }
+                    if (params.footer != null && suboptions.get("РїРѕРґРІР°Р»") == null) {
+                        suboptions.put("РїРѕРґРІР°Р»", params.footer);
+                    }
+                    if (params.filterBySize && suboptions.get("СЃС‚Р°С‚СЊРё РѕС‚") == null) {
+                        suboptions.put("СЃС‚Р°С‚СЊРё РѕС‚", String.valueOf(params.minSize));
+                    }
+
 					Statistics stat = null;
-					if(destination.contains("%(год)")) {
+                    if (destination.contains("%(РіРѕРґ)")) {
 						for(int year=params.archiveSettings.startYear;year<=endYear;year++) {
 							log.info("creating report of type: "+type + " for year: "+String.valueOf(year));
                             stat = StatisticsFabric.createReporter(wiki, cacheDir, type, year);
@@ -293,7 +298,7 @@ public class StatisticsBot extends BasicBot {
 							if(suboptions!=null && !suboptions.isEmpty()) stat.setOptions(suboptions);
 							stat.put(db);
 							String text = stat.toString();
-							String article = destination.replace("%(год)", String.valueOf(year));
+                            String article = destination.replace("%(РіРѕРґ)", String.valueOf(year));
 							//log.info("updating "+article+" : "+this.COMMENT);
 							/*if(wiki.editIfChanged(article, text, this.COMMENT, true))
 								log.info("done");
@@ -364,59 +369,59 @@ public class StatisticsBot extends BasicBot {
 	private boolean readPortalSettings(Map<String, String> options, StatisticsParam params) {
 		params.archiveSettings = new ArchiveSettings();
 		params.archive = null;
-		String key = "архив";
+        String key = "Р°СЂС…РёРІ";
 		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
 			params.archive = options.get(key);
 			NirvanaBot.parseArchiveName(params.archiveSettings,options.get(key));			
 		} else {
-			log.error("Параметр \"архив\" не найден в настройках");
+            log.error("РџР°СЂР°РјРµС‚СЂ \"Р°СЂС…РёРІ\" РЅРµ РЅР°Р№РґРµРЅ РІ РЅР°СЃС‚СЂРѕР№РєР°С…");
 			return false;			
 		}
 		
 		String str = "";
-		key = "формат заголовка в архиве";
+        key = "С„РѕСЂРјР°С‚ Р·Р°РіРѕР»РѕРІРєР° РІ Р°СЂС…РёРІРµ";
 		Period p1 = Period.NONE;
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			str = options.get(key);
 			p1 = ArchiveSettings.getHeaderPeriod(str);
 			if(p1==Period.NONE) {
-				log.error("В параметре \"формат заголовка в архиве\" не задан переменный параметр. Значение этого параметра не принято.");
+                log.error(ERR_NO_VARIABLE, key);
 				return false;
 			} else {
 				params.archiveSettings.headerFormat = str;
 			}
 		}
-		
-		key = "параметры архива";
+
+        key = "РїР°СЂР°РјРµС‚СЂС‹ Р°СЂС…РёРІР°";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			NirvanaBot.parseArchiveSettings(params.archiveSettings,options.get(key));
 			//archiveSettings.headerFormat = options.get(key); 
 		}
 		
 		params.reportTypes = null;
-		key = "тип";
+        key = "С‚РёРї";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
             params.reportTypes = optionToList(options, key);
 			//archiveSettings.headerFormat = options.get(key); 
 		} else {
-			log.error("Параметр \"тип\" не найден в настройках");
+            log.error("РџР°СЂР°РјРµС‚СЂ \"С‚РёРї\" РЅРµ РЅР°Р№РґРµРЅ РІ РЅР°СЃС‚СЂРѕР№РєР°С…");
 			return false;
 		}
-		
+
 		if(params.reportTypes.isEmpty()) {
-			log.error("Значение параметра 'тип' пустое");
+            log.error("Р—РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° 'С‚РёРї' РїСѓСЃС‚РѕРµ");
 			return false;
 		}
-		
-		key = "комментарий";
+
+        key = "РєРѕРјРјРµРЅС‚Р°СЂРёР№";
 		params.comment = COMMENT;
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			params.comment = options.get(key);
 		}
 		
 		//int startFromYear = START_YEAR;
-		key = "первый год";
+        key = "РїРµСЂРІС‹Р№ РіРѕРґ";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			try {
 				params.archiveSettings.startYear = Integer.parseInt(options.get(key));
@@ -427,13 +432,13 @@ public class StatisticsBot extends BasicBot {
 		}
 		
 		//String firstArchive = null;
-		key = "первый архив";
+        key = "РїРµСЂРІС‹Р№ Р°СЂС…РёРІ";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			params.archiveSettings.firstArchive = options.get(key);
 		}
 		
 		//int startFromYear2 = -1;
-		key = "первый год после первого архива";
+        key = "РїРµСЂРІС‹Р№ РіРѕРґ РїРѕСЃР»Рµ РїРµСЂРІРѕРіРѕ Р°СЂС…РёРІР°";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			try {
 				params.archiveSettings.startYear2 = Integer.parseInt(options.get(key));
@@ -444,21 +449,21 @@ public class StatisticsBot extends BasicBot {
 		}
 
 		params.sort = SORT_DEFAULT;
-		key = "сортировать";
+        key = "СЃРѕСЂС‚РёСЂРѕРІР°С‚СЊ";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			if(options.get(key).equalsIgnoreCase(YES_RU)) params.sort = true;
 			else if(options.get(key).equalsIgnoreCase(NO_RU)) params.sort = false;
 		}
 		
 		params.cacheonly = USE_CACHE_ONLY;
-		key = "только кэш";
+        key = "С‚РѕР»СЊРєРѕ РєСЌС€";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			if(options.get(key).equalsIgnoreCase(YES_RU)) params.cacheonly = true;
 			else if(options.get(key).equalsIgnoreCase(NO_RU)) params.cacheonly = false;
 		}
 		
 		params.cache = USE_CACHE;
-		key = "кэш";
+        key = "РєСЌС€";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			if(options.get(key).equalsIgnoreCase(YES_RU)) params.cache = true;
 			else if(options.get(key).equalsIgnoreCase(NO_RU)) params.cache = false;
@@ -466,7 +471,7 @@ public class StatisticsBot extends BasicBot {
 		
 		params.filterBySize = false;
 		params.minSize = MIN_SIZE;
-		key = "статьи от";
+        key = "СЃС‚Р°С‚СЊРё РѕС‚";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			params.filterBySize = true;
 			try {
@@ -478,14 +483,14 @@ public class StatisticsBot extends BasicBot {
 		}
 
 		params.header = DEFAULT_HEADER;
-		key = "шапка";
+        key = "С€Р°РїРєР°";
 		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
 			params.header = options.get(key).replace("\\n", "\n");
 		}
 		
 		params.footer = DEFAULT_FOOTER;
-		key = "подвал";
+        key = "РїРѕРґРІР°Р»";
 		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
 			params.footer = options.get(key).replace("\\n", "\n");

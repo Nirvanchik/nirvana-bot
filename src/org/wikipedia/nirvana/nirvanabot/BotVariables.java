@@ -1,6 +1,6 @@
 /**
  *  @(#)BotVariables.java 12.03.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot;
@@ -52,18 +52,18 @@ public class BotVariables {
         if (initialized) return;
         Localizer localizer = Localizer.getInstance();
 
-        TITLE = localizer.localize("%(название)");
-        TEXT_WITH_TITLE = localizer.localize("%(текст_с_названием)");
-        DATE = localizer.localize("%(дата)");
-        DISCUSSION = localizer.localize("%(обсуждение)");
-        FILE_NAME = localizer.localize("%(имя файла)");
-        AUTHOR = localizer.localize("%(автор)");
-        BOT = localizer.localize("%(бот)");
-        PROJECT = localizer.localize("%(проект)");
-        PORTAL = localizer.localize("%(портал)");
-        PAGE = localizer.localize("%(страница)");
-        ARCHIVE = localizer.localize("%(архив)");
-        COUNT = localizer.localize("%(количество)");
+        TITLE = localizer.localize("%(РЅР°Р·РІР°РЅРёРµ)");
+        TEXT_WITH_TITLE = localizer.localize("%(С‚РµРєСЃС‚_СЃ_РЅР°Р·РІР°РЅРёРµРј)");
+        DATE = localizer.localize("%(РґР°С‚Р°)");
+        DISCUSSION = localizer.localize("%(РѕР±СЃСѓР¶РґРµРЅРёРµ)");
+        FILE_NAME = localizer.localize("%(РёРјСЏ С„Р°Р№Р»Р°)");
+        AUTHOR = localizer.localize("%(Р°РІС‚РѕСЂ)");
+        BOT = localizer.localize("%(Р±РѕС‚)");
+        PROJECT = localizer.localize("%(РїСЂРѕРµРєС‚)");
+        PORTAL = localizer.localize("%(РїРѕСЂС‚Р°Р»)");
+        PAGE = localizer.localize("%(СЃС‚СЂР°РЅРёС†Р°)");
+        ARCHIVE = localizer.localize("%(Р°СЂС…РёРІ)");
+        COUNT = localizer.localize("%(РєРѕР»РёС‡РµСЃС‚РІРѕ)");
 
         initialized = true;
     }

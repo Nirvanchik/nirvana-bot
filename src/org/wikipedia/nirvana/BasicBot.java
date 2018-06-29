@@ -1,6 +1,6 @@
 /**
  *  @(#)BasicBot.java 01.06.2018
- *  Copyright © 2018 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2018 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana;
@@ -113,7 +113,7 @@ public abstract class BasicBot {
 	protected String SCRIPT_PATH = "/w";
 	protected String PROTOCOL = "https://";
     @LocalizedBySettings
-	protected String COMMENT = "обновление";
+    protected String COMMENT = "РѕР±РЅРѕРІР»РµРЅРёРµ";
 	protected int flags = 0;
 
 	public static String LICENSE = 

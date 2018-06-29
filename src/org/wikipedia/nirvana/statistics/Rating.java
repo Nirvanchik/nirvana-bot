@@ -1,6 +1,6 @@
 /**
  *  @(#)Rating.java 20/10/2012
- *  Copyright © 2012 - 2014 Dmitry Trofimovich (KIN)
+ *  Copyright В© 2012 - 2014 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 package org.wikipedia.nirvana.statistics;
 
@@ -91,7 +91,7 @@ public class Rating extends Statistics {
 	
 	public void setOptions(Map<String,String> options) {
 		super.setOptions(options);
-		String key = "размер";
+        String key = "СЂР°Р·РјРµСЂ";
 		if(options.containsKey(key) && !options.get(key).isEmpty()) {
 			try {
 				this.size = Integer.parseInt(options.get(key));
@@ -100,7 +100,7 @@ public class Rating extends Statistics {
                         options.get(key)));
 			}					
 		}
-		key = "статьи от";
+        key = "СЃС‚Р°С‚СЊРё РѕС‚";
 		if(options.containsKey(key) && !options.get(key).isEmpty()) {
 			this.filterBySize = true;
 			try {
@@ -156,16 +156,16 @@ public class Rating extends Statistics {
 	protected void additionalProcessing() {
 		
 	}
-	
+
 	protected void analyze() {
-		// Заполняем таблицу items (список строк отчёта)
+        // Р—Р°РїРѕР»РЅСЏРµРј С‚Р°Р±Р»РёС†Сѓ items (СЃРїРёСЃРѕРє СЃС‚СЂРѕРє РѕС‚С‡С‘С‚Р°)
 		for (Map.Entry<String,Integer> entry:totalUserStat.entrySet()) {
 			StatItem stat = new StatItem();
 			stat.user = entry.getKey();
 			stat.userArticles = entry.getValue();
 			this.items.add(stat);
 		}
-		// Сортируем таблицу в нужном порядке (в порядке убывания количества статей)
+        // РЎРѕСЂС‚РёСЂСѓРµРј С‚Р°Р±Р»РёС†Сѓ РІ РЅСѓР¶РЅРѕРј РїРѕСЂСЏРґРєРµ (РІ РїРѕСЂСЏРґРєРµ СѓР±С‹РІР°РЅРёСЏ РєРѕР»РёС‡РµСЃС‚РІР° СЃС‚Р°С‚РµР№)
 		Collections.sort(this.items, 
 			new Comparator<StatItem>(){
 				@Override
@@ -173,23 +173,23 @@ public class Rating extends Statistics {
 					return (int)(item2.userArticles - item1.userArticles);
 				}					
 			});
-		
-		// Подрезаем "лишние" строки в таблице, но оставляя резерв на случай дубликатов
+
+        // РџРѕРґСЂРµР·Р°РµРј "Р»РёС€РЅРёРµ" СЃС‚СЂРѕРєРё РІ С‚Р°Р±Р»РёС†Рµ, РЅРѕ РѕСЃС‚Р°РІР»СЏСЏ СЂРµР·РµСЂРІ РЅР° СЃР»СѓС‡Р°Р№ РґСѓР±Р»РёРєР°С‚РѕРІ
 		int maxsize = this.size + this.size*RESERVE_PERCENT_FOR_RENAMED_USERS/100;
-				
+
 		//this.totalUserStat.clear();
 		if(items.size()>maxsize) {			
 			//this.items = new ArrayList<StatItem>(this.items.subList(0, size));
 			this.items.subList(maxsize, this.items.size()).clear();					
 		}
 
-		// Дополнительный процессинг
+        // Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Р№ РїСЂРѕС†РµСЃСЃРёРЅРі
 		additionalProcessing();
 
-		// Удаляем дубликаты
+        // РЈРґР°Р»СЏРµРј РґСѓР±Р»РёРєР°С‚С‹
 		boolean duplicates = removeDuplicates();
-		
-		// Опять сортируем, так как мёрж дубликатов мог сломать сортировку
+
+        // РћРїСЏС‚СЊ СЃРѕСЂС‚РёСЂСѓРµРј, С‚Р°Рє РєР°Рє РјС‘СЂР¶ РґСѓР±Р»РёРєР°С‚РѕРІ РјРѕРі СЃР»РѕРјР°С‚СЊ СЃРѕСЂС‚РёСЂРѕРІРєСѓ
 		if (duplicates) {
 			Collections.sort(this.items, 
 				new Comparator<StatItem>(){
@@ -199,14 +199,14 @@ public class Rating extends Statistics {
 					}					
 				});
 		}
-		
-		// Обрезаем, на этот раз до строго указанного числа элементов
+
+        // РћР±СЂРµР·Р°РµРј, РЅР° СЌС‚РѕС‚ СЂР°Р· РґРѕ СЃС‚СЂРѕРіРѕ СѓРєР°Р·Р°РЅРЅРѕРіРѕ С‡РёСЃР»Р° СЌР»РµРјРµРЅС‚РѕРІ
 		if(items.size()>this.size) {			
 			//this.items = new ArrayList<StatItem>(this.items.subList(0, size));
 			this.items.subList(this.size, this.items.size()).clear();					
 		}
-		
-		// Назначаем позицию участников в рейтинге
+
+        // РќР°Р·РЅР°С‡Р°РµРј РїРѕР·РёС†РёСЋ СѓС‡Р°СЃС‚РЅРёРєРѕРІ РІ СЂРµР№С‚РёРЅРіРµ
 		int num = 1;
 		//int pos = 1;
 		int a = 0;
@@ -217,17 +217,19 @@ public class Rating extends Statistics {
 			if(stat.userArticles<a) {
 				a = stat.userArticles;
 				//num++;
-				num = i+1; // чтобы все нижележащие в рейтинге не сдвигались и не поднимались по рейтингу
-				// изза вышестоящих, и чтобы номер последнего отражал количество участников в рейтинге
+                num = i + 1;
+                // Р§С‚РѕР±С‹ РІСЃРµ РЅРёР¶РµР»РµР¶Р°С‰РёРµ РІ СЂРµР№С‚РёРЅРіРµ РЅРµ СЃРґРІРёРіР°Р»РёСЃСЊ Рё РЅРµ РїРѕРґРЅРёРјР°Р»РёСЃСЊ РїРѕ СЂРµР№С‚РёРЅРіСѓ
+                // РёР·-Р·Р° РІС‹С€РµСЃС‚РѕСЏС‰РёС…, Рё С‡С‚РѕР±С‹ РЅРѕРјРµСЂ РїРѕСЃР»РµРґРЅРµРіРѕ РѕС‚СЂР°Р¶Р°Р» РєРѕР»РёС‡РµСЃС‚РІРѕ СѓС‡Р°СЃС‚РЅРёРєРѕРІ РІ
+                // СЂРµР№С‚РёРЅРіРµ.
 			} 
 			stat.number = num;
 		}
-		
-		// Подсчитываем прогресс (рост/стабильность/падение)
-		if (this.itemTemplate.contains("%(прогресс)")) calcProgress();
+
+        // РџРѕРґСЃС‡РёС‚С‹РІР°РµРј РїСЂРѕРіСЂРµСЃСЃ (СЂРѕСЃС‚/СЃС‚Р°Р±РёР»СЊРЅРѕСЃС‚СЊ/РїР°РґРµРЅРёРµ)
+		if (this.itemTemplate.contains("%(РїСЂРѕРіСЂРµСЃСЃ)")) calcProgress();
 	}
-	
-		
+
+
 	protected boolean removeDuplicates() {
 		boolean duplicates = false;
 		int n = items.size();
@@ -264,10 +266,10 @@ public class Rating extends Statistics {
 	}
 	
 	/**
-	 * Смерживает двух юзеров, указанных по индексам
-	 * Используется при удалении дубликатов (дубликаты возникают, когда юзер меняет имя)
-	 * @param srcIndex индекс юзера-дубликата (откуда мёржить)
-	 * @param destIndex индекс оригинального юзера (куда мёржить)
+     * РЎРјРµСЂР¶РёРІР°РµС‚ РґРІСѓС… СЋР·РµСЂРѕРІ, СѓРєР°Р·Р°РЅРЅС‹С… РїРѕ РёРЅРґРµРєСЃР°Рј
+     * РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё СѓРґР°Р»РµРЅРёРё РґСѓР±Р»РёРєР°С‚РѕРІ (РґСѓР±Р»РёРєР°С‚С‹ РІРѕР·РЅРёРєР°СЋС‚, РєРѕРіРґР° СЋР·РµСЂ РјРµРЅСЏРµС‚ РёРјСЏ)
+     * @param srcIndex РёРЅРґРµРєСЃ СЋР·РµСЂР°-РґСѓР±Р»РёРєР°С‚Р° (РѕС‚РєСѓРґР° РјС‘СЂР¶РёС‚СЊ)
+     * @param destIndex РёРЅРґРµРєСЃ РѕСЂРёРіРёРЅР°Р»СЊРЅРѕРіРѕ СЋР·РµСЂР° (РєСѓРґР° РјС‘СЂР¶РёС‚СЊ)
 	 */
 	protected void merge(int srcIndex, int destIndex) {
 		StatItem src = items.get(srcIndex);

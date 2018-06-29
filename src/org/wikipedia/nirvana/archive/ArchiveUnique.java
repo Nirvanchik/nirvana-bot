@@ -1,6 +1,6 @@
 /**
  *  @(#)ArchiveUnique.java 13.07.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright В© 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.archive;
@@ -50,10 +50,9 @@ public class ArchiveUnique extends ArchiveSimple {
 		if(addToTop) {
 			Collections.reverse(items);
 			return super.toString();
-			//return StringUtils.join(items, delimeter)+delimeter;// перенос строки нужен для склейки
 		}
 		else
-			return super.toString(); // для склейки нужно отсутствие переноса 
+            return super.toString();  // Р”Р»СЏ СЃРєР»РµР№РєРё РЅСѓР¶РЅРѕ РѕС‚СЃСѓС‚СЃС‚РІРёРµ РїРµСЂРµРЅРѕСЃР°. 
 	}
 	
 	public ArchiveUnique(NirvanaWiki wiki, String lines[], boolean addToTop, String delimeter) {

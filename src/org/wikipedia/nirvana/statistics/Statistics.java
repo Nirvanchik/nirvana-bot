@@ -1,6 +1,6 @@
 /**
  *  @(#)Statistics.java 20/10/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)
+ *  Copyright В© 2012 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 package org.wikipedia.nirvana.statistics;
 
@@ -79,9 +79,9 @@ public class Statistics {
 		public String user;
 		public int userArticles;
 		public String toString() {
-			String progress = "{{нет изменений}}";
-			if(this.progress>0) progress = "{{рост}}";
-			else if(this.progress<0) progress = "{{падение}}";
+            String progress = "{{РЅРµС‚ РёР·РјРµРЅРµРЅРёР№}}";
+            if (this.progress > 0) progress = "{{СЂРѕСЃС‚}}";
+            else if(this.progress < 0) progress = "{{РїР°РґРµРЅРёРµ}}";
 			//if(//this.a)
 			String mid="0";
 			if(this.articlesDayMid>=2.0)
@@ -89,16 +89,16 @@ public class Statistics {
 			else
 				mid = new DecimalFormat("#.#").format(this.articlesDayMid);
 			log.debug("item to String "+number +" year "+year+" month "+month);
-			String str = itemTemplate.replace("%(номер)", String.valueOf(this.number)).
-                    replace("%(месяц)", dateTools.monthString(this.month)).
-					replace("%(год)",String.valueOf(this.year)).
-					replace("%(статей)",String.valueOf(this.articles)).
-					replace("%(прогресс)",progress).
-					replace("%(MID в день)",mid).
-					replace("%(MIN в день)",String.valueOf(this.articlesDayMin)).
-					replace("%(MAX в день)",String.valueOf(this.articlesDayMax)).
-					replace("%(участник)",this.user).
-					replace("%(статей участника)",String.valueOf(this.userArticles));
+            String str = itemTemplate.replace("%(РЅРѕРјРµСЂ)", String.valueOf(this.number)).
+                    replace("%(РјРµСЃСЏС†)", dateTools.monthString(this.month)).
+                    replace("%(РіРѕРґ)", String.valueOf(this.year)).
+                    replace("%(СЃС‚Р°С‚РµР№)", String.valueOf(this.articles)).
+                    replace("%(РїСЂРѕРіСЂРµСЃСЃ)", progress).
+                    replace("%(MID РІ РґРµРЅСЊ)", mid).
+                    replace("%(MIN РІ РґРµРЅСЊ)", String.valueOf(this.articlesDayMin)).
+                    replace("%(MAX РІ РґРµРЅСЊ)", String.valueOf(this.articlesDayMax)).
+                    replace("%(СѓС‡Р°СЃС‚РЅРёРє)", this.user).
+                    replace("%(СЃС‚Р°С‚РµР№ СѓС‡Р°СЃС‚РЅРёРєР°)", String.valueOf(this.userArticles));
 			return str;
 		}
 		StatItem () {
@@ -129,12 +129,12 @@ public class Statistics {
 				mid = String.valueOf(Math.round(this.articlesDayMid));
 			else
 				mid = new DecimalFormat("#.#").format(this.articlesDayMid);
-			String str = totalTemplate.replace("%(статей)",String.valueOf(this.articles)).
-					replace("%(MID в день)",mid).
-					replace("%(MIN в день)",String.valueOf(this.articlesDayMin)).
-					replace("%(MAX в день)",String.valueOf(this.articlesDayMax)).
-					replace("%(участник)",this.user).
-					replace("%(статей участника)",String.valueOf(this.userArticles));
+            String str = totalTemplate.replace("%(СЃС‚Р°С‚РµР№)", String.valueOf(this.articles)).
+                    replace("%(MID РІ РґРµРЅСЊ)", mid).
+                    replace("%(MIN РІ РґРµРЅСЊ)", String.valueOf(this.articlesDayMin)).
+                    replace("%(MAX РІ РґРµРЅСЊ)", String.valueOf(this.articlesDayMax)).
+                    replace("%(СѓС‡Р°СЃС‚РЅРёРє)", this.user).
+                    replace("%(СЃС‚Р°С‚РµР№ СѓС‡Р°СЃС‚РЅРёРєР°)", String.valueOf(this.userArticles));
 			return str; 
 		}
 		TotalItem () {
@@ -161,13 +161,13 @@ public class Statistics {
         dateTools = DateTools.getInstance();
 		init();
 	}
-	
+
 	public void setOptions(Map<String,String> options) {		
-		String key = "шапка";
+        String key = "С€Р°РїРєР°";
 		if(options.containsKey(key) && !options.get(key).isEmpty()) {
 			customHeader = options.get(key).replace("\\n", "\n");
 		}
-		key = "подвал";
+        key = "РїРѕРґРІР°Р»";
 		if(options.containsKey(key) && !options.get(key).isEmpty()) {
 			customFooter = options.get(key).replace("\\n", "\n");
 		}
@@ -192,10 +192,10 @@ public class Statistics {
 	}
 	protected void getSettingsFromIni(Map<String, String> options) throws BadAttributeValueExpException {
 		
-		header = options.get("шапка");
-		itemTemplate = options.get("формат элемента");
-		footer = options.get("подвал");
-		totalTemplate = options.get("итого");		
+		header = options.get("С€Р°РїРєР°");
+		itemTemplate = options.get("С„РѕСЂРјР°С‚ СЌР»РµРјРµРЅС‚Р°");
+		footer = options.get("РїРѕРґРІР°Р»");
+		totalTemplate = options.get("РёС‚РѕРіРѕ");		
 		if(header==null||itemTemplate==null||footer==null) {
 			log.error("incorrect settings for statistics");
 			throw new BadAttributeValueExpException(this.type);

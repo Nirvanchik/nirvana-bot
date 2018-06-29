@@ -1,6 +1,6 @@
 /**
  *  @(#)TemplateFinder.java 23.08.2015
- *  Copyright © 2015 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2015 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot.templates;
@@ -70,12 +70,12 @@ public class TemplateFinder {
     }
 
     private boolean findItemInTemplate(TemplateFindItem item, String text, String template) {
-	    // 1) Нужно найти и распарсить код шаблона, занести в мапу словарь значений
+        // 1) РќСѓР¶РЅРѕ РЅР°Р№С‚Рё Рё СЂР°СЃРїР°СЂСЃРёС‚СЊ РєРѕРґ С€Р°Р±Р»РѕРЅР°, Р·Р°РЅРµСЃС‚Рё РІ РјР°РїСѓ СЃР»РѕРІР°СЂСЊ Р·РЅР°С‡РµРЅРёР№
     	HashMap<String, String> params = new HashMap<>();
         if (!WikiUtils.parseWikiTemplate(template, text, params)) {
     		return false;
     	}    	
-    	// 2) Пройтись по словарю и отыскать нужный ключ и значение
+        // 2) РџСЂРѕР№С‚РёСЃСЊ РїРѕ СЃР»РѕРІР°СЂСЋ Рё РѕС‚С‹СЃРєР°С‚СЊ РЅСѓР¶РЅС‹Р№ РєР»СЋС‡ Рё Р·РЅР°С‡РµРЅРёРµ
     	if (item.param.isEmpty()) {
     		if (item.value.isEmpty()) {
     			return true;

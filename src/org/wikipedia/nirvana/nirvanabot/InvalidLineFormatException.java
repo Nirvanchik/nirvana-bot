@@ -1,6 +1,6 @@
 /**
  *  @(#)InvalidLineFormatException.java 16.04.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot;
@@ -44,7 +44,7 @@ public class InvalidLineFormatException extends Exception {
 
     private static String generateErrorString(String paramName, String lineFormat) {
         Localizer localizer = Localizer.getInstance();
-        String format = localizer.localize("В параметре %1$s обнаружены нераспознанные ключи: ");
+        String format = localizer.localize("Р’ РїР°СЂР°РјРµС‚СЂРµ %1$s РѕР±РЅР°СЂСѓР¶РµРЅС‹ РЅРµСЂР°СЃРїРѕР·РЅР°РЅРЅС‹Рµ РєР»СЋС‡Рё: ");
         StringBuilder sb = new StringBuilder();
         sb.append(String.format(format, paramName));
         Matcher m = FIND_UNRECOGNIZED_PLACEHOLDERS.matcher(lineFormat);

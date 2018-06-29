@@ -1,6 +1,6 @@
 /**
  *  @(#)ArchiveDatabase.java
- *  Copyright © 2012 - 2014 Dmitry Trofimovich (KIN)
+ *  Copyright В© 2012 - 2014 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 package org.wikipedia.nirvana.statistics;
 
@@ -227,7 +227,7 @@ public class ArchiveDatabase2 {
 			return;
 		} catch (JsonMappingException e) {
 			if (e.getMessage().contains(V1_JS_READ_ERROR_MESSAGE)) {
-				// Читаем первую версию, которая не содержит номера версии и самой структуры JsonDb
+                // Р§РёС‚Р°РµРј РїРµСЂРІСѓСЋ РІРµСЂСЃРёСЋ, РєРѕС‚РѕСЂР°СЏ РЅРµ СЃРѕРґРµСЂР¶РёС‚ РЅРѕРјРµСЂР° РІРµСЂСЃРёРё Рё СЃР°РјРѕР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ JsonDb
 				List<ArchiveItem> list = null;
 				try {
 					list = mapper.readValue(

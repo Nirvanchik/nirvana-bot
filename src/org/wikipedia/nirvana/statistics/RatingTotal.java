@@ -1,6 +1,6 @@
 /**
  *  @(#)RatingTotal.java 20/10/2012
- *  Copyright © 2012 - 2014 Dmitry Trofimovich (KIN)
+ *  Copyright В© 2012 - 2014 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 package org.wikipedia.nirvana.statistics;
 
@@ -74,9 +74,9 @@ public class RatingTotal extends Rating {
 			StringBuffer sb = new StringBuffer("");
 			for(int year = startYear;year<=endYear;year++)
 				sb.append(userItemTemplate.replace(
-						"%(статей участника за год)", 
+                        "%(СЃС‚Р°С‚РµР№ СѓС‡Р°СЃС‚РЅРёРєР° Р·Р° РіРѕРґ)", 
 						String.valueOf(this.userArticlesByYear.get(year))));
-			str = str.replace("%(статьи участника по годам)", sb.toString());
+            str = str.replace("%(СЃС‚Р°С‚СЊРё СѓС‡Р°СЃС‚РЅРёРєР° РїРѕ РіРѕРґР°Рј)", sb.toString());
 			return str;
 		}
 	};
@@ -96,7 +96,7 @@ public class RatingTotal extends Rating {
 	
 	public void setOptions(Map<String,String> options) {
 		super.setOptions(options);
-		String key = "первый год";
+        String key = "РїРµСЂРІС‹Р№ РіРѕРґ";
 		if(options.containsKey(key) && !options.get(key).isEmpty()) {
 			try {
 				this.startYear = Integer.parseInt(options.get(key));
@@ -177,9 +177,9 @@ public class RatingTotal extends Rating {
 	}
 	
 	/**
-	 *  Задача здесь подменить два набора items + userstatByYear
-	 *  одним набором items, в котором лежат StatItemRT вместо StatItem
-	 *  StatItemRT - содержат статистику по годам
+     *  Р—Р°РґР°С‡Р° Р·РґРµСЃСЊ РїРѕРґРјРµРЅРёС‚СЊ РґРІР° РЅР°Р±РѕСЂР° items + userstatByYear
+     *  РѕРґРЅРёРј РЅР°Р±РѕСЂРѕРј items, РІ РєРѕС‚РѕСЂРѕРј Р»РµР¶Р°С‚ StatItemRT РІРјРµСЃС‚Рѕ StatItem
+     *  StatItemRT - СЃРѕРґРµСЂР¶Р°С‚ СЃС‚Р°С‚РёСЃС‚РёРєСѓ РїРѕ РіРѕРґР°Рј
 	 */
 	protected void additionalProcessing() {
 		for(int i = 0;i<this.items.size();i++) {
@@ -209,8 +209,8 @@ public class RatingTotal extends Rating {
 	
 	protected void getSettingsFromIni(Map<String, String> options) throws BadAttributeValueExpException {
 		super.getSettingsFromIni(options);
-		headerItemTemplate = options.get("годы");
-		userItemTemplate = options.get("статьи участника по годам");
+        headerItemTemplate = options.get("РіРѕРґС‹");
+        userItemTemplate = options.get("СЃС‚Р°С‚СЊРё СѓС‡Р°СЃС‚РЅРёРєР° РїРѕ РіРѕРґР°Рј");
 		if(userItemTemplate==null||headerItemTemplate==null) {
 			log.error("incorrect settings for statistics");
 			throw new BadAttributeValueExpException(this.type);
@@ -219,8 +219,8 @@ public class RatingTotal extends Rating {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();		
 		for(int year=startYear;year<=endYear;year++)
-			sb.append(this.headerItemTemplate.replace("%(год)", String.valueOf(year)));
-		header = header.replace("%(годы)", sb.toString());
+            sb.append(this.headerItemTemplate.replace("%(РіРѕРґ)", String.valueOf(year)));
+		header = header.replace("%(РіРѕРґС‹)", sb.toString());
 		return super.toString();
 	}
 }

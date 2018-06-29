@@ -1,6 +1,6 @@
 /**
  *  @(#)StatisticsYear.java 20/10/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)
+ *  Copyright В© 2012 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 package org.wikipedia.nirvana.statistics;
 
@@ -54,11 +54,11 @@ public class StatisticsYear extends Statistics {
 	
 	public void setOptions(Map<String,String> options) {
 		super.setOptions(options);
-		String key = "отчет";
+        String key = "РѕС‚С‡РµС‚";
 		if(options.containsKey(key) && !options.get(key).isEmpty()) {
 			this.reportTemplate = options.get(key);
 		}
-		key = "первый год";
+        key = "РїРµСЂРІС‹Р№ РіРѕРґ";
 		if(options.containsKey(key) && !options.get(key).isEmpty()) {
 			try {
 				this.startYear = Integer.parseInt(options.get(key));
@@ -173,8 +173,8 @@ public class StatisticsYear extends Statistics {
 		sb.append(DELIMETER);
 		for(StatItem item:items) {
 			String str = item.toString();
-			str = str.replace("%(отчет)", 
-					this.reportTemplate.replace("%(год)", String.valueOf(item.year)));
+			str = str.replace("%(РѕС‚С‡РµС‚)", 
+					this.reportTemplate.replace("%(РіРѕРґ)", String.valueOf(item.year)));
 			sb.append(str);
 			sb.append(DELIMETER);
 		}		

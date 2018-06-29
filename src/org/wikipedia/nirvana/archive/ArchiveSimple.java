@@ -1,6 +1,6 @@
 /**
  *  @(#)ArchiveSimple.java 02/07/2012
- *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright В© 2011 - 2012 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.archive;
@@ -36,9 +36,11 @@ public class ArchiveSimple extends Archive {
 	protected ArrayList<String> items;
 	public String toString() {
 		if(addToTop)
-			return StringUtils.join(items, delimeter)+delimeter;// перенос строки нужен для склейки
+            // Р”Р»СЏ СЃРєР»РµР№РєРё РЅСѓР¶РµРЅ РїРµСЂРµРЅРѕСЃ СЃС‚СЂРѕРєРё
+            return StringUtils.join(items, delimeter) + delimeter;
 		else
-			return StringUtils.join(items, delimeter); // для склейки нужно отсутствие переноса 
+            // Р”Р»СЏ СЃРєР»РµР№РєРё РЅСѓР¶РЅРѕ РѕС‚СЃСѓС‚СЃС‚РІРёРµ РїРµСЂРµРЅРѕСЃР°
+            return StringUtils.join(items, delimeter);
 	}
 	
 	public ArchiveSimple(boolean addToTop, String delimeter) {
@@ -60,10 +62,10 @@ public class ArchiveSimple extends Archive {
 	public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
 		if(addToTop) {
 			wiki.prependOrCreate(archiveName, toString(), 
-					"+"+newItemsCount()+" статей", minor, bot);
+                    "+" + newItemsCount() + " СЃС‚Р°С‚РµР№", minor, bot);
 		} else {
 			wiki.appendOrCreate(archiveName, toString(), 
-					"+"+newItemsCount()+" статей", minor, bot);
+                    "+" + newItemsCount() + " СЃС‚Р°С‚РµР№", minor, bot);
 		}
 	}
 }

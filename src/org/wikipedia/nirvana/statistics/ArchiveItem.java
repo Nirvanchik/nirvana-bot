@@ -1,6 +1,6 @@
 /**
  *  @(#)ArchiveItem.java
- *  Copyright © 2012 - 2014 Dmitry Trofimovich (KIN)
+ *  Copyright Â© 2012 - 2014 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.statistics;

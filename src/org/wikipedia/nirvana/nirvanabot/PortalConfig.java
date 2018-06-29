@@ -1,6 +1,6 @@
 /**
  *  @(#)PortalConfig.java 12.03.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot;
@@ -128,85 +128,85 @@ public class PortalConfig {
     public static void initStatics() {
         if (initialized) return;
         Localizer localizer = Localizer.getInstance();
-        KEY_HEADER = localizer.localize("шапка");
-        KEY_FOOTER = localizer.localize("подвал");
-        KEY_MIDDLE = localizer.localize("середина");
-        KEY_TYPE = localizer.localize("тип");
-        KEY_CATEGORY = localizer.localize("категория");
-        KEY_CATEGORIES = localizer.localize("категории");
-        KEY_PAGE = localizer.localize("страница");
-        KEY_IGNORE = localizer.localize("игнорировать");
-        KEY_IGNORE_AUTHORS = localizer.localize("игнорировать авторов");
-        KEY_SERVICE = localizer.localize("сервис");
-        KEY_DEFAULT_SERVICE = localizer.localize("сервис по умолчанию");
-        KEY_ARCHIVE = localizer.localize("архив");
-        KEY_ARCHIVE_HEADER_FORMAT = localizer.localize("формат заголовка в архиве");
-        KEY_ARCHIVE_SUBHEADER_FORMAT = localizer.localize("формат подзаголовка в архиве");
-        KEY_ARCHIVE_PARAMS = localizer.localize("параметры архива");
-        KEY_PREFIX = localizer.localize("префикс");
-        KEY_MARK_EDITS = localizer.localize("помечать правки");
-        KEY_FAST_MODE = localizer.localize("быстрый режим");
-        KEY_NAMESPACE = localizer.localize("пространство имён");
-        KEY_UPDATES_PER_DAY = localizer.localize("частота обновлений");
-        KEY_TEMPLATES = localizer.localize("шаблоны");
-        KEY_TEMPLATES_WITH_PARAM = localizer.localize("шаблоны с параметром");
-        KEY_FORMAT = localizer.localize("формат элемента");
-        KEY_DEPTH = localizer.localize("глубина");
-        KEY_HOURS = localizer.localize("часов");
-        KEY_MAX_ITEMS = localizer.localize("элементов");
-        KEY_DELETED_PAGES = localizer.localize("удаленные статьи");
-        KEY_RENAMED_PAGES = localizer.localize("переименованные статьи");
-        KEY_SEPARATOR = localizer.localize("разделитель");
-        KEY_IMAGE_SEARCH = localizer.localize("поиск картинки");
-        KEY_FAIR_USE_IMAGE_TEMPLATES = localizer.localize("шаблоны запрещенных картинок");
+        KEY_HEADER = localizer.localize("С€Р°РїРєР°");
+        KEY_FOOTER = localizer.localize("РїРѕРґРІР°Р»");
+        KEY_MIDDLE = localizer.localize("СЃРµСЂРµРґРёРЅР°");
+        KEY_TYPE = localizer.localize("С‚РёРї");
+        KEY_CATEGORY = localizer.localize("РєР°С‚РµРіРѕСЂРёСЏ");
+        KEY_CATEGORIES = localizer.localize("РєР°С‚РµРіРѕСЂРёРё");
+        KEY_PAGE = localizer.localize("СЃС‚СЂР°РЅРёС†Р°");
+        KEY_IGNORE = localizer.localize("РёРіРЅРѕСЂРёСЂРѕРІР°С‚СЊ");
+        KEY_IGNORE_AUTHORS = localizer.localize("РёРіРЅРѕСЂРёСЂРѕРІР°С‚СЊ Р°РІС‚РѕСЂРѕРІ");
+        KEY_SERVICE = localizer.localize("СЃРµСЂРІРёСЃ");
+        KEY_DEFAULT_SERVICE = localizer.localize("СЃРµСЂРІРёСЃ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ");
+        KEY_ARCHIVE = localizer.localize("Р°СЂС…РёРІ");
+        KEY_ARCHIVE_HEADER_FORMAT = localizer.localize("С„РѕСЂРјР°С‚ Р·Р°РіРѕР»РѕРІРєР° РІ Р°СЂС…РёРІРµ");
+        KEY_ARCHIVE_SUBHEADER_FORMAT = localizer.localize("С„РѕСЂРјР°С‚ РїРѕРґР·Р°РіРѕР»РѕРІРєР° РІ Р°СЂС…РёРІРµ");
+        KEY_ARCHIVE_PARAMS = localizer.localize("РїР°СЂР°РјРµС‚СЂС‹ Р°СЂС…РёРІР°");
+        KEY_PREFIX = localizer.localize("РїСЂРµС„РёРєСЃ");
+        KEY_MARK_EDITS = localizer.localize("РїРѕРјРµС‡Р°С‚СЊ РїСЂР°РІРєРё");
+        KEY_FAST_MODE = localizer.localize("Р±С‹СЃС‚СЂС‹Р№ СЂРµР¶РёРј");
+        KEY_NAMESPACE = localizer.localize("РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ РёРјС‘РЅ");
+        KEY_UPDATES_PER_DAY = localizer.localize("С‡Р°СЃС‚РѕС‚Р° РѕР±РЅРѕРІР»РµРЅРёР№");
+        KEY_TEMPLATES = localizer.localize("С€Р°Р±Р»РѕРЅС‹");
+        KEY_TEMPLATES_WITH_PARAM = localizer.localize("С€Р°Р±Р»РѕРЅС‹ СЃ РїР°СЂР°РјРµС‚СЂРѕРј");
+        KEY_FORMAT = localizer.localize("С„РѕСЂРјР°С‚ СЌР»РµРјРµРЅС‚Р°");
+        KEY_DEPTH = localizer.localize("РіР»СѓР±РёРЅР°");
+        KEY_HOURS = localizer.localize("С‡Р°СЃРѕРІ");
+        KEY_MAX_ITEMS = localizer.localize("СЌР»РµРјРµРЅС‚РѕРІ");
+        KEY_DELETED_PAGES = localizer.localize("СѓРґР°Р»РµРЅРЅС‹Рµ СЃС‚Р°С‚СЊРё");
+        KEY_RENAMED_PAGES = localizer.localize("РїРµСЂРµРёРјРµРЅРѕРІР°РЅРЅС‹Рµ СЃС‚Р°С‚СЊРё");
+        KEY_SEPARATOR = localizer.localize("СЂР°Р·РґРµР»РёС‚РµР»СЊ");
+        KEY_IMAGE_SEARCH = localizer.localize("РїРѕРёСЃРє РєР°СЂС‚РёРЅРєРё");
+        KEY_FAIR_USE_IMAGE_TEMPLATES = localizer.localize("С€Р°Р±Р»РѕРЅС‹ Р·Р°РїСЂРµС‰РµРЅРЅС‹С… РєР°СЂС‚РёРЅРѕРє");
 
-        LIST_TYPE_NEW_PAGES = localizer.localize("новые статьи");
-        LIST_TYPE_NEW_PAGES_7_DAYS = localizer.localize("новые статьи по дням");
-        LIST_TYPE_NEW_PAGES_7_DAYS_OLD = localizer.localize("списки новых статей по дням");
-        LIST_TYPE_NEW_PAGES_OLD = localizer.localize("список новых статей");
-        LIST_TYPE_NEW_PAGES_WITH_IMAGES = localizer.localize("новые статьи с изображениями");
+        LIST_TYPE_NEW_PAGES = localizer.localize("РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё");
+        LIST_TYPE_NEW_PAGES_7_DAYS = localizer.localize("РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё РїРѕ РґРЅСЏРј");
+        LIST_TYPE_NEW_PAGES_7_DAYS_OLD = localizer.localize("СЃРїРёСЃРєРё РЅРѕРІС‹С… СЃС‚Р°С‚РµР№ РїРѕ РґРЅСЏРј");
+        LIST_TYPE_NEW_PAGES_OLD = localizer.localize("СЃРїРёСЃРѕРє РЅРѕРІС‹С… СЃС‚Р°С‚РµР№");
+        LIST_TYPE_NEW_PAGES_WITH_IMAGES = localizer.localize("РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё СЃ РёР·РѕР±СЂР°Р¶РµРЅРёСЏРјРё");
         LIST_TYPE_NEW_PAGES_WITH_IMAGES_OLD =
-                localizer.localize("список новых статей с изображениями");
+                localizer.localize("СЃРїРёСЃРѕРє РЅРѕРІС‹С… СЃС‚Р°С‚РµР№ СЃ РёР·РѕР±СЂР°Р¶РµРЅРёСЏРјРё");
         LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_CARD =
-                localizer.localize("новые статьи с изображениями в карточке");
+                localizer.localize("РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё СЃ РёР·РѕР±СЂР°Р¶РµРЅРёСЏРјРё РІ РєР°СЂС‚РѕС‡РєРµ");
         LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_CARD_OLD =
-                localizer.localize("список новых статей с изображениями в карточке");
+                localizer.localize("СЃРїРёСЃРѕРє РЅРѕРІС‹С… СЃС‚Р°С‚РµР№ СЃ РёР·РѕР±СЂР°Р¶РµРЅРёСЏРјРё РІ РєР°СЂС‚РѕС‡РєРµ");
         LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_TEXT =
-                localizer.localize("новые статьи с изображениями в тексте");
+                localizer.localize("РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё СЃ РёР·РѕР±СЂР°Р¶РµРЅРёСЏРјРё РІ С‚РµРєСЃС‚Рµ");
         LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_TEXT_OLD =
-                localizer.localize("список новых статей с изображениями в тексте");
-        LIST_TYPE_PAGES = localizer.localize("статьи");
-        LIST_TYPE_PAGES_WITH_TEMPLATES = localizer.localize("статьи с шаблонами");
-        LIST_TYPE_WATCHLIST = localizer.localize("список наблюдения");
+                localizer.localize("СЃРїРёСЃРѕРє РЅРѕРІС‹С… СЃС‚Р°С‚РµР№ СЃ РёР·РѕР±СЂР°Р¶РµРЅРёСЏРјРё РІ С‚РµРєСЃС‚Рµ");
+        LIST_TYPE_PAGES = localizer.localize("СЃС‚Р°С‚СЊРё");
+        LIST_TYPE_PAGES_WITH_TEMPLATES = localizer.localize("СЃС‚Р°С‚СЊРё СЃ С€Р°Р±Р»РѕРЅР°РјРё");
+        LIST_TYPE_WATCHLIST = localizer.localize("СЃРїРёСЃРѕРє РЅР°Р±Р»СЋРґРµРЅРёСЏ");
         LIST_TYPE_PAGES_OLD =
-                localizer.localize("список страниц с заданными категориями и шаблонами");
-        LIST_TYPE_DISCUSSED_PAGES = localizer.localize("обсуждаемые статьи");
-        LIST_TYPE_DISCUSSED_PAGES2 = localizer.localize("статьи с шаблонами и обсуждением");
+                localizer.localize("СЃРїРёСЃРѕРє СЃС‚СЂР°РЅРёС† СЃ Р·Р°РґР°РЅРЅС‹РјРё РєР°С‚РµРіРѕСЂРёСЏРјРё Рё С€Р°Р±Р»РѕРЅР°РјРё");
+        LIST_TYPE_DISCUSSED_PAGES = localizer.localize("РѕР±СЃСѓР¶РґР°РµРјС‹Рµ СЃС‚Р°С‚СЊРё");
+        LIST_TYPE_DISCUSSED_PAGES2 = localizer.localize("СЃС‚Р°С‚СЊРё СЃ С€Р°Р±Р»РѕРЅР°РјРё Рё РѕР±СЃСѓР¶РґРµРЅРёРµРј");
         LIST_TYPE_DISCUSSED_PAGES_OLD = localizer.localize(
-                "список страниц с заданными категориями, шаблонами и обсуждением");
+                "СЃРїРёСЃРѕРє СЃС‚СЂР°РЅРёС† СЃ Р·Р°РґР°РЅРЅС‹РјРё РєР°С‚РµРіРѕСЂРёСЏРјРё, С€Р°Р±Р»РѕРЅР°РјРё Рё РѕР±СЃСѓР¶РґРµРЅРёРµРј");
 
-        STR_ABOVE = localizer.localize("сверху");
-        STR_AUTO = localizer.localize("авто");
-        STR_BELOW = localizer.localize("снизу");
-        STR_BOT = localizer.localize("бот");
-        STR_DEFAULT = localizer.localize("по умолчанию");
-        STR_DELETE = localizer.localize("удалять");
-        STR_ENUMERATE_WITH_HASH = localizer.localize("нумерация решетками");
-        STR_ENUMERATE_WITH_HASH2 = localizer.localize("нумерация решётками");
-        STR_ENUMERATE_WITH_HTML = localizer.localize("нумерация кодом html");
-        STR_ENUMERATE_WITH_HTML2 = localizer.localize("нумерация кодом HTML");
-        STR_ENUMERATE_WITH_HTML_GLOBAL = localizer.localize("глобальная нумерация кодом html");
-        STR_ENUMERATE_WITH_HTML_GLOBAL2 = localizer.localize("глобальная нумерация кодом HTML");
-        STR_NEW_TITLE = localizer.localize("новое название");
-        STR_LEAVE = localizer.localize("оставлять");
-        STR_MARK = localizer.localize("помечать");
-        STR_NO = localizer.localize("нет");
-        STR_OLD_TITLE = localizer.localize("старое название");
-        STR_REMOVE_DUPLICATES = localizer.localize("удалить дубликаты");
-        STR_SMALL = localizer.localize("малая");
-        STR_SORT = localizer.localize("сортировка");
-        STR_TOSORT = localizer.localize("сортировать");
-        STR_YES = localizer.localize("да");
+        STR_ABOVE = localizer.localize("СЃРІРµСЂС…Сѓ");
+        STR_AUTO = localizer.localize("Р°РІС‚Рѕ");
+        STR_BELOW = localizer.localize("СЃРЅРёР·Сѓ");
+        STR_BOT = localizer.localize("Р±РѕС‚");
+        STR_DEFAULT = localizer.localize("РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ");
+        STR_DELETE = localizer.localize("СѓРґР°Р»СЏС‚СЊ");
+        STR_ENUMERATE_WITH_HASH = localizer.localize("РЅСѓРјРµСЂР°С†РёСЏ СЂРµС€РµС‚РєР°РјРё");
+        STR_ENUMERATE_WITH_HASH2 = localizer.localize("РЅСѓРјРµСЂР°С†РёСЏ СЂРµС€С‘С‚РєР°РјРё");
+        STR_ENUMERATE_WITH_HTML = localizer.localize("РЅСѓРјРµСЂР°С†РёСЏ РєРѕРґРѕРј html");
+        STR_ENUMERATE_WITH_HTML2 = localizer.localize("РЅСѓРјРµСЂР°С†РёСЏ РєРѕРґРѕРј HTML");
+        STR_ENUMERATE_WITH_HTML_GLOBAL = localizer.localize("РіР»РѕР±Р°Р»СЊРЅР°СЏ РЅСѓРјРµСЂР°С†РёСЏ РєРѕРґРѕРј html");
+        STR_ENUMERATE_WITH_HTML_GLOBAL2 = localizer.localize("РіР»РѕР±Р°Р»СЊРЅР°СЏ РЅСѓРјРµСЂР°С†РёСЏ РєРѕРґРѕРј HTML");
+        STR_NEW_TITLE = localizer.localize("РЅРѕРІРѕРµ РЅР°Р·РІР°РЅРёРµ");
+        STR_LEAVE = localizer.localize("РѕСЃС‚Р°РІР»СЏС‚СЊ");
+        STR_MARK = localizer.localize("РїРѕРјРµС‡Р°С‚СЊ");
+        STR_NO = localizer.localize("РЅРµС‚");
+        STR_OLD_TITLE = localizer.localize("СЃС‚Р°СЂРѕРµ РЅР°Р·РІР°РЅРёРµ");
+        STR_REMOVE_DUPLICATES = localizer.localize("СѓРґР°Р»РёС‚СЊ РґСѓР±Р»РёРєР°С‚С‹");
+        STR_SMALL = localizer.localize("РјР°Р»Р°СЏ");
+        STR_SORT = localizer.localize("СЃРѕСЂС‚РёСЂРѕРІРєР°");
+        STR_TOSORT = localizer.localize("СЃРѕСЂС‚РёСЂРѕРІР°С‚СЊ");
+        STR_YES = localizer.localize("РґР°");
         
         initialized = true;
     }

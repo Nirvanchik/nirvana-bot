@@ -1,6 +1,6 @@
 /**
  *  @(#)ImageFinderInTemplates.java 17.02.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot.imagefinder;
@@ -43,11 +43,11 @@ public class ImageFinderInTemplates {
      */
     public ImageFinderInTemplates() {
         Localizer localizer = Localizer.getInstance();
-        LocalizedTemplate template = localizer.localizeTemplateStrict("часть изображения");
+        LocalizedTemplate template = localizer.localizeTemplateStrict("С‡Р°СЃС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ");
         if (template != null) {
             templateStart = "{{" + template.localizeName();
             imageFindRe = Pattern.compile("\\|\\s*" +
-                    template.localizeParam("изобр") + "\\s*=\\s*(?<image>[^\\|\\}]+)");
+                    template.localizeParam("РёР·РѕР±СЂ") + "\\s*=\\s*(?<image>[^\\|\\}]+)");
         } else {
             templateStart = null;
             imageFindRe = null;
@@ -61,9 +61,9 @@ public class ImageFinderInTemplates {
         if (image.contains("{{") || image.contains("}}")) {
             if (templateStart == null) return null;
             if (image.contains(templateStart)) {
-                // {{часть изображения|изобр=UC1755381 Subularia aquatica var. americana.jpg
-                // |позиция=center|ширина=280|общая=800|верх=470|низ=400|лево=60|рамка=нет
-                // |помехи=да}}
+                // {{С‡Р°СЃС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ|РёР·РѕР±СЂ=UC1755381 Subularia aquatica var. americana.jpg
+                // |РїРѕР·РёС†РёСЏ=center|С€РёСЂРёРЅР°=280|РѕР±С‰Р°СЏ=800|РІРµСЂС…=470|РЅРёР·=400|Р»РµРІРѕ=60|СЂР°РјРєР°=РЅРµС‚
+                // |РїРѕРјРµС…Рё=РґР°}}
                 Matcher m1 = imageFindRe.matcher(image);
                 if (m1.find()) {
                     image = m1.group("image").trim();

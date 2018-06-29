@@ -1,6 +1,6 @@
 /**
  *  @(#)CleanArchiveBot.java 28.05.2018
- *  Copyright © 2018 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2018 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.cleanarchive;
@@ -50,8 +50,8 @@ import javax.security.auth.login.LoginException;
  * See {@link #PROGRAM_INFO} value for more details about this class.
  */
 public class CleanArchiveBot extends BasicBot {
-    public static final String YES_RU = "да";
-    public static final String NO_RU = "нет";
+    public static final String YES_RU = "РґР°";
+    public static final String NO_RU = "РЅРµС‚";
 
     private String taskFile;
 
@@ -474,16 +474,16 @@ public class CleanArchiveBot extends BasicBot {
         if (!TextUtils.textOptionsToMap(task, options)) {
             throw new BotFatalError(String.format("Invalid text in %1$s:\n%2$s", taskFile, task));
         }
-        String archive = readRequiredKey("архив", options);
-        String badPages = readRequiredKey("список плохих статей", options);
+        String archive = readRequiredKey("Р°СЂС…РёРІ", options);
+        String badPages = readRequiredKey("СЃРїРёСЃРѕРє РїР»РѕС…РёС… СЃС‚Р°С‚РµР№", options);
         String separator = "\n";
-        String key = "разделитель";
+        String key = "СЂР°Р·РґРµР»РёС‚РµР»СЊ";
         if (options.containsKey(key) && !options.get(key).isEmpty()) {
             separator = options.get(key).replace("\\n", "\n");
         }
 
         Format format = Format.TXT;
-        key = "формат";
+        key = "С„РѕСЂРјР°С‚";
         if (options.containsKey(key) && !options.get(key).isEmpty()) {
             if (Format.TSV.toString().toLowerCase(Locale.ENGLISH).equals(options.get(key))) {
                 format = Format.TSV;
@@ -491,7 +491,7 @@ public class CleanArchiveBot extends BasicBot {
         }
 
         Method method = DEFAULT_METHOD;
-        key = "метод";
+        key = "РјРµС‚РѕРґ";
         if (options.containsKey(key) && !options.get(key).isEmpty()) {            
             if (Method.METHOD_1.name.equals(options.get(key))) {
                 method = Method.METHOD_1;
@@ -504,7 +504,7 @@ public class CleanArchiveBot extends BasicBot {
             }
         }
         boolean redirects = DEFAULT_INCLUDE_REDIRECTS;
-        key = "редиректы";
+        key = "СЂРµРґРёСЂРµРєС‚С‹";
         if (options.containsKey(key) && !options.get(key).isEmpty()) {
             if (YES_RU.equals(options.get(key))) {
                 redirects = true;

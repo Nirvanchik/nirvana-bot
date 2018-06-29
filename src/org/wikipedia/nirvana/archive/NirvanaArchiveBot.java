@@ -1,6 +1,6 @@
 /**
  *  @(#)NirvanaArchiveBot.java 1.3 13.07.2014
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright В© 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 package org.wikipedia.nirvana.archive;
 
@@ -48,10 +48,12 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
  */
 public class NirvanaArchiveBot extends BasicBot{
 	public static final String delimeter = "\n";	
+    public static final String ERR_NO_VARIABLE =
+            "Р’ РїР°СЂР°РјРµС‚СЂРµ \"{}\" РЅРµ Р·Р°РґР°РЅ РїРµСЂРµРјРµРЅРЅС‹Р№ РїР°СЂР°РјРµС‚СЂ. " +
+            "Р—РЅР°С‡РµРЅРёРµ СЌС‚РѕРіРѕ РїР°СЂР°РјРµС‚СЂР° РЅРµ РїСЂРёРЅСЏС‚Рѕ.";
 
 	private static String TASK_LIST_FILE = "task.txt";
-	//public static String COMMENT = "Проставление заголовков и нумерации в архиве";
-	
+
 	public static final String INFO = 
 		"NirvanaArchiveBot v1.3 Updates archives of new articles lists at http://ru.wikipedia.org\n" +
 		"Copyright (C) 2011-2014 Dmitry Trofimovich (KIN)\n" +		
@@ -71,16 +73,15 @@ public class NirvanaArchiveBot extends BasicBot{
 
     @Override
     protected void go() throws InterruptedException, BotFatalError {
-		//log.info("Bot");
-		// исходные данные:
-		// 1) архив который нужно обновить
-		// 2) формат заголовка
-		// 3) формат второго заголовка
-		// 4) нумерация, сверху/снизу
-		// 5) ботоправка,малая правка
-		// ~4) удалять старые заголовки?
-		// ~5) шапка
-		// ~6) подвал
+        // РСЃС…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ:
+        // 1) Р°СЂС…РёРІ РєРѕС‚РѕСЂС‹Р№ РЅСѓР¶РЅРѕ РѕР±РЅРѕРІРёС‚СЊ
+        // 2) С„РѕСЂРјР°С‚ Р·Р°РіРѕР»РѕРІРєР°
+        // 3) С„РѕСЂРјР°С‚ РІС‚РѕСЂРѕРіРѕ Р·Р°РіРѕР»РѕРІРєР°
+        // 4) РЅСѓРјРµСЂР°С†РёСЏ, СЃРІРµСЂС…Сѓ/СЃРЅРёР·Сѓ
+        // 5) Р±РѕС‚РѕРїСЂР°РІРєР°,РјР°Р»Р°СЏ РїСЂР°РІРєР°
+        // ~4) СѓРґР°Р»СЏС‚СЊ СЃС‚Р°СЂС‹Рµ Р·Р°РіРѕР»РѕРІРєРё?
+        // ~5) С€Р°РїРєР°
+        // ~6) РїРѕРґРІР°Р»
 
         Localizer.init(Localizer.NO_LOCALIZATION);
 		String task = FileTools.readFileSilently(TASK_LIST_FILE);
@@ -96,7 +97,7 @@ public class NirvanaArchiveBot extends BasicBot{
 		
 		ArchiveSettings archiveSettings = new ArchiveSettings();
 		String archive = null;
-		String key = "архив";
+        String key = "Р°СЂС…РёРІ";
 		if (options.containsKey(key) && !options.get(key).isEmpty())
 		{
 			archive = options.get(key);
@@ -110,26 +111,26 @@ public class NirvanaArchiveBot extends BasicBot{
 		}
 		
 		String str = "";
-		key = "формат заголовка в архиве";
+        key = "С„РѕСЂРјР°С‚ Р·Р°РіРѕР»РѕРІРєР° РІ Р°СЂС…РёРІРµ";
 		Period p1 = Period.NONE;
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			str = options.get(key);
 			p1 = ArchiveSettings.getHeaderPeriod(str);
 			if(p1==Period.NONE) {
-				log.error("В параметре \"формат заголовка в архиве\" не задан переменный параметр. Значение этого параметра не принято.");
+                log.error(ERR_NO_VARIABLE, key);
 				return;
 			} else {
 				archiveSettings.headerFormat = str;
 			}
 		}
 
-		key = "формат подзаголовка в архиве";
+        key = "С„РѕСЂРјР°С‚ РїРѕРґР·Р°РіРѕР»РѕРІРєР° РІ Р°СЂС…РёРІРµ";
 		Period p2 = Period.NONE;
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			str = options.get(key); 
 			p2 = ArchiveSettings.getHeaderPeriod(str);
 			if(p2==Period.NONE) {
-				log.error("В параметре \"формат подзаголовка в архиве\" не задан переменный параметр. Значение этого параметра не принято.");
+				log.error(ERR_NO_VARIABLE, key);
 				return;
 			} else {
                 archiveSettings.superHeaderFormat = archiveSettings.headerFormat;
@@ -138,20 +139,20 @@ public class NirvanaArchiveBot extends BasicBot{
 		}
 
 		if(p1!=Period.NONE && p2!=Period.NONE && p1==p2) {
-			log.error("Параметр \"формат заголовка в архиве\" и параметр \"формат подзаголовка в архиве\" имеют одинаковый период повторения "+p1.template());
+            log.error("РџР°СЂР°РјРµС‚СЂ \"С„РѕСЂРјР°С‚ Р·Р°РіРѕР»РѕРІРєР° РІ Р°СЂС…РёРІРµ\" Рё РїР°СЂР°РјРµС‚СЂ " +
+                    "\"С„РѕСЂРјР°С‚ РїРѕРґР·Р°РіРѕР»РѕРІРєР° РІ Р°СЂС…РёРІРµ\" РёРјРµСЋС‚ РѕРґРёРЅР°РєРѕРІС‹Р№ РїРµСЂРёРѕРґ РїРѕРІС‚РѕСЂРµРЅРёСЏ " +
+                    p1.template());
 			return;
 		}
-		
+
 		//data.errors.addAll(validateArchiveFormat(archiveSettings));
 		
 		/*
 		if(archiveSettings.headerFormat==null && archiveSettings.headerHeaderFormat==null) {
 			archiveSettings.headerFormat = ArchiveSettings.DEFAULT_HEADER_FORMAT;
 		} */
-		
-		
-		
-		key = "параметры архива";
+
+        key = "РїР°СЂР°РјРµС‚СЂС‹ Р°СЂС…РёРІР°";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			ArrayList<String> errors = NirvanaBot.parseArchiveSettings(archiveSettings,options.get(key));
 			if(errors.size()>0) {
@@ -164,7 +165,7 @@ public class NirvanaArchiveBot extends BasicBot{
 			//archiveSettings.headerFormat = options.get(key); 
 		}
 
-		key = "первый год";
+        key = "РїРµСЂРІС‹Р№ РіРѕРґ";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			try {
 				archiveSettings.startYear = Integer.parseInt(options.get(key));
@@ -177,16 +178,16 @@ public class NirvanaArchiveBot extends BasicBot{
 		//boolean markEdits = true;
 		boolean bot = true;
 		boolean minor = true;
-		if (options.containsKey("помечать правки") && !options.get("помечать правки").isEmpty()) {
-			String mark = options.get("помечать правки").toLowerCase();
-			if(mark.equalsIgnoreCase("нет")) {
+        if (options.containsKey("РїРѕРјРµС‡Р°С‚СЊ РїСЂР°РІРєРё") && !options.get("РїРѕРјРµС‡Р°С‚СЊ РїСЂР°РІРєРё").isEmpty()) {
+            String mark = options.get("РїРѕРјРµС‡Р°С‚СЊ РїСЂР°РІРєРё").toLowerCase();
+            if(mark.equalsIgnoreCase("РЅРµС‚")) {
 				//markEdits = false;
 				bot = false;
 				minor = false;
 			} else {				
-				if(!mark.contains("бот") && mark.contains("малая")) {
+                if(!mark.contains("Р±РѕС‚") && mark.contains("РјР°Р»Р°СЏ")) {
 					bot = false;
-				} else if(mark.contains("бот") && !mark.contains("малая")) {
+                } else if(mark.contains("Р±РѕС‚") && !mark.contains("РјР°Р»Р°СЏ")) {
 					minor = false;
 				}				
 			}

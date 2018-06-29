@@ -1,6 +1,6 @@
 /**
  *  @(#)WikiUtilsTest.java 13.04.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana;
@@ -71,11 +71,11 @@ public class WikiUtilsTest {
         Assert.assertTrue(WikiUtils.containsTemplate("sometext{{Templ}}othertext", "templ"));
         Assert.assertTrue(WikiUtils.containsTemplate("sometext{{Templ}}othertext", "Templ"));
         Assert.assertTrue(WikiUtils.containsTemplate("sometext{{templ}}othertext", "Templ"));
-        Assert.assertTrue(WikiUtils.containsTemplate("текст{{шаблон}}текст", "шаблон"));
-        Assert.assertTrue(WikiUtils.containsTemplate("текст{{шаблон|параметр}}текст", "шаблон"));
-        Assert.assertTrue(WikiUtils.containsTemplate("текст{{Шаблон}}текст", "шаблон"));
-        Assert.assertTrue(WikiUtils.containsTemplate("текст{{Шаблон}}текст", "Шаблон"));
-        Assert.assertTrue(WikiUtils.containsTemplate("текст{{шаблон}}текст", "Шаблон"));
+        Assert.assertTrue(WikiUtils.containsTemplate("С‚РµРєСЃС‚{{С€Р°Р±Р»РѕРЅ}}С‚РµРєСЃС‚", "С€Р°Р±Р»РѕРЅ"));
+        Assert.assertTrue(WikiUtils.containsTemplate("С‚РµРєСЃС‚{{С€Р°Р±Р»РѕРЅ|РїР°СЂР°РјРµС‚СЂ}}С‚РµРєСЃС‚", "С€Р°Р±Р»РѕРЅ"));
+        Assert.assertTrue(WikiUtils.containsTemplate("С‚РµРєСЃС‚{{РЁР°Р±Р»РѕРЅ}}С‚РµРєСЃС‚", "С€Р°Р±Р»РѕРЅ"));
+        Assert.assertTrue(WikiUtils.containsTemplate("С‚РµРєСЃС‚{{РЁР°Р±Р»РѕРЅ}}С‚РµРєСЃС‚", "РЁР°Р±Р»РѕРЅ"));
+        Assert.assertTrue(WikiUtils.containsTemplate("С‚РµРєСЃС‚{{С€Р°Р±Р»РѕРЅ}}С‚РµРєСЃС‚", "РЁР°Р±Р»РѕРЅ"));
     }
 
     @Test
@@ -103,14 +103,14 @@ public class WikiUtilsTest {
     public void addTextToDiscussion_addsToTopWhenTemplate1Specified() {
         String discussion =
                 "Old text is here\n" +
-                "{{Новые сверху}}\n" +
+                "{{РќРѕРІС‹Рµ СЃРІРµСЂС…Сѓ}}\n" +
                 "Some other text";
         String topic = "New topic\n";
         String expected =
                 "New topic\n" +
                 "\n" +
                 "Old text is here\n" +
-                "{{Новые сверху}}\n" +
+                "{{РќРѕРІС‹Рµ СЃРІРµСЂС…Сѓ}}\n" +
                 "Some other text";
         Assert.assertEquals(expected, WikiUtils.addTextToDiscussion(topic, discussion));
     }
@@ -119,7 +119,7 @@ public class WikiUtilsTest {
     public void addTextToDiscussion_addsToTopWhenTemplate1SpecifiedLocalized() {
         TestLocalizationManager.reset();
         Map<String, LocalizedTemplate> localizedTemplates = new HashMap<>();
-        localizedTemplates.put("Новые сверху", new LocalizedTemplate("Add to top", ""));
+        localizedTemplates.put("РќРѕРІС‹Рµ СЃРІРµСЂС…Сѓ", new LocalizedTemplate("Add to top", ""));
         TestLocalizationManager.init(null, localizedTemplates);
 
         String discussion =
@@ -140,14 +140,14 @@ public class WikiUtilsTest {
     public void addTextToDiscussion_addsToTopWhenTemplate2Specified() {
         String discussion =
                 "Old text is here\n" +
-                "{{Новые сверху 2}}\n" +
+                "{{РќРѕРІС‹Рµ СЃРІРµСЂС…Сѓ 2}}\n" +
                 "Some other text";
         String topic = "New topic\n";
         String expected =
                 "New topic\n" +
                 "\n" +
                 "Old text is here\n" +
-                "{{Новые сверху 2}}\n" +
+                "{{РќРѕРІС‹Рµ СЃРІРµСЂС…Сѓ 2}}\n" +
                 "Some other text";
         Assert.assertEquals(expected, WikiUtils.addTextToDiscussion(topic, discussion));
     }
@@ -169,9 +169,9 @@ public class WikiUtilsTest {
         Assert.assertEquals("Ho\n\n\nBo\n",
                 WikiUtils.removeCategories("Ho\n[[Category:Cat1]]\n[[Category:Cat2]]\nBo\n"));
         Assert.assertEquals("Ho\n\nBo\n",
-                WikiUtils.removeCategories("Ho\n[[Категория:Кат]]\nBo\n"));
+                WikiUtils.removeCategories("Ho\n[[РљР°С‚РµРіРѕСЂРёСЏ:РљР°С‚]]\nBo\n"));
         Assert.assertEquals("Ho\n\n\nBo\n",
-                WikiUtils.removeCategories("Ho\n[[Категория:Кат1]]\n[[Категория:Кат2]]\nBo\n"));
+                WikiUtils.removeCategories("Ho\n[[РљР°С‚РµРіРѕСЂРёСЏ:РљР°С‚1]]\n[[РљР°С‚РµРіРѕСЂРёСЏ:РљР°С‚2]]\nBo\n"));
     }
 
 }

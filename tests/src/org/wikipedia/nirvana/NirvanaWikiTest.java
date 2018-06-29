@@ -1,6 +1,6 @@
 /**
  *  @(#)NirvanaWikiTest.java 06.02.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana;
@@ -70,9 +70,9 @@ public class NirvanaWikiTest {
         TestLocalizationManager.init(Localizer.NO_LOCALIZATION);
         NirvanaWiki wiki = new NirvanaWiki("test.xyz", "/w", "https://", "en");
 
-        Assert.assertTrue(wiki.isRedirect("#REDIRECT [[Военно-воздушные силы]]\n"));
-        Assert.assertFalse(wiki.isRedirect("#перенаправление [[Военно-воздушные силы]]\n"));
-        Assert.assertFalse(wiki.isRedirect("#ПЕРЕНАПРАВЛЕНИЕ [[Военно-воздушные силы]]\n"));
+        Assert.assertTrue(wiki.isRedirect("#REDIRECT [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
+        Assert.assertFalse(wiki.isRedirect("#РїРµСЂРµРЅР°РїСЂР°РІР»РµРЅРёРµ [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
+        Assert.assertFalse(wiki.isRedirect("#РџР•Р Р•РќРђРџР РђР’Р›Р•РќРР• [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
         Assert.assertFalse(wiki.isRedirect("Some article text\n"));
     }
 
@@ -81,24 +81,24 @@ public class NirvanaWikiTest {
         TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
         NirvanaWiki wiki = new NirvanaWiki("test.xyz", "/w", "https://", "ru");
 
-        Assert.assertTrue(wiki.isRedirect("#REDIRECT [[Военно-воздушные силы]]\n"));
-        Assert.assertTrue(wiki.isRedirect("#перенаправление [[Военно-воздушные силы]]\n"));
-        Assert.assertTrue(wiki.isRedirect("#ПЕРЕНАПРАВЛЕНИЕ [[Военно-воздушные силы]]\n"));
+        Assert.assertTrue(wiki.isRedirect("#REDIRECT [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
+        Assert.assertTrue(wiki.isRedirect("#РїРµСЂРµРЅР°РїСЂР°РІР»РµРЅРёРµ [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
+        Assert.assertTrue(wiki.isRedirect("#РџР•Р Р•РќРђРџР РђР’Р›Р•РќРР• [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
         Assert.assertFalse(wiki.isRedirect("Some article text\n"));
     }
 
     @Test
     public void isRedirectLocalized_hasTranslation() {
         Map<String, String> translations = new HashMap<>();
-        translations.put("перенаправление", "перанакираванне");
+        translations.put("РїРµСЂРµРЅР°РїСЂР°РІР»РµРЅРёРµ", "РїРµСЂР°РЅР°РєРёСЂР°РІР°РЅРЅРµ");
         TestLocalizationManager.init(translations);
         NirvanaWiki wiki = new NirvanaWiki("test.xyz", "/w", "https://", "be");
 
-        Assert.assertTrue(wiki.isRedirect("#REDIRECT [[Военно-воздушные силы]]\n"));
-        Assert.assertFalse(wiki.isRedirect("#перенаправление [[Военно-воздушные силы]]\n"));
-        Assert.assertFalse(wiki.isRedirect("#ПЕРЕНАПРАВЛЕНИЕ [[Военно-воздушные силы]]\n"));
-        Assert.assertTrue(wiki.isRedirect("#перанакираванне [[Военно-воздушные силы]]\n"));
-        Assert.assertTrue(wiki.isRedirect("#ПЕРАНАКИРАВАННЕ [[Военно-воздушные силы]]\n"));
+        Assert.assertTrue(wiki.isRedirect("#REDIRECT [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
+        Assert.assertFalse(wiki.isRedirect("#РїРµСЂРµРЅР°РїСЂР°РІР»РµРЅРёРµ [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
+        Assert.assertFalse(wiki.isRedirect("#РџР•Р Р•РќРђРџР РђР’Р›Р•РќРР• [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
+        Assert.assertTrue(wiki.isRedirect("#РїРµСЂР°РЅР°РєРёСЂР°РІР°РЅРЅРµ [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
+        Assert.assertTrue(wiki.isRedirect("#РџР•Р РђРќРђРљРР РђР’РђРќРќР• [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
         Assert.assertFalse(wiki.isRedirect("Some article text\n"));
     }
 
@@ -108,11 +108,11 @@ public class NirvanaWikiTest {
         TestLocalizationManager.init(translations);
         NirvanaWiki wiki = new NirvanaWiki("test.xyz", "/w", "https://", "be");
 
-        Assert.assertTrue(wiki.isRedirect("#REDIRECT [[Военно-воздушные силы]]\n"));
-        Assert.assertFalse(wiki.isRedirect("#перенаправление [[Военно-воздушные силы]]\n"));
-        Assert.assertFalse(wiki.isRedirect("#ПЕРЕНАПРАВЛЕНИЕ [[Военно-воздушные силы]]\n"));
-        Assert.assertFalse(wiki.isRedirect("#перанакираванне [[Военно-воздушные силы]]\n"));
-        Assert.assertFalse(wiki.isRedirect("#ПЕРАНАКИРАВАННЕ [[Военно-воздушные силы]]\n"));
+        Assert.assertTrue(wiki.isRedirect("#REDIRECT [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
+        Assert.assertFalse(wiki.isRedirect("#РїРµСЂРµРЅР°РїСЂР°РІР»РµРЅРёРµ [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
+        Assert.assertFalse(wiki.isRedirect("#РџР•Р Р•РќРђРџР РђР’Р›Р•РќРР• [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
+        Assert.assertFalse(wiki.isRedirect("#РїРµСЂР°РЅР°РєРёСЂР°РІР°РЅРЅРµ [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
+        Assert.assertFalse(wiki.isRedirect("#РџР•Р РђРќРђРљРР РђР’РђРќРќР• [[Р’РѕРµРЅРЅРѕ-РІРѕР·РґСѓС€РЅС‹Рµ СЃРёР»С‹]]\n"));
         Assert.assertFalse(wiki.isRedirect("Some article text\n"));
     }
 

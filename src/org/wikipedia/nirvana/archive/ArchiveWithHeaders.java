@@ -1,6 +1,6 @@
 /**
  *  @(#)ArchiveWithHeaders.java 02/07/2012
- *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright В© 2011 - 2012 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 package org.wikipedia.nirvana.archive;
 
@@ -594,8 +594,8 @@ public class ArchiveWithHeaders extends Archive{
 		Section part = null;
 		int hhIndex = -1;
 		hhIndex = findSuperHeader(superHeaderName);
-		// если заголовок верхнего уровня не найден,
-		// значит его нужно создать
+        // РµСЃР»Рё Р·Р°РіРѕР»РѕРІРѕРє РІРµСЂС…РЅРµРіРѕ СѓСЂРѕРІРЅСЏ РЅРµ РЅР°Р№РґРµРЅ,
+        // Р·РЅР°С‡РёС‚ РµРіРѕ РЅСѓР¶РЅРѕ СЃРѕР·РґР°С‚СЊ
 		if(hhIndex<0) {
 			if(addToTop) {		
                 part = createSection(enumeration, headerStripped, header, superHeaderName,
@@ -606,7 +606,7 @@ public class ArchiveWithHeaders extends Archive{
 			} else  {
 				boolean createNewSection = true;
                 if (parts.size() != 0 && parts.get(0).getSuperHeader() == null) {
-					// нужно проверить, последние хедэры наши(относятся к заголовку) или нет					
+                    // РЅСѓР¶РЅРѕ РїСЂРѕРІРµСЂРёС‚СЊ, РїРѕСЃР»РµРґРЅРёРµ С…РµРґСЌСЂС‹ РЅР°С€Рё(РѕС‚РЅРѕСЃСЏС‚СЃСЏ Рє Р·Р°РіРѕР»РѕРІРєСѓ) РёР»Рё РЅРµС‚
 					if(latestItemHeaderHeader!=null && 
                             latestItemHeaderHeader.compareTo(superHeader) == 0) {
 						createNewSection = false;						
@@ -626,10 +626,10 @@ public class ArchiveWithHeaders extends Archive{
 			
 		}
 		
-		// 1 найти хидер?
+        // 1 РЅР°Р№С‚Рё С…РёРґРµСЂ?
 		int hIndex = findHeaderInSuperSection(headerStripped,hhIndex);
 		if(hIndex<0) {
-			// создать подсекцию
+            // СЃРѕР·РґР°С‚СЊ РїРѕРґСЃРµРєС†РёСЋ
 			if(addToTop) {		
 				part = parts.get(hhIndex);
                 part.clearSuperHeader();
@@ -725,6 +725,6 @@ public class ArchiveWithHeaders extends Archive{
 	public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
 		String text = this.toString();
 		if(!text.isEmpty())
-			wiki.edit(archiveName, text,"+"+newItemsCount()+" статей", minor, bot);
+            wiki.edit(archiveName, text, "+" + newItemsCount() + " СЃС‚Р°С‚РµР№", minor, bot);
 	}
 }

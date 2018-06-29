@@ -1,6 +1,6 @@
 /**
  *  @(#)ImageFinder.java 23/08/2012
- *  Copyright © 2013 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright Â© 2013 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot.imagefinder;
@@ -69,7 +69,7 @@ public abstract class ImageFinder {
 		Matcher m = pattern.matcher(article);
         while(m.find()) {
         	String image = m.group(tag).trim();
-        	// èíîãäà âñòàâëÿşò íå ïğîñòî èçîáğàæåíèå à øàáëîí {{÷àñòü èçîáğàæåíèÿ}}
+            // Ğ¸Ğ½Ğ¾Ğ³Ğ´Ğ° Ğ²ÑÑ‚Ğ°Ğ²Ğ»ÑÑÑ‚ Ğ½Ğµ Ğ¿Ñ€Ğ¾ÑÑ‚Ğ¾ Ğ¸Ğ·Ğ¾Ğ±Ñ€Ğ°Ğ¶ĞµĞ½Ğ¸Ğµ Ğ° ÑˆĞ°Ğ±Ğ»Ğ¾Ğ½ {{Ñ‡Ğ°ÑÑ‚ÑŒ Ğ¸Ğ·Ğ¾Ğ±Ñ€Ğ°Ğ¶ĞµĞ½Ğ¸Ñ}}
             if (checkImageTemplates && finderInTemplates != null) {
                 image = finderInTemplates.checkImageIsImageTemplate(image);
         	}
@@ -77,8 +77,9 @@ public abstract class ImageFinder {
         	log.debug("image: "+image);
 
         	if(image!=null && !image.isEmpty() && !image.contains(">") && !image.contains("<")) {
-        		// íåêîòîğûå òîâàğèùè óìóäğÿşòñÿ âñòàâëÿòü èçîáğàæåíèå ñ | íàïğèìåğ: Equisetum.palustre.jpg|Equisetum.palustre
-        		// â èòîãå âûïğûãèâàåò IOException
+                // Ğ½ĞµĞºĞ¾Ñ‚Ğ¾Ñ€Ñ‹Ğµ Ñ‚Ğ¾Ğ²Ğ°Ñ€Ğ¸Ñ‰Ğ¸ ÑƒĞ¼ÑƒĞ´Ñ€ÑÑÑ‚ÑÑ Ğ²ÑÑ‚Ğ°Ğ²Ğ»ÑÑ‚ÑŒ Ğ¸Ğ·Ğ¾Ğ±Ñ€Ğ°Ğ¶ĞµĞ½Ğ¸Ğµ Ñ |
+                // Ğ½Ğ°Ğ¿Ñ€Ğ¸Ğ¼ĞµÑ€: Equisetum.palustre.jpg|Equisetum.palustre
+                // Ğ² Ğ¸Ñ‚Ğ¾Ğ³Ğµ Ğ²Ñ‹Ğ¿Ñ€Ñ‹Ğ³Ğ¸Ğ²Ğ°ĞµÑ‚ IOException
         		if(image.contains("|")) {
         			image = image.substring(0, image.indexOf('|'));
         		}
@@ -90,10 +91,10 @@ public abstract class ImageFinder {
         }
 		return null;
 	}
-	
+
 	protected static boolean checkImageExists(NirvanaWiki wiki, NirvanaWiki commons, String image) throws IOException {
-		// çäåñü ìû îáğàáàòûâàåì ñëó÷àè êîãäà ïîïàäàåòñÿ êàğòèíêà ñ URL-êîäàìè
-		// íàïğèìåğ Haloragis_erecta_2007-06-02_%28plant%29.jpg
+        // Ğ·Ğ´ĞµÑÑŒ Ğ¼Ñ‹ Ğ¾Ğ±Ñ€Ğ°Ğ±Ğ°Ñ‚Ñ‹Ğ²Ğ°ĞµĞ¼ ÑĞ»ÑƒÑ‡Ğ°Ğ¸ ĞºĞ¾Ğ³Ğ´Ğ° Ğ¿Ğ¾Ğ¿Ğ°Ğ´Ğ°ĞµÑ‚ÑÑ ĞºĞ°Ñ€Ñ‚Ğ¸Ğ½ĞºĞ° Ñ URL-ĞºĞ¾Ğ´Ğ°Ğ¼Ğ¸
+        // Ğ½Ğ°Ğ¿Ñ€Ğ¸Ğ¼ĞµÑ€ Haloragis_erecta_2007-06-02_%28plant%29.jpg
 		image = java.net.URLDecoder.decode(image, "UTF-8");
 		if (wiki.exists("File:"+image)) {
 			return true;

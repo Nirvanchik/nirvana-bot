@@ -1,6 +1,6 @@
 /**
  *  @(#)ImageFinderInTemplatesTest.java 17.02.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot.imagefinder;
@@ -60,7 +60,7 @@ public class ImageFinderInTemplatesTest {
     public void findsImageInTemplate_oneParam() {
         ImageFinderInTemplates finder = new ImageFinderInTemplates();
 
-        String image = finder.checkImageIsImageTemplate("{{часть изображения|изобр=Cow.png}}");
+        String image = finder.checkImageIsImageTemplate("{{С‡Р°СЃС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ|РёР·РѕР±СЂ=Cow.png}}");
 
         Assert.assertEquals("Cow.png", image);
     }
@@ -69,7 +69,7 @@ public class ImageFinderInTemplatesTest {
     public void findsImageInTemplate_spaces() {
         ImageFinderInTemplates finder = new ImageFinderInTemplates();
 
-        String image = finder.checkImageIsImageTemplate("{{часть изображения| изобр = Cow.png }}");
+        String image = finder.checkImageIsImageTemplate("{{С‡Р°СЃС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ| РёР·РѕР±СЂ = Cow.png }}");
 
         Assert.assertEquals("Cow.png", image);
     }
@@ -79,7 +79,7 @@ public class ImageFinderInTemplatesTest {
         ImageFinderInTemplates finder = new ImageFinderInTemplates();
 
         String image = finder.checkImageIsImageTemplate(
-                "{{часть изображения|нечто=xyz|изобр=Cow.png|папа=мама}}");
+                "{{С‡Р°СЃС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ|РЅРµС‡С‚Рѕ=xyz|РёР·РѕР±СЂ=Cow.png|РїР°РїР°=РјР°РјР°}}");
         
         Assert.assertEquals("Cow.png", image);
     }
@@ -88,7 +88,7 @@ public class ImageFinderInTemplatesTest {
     public void imageNotFound() {
         ImageFinderInTemplates finder = new ImageFinderInTemplates();
 
-        String image = finder.checkImageIsImageTemplate("{{часть изображения|гобо=добо}}");
+        String image = finder.checkImageIsImageTemplate("{{С‡Р°СЃС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ|РіРѕР±Рѕ=РґРѕР±Рѕ}}");
 
         Assert.assertEquals(null, image);
     }

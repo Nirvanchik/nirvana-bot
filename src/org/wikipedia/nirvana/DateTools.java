@@ -1,6 +1,6 @@
 /**
  *  @(#)DateTools.java 14.12.2014
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)
+ *  Copyright В© 2011 - 2014 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana;
@@ -45,13 +45,15 @@ import junit.framework.Assert;
  * Also provides localized date strings (months, seasons, etc.).
  */
 public class DateTools {
-	/** Настройки недели по ГОСТ ИСО 8601-2001 п. 2.17 неделя календарная.
-	 * Период времени, состоящий из семи дней внутри календарного года.
-	 * Неделя начинается с понедельника и идентифицируется своим порядковым номером в году.
-	 * Первой календарной неделей года считают первую неделю, содержащую первый четверг текущего года.
-	 * В григорианском календаре - это неделя, содержащая 4 января.
-	 */
     private static final String DEFAULT_LANGUAGE = "ru";
+
+    /**
+     * РќР°СЃС‚СЂРѕР№РєРё РЅРµРґРµР»Рё РїРѕ Р“РћРЎРў РРЎРћ 8601-2001 Рї. 2.17 РЅРµРґРµР»СЏ РєР°Р»РµРЅРґР°СЂРЅР°СЏ.
+     * РџРµСЂРёРѕРґ РІСЂРµРјРµРЅРё, СЃРѕСЃС‚РѕСЏС‰РёР№ РёР· СЃРµРјРё РґРЅРµР№ РІРЅСѓС‚СЂРё РєР°Р»РµРЅРґР°СЂРЅРѕРіРѕ РіРѕРґР°.
+     * РќРµРґРµР»СЏ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ РїРѕРЅРµРґРµР»СЊРЅРёРєР° Рё РёРґРµРЅС‚РёС„РёС†РёСЂСѓРµС‚СЃСЏ СЃРІРѕРёРј РїРѕСЂСЏРґРєРѕРІС‹Рј РЅРѕРјРµСЂРѕРј РІ РіРѕРґСѓ.
+     * РџРµСЂРІРѕР№ РєР°Р»РµРЅРґР°СЂРЅРѕР№ РЅРµРґРµР»РµР№ РіРѕРґР° СЃС‡РёС‚Р°СЋС‚ РїРµСЂРІСѓСЋ РЅРµРґРµР»СЋ, СЃРѕРґРµСЂР¶Р°С‰СѓСЋ РїРµСЂРІС‹Р№ С‡РµС‚РІРµСЂРі С‚РµРєСѓС‰РµРіРѕ
+     * РіРѕРґР°. Р’ РіСЂРёРіРѕСЂРёР°РЅСЃРєРѕРј РєР°Р»РµРЅРґР°СЂРµ - СЌС‚Рѕ РЅРµРґРµР»СЏ, СЃРѕРґРµСЂР¶Р°С‰Р°СЏ 4 СЏРЅРІР°СЂСЏ.
+     */
 	public static final int MINIMAL_DAYS_IN_FIRST_WEEK_DEFAULT = 4;	
     public static final int FIRST_DAY_OF_WEEK_DEFAULT = Calendar.MONDAY; 
 
@@ -71,46 +73,42 @@ public class DateTools {
         sLog = LogManager.getLogger(DateTools.class.getName());
     }
 
-    private static final String[] MONAT_RU = 
-		{
-		   "января", 
-		   "февраля", 
-		   "марта", 
-		   "апреля", 
-		   "мая", 
-		   "июня", 
-		   "июля", 
-		   "августа", 
-		   "сентября", 
-		   "октября", 
-		   "ноября", 
-		   "декабря"
-		};
+    private static final String[] MONAT_RU = {
+           "СЏРЅРІР°СЂСЏ",
+           "С„РµРІСЂР°Р»СЏ",
+           "РјР°СЂС‚Р°",
+           "Р°РїСЂРµР»СЏ",
+           "РјР°СЏ",
+           "РёСЋРЅСЏ",
+           "РёСЋР»СЏ",
+           "Р°РІРіСѓСЃС‚Р°",
+           "СЃРµРЅС‚СЏР±СЂСЏ",
+           "РѕРєС‚СЏР±СЂСЏ",
+           "РЅРѕСЏР±СЂСЏ",
+           "РґРµРєР°Р±СЂСЏ"
+    };
 
-    public static final String[] MONTHS_RU = 
-		{
-		   "январь", 
-		   "февраль", 
-		   "март", 
-		   "апрель", 
-		   "май", 
-		   "июнь", 
-		   "июль", 
-		   "август", 
-		   "сентябрь", 
-		   "октябрь", 
-		   "ноябрь", 
-		   "декабрь"
-		};
+    public static final String[] MONTHS_RU = {
+           "СЏРЅРІР°СЂСЊ",
+           "С„РµРІСЂР°Р»СЊ",
+           "РјР°СЂС‚",
+           "Р°РїСЂРµР»СЊ",
+           "РјР°Р№",
+           "РёСЋРЅСЊ",
+           "РёСЋР»СЊ",
+           "Р°РІРіСѓСЃС‚",
+           "СЃРµРЅС‚СЏР±СЂСЊ",
+           "РѕРєС‚СЏР±СЂСЊ",
+           "РЅРѕСЏР±СЂСЊ",
+           "РґРµРєР°Р±СЂСЊ"
+    };
 
-    public static final String[] SEASONS_RU = 
-		{
-		   "зима", 
-		   "весна", 
-		   "лето", 
-		   "осень", 
-		};
-	
+    public static final String[] SEASONS_RU = {
+           "Р·РёРјР°",
+           "РІРµСЃРЅР°",
+           "Р»РµС‚Рѕ",
+           "РѕСЃРµРЅСЊ",
+    };
 
     DateTools(String language) {
         locale = new Locale(language);

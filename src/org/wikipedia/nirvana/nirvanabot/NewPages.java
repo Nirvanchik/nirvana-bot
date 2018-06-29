@@ -1,6 +1,6 @@
 /**
  *  @(#)NewPages.java 14.12.2014
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2011 - 2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot;
@@ -214,7 +214,7 @@ public class NewPages implements PortalModule{
     	/*
     	TODO(Nirvanchik): I don't understand what is this for?
     	if(param.deletedFlag==PortalParam.Deleted.MARK) {
-    		this.formatString = formatString.replace("%(удалено)", "%4$s");
+            this.formatString = formatString.replace("%(СѓРґР°Р»РµРЅРѕ)", "%4$s");
     	}
     	*/
     	this.hours = param.hours;
@@ -248,18 +248,18 @@ public class NewPages implements PortalModule{
     public static void initStatics() {
         if (initialized) return;
         Localizer localizer = Localizer.getInstance();
-        SUMMARY_NEW_PAGES = "+%d " + localizer.localize("новых");
+        SUMMARY_NEW_PAGES = "+%d " + localizer.localize("РЅРѕРІС‹С…");
         NEW_PAGES_LISTS_CATEGORY =
-                localizer.localize("Категория:Википедия:Списки новых статей по темам");
-        CATEGORY_NAMESPACE = localizer.localize("Категория:");
-        USER_NAMESPACE = localizer.localize("Участник:");
-        USER_TALK_NAMESPACE = localizer.localize("Обсуждение участника:");
+                localizer.localize("РљР°С‚РµРіРѕСЂРёСЏ:Р’РёРєРёРїРµРґРёСЏ:РЎРїРёСЃРєРё РЅРѕРІС‹С… СЃС‚Р°С‚РµР№ РїРѕ С‚РµРјР°Рј");
+        CATEGORY_NAMESPACE = localizer.localize("РљР°С‚РµРіРѕСЂРёСЏ:");
+        USER_NAMESPACE = localizer.localize("РЈС‡Р°СЃС‚РЅРёРє:");
+        USER_TALK_NAMESPACE = localizer.localize("РћР±СЃСѓР¶РґРµРЅРёРµ СѓС‡Р°СЃС‚РЅРёРєР°:");
         USER_TALK_NAMESPACE2 = USER_TALK_NAMESPACE.replace(" ", "_");
 
-        templateNewPageItem = localizer.localizeTemplate("Новая статья");
-        templateNewPageItem2 = localizer.localizeTemplate("Новая статья2");
+        templateNewPageItem = localizer.localizeTemplate("РќРѕРІР°СЏ СЃС‚Р°С‚СЊСЏ");
+        templateNewPageItem2 = localizer.localizeTemplate("РќРѕРІР°СЏ СЃС‚Р°С‚СЊСЏ2");
 
-        deletedPageMarkerParam = templateNewPageItem.localizeParam("уд");
+        deletedPageMarkerParam = templateNewPageItem.localizeParam("СѓРґ");
         deletedNewPageItemRegex = Pattern.compile(".*\\{\\{(" + 
                 templateNewPageItem.localizeName() + "|" + templateNewPageItem2.localizeName() +
                 ")\\|.+\\|.+\\|.+\\|" + deletedPageMarkerParam + "\\}\\}.*");
@@ -269,9 +269,9 @@ public class NewPages implements PortalModule{
                 templateNewPageItem.localizeName() + "|" + templateNewPageItem2.localizeName() +
                 ")\\|[^\\}\\|]+\\|[^\\}\\|]+\\|[^\\}]+\\}\\}.*");
 
-        pageDeletedString = localizer.localize("Статья удалена");
+        pageDeletedString = localizer.localize("РЎС‚Р°С‚СЊСЏ СѓРґР°Р»РµРЅР°");
         pageDeletedSimpleMarker = "'''" + pageDeletedString + "'''"; 
-        COMMENT_DELETED = "<span style=\"color:#966963\"> — " + pageDeletedSimpleMarker +
+        COMMENT_DELETED = "<span style=\"color:#966963\"> вЂ” " + pageDeletedSimpleMarker +
                 "</span>";
 
         newPageItemSimpleRegex = Pattern.compile(".*\\[\\[(.+)\\]\\].*");
@@ -1006,10 +1006,10 @@ public class NewPages implements PortalModule{
 		{
             String str = String.format(localizer.localize(SUMMARY_NEW_PAGES), d.newPagesCount);
 		    if(UPDATE_ARCHIVE && archive!=null && d.archiveCount>0) {
-                str = str + ", -" + d.archiveCount + " " + localizer.localize("в архив");
+                str = str + ", -" + d.archiveCount + " " + localizer.localize("РІ Р°СЂС…РёРІ");
 		    }
 		    if(this.deletedFlag == PortalParam.Deleted.REMOVE && d.deletedCount>0) {
-                str = str + ", -" + d.deletedCount + " " + localizer.localize("удаленных");
+                str = str + ", -" + d.deletedCount + " " + localizer.localize("СѓРґР°Р»РµРЅРЅС‹С…");
 		    }
 		    log.info("Updating [[" + this.pageName+"]] " + str);
 		    wiki.edit(pageName, d.newText, str, this.minor, this.bot);
@@ -1091,7 +1091,7 @@ public class NewPages implements PortalModule{
     	if(archiveSettings==null || archiveSettings.isSimple()) {	
     		log.debug("archive has simple format");
     		log.info("Updating "+archive);
-            String summary = "+" + d.archiveCount + " " + localizer.localize("статей");
+            String summary = "+" + d.archiveCount + " " + localizer.localize("СЃС‚Р°С‚РµР№");
             wiki.prependOrCreate(archive, d.archiveText, summary, this.minor, this.bot);
     		reportData.archived = true;
 	    	return;
@@ -1176,7 +1176,7 @@ public class NewPages implements PortalModule{
 			foundBrackets = true;
 		}
 		if(foundBrackets) return null;
-		// если не нашли по [[]] скобочкам, продолжаем искать по {{}}
+        // РµСЃР»Рё РЅРµ РЅР°С€Р»Рё РїРѕ [[]] СЃРєРѕР±РѕС‡РєР°Рј, РїСЂРѕРґРѕР»Р¶Р°РµРј РёСЃРєР°С‚СЊ РїРѕ {{}}
 		p = Pattern.compile(PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM);
 		m = p.matcher(item);
 		if(m.find()) {
@@ -1223,7 +1223,7 @@ public class NewPages implements PortalModule{
                 article.startsWith(CATEGORY_NAMESPACE_EN) );
 	}
 
-	// TODO протестировать эту функцию на другие пространства имён!!!
+    // TODO РїСЂРѕС‚РµСЃС‚РёСЂРѕРІР°С‚СЊ СЌС‚Сѓ С„СѓРЅРєС†РёСЋ РЅР° РґСЂСѓРіРёРµ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІР° РёРјС‘РЅ!!!
 	public static String getNewPagesItemArticle(String item) {
 		Pattern p = Pattern.compile(PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
 		Matcher m = p.matcher(item);

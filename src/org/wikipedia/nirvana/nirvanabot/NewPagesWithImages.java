@@ -1,6 +1,6 @@
 /**
  *  @(#)NewPagesWithImages.java
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright В© 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot;
@@ -86,11 +86,6 @@ public class NewPagesWithImages extends NewPages {
 		this.imageFinder = imageFinder;
 		this.commons = commons;
         this.fairUseImageTemplates = BotUtils.optionToList(param.fairUseImageTemplates);
-		/*if(inCard) {
-			regexToFindImage = "\\| *(image file|Аверс|Реверс|Изображение аверса|Изображение реверса) *= *(?<filename>.+?) *\n";
-		} else {
-			regexToFindImage = "\\[\\[(Image|File|Файл|Изображение):(?<filename>.+?)(\\||\\])";
-		}*/
 	}
 
     @Override

@@ -1,6 +1,6 @@
 /**
  *  @(#)StatisticsFabric.java 20/10/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)
+ *  Copyright В© 2012 Dmitry Trofimovich (KIN)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 package org.wikipedia.nirvana.statistics;
 
@@ -57,18 +57,18 @@ public class StatisticsFabric {
 	/*public void register(String type, Class<Statistics> cl) {
 		
 	}*/
-	
+
 	static {
 		reporterClass = new HashMap<String,Class>(5);
-		reporterClass.put("по неделям", 	StatisticsWeek.class);
-		reporterClass.put("по месяцам", 	StatisticsMonth.class);
-		reporterClass.put("по годам", 		StatisticsYear.class);
-		reporterClass.put("рейтинг за год", Rating.class);
-		reporterClass.put("общий рейтинг", 	RatingTotal.class);
+        reporterClass.put("РїРѕ РЅРµРґРµР»СЏРј", StatisticsWeek.class);
+        reporterClass.put("РїРѕ РјРµСЃСЏС†Р°Рј", StatisticsMonth.class);
+        reporterClass.put("РїРѕ РіРѕРґР°Рј", StatisticsYear.class);
+        reporterClass.put("СЂРµР№С‚РёРЅРі Р·Р° РіРѕРґ", Rating.class);
+        reporterClass.put("РѕР±С‰РёР№ СЂРµР№С‚РёРЅРі", RatingTotal.class);
 		reporters = new HashMap<String,Statistics>(5);
 		reportersYear = new MultiKeyMap();
 	}
-	
+
 	@SuppressWarnings("unchecked")
     static Statistics createReporter(NirvanaWiki wiki, String cacheDir, String type) {
 		Statistics ob = null;
@@ -124,27 +124,27 @@ public class StatisticsFabric {
 	}
 	
 	static Statistics getReporterWithUserData(Statistics caller) {
-		Statistics ob = getReporter("рейтинг за год");
+        Statistics ob = getReporter("СЂРµР№С‚РёРЅРі Р·Р° РіРѕРґ");
 		if(ob==caller) ob = null;
 		if(ob==null) {
-			ob = getReporter("по месяцам");
+            ob = getReporter("РїРѕ РјРµСЃСЏС†Р°Рј");
 			if(ob==caller) ob = null;
 		}
 		if(ob==null) {
-			ob = getReporter("по неделям");
+            ob = getReporter("РїРѕ РЅРµРґРµР»СЏРј");
 			if(ob==caller) ob = null;
 		}
 		return ob;
 	}
 	static Statistics getReporterWithUserData(Statistics caller, int year) {
-		Statistics ob = getReporter("рейтинг за год",year);
+        Statistics ob = getReporter("СЂРµР№С‚РёРЅРі Р·Р° РіРѕРґ", year);
 		if(ob==caller) ob = null;
 		if(ob==null) {
-			ob = getReporter("по месяцам",year);
+            ob = getReporter("РїРѕ РјРµСЃСЏС†Р°Рј", year);
 			if(ob==caller) ob = null;
 		}
 		if(ob==null) {
-			ob = getReporter("по неделям",year);
+            ob = getReporter("РїРѕ РЅРµРґРµР»СЏРј", year);
 			if(ob==caller) ob = null;
 		}
 		return ob;

@@ -1,6 +1,6 @@
 /**
  *  @(#)NumberTools.java 12.10.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN, Nirvanchik) (DimaTrofimovich@gmail.com)
+ *  Copyright ¬© 2014 Dmitry Trofimovich (KIN, Nirvanchik) (DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana;
@@ -38,16 +38,19 @@ public class NumberTools {
 	public static int parseFileSize(String s) throws NumberFormatException {
 		int size = 0;		
 		int multi = 1;
-		if (StringUtils.endsWithIgnoreCase(s, "K") || StringUtils.endsWithIgnoreCase(s, " ")) {
+        if (StringUtils.endsWithIgnoreCase(s, "K") || StringUtils.endsWithIgnoreCase(s, "–ö")) {
 			multi = K;
 			s = s.substring(0, s.length()-1).trim();
-		} else if (StringUtils.endsWithIgnoreCase(s, "KB") || StringUtils.endsWithIgnoreCase(s, " ¡")) {
+        } else if (StringUtils.endsWithIgnoreCase(s, "KB") ||
+                StringUtils.endsWithIgnoreCase(s, "–ö–ë")) {
 			multi = K;
 			s = s.substring(0, s.length()-2).trim();
-		} else if (StringUtils.endsWithIgnoreCase(s, "M") || StringUtils.endsWithIgnoreCase(s, "Ã")) {
+        } else if (StringUtils.endsWithIgnoreCase(s, "M") ||
+                StringUtils.endsWithIgnoreCase(s, "–ú")) {
 			multi = M;
 			s = s.substring(0, s.length()-1).trim();
-		} else if (StringUtils.endsWithIgnoreCase(s, "MB") || StringUtils.endsWithIgnoreCase(s, "Ã¡")) {
+        } else if (StringUtils.endsWithIgnoreCase(s, "MB") ||
+                StringUtils.endsWithIgnoreCase(s, "–ú–ë")) {
 			multi = M;
 			s = s.substring(0, s.length()-2).trim();
 		}

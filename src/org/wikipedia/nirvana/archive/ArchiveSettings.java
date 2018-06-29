@@ -1,6 +1,6 @@
 /**
  *  @(#)ArchiveSettings.java 02/07/2012
- *  Copyright © 2011 - 2017 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright В© 2011 - 2017 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 package org.wikipedia.nirvana.archive;
 
@@ -72,13 +72,13 @@ public class ArchiveSettings {
 
 	public enum Period {
 		NONE (100,null,false),
-		DAY (1,"%(день)",true),
-		WEEK (2,"%(неделя)",true),
-		MONTH (3,"%(месяц)",false),
-		MONTHRP (3,"%(месяц в родительном падеже)",false),
-		QUARTER (4,"%(квартал)",true),
-		SEASON (4,"%(сезон)",true),
-		YEAR (6,"%(год)",true);
+        DAY (1, "%(РґРµРЅСЊ)", true),
+        WEEK (2, "%(РЅРµРґРµР»СЏ)", true),
+        MONTH (3, "%(РјРµСЃСЏС†)", false),
+        MONTHRP (3, "%(РјРµСЃСЏС† РІ СЂРѕРґРёС‚РµР»СЊРЅРѕРј РїР°РґРµР¶Рµ)", false),
+        QUARTER (4, "%(РєРІР°СЂС‚Р°Р»)", true),
+        SEASON (4, "%(СЃРµР·РѕРЅ)", true),
+        YEAR (6, "%(РіРѕРґ)", true);
 		private final int degree;
 		private final String template;
 		private final boolean numeric;

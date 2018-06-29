@@ -1,6 +1,6 @@
 /**
  *  @(#)LocalizationManagerTest.java 15.01.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.localization;
@@ -206,7 +206,7 @@ public class LocalizationManagerTest {
                 "<pre>\n" +
                 "parrot = Birne\n" +
                 "</pre>\n" +
-                "[[Категория:Некая категория]]");
+                "[[РљР°С‚РµРіРѕСЂРёСЏ:РќРµРєР°СЏ РєР°С‚РµРіРѕСЂРёСЏ]]");
 
         LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
                 TRANSLATIONS_DIR, LANG);
@@ -339,9 +339,9 @@ public class LocalizationManagerTest {
     public void refreshWikiTranslations_updateWiki() throws Exception {
         writeFile(translationFile, "");
         NirvanaWiki wiki = makeWikiWithTranslation(
-                "<pre>\nДобавление новых ключей для перевода=\n" +
+                "<pre>\nР”РѕР±Р°РІР»РµРЅРёРµ РЅРѕРІС‹С… РєР»СЋС‡РµР№ РґР»СЏ РїРµСЂРµРІРѕРґР°=\n" +
                 "apple = Apfel\n" +
-                "Категория:\n" +
+                "РљР°С‚РµРіРѕСЂРёСЏ:\n" +
                 "</pre>\n");
 
         LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
@@ -351,9 +351,9 @@ public class LocalizationManagerTest {
         localizationManager.refreshWikiTranslations(wiki, WIKI_TRANSLATIONS);
 
         verify(wiki, atLeastOnce()).edit(eq(WIKI_TRANSLATIONS),
-                eq("<pre>\nДобавление новых ключей для перевода=\n" +
+                eq("<pre>\nР”РѕР±Р°РІР»РµРЅРёРµ РЅРѕРІС‹С… РєР»СЋС‡РµР№ РґР»СЏ РїРµСЂРµРІРѕРґР°=\n" +
                         "apple = Apfel\n" +
-                        "Категория:\n" +
+                        "РљР°С‚РµРіРѕСЂРёСЏ:\n" +
                         "coconut = \n</pre>\n"),
                 Mockito.anyString());
     }
@@ -362,11 +362,11 @@ public class LocalizationManagerTest {
     public void refreshWikiTranslations_updateWikiDoesntBreakCategory() throws Exception {
         writeFile(translationFile, "");
         NirvanaWiki wiki = makeWikiWithTranslation(
-                "<pre>\nДобавление новых ключей для перевода=\n" +
+                "<pre>\nР”РѕР±Р°РІР»РµРЅРёРµ РЅРѕРІС‹С… РєР»СЋС‡РµР№ РґР»СЏ РїРµСЂРµРІРѕРґР°=\n" +
                 "apple = Apfel\n" +
-                "Категория:\n" +
+                "РљР°С‚РµРіРѕСЂРёСЏ:\n" +
                 "</pre>\n" +
-                "[[Категория:Странная категория]]\n");
+                "[[РљР°С‚РµРіРѕСЂРёСЏ:РЎС‚СЂР°РЅРЅР°СЏ РєР°С‚РµРіРѕСЂРёСЏ]]\n");
 
         LocalizationManager localizationManager = new LocalizationManager(OUT_DIR, CACHE_DIR,
                 TRANSLATIONS_DIR, LANG);
@@ -375,12 +375,12 @@ public class LocalizationManagerTest {
         localizationManager.refreshWikiTranslations(wiki, WIKI_TRANSLATIONS);
 
         verify(wiki, atLeastOnce()).edit(eq(WIKI_TRANSLATIONS),
-                eq("<pre>\nДобавление новых ключей для перевода=\n" +
+                eq("<pre>\nР”РѕР±Р°РІР»РµРЅРёРµ РЅРѕРІС‹С… РєР»СЋС‡РµР№ РґР»СЏ РїРµСЂРµРІРѕРґР°=\n" +
                         "apple = Apfel\n" +
-                        "Категория:\n" +
+                        "РљР°С‚РµРіРѕСЂРёСЏ:\n" +
                         "coconut = \n" +
                         "</pre>\n" +
-                        "[[Категория:Странная категория]]\n"),
+                        "[[РљР°С‚РµРіРѕСЂРёСЏ:РЎС‚СЂР°РЅРЅР°СЏ РєР°С‚РµРіРѕСЂРёСЏ]]\n"),
                 Mockito.anyString());
     }
 
@@ -396,7 +396,7 @@ public class LocalizationManagerTest {
         localizationManager.refreshWikiTranslations(wiki, WIKI_TRANSLATIONS);
 
         verify(wiki, atLeastOnce()).edit(eq(WIKI_TRANSLATIONS),
-                eq("<pre>\nСоздание страницы локализации = \ncoconut = \n</pre>\n"),
+                eq("<pre>\nРЎРѕР·РґР°РЅРёРµ СЃС‚СЂР°РЅРёС†С‹ Р»РѕРєР°Р»РёР·Р°С†РёРё = \ncoconut = \n</pre>\n"),
                 Mockito.anyString());
     }
 

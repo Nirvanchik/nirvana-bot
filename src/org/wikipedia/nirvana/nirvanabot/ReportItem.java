@@ -1,6 +1,6 @@
 /**
  *  @(#)ReportItem.java 
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright В© 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot;
@@ -124,9 +124,9 @@ public class ReportItem {
     private static void initStatics() {
         if (!initialized) {
             Localizer localizer = Localizer.getInstance();
-            templateYes = localizer.localizeTemplate("Да");
-            templateNo = localizer.localizeTemplate("Нет");
-            wordNo = localizer.localize("Нет");
+            templateYes = localizer.localizeTemplate("Р”Р°");
+            templateNo = localizer.localizeTemplate("РќРµС‚");
+            wordNo = localizer.localize("РќРµС‚");
             initialized = true;
         }
     }
@@ -166,17 +166,17 @@ public class ReportItem {
         StringBuilder sb = new StringBuilder();
         sb.append("{| class=\"wikitable sortable\" style=\"text-align:center\"\n");
         sb.append("|-\n");
-        sb.append("! №")
-                .append(" !! ").append(localizer.localize("портал/проект"))
-                .append(" !! ").append(localizer.localize("проходов"))
-                .append(" !! ").append(localizer.localize("статус"))
-                .append(" !! ").append(localizer.localize("время"))
-                .append(" !! ").append(localizer.localize("новых статей"))
-                .append(" !! ").append(localizer.localize("н. статьи обновлены"))
-                .append(" !! ").append(localizer.localize("статей в архив"))
-                .append(" !! ").append(localizer.localize("архив обновлен"))
-                .append(" !! ").append(localizer.localize("ошибок"))
-                .append(" !! ").append(localizer.localize("ошибка"));
+        sb.append("! в„–")
+                .append(" !! ").append(localizer.localize("РїРѕСЂС‚Р°Р»/РїСЂРѕРµРєС‚"))
+                .append(" !! ").append(localizer.localize("РїСЂРѕС…РѕРґРѕРІ"))
+                .append(" !! ").append(localizer.localize("СЃС‚Р°С‚СѓСЃ"))
+                .append(" !! ").append(localizer.localize("РІСЂРµРјСЏ"))
+                .append(" !! ").append(localizer.localize("РЅРѕРІС‹С… СЃС‚Р°С‚РµР№"))
+                .append(" !! ").append(localizer.localize("РЅ. СЃС‚Р°С‚СЊРё РѕР±РЅРѕРІР»РµРЅС‹"))
+                .append(" !! ").append(localizer.localize("СЃС‚Р°С‚РµР№ РІ Р°СЂС…РёРІ"))
+                .append(" !! ").append(localizer.localize("Р°СЂС…РёРІ РѕР±РЅРѕРІР»РµРЅ"))
+                .append(" !! ").append(localizer.localize("РѕС€РёР±РѕРє"))
+                .append(" !! ").append(localizer.localize("РѕС€РёР±РєР°"));
         return sb.toString();
 	}
 	
@@ -227,7 +227,7 @@ public class ReportItem {
 		}
 		String upd = wikiYesNoStringRu(this.updated);
 		String arch = wikiYesNoStringRu(this.archived);
-		//| 2 ||align='left'| {{user|Игорь Васильев}}
+        //| 2 ||align='left'| {{user|РРіРѕСЂСЊ Р’Р°СЃРёР»СЊРµРІ}}
 		String errorStr = wikiErrorStringRu(error.toString(), error!= BotError.NONE);
 		String statusStr = wikiYesNoCancelStringRu(status.toString(), status.isSuccess(), status.isFailure());
 		line = String.format("|-\n|%10$d ||align='left'| [[%1$s]] || %11$d || %2$s || %3$s || %4$d || %5$s || %6$d || %7$s || %8$d || %9$s", 

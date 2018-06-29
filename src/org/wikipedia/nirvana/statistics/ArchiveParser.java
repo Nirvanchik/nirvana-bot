@@ -1,6 +1,6 @@
 /**
  *  @(#)ArchiveParser.java
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright В© 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.statistics;
@@ -77,7 +77,7 @@ public class ArchiveParser {
 	 */
 	public void getData(boolean cache) throws IOException {
         DateTools dateTools = DateTools.getInstance();
-		// Архив состоит из одной единственной страницы
+        // РђСЂС…РёРІ СЃРѕСЃС‚РѕРёС‚ РёР· РѕРґРЅРѕР№ РµРґРёРЅСЃС‚РІРµРЅРЅРѕР№ СЃС‚СЂР°РЅРёС†С‹
 		if(archiveSettings.isSingle()) {
 			PurgeDatabase purge = null;
 			if(!db.isEmpty()) {
@@ -92,7 +92,7 @@ public class ArchiveParser {
 			if(cache) db.save();
 			db.markEnd();
 		} else { 
-			// Архив состоит из нескольких страниц
+            // РђСЂС…РёРІ СЃРѕСЃС‚РѕРёС‚ РёР· РЅРµСЃРєРѕР»СЊРєРёС… СЃС‚СЂР°РЅРёС†
 			boolean markAll = db.isEmpty();
 			int startYear = archiveSettings.startYear;
 			Calendar c = Calendar.getInstance();
@@ -100,14 +100,14 @@ public class ArchiveParser {
 			int curQ = c.get(Calendar.MONTH)/3+1;
 			ArchiveItem last = db.getLastFromCache();
 			//boolean checkLast = false;
-			// Если в кэше уже что-то есть, то не парсим все архивы.
-			// Те годы, которые есть в кэше, мы пропускаем, стартуем парсинг архивов, 
-			// начиная с последнего года, найденного в кэше.
+            // Р•СЃР»Рё РІ РєСЌС€Рµ СѓР¶Рµ С‡С‚Рѕ-С‚Рѕ РµСЃС‚СЊ, С‚Рѕ РЅРµ РїР°СЂСЃРёРј РІСЃРµ Р°СЂС…РёРІС‹.
+            // РўРµ РіРѕРґС‹, РєРѕС‚РѕСЂС‹Рµ РµСЃС‚СЊ РІ РєСЌС€Рµ, РјС‹ РїСЂРѕРїСѓСЃРєР°РµРј, СЃС‚Р°СЂС‚СѓРµРј РїР°СЂСЃРёРЅРі Р°СЂС…РёРІРѕРІ, 
+            // РЅР°С‡РёРЅР°СЏ СЃ РїРѕСЃР»РµРґРЅРµРіРѕ РіРѕРґР°, РЅР°Р№РґРµРЅРЅРѕРіРѕ РІ РєСЌС€Рµ.
 			if (last!=null && last.year>startYear) {
 				startYear = last.year; 
 				log.info("db already contains data. scanning data from " + String.valueOf(startYear)+" year");
 			}
-			// Диапазон лет, захватываемых одной страницей архива (обычно 1)
+            // Р”РёР°РїР°Р·РѕРЅ Р»РµС‚, Р·Р°С…РІР°С‚С‹РІР°РµРјС‹С… РѕРґРЅРѕР№ СЃС‚СЂР°РЅРёС†РµР№ Р°СЂС…РёРІР° (РѕР±С‹С‡РЅРѕ 1)
 			int year_offset = 1;
 			for(int year=startYear;year<=endYear;year+=year_offset) {				
 				String archiveThisYear = null;
@@ -120,8 +120,8 @@ public class ArchiveParser {
 							ArchiveSettings.Period.YEAR.template(), String.valueOf(year));
 					year_offset = 1;
 				}
-				// Если период по годам, или мы парсим первую групповую страницу архива,
-				// т.е. разбивать на кварталы не нужно
+                // Р•СЃР»Рё РїРµСЂРёРѕРґ РїРѕ РіРѕРґР°Рј, РёР»Рё РјС‹ РїР°СЂСЃРёРј РїРµСЂРІСѓСЋ РіСЂСѓРїРїРѕРІСѓСЋ СЃС‚СЂР°РЅРёС†Сѓ Р°СЂС…РёРІР°,
+                // С‚.Рµ. СЂР°Р·Р±РёРІР°С‚СЊ РЅР° РєРІР°СЂС‚Р°Р»С‹ РЅРµ РЅСѓР¶РЅРѕ
 				if(archiveSettings.archivePeriod==Period.YEAR || 
 						archiveThisYear==archiveSettings.firstArchive || 
 						archiveThisYear.equals(archiveSettings.firstArchive)) {
@@ -144,7 +144,7 @@ public class ArchiveParser {
 					getDataFromArchive(archiveThisYear,db,purge,archiveSettings.addToTop,false/*year_offset>1*//*,checkLast*/);
 					if(cache) db.save();
 				} else {
-					// Нужно разбить на кварталы и пройтись по кварталам
+                    // РќСѓР¶РЅРѕ СЂР°Р·Р±РёС‚СЊ РЅР° РєРІР°СЂС‚Р°Р»С‹ Рё РїСЂРѕР№С‚РёСЃСЊ РїРѕ РєРІР°СЂС‚Р°Р»Р°Рј
 					int qStart = 1;
 					int qEnd = 4;
 					// skip archives of old quarters, which we have loaded to db already from cache
@@ -221,10 +221,10 @@ public class ArchiveParser {
 		int end;
 		if(addToTop) end = -1;
 		else end = lines.length;
-		
-		// Почистить остаток в кэше за текущий год/квартал, или весь кэш
-		// Заодно, переместить индекс строки в архиве, с которой начинать парсинг
-		// т.е. пропустить то, что уже есть в кэше.
+
+        // РџРѕС‡РёСЃС‚РёС‚СЊ РѕСЃС‚Р°С‚РѕРє РІ РєСЌС€Рµ Р·Р° С‚РµРєСѓС‰РёР№ РіРѕРґ/РєРІР°СЂС‚Р°Р», РёР»Рё РІРµСЃСЊ РєСЌС€
+        // Р—Р°РѕРґРЅРѕ, РїРµСЂРµРјРµСЃС‚РёС‚СЊ РёРЅРґРµРєСЃ СЃС‚СЂРѕРєРё РІ Р°СЂС…РёРІРµ, СЃ РєРѕС‚РѕСЂРѕР№ РЅР°С‡РёРЅР°С‚СЊ РїР°СЂСЃРёРЅРі
+        // С‚.Рµ. РїСЂРѕРїСѓСЃС‚РёС‚СЊ С‚Рѕ, С‡С‚Рѕ СѓР¶Рµ РµСЃС‚СЊ РІ РєСЌС€Рµ.
 		if(purgeFunc!=null) {
 			String dump = null;
 			try {
@@ -254,8 +254,8 @@ public class ArchiveParser {
 				}
 			}
 		}	
-		// Скинуть сохраненный текст архива в файл
-		// Тоже своего рода уровень кэширования
+        // РЎРєРёРЅСѓС‚СЊ СЃРѕС…СЂР°РЅРµРЅРЅС‹Р№ С‚РµРєСЃС‚ Р°СЂС…РёРІР° РІ С„Р°Р№Р»
+        // РўРѕР¶Рµ СЃРІРѕРµРіРѕ СЂРѕРґР° СѓСЂРѕРІРµРЅСЊ РєСЌС€РёСЂРѕРІР°РЅРёСЏ
         // TODO: Why do we do try-catch here? Get rid of it.
 		try {
             FileTools.dump(text, cacheDir, archive + ".txt");
@@ -263,8 +263,8 @@ public class ArchiveParser {
 			log.error(e);
 		}
 		text = null;
-		
-		// Парсить строки из архива и закидывать в базу
+
+        // РџР°СЂСЃРёС‚СЊ СЃС‚СЂРѕРєРё РёР· Р°СЂС…РёРІР° Рё Р·Р°РєРёРґС‹РІР°С‚СЊ РІ Р±Р°Р·Сѓ
 		for(;i!=end;) {			
 			String line = lines[i];			
 			ArchiveItem item = parseLine(line, db.withSize());
@@ -297,7 +297,7 @@ public class ArchiveParser {
 		Matcher m = p.matcher(line);
 		while(m.find()) {
 			String article = m.group("article");
-			if(article.contains("Категория:Википедия:Списки новых статей по темам")) 				
+			if(article.contains("РљР°С‚РµРіРѕСЂРёСЏ:Р’РёРєРёРїРµРґРёСЏ:РЎРїРёСЃРєРё РЅРѕРІС‹С… СЃС‚Р°С‚РµР№ РїРѕ С‚РµРјР°Рј")) 				
 				continue;	
             // TODO: Move this out of NewPages!
             NewPages.initStatics();

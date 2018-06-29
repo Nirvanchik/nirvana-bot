@@ -1,6 +1,6 @@
 /**
  *  @(#)NirvanaBot.java 1.17 15.04.2017
- *  Copyright © 2011 - 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2011 - 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot;
@@ -130,51 +130,51 @@ public class NirvanaBot extends BasicBot{
     public static final String ERROR_PARSE_INTEGER_FORMAT_STRING_EN =
             "Error when parsing integer parameter \"%1$s\" integer value %2$s";
     private static final String ERROR_PARSE_INTEGER_FORMAT_STRING =
-            "Ошибка при чтении параметра \"%1$s\". Значение %2$s не распознано как число.";
+            "РћС€РёР±РєР° РїСЂРё С‡С‚РµРЅРёРё РїР°СЂР°РјРµС‚СЂР° \"%1$s\". Р—РЅР°С‡РµРЅРёРµ %2$s РЅРµ СЂР°СЃРїРѕР·РЅР°РЅРѕ РєР°Рє С‡РёСЃР»Рѕ.";
     private static final String ERROR_INTEGER_TOO_BIG_STRING =
-            "Значение параметра \"%1$s\" слишком велико (%2$s). " +
-            "Использовано максимальное значение (%3$s). Укажите разумную величину.";
-    private static final String ERROR_NOTIFICATION_TITLE = "Ошибки в настройках бота";
+            "Р—РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° \"%1$s\" СЃР»РёС€РєРѕРј РІРµР»РёРєРѕ (%2$s). " +
+            "РСЃРїРѕР»СЊР·РѕРІР°РЅРѕ РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ (%3$s). РЈРєР°Р¶РёС‚Рµ СЂР°Р·СѓРјРЅСѓСЋ РІРµР»РёС‡РёРЅСѓ.";
+    private static final String ERROR_NOTIFICATION_TITLE = "РћС€РёР±РєРё РІ РЅР°СЃС‚СЂРѕР№РєР°С… Р±РѕС‚Р°";
     private static final String ERROR_NOTIFICATION_TEXT_BEGIN =
-            "При проверке [[%1$s|параметров]] для обновления секции были обнаружены ошибки:";
+            "РџСЂРё РїСЂРѕРІРµСЂРєРµ [[%1$s|РїР°СЂР°РјРµС‚СЂРѕРІ]] РґР»СЏ РѕР±РЅРѕРІР»РµРЅРёСЏ СЃРµРєС†РёРё Р±С‹Р»Рё РѕР±РЅР°СЂСѓР¶РµРЅС‹ РѕС€РёР±РєРё:";
     private static final String ERROR_NOTIFICATION_TEXT_END =
-            "Пожалуйста исправьте ошибки, чтобы секция обновлялась корректно.";
+            "РџРѕР¶Р°Р»СѓР№СЃС‚Р° РёСЃРїСЂР°РІСЊС‚Рµ РѕС€РёР±РєРё, С‡С‚РѕР±С‹ СЃРµРєС†РёСЏ РѕР±РЅРѕРІР»СЏР»Р°СЃСЊ РєРѕСЂСЂРµРєС‚РЅРѕ.";
     private static final String ERROR_NOTIFICATION_TEXT_ROBOT =
-            "''Это сообщение написано роботом, не нужно на него отвечать!''";
+            "''Р­С‚Рѕ СЃРѕРѕР±С‰РµРЅРёРµ РЅР°РїРёСЃР°РЅРѕ СЂРѕР±РѕС‚РѕРј, РЅРµ РЅСѓР¶РЅРѕ РЅР° РЅРµРіРѕ РѕС‚РІРµС‡Р°С‚СЊ!''";
     private static final String ERROR_NOTIFICATION_TEXT_LOCALISATION_HINT =
-            "<small>Если вы видите здесь текст на русском языке, значит, в программе бота " +
-            "не хватает переводов. Обратитесь к ботоводу. </small>";
+            "<small>Р•СЃР»Рё РІС‹ РІРёРґРёС‚Рµ Р·РґРµСЃСЊ С‚РµРєСЃС‚ РЅР° СЂСѓСЃСЃРєРѕРј СЏР·С‹РєРµ, Р·РЅР°С‡РёС‚, РІ РїСЂРѕРіСЂР°РјРјРµ Р±РѕС‚Р° " +
+            "РЅРµ С…РІР°С‚Р°РµС‚ РїРµСЂРµРІРѕРґРѕРІ. РћР±СЂР°С‚РёС‚РµСЃСЊ Рє Р±РѕС‚РѕРІРѕРґСѓ. </small>";
     private static final String ERROR_NOTIFICATION_SUMMARY =
-            "Бот обнаружил ошибки в настройках обновления автоматического списка.";
+            "Р‘РѕС‚ РѕР±РЅР°СЂСѓР¶РёР» РѕС€РёР±РєРё РІ РЅР°СЃС‚СЂРѕР№РєР°С… РѕР±РЅРѕРІР»РµРЅРёСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃРїРёСЃРєР°.";
     private static final String ERROR_NOTIFICATION_TEXT_LOCALISATION_HINT2 =
-            "<small>Если вы видите здесь текст на русском языке, значит, локализация бота " +
-            "не завершена. Вы можете помочь, добавив переводы [[%1$s|на этой странице]].</small>";
+            "<small>Р•СЃР»Рё РІС‹ РІРёРґРёС‚Рµ Р·РґРµСЃСЊ С‚РµРєСЃС‚ РЅР° СЂСѓСЃСЃРєРѕРј СЏР·С‹РєРµ, Р·РЅР°С‡РёС‚, Р»РѕРєР°Р»РёР·Р°С†РёСЏ Р±РѕС‚Р° " +
+            "РЅРµ Р·Р°РІРµСЂС€РµРЅР°. Р’С‹ РјРѕР¶РµС‚Рµ РїРѕРјРѕС‡СЊ, РґРѕР±Р°РІРёРІ РїРµСЂРµРІРѕРґС‹ [[%1$s|РЅР° СЌС‚РѕР№ СЃС‚СЂР°РЅРёС†Рµ]].</small>";
     private static final String ERROR_PARAMETER_HAS_MULTIPLE_VALUES =
-            "Для параметра \"%1$s\" дано несколько значений. Использовано значение по умолчанию.";
+            "Р”Р»СЏ РїР°СЂР°РјРµС‚СЂР° \"%1$s\" РґР°РЅРѕ РЅРµСЃРєРѕР»СЊРєРѕ Р·РЅР°С‡РµРЅРёР№. РСЃРїРѕР»СЊР·РѕРІР°РЅРѕ Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.";
     private static final String ERROR_INVALID_PARAMETER_EN =
             "Error in parameter \"%1$s\". Invalid value (%2$s).";
     private static final String ERROR_INVALID_PARAMETER =
-            "Ошибка в параметре \"%1$s\". Задано неправильное значение (%2$s).";
+            "РћС€РёР±РєР° РІ РїР°СЂР°РјРµС‚СЂРµ \"%1$s\". Р—Р°РґР°РЅРѕ РЅРµРїСЂР°РІРёР»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ (%2$s).";
     private static final String ERROR_MISS_PARAMETER =
-            "Параметр \"%1$s\" не задан. Использовано значение по умолчанию.";
+            "РџР°СЂР°РјРµС‚СЂ \"%1$s\" РЅРµ Р·Р°РґР°РЅ. РСЃРїРѕР»СЊР·РѕРІР°РЅРѕ Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.";
     private static final String ERROR_PARAMETER_NOT_ACCEPTED =
-            "Значение параметра не принято.";
+            "Р—РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° РЅРµ РїСЂРёРЅСЏС‚Рѕ.";
     private static final String ERROR_ABSENT_PARAMETER =
-            "Ошибка в параметрах. Параметр \"%1$s\" не задан";
+            "РћС€РёР±РєР° РІ РїР°СЂР°РјРµС‚СЂР°С…. РџР°СЂР°РјРµС‚СЂ \"%1$s\" РЅРµ Р·Р°РґР°РЅ";
     private static final String ERROR_AUTHOR_PARAMETER_INVALID_USAGE =
-            "Неверный параметр \"%1$s\". Поле %2$s не поддерживается для данного типа " +
-            "списков. Удалите его!";
+            "РќРµРІРµСЂРЅС‹Р№ РїР°СЂР°РјРµС‚СЂ \"%1$s\". РџРѕР»Рµ %2$s РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ РґР»СЏ РґР°РЅРЅРѕРіРѕ С‚РёРїР° " +
+            "СЃРїРёСЃРєРѕРІ. РЈРґР°Р»РёС‚Рµ РµРіРѕ!";
     private static final String ERROR_PARAMETER_MISSING_VARIABLE =
-            "В параметре бота \"%1$s\" не задан ключ с переменным значением. " +
-            "Значение этого параметра отклонено.";
+            "Р’ РїР°СЂР°РјРµС‚СЂРµ Р±РѕС‚Р° \"%1$s\" РЅРµ Р·Р°РґР°РЅ РєР»СЋС‡ СЃ РїРµСЂРµРјРµРЅРЅС‹Рј Р·РЅР°С‡РµРЅРёРµРј. " +
+            "Р—РЅР°С‡РµРЅРёРµ СЌС‚РѕРіРѕ РїР°СЂР°РјРµС‚СЂР° РѕС‚РєР»РѕРЅРµРЅРѕ.";
     private static final String ERROR_SAME_PERIOD =
-            "Параметр \"%1$s\" и параметр \"%2$s\" имеют одинаковый период повторения: %3$s";
+            "РџР°СЂР°РјРµС‚СЂ \"%1$s\" Рё РїР°СЂР°РјРµС‚СЂ \"%2$s\" РёРјРµСЋС‚ РѕРґРёРЅР°РєРѕРІС‹Р№ РїРµСЂРёРѕРґ РїРѕРІС‚РѕСЂРµРЅРёСЏ: %3$s";
     private static final String ERROR_DISCUSSED_PAGES_SETTINGS_NOT_DEFINED =
-            "Настройки обсуждаемых страниц не заданы или некорректны. " +
-            "Невозможно обновлять этот вид списков.";
+            "РќР°СЃС‚СЂРѕР№РєРё РѕР±СЃСѓР¶РґР°РµРјС‹С… СЃС‚СЂР°РЅРёС† РЅРµ Р·Р°РґР°РЅС‹ РёР»Рё РЅРµРєРѕСЂСЂРµРєС‚РЅС‹. " +
+            "РќРµРІРѕР·РјРѕР¶РЅРѕ РѕР±РЅРѕРІР»СЏС‚СЊ СЌС‚РѕС‚ РІРёРґ СЃРїРёСЃРєРѕРІ.";
     private static final String ERROR_INVALID_TYPE =
-            "Тип \"%1$s\" не поддерживается. " +
-            "Используйте только разрешенные значения в параметре \"%2$s\".";
+            "РўРёРї \"%1$s\" РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ. " +
+            "РСЃРїРѕР»СЊР·СѓР№С‚Рµ С‚РѕР»СЊРєРѕ СЂР°Р·СЂРµС€РµРЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РІ РїР°СЂР°РјРµС‚СЂРµ \"%2$s\".";
 
 	private static int MAX_DEPTH = 30;
 	private static int DEFAULT_DEPTH = 7;
@@ -187,14 +187,15 @@ public class NirvanaBot extends BasicBot{
 
 	private static boolean DEFAULT_USE_FAST_MODE = true;
 	private static boolean ERROR_NOTIFICATION = false;
-	private static String COMMENT = "обновление";
-	
+    private static String COMMENT = "РѕР±РЅРѕРІР»РµРЅРёРµ";
+
 	private static boolean GENERATE_REPORT = false;
 	private static boolean UPDATE_STATUS = false;
 	private static String REPORT_FILE_NAME = "report.txt";
-	private static String REPORT_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Отчёт";
-	private static String STATUS_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Статус";
-	private static String STATUS_WIKI_TEMPLATE = "Участник:NirvanaBot/Новые статьи/Отображение статуса";
+    private static String REPORT_WIKI_PAGE = "РЈС‡Р°СЃС‚РЅРёРє:NirvanaBot/РќРѕРІС‹Рµ СЃС‚Р°С‚СЊРё/РћС‚С‡С‘С‚";
+    private static String STATUS_WIKI_PAGE = "РЈС‡Р°СЃС‚РЅРёРє:NirvanaBot/РќРѕРІС‹Рµ СЃС‚Р°С‚СЊРё/РЎС‚Р°С‚СѓСЃ";
+    private static String STATUS_WIKI_TEMPLATE =
+            "РЈС‡Р°СЃС‚РЅРёРє:NirvanaBot/РќРѕРІС‹Рµ СЃС‚Р°С‚СЊРё/РћС‚РѕР±СЂР°Р¶РµРЅРёРµ СЃС‚Р°С‚СѓСЃР°";
 	private static String REPORT_FORMAT = "txt";
     private static String DEFAULT_FORMAT = "* [[%1$s]]";
 	public static String DEFAULT_FORMAT_STRING = "* [[%1$s]]";
@@ -217,10 +218,10 @@ public class NirvanaBot extends BasicBot{
     private int retryMax = 1;
 
 	private static String overridenPropertiesPage = null;
-	
-	private static String PICTURE_SEARCH_TAGS = "image file,Фото,портрет,Изображение,Файл,File";
+
+    private static String PICTURE_SEARCH_TAGS = "image file,Р¤РѕС‚Рѕ,РїРѕСЂС‚СЂРµС‚,РР·РѕР±СЂР°Р¶РµРЅРёРµ,Р¤Р°Р№Р»,File";
     // Example templates for Russian Wikipedia:
-    // Обоснование добросовестного использования, Disputed-fairuse, ОДИ, Несвободный файл/ОДИ
+    // РћР±РѕСЃРЅРѕРІР°РЅРёРµ РґРѕР±СЂРѕСЃРѕРІРµСЃС‚РЅРѕРіРѕ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ, Disputed-fairuse, РћР”Р, РќРµСЃРІРѕР±РѕРґРЅС‹Р№ С„Р°Р№Р»/РћР”Р
     private static String FAIR_USE_IMAGE_TEMPLATES = "";
     private static DiscussionPagesSettings DISCUSSION_PAGES_SETTINGS = DiscussionPagesSettings.EMPTY;
 	private static String DISCUSSION_PAGES_SETTINGS_WIKI = null;
@@ -334,7 +335,7 @@ public class NirvanaBot extends BasicBot{
 		newpagesTemplates = str.trim().split("\\s*,\\s*");
 		if(newpagesTemplates==null || newpagesTemplates.length==0) {
 			if(DEBUG_BUILD)
-				newpagesTemplates = new String[]{"Участник:NirvanaBot/test/Новые статьи"};
+                newpagesTemplates = new String[]{"РЈС‡Р°СЃС‚РЅРёРє:NirvanaBot/test/РќРѕРІС‹Рµ СЃС‚Р°С‚СЊРё"};
 			else {
 				System.out.println("ABORT: properties not found");
 				log.fatal("New pages template name (new-pages-template) is not specified in settings");
@@ -729,8 +730,8 @@ public class NirvanaBot extends BasicBot{
     		log.info("loaded portal settings: "+portalNewPagesLists.length);
     		java.util.Arrays.sort(portalNewPagesLists);
     		
-    		int i = 0;	// текущий портал
-    		int t = 0;	// количество проверенных порталов
+            int i = 0;  // С‚РµРєСѓС‰РёР№ РїРѕСЂС‚Р°Р»
+            int t = 0;  // РєРѕР»РёС‡РµСЃС‚РІРѕ РїСЂРѕРІРµСЂРµРЅРЅС‹С… РїРѕСЂС‚Р°Р»РѕРІ
     		int retry_count = 0;
     		boolean retry = false;
     		ReportItem reportItem = null;
@@ -1029,7 +1030,7 @@ public class NirvanaBot extends BasicBot{
 		} else {
             type = config.get(PortalConfig.KEY_TYPE).toLowerCase();
 		}	
-        log.debug("Тип: " + type);
+        log.debug("РўРёРї: " + type);
 		data.type = type;
 
         param.categories = optionToList(options, PortalConfig.KEY_CATEGORIES, true);
@@ -1132,9 +1133,9 @@ public class NirvanaBot extends BasicBot{
 
         if (config.hasKey(PortalConfig.KEY_TEMPLATES)) {
             String option = config.get(PortalConfig.KEY_TEMPLATES);
-            // Этот хак корректирует различие в задании параметра "шаблоны"
-            // между разными версиями ботов ClaymoreBot и NirvanaBot
-            // NirvanaBot использует более human-readable формат: через запятую
+            // Р­С‚РѕС‚ С…Р°Рє РєРѕСЂСЂРµРєС‚РёСЂСѓРµС‚ СЂР°Р·Р»РёС‡РёРµ РІ Р·Р°РґР°РЅРёРё РїР°СЂР°РјРµС‚СЂР° "С€Р°Р±Р»РѕРЅС‹"
+            // РјРµР¶РґСѓ СЂР°Р·РЅС‹РјРё РІРµСЂСЃРёСЏРјРё Р±РѕС‚РѕРІ ClaymoreBot Рё NirvanaBot
+            // NirvanaBot РёСЃРїРѕР»СЊР·СѓРµС‚ Р±РѕР»РµРµ human-readable С„РѕСЂРјР°С‚: С‡РµСЂРµР· Р·Р°РїСЏС‚СѓСЋ
             log.debug("templates param detected!!!");
             if (options.get("BotTemplate").contains("Claymore")) {
                 log.debug("use hack: replace \n by ,");
@@ -1469,7 +1470,7 @@ public class NirvanaBot extends BasicBot{
 			archiveSettings.enumeration = Enumeration.NONE;
             String format = localizer.localize(ERROR_PARAMETER_HAS_MULTIPLE_VALUES);
             String param = String.format("%1$s (%2$s)", PortalConfig.KEY_ARCHIVE_PARAMS,
-                    localizer.localize("нумерация"));
+                    localizer.localize("РЅСѓРјРµСЂР°С†РёСЏ"));
             errors.add(String.format(format, param));
 		}
 		return errors;

@@ -1,6 +1,6 @@
 /**
  *  @(#)DiscussionPagesSettings.java 29.02.2016
- *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot;
@@ -131,7 +131,7 @@ public class DiscussionPagesSettings {
 			DiscussionPageTemplate newTempl = null;
 			newTempl = new DiscussionPageTemplate(null);
 			newTempl.prefix = prefix;
-            newTempl.linkText = Localizer.getInstance().localize("обсуждение");
+            newTempl.linkText = Localizer.getInstance().localize("РѕР±СЃСѓР¶РґРµРЅРёРµ");
             newTempl.linkFormatString = prefix + BotVariables.DATE;
 			return newTempl;
 		}

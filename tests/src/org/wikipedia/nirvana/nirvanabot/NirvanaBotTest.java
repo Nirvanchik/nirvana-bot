@@ -1,6 +1,6 @@
 /**
  *  @(#)NirvanaBotTest.java 03.04.2016
- *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot;
@@ -92,7 +92,7 @@ public class NirvanaBotTest {
      * Test case 001.
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи"
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё"
      * 2) All portal settings are default
      * 3) No archive
      * BOT SETTINGS:
@@ -133,7 +133,7 @@ public class NirvanaBotTest {
      * Similar tests: 001
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи"
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё"
      * 2) All portal settings are default
      * 3) No archive
      * 4) Invalid placeholders in format string
@@ -156,8 +156,8 @@ public class NirvanaBotTest {
      * Test case 019.
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи"
-     * 2) разделитель = "\n"
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё"
+     * 2) СЂР°Р·РґРµР»РёС‚РµР»СЊ = "\n"
      */
     @Test
     public void newPages_updateWithDelimiter() throws TestError {
@@ -173,9 +173,9 @@ public class NirvanaBotTest {
      * Test case 029.
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи"
-     * 2) разделитель = "\n"
-     * 3) категория = Собаки
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё"
+     * 2) СЂР°Р·РґРµР»РёС‚РµР»СЊ = "\n"
+     * 3) РєР°С‚РµРіРѕСЂРёСЏ = РЎРѕР±Р°РєРё
      */
     @Test
     public void newPages_updateWith1CategoryOldWay() throws TestError {
@@ -192,9 +192,9 @@ public class NirvanaBotTest {
      * Info: smoke
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи"
-     * 2) шаблоны с параметром = Музыкальный коллектив/Язык/Русский язык,
-     *    Музыкальный коллектив/Язык/русский язык
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё"
+     * 2) С€Р°Р±Р»РѕРЅС‹ СЃ РїР°СЂР°РјРµС‚СЂРѕРј = РњСѓР·С‹РєР°Р»СЊРЅС‹Р№ РєРѕР»Р»РµРєС‚РёРІ/РЇР·С‹Рє/Р СѓСЃСЃРєРёР№ СЏР·С‹Рє,
+     *    РњСѓР·С‹РєР°Р»СЊРЅС‹Р№ РєРѕР»Р»РµРєС‚РёРІ/РЇР·С‹Рє/СЂСѓСЃСЃРєРёР№ СЏР·С‹Рє
      */
     @Test
     public void newPages_templateWithParams1() throws TestError {
@@ -211,8 +211,8 @@ public class NirvanaBotTest {
      * Info: smoke
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "статьи с шаблонами"
-     * 2) шаблоны = Хорошая статья, Избранная статья, Статья года
+     * 1) type = "СЃС‚Р°С‚СЊРё СЃ С€Р°Р±Р»РѕРЅР°РјРё"
+     * 2) С€Р°Р±Р»РѕРЅС‹ = РҐРѕСЂРѕС€Р°СЏ СЃС‚Р°С‚СЊСЏ, РР·Р±СЂР°РЅРЅР°СЏ СЃС‚Р°С‚СЊСЏ, РЎС‚Р°С‚СЊСЏ РіРѕРґР°
      */
     @Test
     public void pages_templates1() throws TestError {
@@ -230,9 +230,9 @@ public class NirvanaBotTest {
      * Info: smoke
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "статьи с шаблонами"
-     * 2) шаблоны с параметром = Музыкальный коллектив/Язык/Русский язык,
-     *    Музыкальный коллектив/Язык/русский язык
+     * 1) type = "СЃС‚Р°С‚СЊРё СЃ С€Р°Р±Р»РѕРЅР°РјРё"
+     * 2) С€Р°Р±Р»РѕРЅС‹ СЃ РїР°СЂР°РјРµС‚СЂРѕРј = РњСѓР·С‹РєР°Р»СЊРЅС‹Р№ РєРѕР»Р»РµРєС‚РёРІ/РЇР·С‹Рє/Р СѓСЃСЃРєРёР№ СЏР·С‹Рє,
+     *    РњСѓР·С‹РєР°Р»СЊРЅС‹Р№ РєРѕР»Р»РµРєС‚РёРІ/РЇР·С‹Рє/СЂСѓСЃСЃРєРёР№ СЏР·С‹Рє
      */
     @Test
     public void pages_templateWithParams1() throws TestError {
@@ -249,9 +249,9 @@ public class NirvanaBotTest {
      * Similar tests: 002
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи"
-     * 2) шаблоны с параметром = Просто шаблон, Музыкальный коллектив/Язык/Русский язык,
-     *    Музыкальный коллектив/Язык/русский язык
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё"
+     * 2) С€Р°Р±Р»РѕРЅС‹ СЃ РїР°СЂР°РјРµС‚СЂРѕРј = РџСЂРѕСЃС‚Рѕ С€Р°Р±Р»РѕРЅ, РњСѓР·С‹РєР°Р»СЊРЅС‹Р№ РєРѕР»Р»РµРєС‚РёРІ/РЇР·С‹Рє/Р СѓСЃСЃРєРёР№ СЏР·С‹Рє,
+     *    РњСѓР·С‹РєР°Р»СЊРЅС‹Р№ РєРѕР»Р»РµРєС‚РёРІ/РЇР·С‹Рє/СЂСѓСЃСЃРєРёР№ СЏР·С‹Рє
      */
     @Test
     public void newPages_templateWithParams2() throws TestError {
@@ -268,10 +268,10 @@ public class NirvanaBotTest {
      * Similar tests: 004, 005
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "статьи с шаблонами"
-     * 2) шаблоны с параметром = Просто шаблон, rq/notability/,
-     *    Музыкальный коллектив/Язык/Русский язык,
-     *    Музыкальный коллектив/Язык/русский язык
+     * 1) type = "СЃС‚Р°С‚СЊРё СЃ С€Р°Р±Р»РѕРЅР°РјРё"
+     * 2) С€Р°Р±Р»РѕРЅС‹ СЃ РїР°СЂР°РјРµС‚СЂРѕРј = РџСЂРѕСЃС‚Рѕ С€Р°Р±Р»РѕРЅ, rq/notability/,
+     *    РњСѓР·С‹РєР°Р»СЊРЅС‹Р№ РєРѕР»Р»РµРєС‚РёРІ/РЇР·С‹Рє/Р СѓСЃСЃРєРёР№ СЏР·С‹Рє,
+     *    РњСѓР·С‹РєР°Р»СЊРЅС‹Р№ РєРѕР»Р»РµРєС‚РёРІ/РЇР·С‹Рє/СЂСѓСЃСЃРєРёР№ СЏР·С‹Рє
      */
     @Test
     public void pages_templateWithParams2() throws TestError {
@@ -288,8 +288,8 @@ public class NirvanaBotTest {
      * Similar tests: 003, 008, 009
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "статьи с шаблонами"
-     * 2) шаблоны = Хорошая статья, Избранная статья, Статья года
+     * 1) type = "СЃС‚Р°С‚СЊРё СЃ С€Р°Р±Р»РѕРЅР°РјРё"
+     * 2) С€Р°Р±Р»РѕРЅС‹ = РҐРѕСЂРѕС€Р°СЏ СЃС‚Р°С‚СЊСЏ, РР·Р±СЂР°РЅРЅР°СЏ СЃС‚Р°С‚СЊСЏ, РЎС‚Р°С‚СЊСЏ РіРѕРґР°
      */
     @Test
     public void pages_templates_any() throws TestError {
@@ -306,8 +306,8 @@ public class NirvanaBotTest {
      * Similar tests: 003, 007, 009
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "статьи с шаблонами"
-     * 2) шаблоны = Хорошая статья; Избранная статья; Статья года
+     * 1) type = "СЃС‚Р°С‚СЊРё СЃ С€Р°Р±Р»РѕРЅР°РјРё"
+     * 2) С€Р°Р±Р»РѕРЅС‹ = РҐРѕСЂРѕС€Р°СЏ СЃС‚Р°С‚СЊСЏ; РР·Р±СЂР°РЅРЅР°СЏ СЃС‚Р°С‚СЊСЏ; РЎС‚Р°С‚СЊСЏ РіРѕРґР°
      */
     @Test
     public void pages_templates_all() throws TestError {
@@ -324,8 +324,8 @@ public class NirvanaBotTest {
      * Similar tests: 003, 007, 008
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "статьи с шаблонами"
-     * 2) шаблоны = ! Хорошая статья, Избранная статья, Статья года
+     * 1) type = "СЃС‚Р°С‚СЊРё СЃ С€Р°Р±Р»РѕРЅР°РјРё"
+     * 2) С€Р°Р±Р»РѕРЅС‹ = ! РҐРѕСЂРѕС€Р°СЏ СЃС‚Р°С‚СЊСЏ, РР·Р±СЂР°РЅРЅР°СЏ СЃС‚Р°С‚СЊСЏ, РЎС‚Р°С‚СЊСЏ РіРѕРґР°
      */
     @Test
     public void pages_templates_none() throws TestError {
@@ -342,8 +342,8 @@ public class NirvanaBotTest {
      * Similar tests: 003.
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи"
-     * 2) шаблоны = Хорошая статья, Избранная статья, Статья года
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё"
+     * 2) С€Р°Р±Р»РѕРЅС‹ = РҐРѕСЂРѕС€Р°СЏ СЃС‚Р°С‚СЊСЏ, РР·Р±СЂР°РЅРЅР°СЏ СЃС‚Р°С‚СЊСЏ, РЎС‚Р°С‚СЊСЏ РіРѕРґР°
      */
     @Test
     public void newPages_templates1() throws TestError {
@@ -360,8 +360,8 @@ public class NirvanaBotTest {
      * Similar tests: 003, 010.
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи"
-     * 2) шаблоны = Хорошая статья, Избранная статья, Статья года
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё"
+     * 2) С€Р°Р±Р»РѕРЅС‹ = РҐРѕСЂРѕС€Р°СЏ СЃС‚Р°С‚СЊСЏ, РР·Р±СЂР°РЅРЅР°СЏ СЃС‚Р°С‚СЊСЏ, РЎС‚Р°С‚СЊСЏ РіРѕРґР°
      * SERVICE SETTINGS:
      * 1) No support of ServiceFeatures.NEWPAGES_WITH_TEMPLATE
      */
@@ -386,9 +386,9 @@ public class NirvanaBotTest {
      * Similar tests: 005, 011.
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи"
-     * 2) шаблоны с параметром = Просто шаблон, Музыкальный коллектив/Язык/Русский язык,
-     *    Музыкальный коллектив/Язык/русский язык
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё"
+     * 2) С€Р°Р±Р»РѕРЅС‹ СЃ РїР°СЂР°РјРµС‚СЂРѕРј = РџСЂРѕСЃС‚Рѕ С€Р°Р±Р»РѕРЅ, РњСѓР·С‹РєР°Р»СЊРЅС‹Р№ РєРѕР»Р»РµРєС‚РёРІ/РЇР·С‹Рє/Р СѓСЃСЃРєРёР№ СЏР·С‹Рє,
+     *    РњСѓР·С‹РєР°Р»СЊРЅС‹Р№ РєРѕР»Р»РµРєС‚РёРІ/РЇР·С‹Рє/СЂСѓСЃСЃРєРёР№ СЏР·С‹Рє
      * SERVICE SETTINGS:
      * 1) No support of ServiceFeatures.NEWPAGES_WITH_TEMPLATE
      */
@@ -413,7 +413,7 @@ public class NirvanaBotTest {
      * Similar tests: 014.
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи с изображениями в карточке"
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё СЃ РёР·РѕР±СЂР°Р¶РµРЅРёСЏРјРё РІ РєР°СЂС‚РѕС‡РєРµ"
      * SERVICE SETTINGS:
      */
     @Test
@@ -437,7 +437,7 @@ public class NirvanaBotTest {
      * Similar tests: 013.
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи с изображениями в тексте"
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё СЃ РёР·РѕР±СЂР°Р¶РµРЅРёСЏРјРё РІ С‚РµРєСЃС‚Рµ"
      * SERVICE SETTINGS:
      */
     @Test
@@ -461,7 +461,7 @@ public class NirvanaBotTest {
      * Similar tests: 013, 014.
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи с изображениями"
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё СЃ РёР·РѕР±СЂР°Р¶РµРЅРёСЏРјРё"
      * SERVICE SETTINGS:
      */
     @Test
@@ -485,7 +485,7 @@ public class NirvanaBotTest {
      * Similar tests: 013.
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи с изображениями в карточке"
+     * 1) type = "РЅРѕРІС‹Рµ СЃС‚Р°С‚СЊРё СЃ РёР·РѕР±СЂР°Р¶РµРЅРёСЏРјРё РІ РєР°СЂС‚РѕС‡РєРµ"
      * SERVICE SETTINGS:
      */
     @Test
@@ -509,7 +509,7 @@ public class NirvanaBotTest {
      * Similar tests: .
      * Conditions:
      * PORTAL SETTINGS:
-     * 1) type = "обсуждаемые статьи"
+     * 1) type = "РѕР±СЃСѓР¶РґР°РµРјС‹Рµ СЃС‚Р°С‚СЊРё"
      * SERVICE SETTINGS:
      */
     @Test

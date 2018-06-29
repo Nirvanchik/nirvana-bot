@@ -1,6 +1,6 @@
 /**
  *  @(#)LocalizationManager.java 14.01.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.localization;
@@ -131,7 +131,7 @@ public class LocalizationManager {
         // 1492210800 = Fri, 14 Apr 2017 23:00:00 GMT
         String wikiTranslationText = getWikiTranslationPage(wiki, wikiTranslationPage, 1492210800);
         if (wikiTranslationText == null) {
-            String editComment = Localizer.getInstance().localize("Создание страницы локализации");
+            String editComment = Localizer.getInstance().localize("РЎРѕР·РґР°РЅРёРµ СЃС‚СЂР°РЅРёС†С‹ Р»РѕРєР°Р»РёР·Р°С†РёРё");
             Map<String, String> translations = Localizer.getInstance().getTranslations();
             if (translations.size() == 0) {
                 log.debug("No translations found. Skipping...");
@@ -144,7 +144,7 @@ public class LocalizationManager {
             FileTools.dump(text, cacheDir, wikiTranslationPage);
         } else {
             String editComment = Localizer.getInstance().localize(
-                    "Добавление новых ключей для перевода");
+                    "Р”РѕР±Р°РІР»РµРЅРёРµ РЅРѕРІС‹С… РєР»СЋС‡РµР№ РґР»СЏ РїРµСЂРµРІРѕРґР°");
             Map<String, String> oldTranslations = new HashMap<>();
             String text = WikiUtils.removeComments(wikiTranslationText);
             text = WikiUtils.removePreTags(text);

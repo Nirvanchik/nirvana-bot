@@ -1,6 +1,6 @@
 /**
  *  @(#)BasicProcessor.java 10.12.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright В© 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
@@ -116,7 +116,7 @@ public abstract class BasicProcessor implements PageListProcessor {
             		log.warn("invalid namespace detected", e);
             	}
             }
-            // то что мы ищем совпадает с тем, что нашли
+            // С‚Рѕ С‡С‚Рѕ РјС‹ РёС‰РµРј СЃРѕРІРїР°РґР°РµС‚ СЃ С‚РµРј, С‡С‚Рѕ РЅР°С€Р»Рё
             if (service.filteredByNamespace || thisNS == namespace)
             {
                 String title = groups[service.TITLE_POS].replace('_', ' ');
@@ -157,8 +157,8 @@ public abstract class BasicProcessor implements PageListProcessor {
                 }
             } else if(thisNS == Wiki.USER_NAMESPACE &&
             		namespace!= Wiki.USER_NAMESPACE) {
-            	// Здесь мы обрабатываем случаи, когда статьи сначала проходят через личное пространство
-            	// а потом переименовываются в основное пространство
+                // Р—РґРµСЃСЊ РјС‹ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј СЃР»СѓС‡Р°Рё, РєРѕРіРґР° СЃС‚Р°С‚СЊРё СЃРЅР°С‡Р°Р»Р° РїСЂРѕС…РѕРґСЏС‚ С‡РµСЂРµР· Р»РёС‡РЅРѕРµ
+                // РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ Р° РїРѕС‚РѕРј РїРµСЂРµРёРјРµРЅРѕРІС‹РІР°СЋС‚СЃСЏ РІ РѕСЃРЅРѕРІРЅРѕРµ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ
             	//String title = groups[TITLE_POS].replace('_', ' ');
             	long revId=0;
             	if (service.REVID_POS>=0) {
@@ -178,7 +178,7 @@ public abstract class BasicProcessor implements PageListProcessor {
                 /*if(namespace!= Wiki.USER_NAMESPACE && userNamespace(title))
                 	continue;*/
                 
-                // Случай когда мы ищем категории, шаблоны и т.д. чтобы отсеять обычные статьи
+                // РЎР»СѓС‡Р°Р№ РєРѕРіРґР° РјС‹ РёС‰РµРј РєР°С‚РµРіРѕСЂРёРё, С€Р°Р±Р»РѕРЅС‹ Рё С‚.Рґ. С‡С‚РѕР±С‹ РѕС‚СЃРµСЏС‚СЊ РѕР±С‹С‡РЅС‹Рµ СЃС‚Р°С‚СЊРё
                 int n = wiki.namespace(title);
                 if (n != namespace) {
                 	continue;

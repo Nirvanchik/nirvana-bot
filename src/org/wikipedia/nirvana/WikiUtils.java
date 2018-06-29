@@ -1,6 +1,6 @@
 /**
  *  @(#)WikiUtils.java 25.08.2015
- *  Copyright © 2015 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2015 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana;
@@ -208,7 +208,7 @@ public class WikiUtils {
      */
     public static String removeCategories(String text) {
         Localizer localizer = Localizer.getInstance();
-        String categoryKey = localizer.localize("Категория:");
+        String categoryKey = localizer.localize("РљР°С‚РµРіРѕСЂРёСЏ:");
         String re = "\\[\\[(Category:|" + categoryKey + ")[^\\]]+\\]\\]";
         Pattern p = Pattern.compile(re);
         return p.matcher(text).replaceAll("");
@@ -288,12 +288,12 @@ public class WikiUtils {
 
         Localizer localizer = Localizer.getInstance();
         boolean toBottom = true;
-        LocalizedTemplate template = localizer.localizeTemplateStrict("Новые сверху");
+        LocalizedTemplate template = localizer.localizeTemplateStrict("РќРѕРІС‹Рµ СЃРІРµСЂС…Сѓ");
         if (template != null) {
             toBottom = !containsTemplate(discussion, template.localizeName());
         }
         if (toBottom) {
-            template = localizer.localizeTemplateStrict("Новые сверху 2");
+            template = localizer.localizeTemplateStrict("РќРѕРІС‹Рµ СЃРІРµСЂС…Сѓ 2");
             if (template != null) {
                 toBottom = !containsTemplate(discussion, template.localizeName());
             }

@@ -1,6 +1,6 @@
 /**
  *  @(#)NewPagesTest.java 12.03.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot;
@@ -61,8 +61,8 @@ public class NewPagesTest {
     @Test
     public void markDeleted_marksAnonimous() {
         NewPages.initStatics();
-        String item = "* {{Новая статья|Спилантес|05 июня 2008|195.39.211.231}}";
-        String expected = "* {{Новая статья|Спилантес|05 июня 2008|195.39.211.231|уд}}";
+        String item = "* {{РќРѕРІР°СЏ СЃС‚Р°С‚СЊСЏ|РЎРїРёР»Р°РЅС‚РµСЃ|05 РёСЋРЅСЏ 2008|195.39.211.231}}";
+        String expected = "* {{РќРѕРІР°СЏ СЃС‚Р°С‚СЊСЏ|РЎРїРёР»Р°РЅС‚РµСЃ|05 РёСЋРЅСЏ 2008|195.39.211.231|СѓРґ}}";
         String result = NewPages.markDeleted(item);
         Assert.assertEquals(expected, result);
     }
@@ -70,8 +70,8 @@ public class NewPagesTest {
     @Test
     public void markDeleted_marksNormal() {
         NewPages.initStatics();
-        String item = "* {{Новая статья|Антохлор|29 декабря 2008|Alekseeva Anna}}";
-        String expected = "* {{Новая статья|Антохлор|29 декабря 2008|Alekseeva Anna|уд}}";
+        String item = "* {{РќРѕРІР°СЏ СЃС‚Р°С‚СЊСЏ|РђРЅС‚РѕС…Р»РѕСЂ|29 РґРµРєР°Р±СЂСЏ 2008|Alekseeva Anna}}";
+        String expected = "* {{РќРѕРІР°СЏ СЃС‚Р°С‚СЊСЏ|РђРЅС‚РѕС…Р»РѕСЂ|29 РґРµРєР°Р±СЂСЏ 2008|Alekseeva Anna|СѓРґ}}";
         String result = NewPages.markDeleted(item);
         Assert.assertEquals(expected, result);
     }
@@ -79,8 +79,8 @@ public class NewPagesTest {
     @Test
     public void markDeleted_marksNormalWithPipe() {
         NewPages.initStatics();
-        String item = "* {{Новая статья|Антохлор|29 декабря 2008|Alekseeva Anna|}}";
-        String expected = "* {{Новая статья|Антохлор|29 декабря 2008|Alekseeva Anna|уд}}";
+        String item = "* {{РќРѕРІР°СЏ СЃС‚Р°С‚СЊСЏ|РђРЅС‚РѕС…Р»РѕСЂ|29 РґРµРєР°Р±СЂСЏ 2008|Alekseeva Anna|}}";
+        String expected = "* {{РќРѕРІР°СЏ СЃС‚Р°С‚СЊСЏ|РђРЅС‚РѕС…Р»РѕСЂ|29 РґРµРєР°Р±СЂСЏ 2008|Alekseeva Anna|СѓРґ}}";
         String result = NewPages.markDeleted(item);
         Assert.assertEquals(expected, result);
     }
@@ -88,9 +88,9 @@ public class NewPagesTest {
     @Test
     public void markDeleted_marksSimple() {
         NewPages.initStatics();
-        String item = "* [[Антохлор]]";
+        String item = "* [[РђРЅС‚РѕС…Р»РѕСЂ]]";
         String expected = 
-                "* [[Антохлор]]<span style=\"color:#966963\"> — '''Статья удалена'''</span>";
+                "* [[РђРЅС‚РѕС…Р»РѕСЂ]]<span style=\"color:#966963\"> вЂ” '''РЎС‚Р°С‚СЊСЏ СѓРґР°Р»РµРЅР°'''</span>";
         String result = NewPages.markDeleted(item);
         Assert.assertEquals(expected, result);
     }
@@ -98,8 +98,8 @@ public class NewPagesTest {
     @Test
     public void unmarkDeleted_unmarksNormal() {
         NewPages.initStatics();
-        String item = "* {{Новая статья|Антохлор|29 декабря 2008|Alekseeva Anna|уд}}";
-        String expected = "* {{Новая статья|Антохлор|29 декабря 2008|Alekseeva Anna}}";
+        String item = "* {{РќРѕРІР°СЏ СЃС‚Р°С‚СЊСЏ|РђРЅС‚РѕС…Р»РѕСЂ|29 РґРµРєР°Р±СЂСЏ 2008|Alekseeva Anna|СѓРґ}}";
+        String expected = "* {{РќРѕРІР°СЏ СЃС‚Р°С‚СЊСЏ|РђРЅС‚РѕС…Р»РѕСЂ|29 РґРµРєР°Р±СЂСЏ 2008|Alekseeva Anna}}";
         String result = NewPages.unmarkDeleted(item);
         Assert.assertEquals(expected, result);
     }
@@ -107,8 +107,8 @@ public class NewPagesTest {
     @Test
     public void unmarkDeleted_unmarksSimple() {
         NewPages.initStatics();
-        String item = "* [[Антохлор]]<span style=\"color:#966963\"> — '''Статья удалена'''</span>";
-        String expected = "* [[Антохлор]]";
+        String item = "* [[РђРЅС‚РѕС…Р»РѕСЂ]]<span style=\"color:#966963\"> вЂ” '''РЎС‚Р°С‚СЊСЏ СѓРґР°Р»РµРЅР°'''</span>";
+        String expected = "* [[РђРЅС‚РѕС…Р»РѕСЂ]]";
         String result = NewPages.unmarkDeleted(item);
         Assert.assertEquals(expected, result);
     }

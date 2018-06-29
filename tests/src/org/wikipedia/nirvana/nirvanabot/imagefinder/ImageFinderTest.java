@@ -1,6 +1,6 @@
 /**
  *  @(#)ImageFinderTest.java 04.03.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot.imagefinder;
@@ -51,9 +51,9 @@ import java.io.IOException;
 public class ImageFinderTest {
     public static final String TEST_DATA_PATH = "tests/test_data/pages/";
     public static final String PICTURE_SEARCH_TAGS_RU =
-            "image file,Фото,портрет,Изображение,Файл,File";
+            "image file,Р¤РѕС‚Рѕ,РїРѕСЂС‚СЂРµС‚,РР·РѕР±СЂР°Р¶РµРЅРёРµ,Р¤Р°Р№Р»,File";
     public static final String PICTURE_SEARCH_TAGS_RU_EXTRA = 
-            "image file,Фото,портрет,Изображение,Файл,File,флаг";
+            "image file,Р¤РѕС‚Рѕ,РїРѕСЂС‚СЂРµС‚,РР·РѕР±СЂР°Р¶РµРЅРёРµ,Р¤Р°Р№Р»,File,С„Р»Р°Рі";
 
     private static final String ARTICLE_WITH_IMAGE_IN_CARD = "ru_image_in_card.txt";
     private static final String ARTICLE_WITH_MANY_IMAGES_IN_CARD = "ru_many_images_in_card.txt";

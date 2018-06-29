@@ -1,6 +1,6 @@
 /**
  *  @(#)BotReporter.java 
- *  Copyright © 2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana.nirvanabot;
@@ -145,7 +145,7 @@ public class BotReporter {
     public void updateStartStatus(String page, String template) throws LoginException, IOException {
         initLocalizer();
     	String text = String.format("{{%1$s|status=1|starttime=%2$tF %2$tT|version=%3$s}}", template, timeStarted, version);
-        wiki.edit(page, text, localizer.localize("Бот запущен"));
+        wiki.edit(page, text, localizer.localize("Р‘РѕС‚ Р·Р°РїСѓС‰РµРЅ"));
     }
     
     public void updateEndStatus(String page, String template) throws LoginException, IOException {
@@ -154,7 +154,7 @@ public class BotReporter {
     			"|total=%5$d|checked=%6$d|processed=%7$d|updated=%8$d|errors=%9$d|version=%10$s}}", 
     			template, timeStarted, timeFinished, printTimeDiff(timeStarted, timeFinished),
     			portalsTotal, portalsChecked, portalsProcessed, portalsUpdated, portalsError, version);
-        wiki.edit(page, text, localizer.localize("Бот остановлен"));
+        wiki.edit(page, text, localizer.localize("Р‘РѕС‚ РѕСЃС‚Р°РЅРѕРІР»РµРЅ"));
     }
 
     public void updateStatus() {
@@ -263,7 +263,7 @@ public class BotReporter {
 		
 		try {
             wiki.edit(reportPage, sb.toString(),
-                    localizer.localize("Отчёт по работе бота за сутки"));
+                    localizer.localize("РћС‚С‡С‘С‚ РїРѕ СЂР°Р±РѕС‚Рµ Р±РѕС‚Р° Р·Р° СЃСѓС‚РєРё"));
         } catch (LoginException | IOException e) {
 	        log.error("Failed to update report.", e);
         }    	

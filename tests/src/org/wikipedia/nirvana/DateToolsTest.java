@@ -1,6 +1,6 @@
 /**
  *  @(#)DateToolsTest.java 03.02.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright В© 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 /**
  * WARNING: This file may contain Russian characters.
- * Recommended code page for this file is CP1251 (also called Windows-1251).
+ * This file is encoded with UTF-8.
  * */
 
 package org.wikipedia.nirvana;
@@ -46,9 +46,9 @@ public class DateToolsTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         Map<String, String> translations = new HashMap<>();
-        translations.put("январь", "студзень");
-        translations.put("января", "студзеня");
-        translations.put("зима", "зiма");
+        translations.put("СЏРЅРІР°СЂСЊ", "СЃС‚СѓРґР·РµРЅСЊ");
+        translations.put("СЏРЅРІР°СЂСЏ", "СЃС‚СѓРґР·РµРЅСЏ");
+        translations.put("Р·РёРјР°", "Р·iРјР°");
         TestLocalizationManager.init(translations);
     }
 
@@ -68,37 +68,37 @@ public class DateToolsTest {
     @Test
     public void monthString_noLocalization() {
         DateTools dateTools = new DateTools("ru");
-        Assert.assertEquals("январь", dateTools.monthString(0));
+        Assert.assertEquals("СЏРЅРІР°СЂСЊ", dateTools.monthString(0));
     }
 
     @Test
     public void monthString_localized() {
         DateTools dateTools = new DateTools("be");
-        Assert.assertEquals("студзень", dateTools.monthString(0));
+        Assert.assertEquals("СЃС‚СѓРґР·РµРЅСЊ", dateTools.monthString(0));
     }
 
     @Test
     public void monthMonatString_noLocalization() {
         DateTools dateTools = new DateTools("ru");
-        Assert.assertEquals("января", dateTools.monthMonatString(0));
+        Assert.assertEquals("СЏРЅРІР°СЂСЏ", dateTools.monthMonatString(0));
     }
 
     @Test
     public void monthMonatString_localized() {
         DateTools dateTools = new DateTools("be");
-        Assert.assertEquals("студзеня", dateTools.monthMonatString(0));
+        Assert.assertEquals("СЃС‚СѓРґР·РµРЅСЏ", dateTools.monthMonatString(0));
     }
 
     @Test
     public void seasonString_noLocalization() {
         DateTools dateTools = new DateTools("ru");
-        Assert.assertEquals("зима", dateTools.seasonString(0));
+        Assert.assertEquals("Р·РёРјР°", dateTools.seasonString(0));
     }
 
     @Test
     public void seasonString_localized() {
         DateTools dateTools = new DateTools("be");
-        Assert.assertEquals("зiма", dateTools.seasonString(0));
+        Assert.assertEquals("Р·iРјР°", dateTools.seasonString(0));
     }
 
     @Test
@@ -106,7 +106,7 @@ public class DateToolsTest {
         Calendar c = Calendar.getInstance(new Locale("ru"));
         DateTools dateTools = new DateTools("ru");
         c.set(2000, 0, 1);
-        Assert.assertEquals("1 января 2000", dateTools.printDateDayMonthYearGenitive(c));
+        Assert.assertEquals("1 СЏРЅРІР°СЂСЏ 2000", dateTools.printDateDayMonthYearGenitive(c));
     }
 
     @Test
@@ -114,13 +114,13 @@ public class DateToolsTest {
         Calendar c = Calendar.getInstance(new Locale("be"));
         DateTools dateTools = new DateTools("be");
         c.set(2000, 0, 1);
-        Assert.assertEquals("1 студзеня 2000", dateTools.printDateDayMonthYearGenitive(c));
+        Assert.assertEquals("1 СЃС‚СѓРґР·РµРЅСЏ 2000", dateTools.printDateDayMonthYearGenitive(c));
     }
 
     @Test
     public void parseDateStringDayMonthYearGenitive_noLocalization() {
         DateTools dateTools = new DateTools("ru");
-        Calendar c = dateTools.parseDateStringDayMonthYearGenitive("1 января 2000");
+        Calendar c = dateTools.parseDateStringDayMonthYearGenitive("1 СЏРЅРІР°СЂСЏ 2000");
         Assert.assertNotNull(c);
         Assert.assertEquals(2000, c.get(Calendar.YEAR));
         Assert.assertEquals(0, c.get(Calendar.MONTH));
@@ -130,7 +130,7 @@ public class DateToolsTest {
     @Test
     public void parseDateStringDayMonthYearGenitive_localized() {
         DateTools dateTools = new DateTools("be");
-        Calendar c = dateTools.parseDateStringDayMonthYearGenitive("1 студзеня 2000");
+        Calendar c = dateTools.parseDateStringDayMonthYearGenitive("1 СЃС‚СѓРґР·РµРЅСЏ 2000");
         Assert.assertNotNull(c);
         Assert.assertEquals(2000, c.get(Calendar.YEAR));
         Assert.assertEquals(0, c.get(Calendar.MONTH));
