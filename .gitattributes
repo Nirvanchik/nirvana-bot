@@ -3,7 +3,8 @@
 # THIS PROJECT HAS FILES WITH CRLF AND FILES WITH LF LINE ENDINGS !
 # This happened by accident.
 # I started this project in 2010-2011 and put code in free svn repository of
-# Google [http://code.google.com]. I had been working in Windows always.
+# Google [https://code.google.com/archive/p/nirvana-bot/].
+# I had been working in Windows always.
 # All code had CRLF endings at that time I guess.
 # Later, code.google.com was closed and all code moved to github.com
 # After that I installed git and all new code after that time has
