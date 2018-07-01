@@ -1,0 +1,45 @@
+# =============================================================================
+#                     CAUTION
+# THIS PROJECT HAS FILES WITH CRLF AND FILES WITH LF LINE ENDINGS !
+# This happened by accident.
+# I started this project in 2010-2011 and put code in free svn repository of
+# Google [http://code.google.com]. I had been working in Windows always.
+# All code had CRLF endings at that time I guess.
+# Later, code.google.com was closed and all code moved to github.com
+# After that I installed git and all new code after that time has
+# LF line endings (because core.autocrlf is true in git).
+#
+# Currently I decided to leave it as is because blame is valuable for me.
+# If you checkout this project in Linux/Mac use git config core.autocrlf off.
+# If you checkout this project in Windows:
+#1) use git config core.autocrlf off but make sure that your new files have LF
+#   and that your editor works fine with LF.
+#2) use git config core.autocrlf true but when you move old files make sure
+# that you do not update CRLF to LF when committing (disable core.autocrlf and
+# comment out line "*text=auto" in this config).
+# Our future plan is to get rid of CRLF. All files should have LF in git.
+# CRLF must die.
+# ======================================================================
+
+# Set the default behavior, in case people don't have core.autocrlf set.
+#* text=auto
+# I disable it now. I'm not sure we should enable auto.
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.ini text
+*.java text
+*.js text
+*.MD text
+*.properties text
+*.txt text
+*.xml text
+
+# Declare files that will always have CRLF line endings on checkout.
+# CMD are srcipts for Windows shell only.
+# They hava crlf currently so let them always have it.
+# I hope no one in Linux will touch them.
+*.cmd text eol=crlf
+
+# Denote all files that are truly binary and should not be modified.
+*.jar binary
