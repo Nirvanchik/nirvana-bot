@@ -55,7 +55,6 @@ import org.wikipedia.nirvana.nirvanabot.templates.TemplateFinder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -1208,8 +1207,9 @@ public class NewPages implements PortalModule{
 	}
 
 	public static boolean userNamespace(String article) {
-        Assert.assertTrue(initialized);
-        Assert.assertNotNull(article);
+        assert initialized;
+        assert article != null;
+
         return (article.startsWith(USER_NAMESPACE) ||
                 article.startsWith(USER_TALK_NAMESPACE) ||
                 article.startsWith(USER_TALK_NAMESPACE2) ||

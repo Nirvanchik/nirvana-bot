@@ -25,8 +25,6 @@ package org.wikipedia.nirvana.archive;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
@@ -219,7 +217,7 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
         if (start < 0) {
             log.error("This is not possible! I can't find this header..");
             if (NirvanaBot.DEBUG_BUILD) {
-                Assert.fail("This is not possible! I can't find this header..");
+                assert false : "This is not possible! I can't find this header..";
             }
             return 0;
         }

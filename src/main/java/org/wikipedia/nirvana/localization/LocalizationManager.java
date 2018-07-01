@@ -46,8 +46,6 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
 
-import junit.framework.Assert;
-
 /**
  * Initializes {@link Localizer} from .INI file, from wiki page. Updates wiki
  * page with new terms detected during bot work.
@@ -255,7 +253,9 @@ public class LocalizationManager {
         } catch (IOException e) {
             throw new BotFatalError(e);
         }
-        Assert.assertNotNull(text);
+
+        assert text != null;
+
         int cnt = parseTranslationsToLocalizer(text, localizer);
         Localizer.init(localizer);
         log.info(String.format("%d translations loaded from %s", cnt, path));
