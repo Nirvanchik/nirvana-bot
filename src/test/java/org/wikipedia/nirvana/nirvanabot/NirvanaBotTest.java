@@ -50,7 +50,7 @@ import junit.framework.Assert;
  * org.wikipedia.nirvana.MockNirvanaWiki MockNirvanaWiki} are correct.
  */
 public class NirvanaBotTest {
-    public static final String TEST_DATA_PATH = "tests/test_data/";
+    public static final String TEST_DATA_PATH = "src/test/resources/test_data/";
     public static final String BOT_CONFIG_DEFAULT = "bot_config_ru_default.xml";
     public static final String BOT_CONFIG_RU_WITH_DISUSSION_TEMPLATES =
             "bot_config_ru_discussion_templates.xml";

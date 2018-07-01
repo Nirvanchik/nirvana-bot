@@ -49,7 +49,7 @@ import java.io.IOException;
  * Contains tests for {@link ImageFinder}, {@link ImageFinderInCard}, {@link ImageFinderInBody}.
  */
 public class ImageFinderTest {
-    public static final String TEST_DATA_PATH = "tests/test_data/pages/";
+    public static final String TEST_DATA_PATH = "src/test/resources/test_data/pages/";
     public static final String PICTURE_SEARCH_TAGS_RU =
             "image file,Фото,портрет,Изображение,Файл,File";
     public static final String PICTURE_SEARCH_TAGS_RU_EXTRA = 
