@@ -201,7 +201,9 @@ public class Localizer {
     }
 
     private String localizeImpl(String word, String defaultWord) {
-        assert initialized : "Localizer is used when it's not initialized.";
+        if (!initialized) {
+            throw new IllegalStateException("Localizer is used when it's not initialized.");
+        }
 
         if (translations.containsKey(word)) {
             String localizedWord = translations.get(word);
