@@ -37,8 +37,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import junit.framework.Assert;
-
 /**
  * Utilities for printing/converting dates (localized with {@link
  * org.wikipedia.nirvana.localization.Localizer Localizer}).
@@ -110,7 +108,7 @@ public class DateTools {
            "осень",
     };
 
-    DateTools(String language) {
+    public DateTools(String language) {
         locale = new Locale(language);
         localizer = Localizer.getInstance();
         if (DEFAULT_LANGUAGE.equals(language)) {
@@ -133,7 +131,8 @@ public class DateTools {
     }
 
     public static void init(String language) {
-        Assert.assertNull(sInstance);
+        assert sInstance != null;
+
         sInstance = new DateTools(language);
     }
 
@@ -143,7 +142,8 @@ public class DateTools {
     }
 
     public static DateTools getInstance() {
-        Assert.assertNotNull("Looks like DateTools is not initialized yet.", sInstance);
+        assert sInstance != null : "Looks like DateTools is not initialized yet.";
+
         return sInstance;
     }
 

@@ -44,7 +44,6 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
 
 /**
  * @author kin
@@ -88,7 +87,7 @@ public class ServiceManager {
 
     public void updateCatScan(String defaultServiceName, String selectedServiceName) throws BotFatalError {
         WikiTools.Service defaultService = WikiTools.Service.getServiceByName(defaultServiceName);
-        Assert.assertNotNull(defaultService);
+        assert defaultService != null;
 
         if (selectedServiceName.equalsIgnoreCase(SERVICE_AUTO)) {
             activeService = defaultService;

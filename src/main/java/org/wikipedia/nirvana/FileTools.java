@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import junit.framework.Assert;
-
 /**
  * @author kin
  *
@@ -61,7 +59,8 @@ public class FileTools {
     }
 
     public static void dump(String text, String file) throws IOException {
-        Assert.assertNotNull(sDefaultOut);
+        assert sDefaultOut != null;
+
         dump(text, sDefaultOut, file, DEFAULT_ENCODING);
     }
 

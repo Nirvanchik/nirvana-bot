@@ -33,8 +33,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wikipedia.nirvana.FileTools;
@@ -203,7 +201,8 @@ public class ArchiveDatabase2 {
             f.mkdirs();
             return;
         }
-        Assert.assertTrue(f.isDirectory());
+
+        assert f.isDirectory();
     }
 
 	public boolean withSize() {

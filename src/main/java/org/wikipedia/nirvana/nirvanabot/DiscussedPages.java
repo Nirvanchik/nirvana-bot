@@ -32,8 +32,6 @@ import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.DiscussionPagesSettings.DiscussionPageTemplate;
 
-import org.junit.Assert;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -258,8 +256,9 @@ public class DiscussedPages extends Pages {
 
             @Override
             public int compare(Revision r1, Revision r2) {
-                Assert.assertTrue(r1 instanceof RevisionWithDiscussion);
-                Assert.assertTrue(r2 instanceof RevisionWithDiscussion);
+                assert r1 instanceof RevisionWithDiscussion;
+                assert r2 instanceof RevisionWithDiscussion;
+
                 RevisionWithDiscussion rL = (RevisionWithDiscussion) r1;
                 RevisionWithDiscussion rR = (RevisionWithDiscussion) r2;
                 if (rL.getDiscussion() != null && rR.getDiscussion() != null) {

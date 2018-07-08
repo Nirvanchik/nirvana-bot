@@ -25,12 +25,9 @@ package org.wikipedia.nirvana.localization;
 
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
 
-import org.junit.Assert;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 /**
  * Localization module for bot.
  *
@@ -123,7 +120,8 @@ public class Localizer {
         if (sInstance == null) {
             sInstance = new Localizer();
         }*/
-        Assert.assertNotNull(sInstance);
+        assert sInstance != null;
+
         return sInstance;
     }
 
@@ -136,8 +134,9 @@ public class Localizer {
      * Initialize with a special {@link Localizer} instance.
      */
     public static void init(Localizer instance) {
-        Assert.assertNull(sInstance);
-        Assert.assertNotNull(instance);
+        assert sInstance == null;
+        assert instance != null;
+
         sInstance = instance;
     }
 
@@ -202,7 +201,8 @@ public class Localizer {
     }
 
     private String localizeImpl(String word, String defaultWord) {
-        Assert.assertTrue("Localizer is used when it's not initialized.", initialized);
+        assert initialized : "Localizer is used when it's not initialized.";
+
         if (translations.containsKey(word)) {
             String localizedWord = translations.get(word);
             if (localizedWord != null) return localizedWord;
@@ -214,7 +214,8 @@ public class Localizer {
 
     private LocalizedTemplate localizeTemplateImpl(String template,
             LocalizedTemplate defaultTemplate) {
-        Assert.assertTrue("Localizer is used when it's not initialized.", initialized);
+        assert initialized : "Localizer is used when it's not initialized.";
+
         if (localizedTemplates.containsKey(template)) {
             LocalizedTemplate localizedTemplate = localizedTemplates.get(template);
             if (localizedTemplate != null) return localizedTemplate;

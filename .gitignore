@@ -6,6 +6,8 @@
 # Repository and IDE settings
 /.settings/*
 /.svn/*
+*.iml
+/.idea/*
 
 # Build system input and output dirs
 /lib/*
