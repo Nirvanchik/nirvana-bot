@@ -23,6 +23,7 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import static org.wikipedia.nirvana.BotUtils.validateIntegerSetting;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.LIST_TYPE_DISCUSSED_PAGES;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.LIST_TYPE_DISCUSSED_PAGES2;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.LIST_TYPE_DISCUSSED_PAGES_OLD;

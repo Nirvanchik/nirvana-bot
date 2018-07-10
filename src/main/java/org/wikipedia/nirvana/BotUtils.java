@@ -23,16 +23,26 @@
 
 package org.wikipedia.nirvana;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 /**
  * Utility code for bot settings processing.
  */
 public class BotUtils {
+    public static final Logger sLog;
+
+    static {
+        sLog = LogManager.getLogger(BotUtils.class.getName());
+    }
+
     /**
      * Converts String option with multiple values separated by comma into list of Strings.
      */
@@ -71,6 +81,34 @@ public class BotUtils {
     public static Set<String> optionToSet(String option, boolean withDQuotes, String separator) {
         Set<String> set = new HashSet<>();        
         return (Set<String>) optionToCollection(option, withDQuotes, separator, set);
+    }
+
+    /**
+     * Returns integer value in given {@link Properties} object or default value if it's not found.
+     *
+     * @param props {@link Properties} object, properties must be loaded beforehand.
+     * @param name the name of property to get
+     * @param def default value
+     * @param notifyNotFound write error to log if this property not found
+     * @return property value (converted to int) or default value
+     */
+    public static int validateIntegerSetting(Properties props, String name, int def,
+            boolean notifyNotFound) {
+        try {
+            if (!props.containsKey(name)) {
+                if (notifyNotFound) {
+                    sLog.info("settings: value of {} not found in settings, use default: {}",
+                            name, def);
+                }
+                return def;
+            }
+            String str = props.getProperty(name);
+            return Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            sLog.error("invalid settings: error when parsing integer value of {}, use default: {}",
+                    name, def);
+            return def;
+        }
     }
 
     private static Collection<String> optionToCollection(String option, boolean withDQuotes,

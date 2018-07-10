@@ -23,11 +23,12 @@
 
 package org.wikipedia.nirvana.statistics;
 
+import static org.wikipedia.nirvana.BotUtils.validateIntegerSetting;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

@@ -394,27 +394,6 @@ public abstract class BasicBot {
         log = LogManager.getLogger(this.getClass().getName());
 	}
 
-	protected static int validateIntegerSetting(Properties pop, String name, int def, boolean notifyNotFound) {
-		int val = def;
-		try {
-			String str = properties.getProperty(name);
-			if (str == null) {
-				if (notifyNotFound) { 
-					log.info("settings: integer value not found in settings ("+name+")");
-				}
-				return val;
-			}
-			val = Integer.parseInt(str);				
-		} catch (NumberFormatException e){
-			log.error("invalid settings: error when parsing integer values of "+name);
-		} catch (NullPointerException e){
-			if (notifyNotFound) {
-				log.info("settings: integer value not found in settings ("+name+"), using default");
-			}
-		}
-		return val;
-	}
-	
 	protected void logPortalSettings(Map<String, String> parameters) {
 		Set<Entry<String,String>> set = parameters.entrySet();
 		Iterator<Entry<String,String>> it = set.iterator();
