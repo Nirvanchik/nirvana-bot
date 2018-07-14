@@ -131,7 +131,7 @@ public class DateTools {
     }
 
     public static void init(String language) {
-        assert sInstance != null;
+        assert sInstance == null;
 
         sInstance = new DateTools(language);
     }
