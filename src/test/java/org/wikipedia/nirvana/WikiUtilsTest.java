@@ -119,7 +119,8 @@ public class WikiUtilsTest {
     public void addTextToDiscussion_addsToTopWhenTemplate1SpecifiedLocalized() {
         TestLocalizationManager.reset();
         Map<String, LocalizedTemplate> localizedTemplates = new HashMap<>();
-        localizedTemplates.put("Новые сверху", new LocalizedTemplate("Add to top", ""));
+        localizedTemplates.put("Новые сверху",
+                new LocalizedTemplate("Новые сверху", "Add to top"));
         TestLocalizationManager.init(null, localizedTemplates);
 
         String discussion =
