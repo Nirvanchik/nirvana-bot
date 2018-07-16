@@ -42,6 +42,8 @@ import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.parser.format.TabFormatDescriptor;
+import org.wikipedia.nirvana.parser.format.TabularFormat;
 
 /**
  * @author kin
@@ -56,7 +58,6 @@ public class PageListProcessorSlow extends BasicProcessor {
 	 * @param ignore
 	 * @param lang
 	 * @param depth
-	 * @param hours
 	 * @param namespace
 	 */
 	public PageListProcessorSlow(WikiTools.Service service, List<String> cats, List<String> ignore, String lang,
@@ -115,6 +116,11 @@ public class PageListProcessorSlow extends BasicProcessor {
 		HashSet<String> ignore = ignorePages;
 		if(ignore==null)
 			ignore = new HashSet<String>();
+
+		assert service.getFormat() instanceof TabularFormat;
+
+		TabFormatDescriptor descriptor = ((TabularFormat)service.getFormat()).getFormatDescriptor();
+
 		for(String category : categoriesToIgnore) {		
 			//log.info("Processing data of " + category);
 	        String line;
@@ -124,7 +130,7 @@ public class PageListProcessorSlow extends BasicProcessor {
 	        	throw new ServiceError("Invalid output of service: "+service.getName());
 	        }
 	        BufferedReader br = new BufferedReader(new StringReader(pageList));
-        	for(int j=0;j<service.SKIP_LINES;j++) br.readLine();
+        	for(int j=0;j<descriptor.getSkipLines();j++) br.readLine();
         	Pattern p = Pattern.compile(LINE_RULE);
         	int j = 0;
 	        while ((line = br.readLine()) != null)
@@ -136,16 +142,16 @@ public class PageListProcessorSlow extends BasicProcessor {
 	        		throw new ServiceError("Invalid output of service: "+service.getName());
 	        	}
 	            String[] groups = line.split("\t");
-	            if (groups[service.NS_POS].equals(String.valueOf(this.namespace)))
+	            if (groups[descriptor.getNamespacePos()].equals(String.valueOf(this.namespace)))
 	            {
-	                String title = groups[service.TITLE_POS].replace('_', ' ');
+	                String title = groups[descriptor.getTitlePos()].replace('_', ' ');
 	                ignore.add(title);
-	            } else if (groups[service.NS_POS].equals(String.valueOf(Wiki.USER_NAMESPACE)) &&
+	            } else if (groups[descriptor.getNamespacePos()].equals(String.valueOf(Wiki.USER_NAMESPACE)) &&
 	            		namespace!= Wiki.USER_NAMESPACE) {
 	            	long revId=0;
-                	if(service.REVID_POS>=0) {
+                	if(descriptor.getRevidPos()>=0) {
 		                try {
-		                	revId = Long.parseLong(groups[service.REVID_POS]);
+		                	revId = Long.parseLong(groups[descriptor.getRevidPos()]);
 		                } catch(NumberFormatException e) {
 		                	log.error(e.toString());
 		                	continue;
