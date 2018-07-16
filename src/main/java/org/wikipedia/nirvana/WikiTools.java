@@ -33,6 +33,9 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.wikipedia.nirvana.parser.format.Format;
+
+import static org.wikipedia.nirvana.parser.format.TabularFormat.*;
 
 /**
  * @author kin
@@ -90,8 +93,8 @@ public class WikiTools {
 	
 	public enum Service {
 		@Deprecated
-		CATSCAN ("catscan", CATSCAN_DOMAIN, CATSCAN_PATH, 
-				0, 0, 1, 5, 4, false, false, true, 720,
+		CATSCAN ("catscan", CATSCAN_DOMAIN, CATSCAN_PATH,
+				TSV_CATSCAN_FORMAT, false, false, true, 720,
 				ServiceFeatures.CATSCAN_FEATURES,
 				null,
 				null,
@@ -106,7 +109,7 @@ public class WikiTools {
                 true),
         @Deprecated
         CATSCAN2 ("catscan2", CATSCAN2_DOMAIN, CATSCAN2_PATH,
-                2, 2, 0, -1, 1, true, false, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
+				TSV_CATSCAN2_FORMAT, true, false, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
 				ServiceFeatures.CATSCAN2_FEATURES,
 				"language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%5$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
@@ -119,7 +122,7 @@ public class WikiTools {
                 "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\S+$",
                 true),
         CATSCAN3 ("catscan3", CATSCAN3_DOMAIN, CATSCAN3_PATH,
-                2, 2, 0, -1, 1, true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
+				TSV_CATSCAN3_FORMAT, true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
 				ServiceFeatures.CATSCAN3_FEATURES,
 				"language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv&doit=submit",
 				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%5$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
@@ -132,7 +135,7 @@ public class WikiTools {
                 "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\d+\\s+\\S+$",
                 false),
         PETSCAN ("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
-                1, 3, 1, -1, 2,
+				TSV_PETSCAN_FORMAT,
                 true, true, false, 17856,  // 2 year = 24*31*12*2 = 8928*2;
                 ServiceFeatures.PETSCAN_FEATURES,
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv&doit=",
@@ -151,11 +154,7 @@ public class WikiTools {
         public final String name;
 		public final String DOMAIN;
 		public final String PATH;
-		public final int SKIP_LINES;
-		public final int NS_POS;
-		public final int TITLE_POS;
-		public final int REVID_POS;
-		public final int ID_POS;
+		private final Format format;
 		public final boolean filteredByNamespace;
 		public final boolean hasSuffix;
 		public final boolean hasDeleted;
@@ -175,7 +174,7 @@ public class WikiTools {
         private static Integer testFeatures = null;
 
 		Service(String name, String domain, String path, 
-				int skipLines, int namespacePos, int titlePos, int revidPos, int idPos,
+				Format format,
 				boolean filteredByNamespace, boolean hasSuffix, boolean hasDeleted, int maxHours, 
 				int features,
 				String getPagesFormat,
@@ -191,11 +190,7 @@ public class WikiTools {
 			this.name = name;
 			this.DOMAIN = domain;
 			this.PATH = path;
-			this.SKIP_LINES = skipLines;
-			this.NS_POS = namespacePos;
-			this.TITLE_POS = titlePos;
-			this.REVID_POS = revidPos;
-			this.ID_POS = idPos;
+			this.format = format;
 			this.filteredByNamespace = filteredByNamespace;
 			this.hasSuffix = hasSuffix;
 			this.hasDeleted = hasDeleted;
@@ -251,6 +246,10 @@ public class WikiTools {
             }
             return false;
         }
+
+		public Format getFormat() {
+			return format;
+		}
 	}
 
 	public static String loadPagesForCatWithService(Service service, 
