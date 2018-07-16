@@ -1,7 +1,7 @@
 /**
  *  @(#)BasicProcessor.java 10.12.2014
  *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
- *  
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -23,16 +23,13 @@
 
 package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
-import org.wikipedia.Wiki;
-import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.ServiceError;
-import org.wikipedia.nirvana.StringTools;
-import org.wikipedia.nirvana.WikiTools;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.wikipedia.Wiki;
+import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.*;
+import org.wikipedia.nirvana.parser.format.TabFormatDescriptor;
+import org.wikipedia.nirvana.parser.format.TabularFormat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -64,9 +61,9 @@ public abstract class BasicProcessor implements PageListProcessor {
     protected final int LINES_TO_CHECK = 25;
 
     /**
-	 * 
+	 *
 	 */
-	public BasicProcessor(WikiTools.Service service, List<String> cats, List<String> ignore, 
+	public BasicProcessor(WikiTools.Service service, List<String> cats, List<String> ignore,
 			String lang, int depth, int namespace, PageListFetcher fetcher) {
 		this.service = service;
 		this.categories = cats;
@@ -86,17 +83,20 @@ public abstract class BasicProcessor implements PageListProcessor {
         if (pageList.startsWith("ERROR : MYSQL error")) {
         	log.error("Invalid service output: "+StringTools.trancateTo(pageList, 100));
         	throw new ServiceError("Invalid output of service: "+service.getName());
-        }		
+        }
 		String line;
 		String namespaceIdentifier = "";
 		if (namespace!=0) {
 			namespaceIdentifier = wiki.namespaceIdentifier(namespace);
 		}
+
+        TabFormatDescriptor descriptor = ((TabularFormat)service.getFormat()).getFormatDescriptor();
+
 		StringReader sr = new StringReader(pageList);
 		BufferedReader b = new BufferedReader(sr);
-		for(int j=0;j<service.SKIP_LINES;j++) b.readLine();
+		for(int j=0;j<descriptor.getSkipLines();j++) b.readLine();
 		Pattern p = Pattern.compile(LINE_RULE);
-		
+
 		int j = 0;
         while ((line = b.readLine()) != null)
         {
@@ -111,7 +111,7 @@ public abstract class BasicProcessor implements PageListProcessor {
             int thisNS = 0; // articles by default
             if (!service.filteredByNamespace) {
             	try {
-            		thisNS = Integer.parseInt(groups[service.NS_POS]);
+            		thisNS = Integer.parseInt(groups[descriptor.getNamespacePos()]);
             	} catch (NumberFormatException e) {
             		log.warn("invalid namespace detected", e);
             	}
@@ -119,32 +119,32 @@ public abstract class BasicProcessor implements PageListProcessor {
             // то что мы ищем совпадает с тем, что нашли
             if (service.filteredByNamespace || thisNS == namespace)
             {
-                String title = groups[service.TITLE_POS].replace('_', ' ');
+                String title = groups[descriptor.getTitlePos()].replace('_', ' ');
                 if (ignore != null && ignore.contains(title))
                 {
                     continue;
                 }
                 if (!service.hasSuffix && namespace != 0)
-                {	                	
-                    title = namespaceIdentifier + ":" + title;	                	
+                {
+                    title = namespaceIdentifier + ":" + title;
                     log.debug("Namespace is not 0, add suffix!");
-                }	                
-                
+                }
+
                 if (!pages.contains(title))
                 {
                 	long revId=0;
-                	if (service.REVID_POS>=0) {
+                	if (descriptor.getRevidPos()>=0) {
 		                try {
-		                	revId = Long.parseLong(groups[service.REVID_POS]);
+		                	revId = Long.parseLong(groups[descriptor.getRevidPos()]);
 		                } catch(NumberFormatException e) {
 		                	log.error(e.toString());
 		                	continue;
 		                }
                 	}
                 	long id = 0;
-                	if (service.ID_POS>=0) {
+                	if (descriptor.getIdPos()>=0) {
                 		try {
-		                	id = Long.parseLong(groups[service.ID_POS]);
+		                	id = Long.parseLong(groups[descriptor.getIdPos()]);
 		                } catch(NumberFormatException e) {
 		                	log.error(e.toString());
 		                	continue;
@@ -161,9 +161,9 @@ public abstract class BasicProcessor implements PageListProcessor {
                 // пространство а потом переименовываются в основное пространство
             	//String title = groups[TITLE_POS].replace('_', ' ');
             	long revId=0;
-            	if (service.REVID_POS>=0) {
+            	if (descriptor.getRevidPos()>=0) {
 	                try {
-	                	revId = Long.parseLong(groups[service.REVID_POS]);
+	                	revId = Long.parseLong(groups[descriptor.getRevidPos()]);
 	                } catch(NumberFormatException e) {
 	                	log.error(e.toString());
 	                	continue;
@@ -177,15 +177,15 @@ public abstract class BasicProcessor implements PageListProcessor {
                 
                 /*if(namespace!= Wiki.USER_NAMESPACE && userNamespace(title))
                 	continue;*/
-                
+
                 // Случай когда мы ищем категории, шаблоны и т.д. чтобы отсеять обычные статьи
                 int n = wiki.namespace(title);
                 if (n != namespace) {
                 	continue;
                 }
-                
+
                 if (!pages.contains(title))
-                {   
+                {
                 	pages.add(title);
                     log.debug("adding page to list:"+title);
                     pageInfoList.add(r);
@@ -194,8 +194,8 @@ public abstract class BasicProcessor implements PageListProcessor {
         }//while
 	}
 	@Override
-	public boolean revisionAvailable() {		
-		return (service.REVID_POS>=0);
+	public boolean revisionAvailable() {
+		return (((TabularFormat)service.getFormat()).getFormatDescriptor().getRevidPos()>=0);
 	}
-	
+
 }
