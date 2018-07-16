@@ -101,7 +101,11 @@ loginUserExample.xml -text
 # CMD are srcipts for Windows shell only.
 # They hava crlf currently so let them always have it.
 # I hope no one in Linux will touch them.
+# UPDATE: Seeing very strange issues when rebasing branch
+# that has no changes in *.cmd but git thinks it has,
+# nevermind what "core.autocrlf" mode you are using
 *.cmd text eol=crlf
+.gitattributes -text eol=crlf
 
 # Denote all files that are truly binary and should not be modified.
 *.jar binary

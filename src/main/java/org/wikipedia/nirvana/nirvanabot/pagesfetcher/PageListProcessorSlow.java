@@ -27,6 +27,8 @@ import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.parser.format.TabFormatDescriptor;
+import org.wikipedia.nirvana.parser.format.TabularFormat;
 import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
@@ -123,6 +125,9 @@ public class PageListProcessorSlow extends BasicProcessor {
         if (ignore == null) {
             ignore = new HashSet<String>();
         }
+        assert service.getFormat() instanceof TabularFormat;
+
+        TabFormatDescriptor descriptor = ((TabularFormat) service.getFormat()).getFormatDescriptor();
         for (String category : categoriesToIgnore) {        
             log.debug("Processing data of ignore category: {}", category);
             String line;
@@ -132,10 +137,10 @@ public class PageListProcessorSlow extends BasicProcessor {
                 throw new ServiceError("Invalid output of service: " + service.getName());
             }
             BufferedReader br = new BufferedReader(new StringReader(pageList));
-            for (int j = 0; j < service.skipLines; j++) {
+            for (int j = 0; j < descriptor.getSkipLines(); j++) {
                 br.readLine();
             }
-            Pattern p = Pattern.compile(lineRule);
+            Pattern p = Pattern.compile(descriptor.getLineRule());
             int j = 0;
             while ((line = br.readLine()) != null) {
                 j++;
@@ -153,7 +158,7 @@ public class PageListProcessorSlow extends BasicProcessor {
                 }
 
                 if (service.filteredByNamespace) {
-                    String title = groups[service.titlePos].replace('_', ' ');
+                    String title = groups[descriptor.getTitlePos()].replace('_', ' ');
                     log.debug("Add page to ignore list: {}", title);
                     ignore.add(title);
                 }

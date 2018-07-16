@@ -23,7 +23,10 @@
 
 package org.wikipedia.nirvana.wiki;
 
+import static org.wikipedia.nirvana.parser.format.TabularFormat.TSV_PETSCAN_FORMAT;
+
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
+import org.wikipedia.nirvana.parser.format.Format;
 import org.wikipedia.nirvana.util.HttpTools;
 
 import org.apache.commons.lang3.StringUtils;
@@ -166,62 +169,57 @@ public class CatScanTools {
      */
     public enum Service {
         PETSCAN_OLD("petscan1", PETSCANOLD_DOMAIN, PETSCAN_PATH,
-                1, 3, 1, 2,
+                TSV_PETSCAN_FORMAT,
                 NamespaceFormat.NAME_STRING,
                 true, true, 17856,  // 2 year = 24*31*12*2 = 8928*2;
                 ServiceFeatures.PETSCAN_FEATURES,
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1" +
-                    "&sortby=title&format=tsv&doit=",
+                    "&sortby=title&format=%5$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
-                    "&combination=union&ns[%5$d]=1&sortby=title&format=tsv&doit=",
+                    "&combination=union&ns[%5$d]=1&sortby=title&format=%6$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1" +
-                    "&sortby=title&format=tsv&doit=",
+                    "&sortby=title&format=%7$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
-                    "&%5$s=%6$s&combination=union&ns[%7$d]=1&sortby=title&format=tsv&doit=",
+                    "&%5$s=%6$s&combination=union&ns[%7$d]=1&sortby=title&format=%8$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%5$d]=1" +
-                    "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=tsv&doit=",
+                    "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=%6$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
                     "&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on&sortorder=descending" +
-                    "&format=tsv&doit=",
+                    "&format=%7$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&%6$s=%7$s&ns[%5$d]=1" +
-                    "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=tsv&doit=",
+                    "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=%8$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
                     "&%7$s=%8$s&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on" +
-                    "&sortorder=descending&format=tsv&doit=",
-                "^\\d+\\s+\\S+\\s+\\d+\\s+(\\S+\\s+)?\\d+\\s+\\d+\\s*$",
+                    "&sortorder=descending&format=%9$s&doit=",
                 false),
         PETSCAN("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
-                1, 3, 1, 2,
+                TSV_PETSCAN_FORMAT,
                 NamespaceFormat.CANONICAL_STRING,
                 true, false, 87600,  // 10 years = 24*365*10 = 8760*10;
                 ServiceFeatures.PETSCAN_FEATURES,
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1" +
-                    "&sortby=title&format=tsv&doit=",
+                    "&sortby=title&format=%5$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
-                    "&combination=union&ns[%5$d]=1&sortby=title&format=tsv&doit=",
+                    "&combination=union&ns[%5$d]=1&sortby=title&format=%6$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1" +
-                    "&sortby=title&format=tsv&doit=",
+                    "&sortby=title&format=%7$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
-                    "&%5$s=%6$s&combination=union&ns[%7$d]=1&sortby=title&format=tsv&doit=",
+                    "&%5$s=%6$s&combination=union&ns[%7$d]=1&sortby=title&format=%8$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%5$d]=1" +
-                    "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=tsv&doit=",
+                    "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=%6$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
                     "&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on&sortorder=descending" +
-                    "&format=tsv&doit=",
+                    "&format=%7$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&%6$s=%7$s&ns[%5$d]=1" +
-                    "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=tsv&doit=",
+                    "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=%8$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
                     "&%7$s=%8$s&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on" +
-                    "&sortorder=descending&format=tsv&doit=",
-                "^\\d+\\s+\\S+\\s+\\d+\\s+(\\S+\\s+)?\\d+\\s+\\d+\\s*$",
+                    "&sortorder=descending&format=%9$s&doit=",
                 false);
         public final String name;
         public final String domain;
         public final String path;
-        public final int skipLines;
-        public final int nsPos;
-        public final int titlePos;
-        public final int idPos;
+        private final Format format;
         /**
          * Namespace format of the namespace identifier returned by the service.
          */
@@ -248,13 +246,12 @@ public class CatScanTools {
         public final String getNewPagesFormatFast;
         public final String getNewPagesWithTemplateFormat;
         public final String getNewPagesWithTemplateFormatFast;
-        public final String lineRule;
         public final boolean down;
 
         private static Integer testFeatures = null;
 
         Service(String name, String domain, String path, 
-                int skipLines, int namespacePos, int titlePos, int idPos,
+                Format format,
                 NamespaceFormat namespaceFormat,
                 boolean filteredByNamespace, boolean hasSuffix, int maxHours, 
                 int features,
@@ -266,15 +263,11 @@ public class CatScanTools {
                 String getNewPagesFormatFast,
                 String getNewPagesWithTemplateFormat,
                 String getNewPagesWithTemplateFormatFast,
-                String lineRule,
                 boolean down) {
             this.name = name;
             this.domain = domain;
             this.path = path;
-            this.skipLines = skipLines;
-            this.nsPos = namespacePos;
-            this.titlePos = titlePos;
-            this.idPos = idPos;
+            this.format = format;
             this.namespaceFormat = namespaceFormat;
             this.filteredByNamespace = filteredByNamespace;
             this.hasSuffix = hasSuffix;
@@ -288,7 +281,6 @@ public class CatScanTools {
             this.getNewPagesFormatFast = getNewPagesFormatFast;
             this.getNewPagesWithTemplateFormat = getNewPagesWithTemplateFormat;
             this.getNewPagesWithTemplateFormatFast = getNewPagesWithTemplateFormatFast;
-            this.lineRule = lineRule;
             this.down = down;
             this.toString();
         }
@@ -373,6 +365,10 @@ public class CatScanTools {
             }
             return false;
         }
+
+        public Format getFormat() {
+            return format;
+        }
     }
 
     /**
@@ -402,7 +398,8 @@ public class CatScanTools {
                 language,
                 depth,
                 category,
-                namespace);
+                namespace,
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, urlQuery);   
     }
 
@@ -440,7 +437,8 @@ public class CatScanTools {
                 depth,
                 StringUtils.join(cats, CAT_SEPARATOR),
                 StringUtils.join(ignore, CAT_SEPARATOR),
-                namespace);
+                namespace,
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, urlQuery);   
     }
 
@@ -493,7 +491,8 @@ public class CatScanTools {
                 category,
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
-                namespace);
+                namespace,
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, urlQuery);
     }
 
@@ -549,7 +548,8 @@ public class CatScanTools {
                 StringUtils.join(ignore, CAT_SEPARATOR),
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
-                namespace);
+                namespace,
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, urlQuery);
     }
 
@@ -585,7 +585,8 @@ public class CatScanTools {
                     depth,
                     category,
                     hours,
-                    namespace);
+                    namespace,
+                    service.format.getFormatType().getFormatType());
         } else {
             throw new IllegalStateException(ERR_SERVICE_FILTER_BY_NAMESPACE_DISABLED);
         }
@@ -624,15 +625,15 @@ public class CatScanTools {
         }
         log.debug("Download data for categories: {}", Arrays.toString(cats.toArray()));
         log.debug("and ignore categories: {}", Arrays.toString(ignore.toArray()));
-        String urlQuery = 
-                String.format(service.getNewPagesFormatFast,
+        String urlQuery = String.format(service.getNewPagesFormatFast,
                 language,
                 depth,
                 StringUtils.join(cats, CAT_SEPARATOR),
                 StringUtils.join(ignore, CAT_SEPARATOR),
                 hours,
-                namespace
-                );        
+                namespace,
+                service.format.getFormatType().getFormatType()
+        );
         return fetchQuery(service, urlQuery);
     }
 
@@ -686,7 +687,8 @@ public class CatScanTools {
                 hours,
                 namespace,
                 templatesParam,
-                StringUtils.join(templates, CAT_SEPARATOR));
+                StringUtils.join(templates, CAT_SEPARATOR),
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, url);
     }
 
@@ -747,7 +749,9 @@ public class CatScanTools {
                 hours,
                 namespace,
                 templatesParam,
-                StringUtils.join(templates, CAT_SEPARATOR));        
+                StringUtils.join(templates, CAT_SEPARATOR),
+                service.format.getFormatType().getFormatType()
+        );
         return fetchQuery(service, url);
     }
 
