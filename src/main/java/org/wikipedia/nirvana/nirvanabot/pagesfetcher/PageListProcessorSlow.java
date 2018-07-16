@@ -117,6 +117,8 @@ public class PageListProcessorSlow extends BasicProcessor {
 		if(ignore==null)
 			ignore = new HashSet<String>();
 
+		assert service.getFormat() instanceof TabularFormat;
+
 		TabFormatDescriptor descriptor = ((TabularFormat)service.getFormat()).getFormatDescriptor();
 
 		for(String category : categoriesToIgnore) {		

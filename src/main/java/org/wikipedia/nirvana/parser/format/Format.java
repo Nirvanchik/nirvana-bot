@@ -3,16 +3,11 @@ package org.wikipedia.nirvana.parser.format;
 /**
  * @author kmorozov
  */
-
 public interface Format {
 
     enum FormatType {
         CSV("csv"),
-        JSON("json"),
-        HTML("json"),
-        PAGE_PILE("pp"),
-        TSV("tsv"),
-        WIKI("wiki");
+        TSV("tsv");
 
         private final String formatType;
 

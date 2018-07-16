@@ -1,7 +1,7 @@
 /**
- *  @(#)WikiTools.java 
+ *  @(#)WikiTools.java
  *  Copyright © 2013-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
- *  
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -56,13 +56,13 @@ public class WikiTools {
     private static final String PETSCAN_PATH = "/";
 	public static final String HTTP = "http";
 	private static final int TIMEOUT_DELAY = 10000; // 10 sec
-	
+
 	private static boolean fastMode = false;
 
     private static boolean testMode = false;
     private static List<String> mockedResponses = null;
     private static List<String> savedQueries = null;
-    
+
     private static final String ERR_SERVICE_DOESNT_SUPPORT_FEATURE =
             "Service %s doesn't support this feature.";
 
@@ -90,65 +90,65 @@ public class WikiTools {
 		OR,
 		NONE
 	}
-	
+
 	public enum Service {
 		@Deprecated
 		CATSCAN ("catscan", CATSCAN_DOMAIN, CATSCAN_PATH,
-				TSV_CATSCAN_FORMAT, false, false, true, 720,
+				CSV_CATSCAN_FORMAT, false, false, true, 720,
 				ServiceFeatures.CATSCAN_FEATURES,
 				null,
 				null,
 				null,
 				null,
                 "wikilang=%1$s&wikifam=.wikipedia.org&basecat=%2$s&basedeep=%3$d&mode=rc" +
-                        "&hours=%4$d&onlynew=on&go=Сканировать&format=csv&userlang=ru",
-				null,
+                        "&hours=%4$d&onlynew=on&go=Сканировать&format=%1$5&userlang=ru",
+                null,
                 null,
                 null,
                 null,
                 true),
         @Deprecated
-        CATSCAN2 ("catscan2", CATSCAN2_DOMAIN, CATSCAN2_PATH,
-				TSV_CATSCAN2_FORMAT, true, false, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
-				ServiceFeatures.CATSCAN2_FEATURES,
-				"language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv&doit=submit",
-				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%5$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
-				"language=%1$s&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1&sortby=title&format=tsv&doit=submit",
-				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&ns[%7$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
-				"language=%1$s&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=1&sortby=title&format=tsv&doit=submit",
-				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=1",
+        CATSCAN2("catscan2", CATSCAN2_DOMAIN, CATSCAN2_PATH,
+                TSV_CATSCAN2_FORMAT, true, false, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
+                ServiceFeatures.CATSCAN2_FEATURES,
+                "language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=%5$s&doit=submit",
+                "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%5$d]=1&comb[union]=1&sortby=title&format=%6$s&doit=submit",
+                "language=%1$s&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1&sortby=title&format=%7$s&doit=submit",
+                "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&ns[%7$d]=1&comb[union]=1&sortby=title&format=%8$s&doit=submit",
+                "language=%1$s&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=1&sortby=title&format=%5$s&doit=submit",
+                "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=%6$s&doit=1",
                 null,
                 null,
                 "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\S+$",
                 true),
-        CATSCAN3 ("catscan3", CATSCAN3_DOMAIN, CATSCAN3_PATH,
-				TSV_CATSCAN3_FORMAT, true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
-				ServiceFeatures.CATSCAN3_FEATURES,
-				"language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv&doit=submit",
-				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%5$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
-				"language=%1$s&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1&sortby=title&format=tsv&doit=submit",
-				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&ns[%7$d]=1&comb[union]=1&sortby=title&format=tsv&doit=submit",
-				"language=%1$s&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=1&sortby=title&format=tsv&doit=submit",
-				"language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=1",
+        CATSCAN3("catscan3", CATSCAN3_DOMAIN, CATSCAN3_PATH,
+                TSV_CATSCAN3_FORMAT, true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
+                ServiceFeatures.CATSCAN3_FEATURES,
+                "language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=%5$s&doit=submit",
+                "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%5$d]=1&comb[union]=1&sortby=title&format=%6$s&doit=submit",
+                "language=%1$s&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1&sortby=title&format=%7$s&doit=submit",
+                "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&ns[%7$d]=1&comb[union]=1&sortby=title&format=%8$s&doit=submit",
+                "language=%1$s&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=1&sortby=title&format=%5$s&doit=submit",
+                "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=%6$s&doit=1",
                 null,
                 null,
                 "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\d+\\s+\\S+$",
                 false),
-        PETSCAN ("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
-				TSV_PETSCAN_FORMAT,
+        PETSCAN("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
+                TSV_PETSCAN_FORMAT,
                 true, true, false, 17856,  // 2 year = 24*31*12*2 = 8928*2;
                 ServiceFeatures.PETSCAN_FEATURES,
-                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv&doit=",
-                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s&combination=union&ns[%5$d]=1&sortby=title&format=tsv&doit=",
-                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1&sortby=title&format=tsv&doit=",
-                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&combination=union&ns[%7$d]=1&sortby=title&format=tsv&doit=",
-                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=tsv&doit=",
-                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on&sortorder=descending&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=%5$s&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s&combination=union&ns[%5$d]=1&sortby=title&format=%6$s&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1&sortby=title&format=%7$s&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&combination=union&ns[%7$d]=1&sortby=title&format=%8$s&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=%5$s&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on&sortorder=descending&format=%6$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&%6$s=%7$s&ns[%5$d]=1" +
-                    "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=tsv&doit=",
+                        "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=%5$s&doit=",
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
-                    "&%7$s=%8$s&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on" +
-                    "&sortorder=descending&format=tsv&doit=",
+                        "&%7$s=%8$s&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on" +
+                        "&sortorder=descending&format=%9$s&doit=",
                 "^\\d+\\s+\\S+\\s+\\d+\\s+(\\S+\\s+)?\\d+\\s+\\d+\\s*$",
                 false);
         public final String name;
@@ -173,9 +173,9 @@ public class WikiTools {
 
         private static Integer testFeatures = null;
 
-		Service(String name, String domain, String path, 
+		Service(String name, String domain, String path,
 				Format format,
-				boolean filteredByNamespace, boolean hasSuffix, boolean hasDeleted, int maxHours, 
+				boolean filteredByNamespace, boolean hasSuffix, boolean hasDeleted, int maxHours,
 				int features,
 				String getPagesFormat,
 				String getPagesFormatFast,
@@ -216,9 +216,9 @@ public class WikiTools {
 		public boolean supportsFastMode() { return supportsFeature (ServiceFeatures.FAST_MODE); }
         public boolean supportsFeature(int feature) {
             if (testMode && testFeatures != null) {
-                return ((testFeatures & feature) != 0); 
+                return ((testFeatures & feature) != 0);
             }
-            return ((FEATURES & feature) != 0); 
+            return ((FEATURES & feature) != 0);
         }
 
         public static void setTestFeatures(Integer features) {
@@ -228,7 +228,7 @@ public class WikiTools {
 		public static Service getServiceByName(String name) {
 			return getServiceByName(name, null);
 		}
-		
+
 		public static Service getServiceByName(String name, Service defaultService) {
             for (Service s: Service.values()) {
                 if (s.getName().equals(name)) return s;
@@ -252,7 +252,7 @@ public class WikiTools {
 		}
 	}
 
-	public static String loadPagesForCatWithService(Service service, 
+	public static String loadPagesForCatWithService(Service service,
 			String category, String language, int depth, int namespace) throws IOException, InterruptedException
     {
         if (!service.supportsFeature(ServiceFeatures.PAGES)) {
@@ -260,16 +260,17 @@ public class WikiTools {
                     String.format(ERR_SERVICE_DOESNT_SUPPORT_FEATURE, service.name()));
 		}
 		log.debug("Downloading data for " + category);
-        String url_query = 
+        String url_query =
         		String.format(service.GET_PAGES_FORMAT,
                 language,
                 depth,
                 category,
-                namespace);
-        return fetchQuery(service, url_query);   
+                namespace,
+                service.format.getFormatType().name());
+        return fetchQuery(service, url_query);
     }
-	
-	public static String loadPagesForCatListAndIgnoreWithService(Service service, 
+
+	public static String loadPagesForCatListAndIgnoreWithService(Service service,
 			List<String> cats, List<String> ignore, String language, int depth, int namespace) throws IOException, InterruptedException
     {
         if (!service.supportsFeature(ServiceFeatures.PAGES | ServiceFeatures.FAST_MODE)) {
@@ -278,18 +279,19 @@ public class WikiTools {
 		}
 		log.debug("Downloading data for categories: " + Arrays.toString(cats.toArray()));
         log.debug("and ignore categories: " + Arrays.toString(ignore.toArray()));
-        String url_query = 
+        String url_query =
         		String.format(service.GET_PAGES_FORMAT_FAST,
                 language,
                 depth,
                 StringUtils.join(cats, CAT_SEPARATOR),
                 StringUtils.join(ignore, CAT_SEPARATOR),
-                namespace);
-        return fetchQuery(service, url_query);   
+                namespace,
+                service.format.getFormatType().name());
+        return fetchQuery(service, url_query);
     }
-	
-	public static String loadPagesWithTemplatesForCatWithService(Service service, 
-			String category, String language, int depth, 
+
+	public static String loadPagesWithTemplatesForCatWithService(Service service,
+			String category, String language, int depth,
 			List<String> templates, EnumerationType enumType, int namespace) throws IOException, InterruptedException
     {
         if (!service.supportsFeature(ServiceFeatures.PAGES_WITH_TEMPLATE)) {
@@ -303,19 +305,20 @@ public class WikiTools {
     		case OR: templatesParam = "templates_any"; break;
     		case NONE: templatesParam = "templates_no"; break;
 		}
-        String url_query = 
+        String url_query =
         		String.format(service.GET_PAGES_WITH_TEMPLATE_FORMAT,
                 language,
                 depth,
                 category,
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
-                namespace);
+                namespace,
+                service.format.getFormatType().name());
         return fetchQuery(service, url_query);
     }
-	
-	public static String loadPagesWithTemplatesForCatListAndIgnoreWithService(Service service, 
-			List<String> cats, List<String> ignore, String language, int depth, 
+
+	public static String loadPagesWithTemplatesForCatListAndIgnoreWithService(Service service,
+			List<String> cats, List<String> ignore, String language, int depth,
 			List<String> templates, EnumerationType enumType, int namespace) throws IOException, InterruptedException
     {
         if (!service.supportsFeature(ServiceFeatures.PAGES_WITH_TEMPLATE |
@@ -331,7 +334,7 @@ public class WikiTools {
     		case OR: templatesParam = "templates_any"; break;
     		case NONE: templatesParam = "templates_no"; break;
 		}
-        String url_query = 
+        String url_query =
         		String.format(service.GET_PAGES_WITH_TEMPLATE_FORMAT_FAST,
                 language,
                 depth,
@@ -339,10 +342,11 @@ public class WikiTools {
                 StringUtils.join(ignore, CAT_SEPARATOR),
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
-                namespace);
+                namespace,
+                service.format.getFormatType().name());
         return fetchQuery(service, url_query);
     }
-	
+
 	public static String loadNewPagesForCatWithService(Service service, String category, String language, int depth, int hours, int namespace) throws IOException, InterruptedException {
         log.debug("Downloading data for category " + category);
         if (!service.supportsFeature(ServiceFeatures.NEWPAGES)) {
@@ -357,18 +361,20 @@ public class WikiTools {
                     depth,
                     category,
                     hours,
-                    namespace);
+                    namespace,
+                    service.format.getFormatType().name());
         } else {
-        	url_query = 
-            		String.format(service.GET_NEW_PAGES_FORMAT,
-                    language,
-                    depth,
-                    category,
-                    hours);
+            url_query =
+                    String.format(service.GET_NEW_PAGES_FORMAT,
+                            language,
+                            depth,
+                            category,
+                            hours,
+                            service.format.getFormatType().name());
         }
         return fetchQuery(service, url_query);
 	}
-	
+
 	public static String loadNewPagesForCatListAndIgnoreWithService(Service service, List<String> cats, List<String> ignore, String language, int depth, int hours, int namespace) throws IOException, InterruptedException
     {
         if (!service.supportsFeature(ServiceFeatures.NEWPAGES | ServiceFeatures.FAST_MODE)) {
@@ -377,16 +383,17 @@ public class WikiTools {
         }
         log.debug("Downloading data for categories: " + Arrays.toString(cats.toArray()));
         log.debug("and ignore categories: " + Arrays.toString(ignore.toArray()));
-        String url_query = 
-        		String.format(service.GET_NEW_PAGES_FORMAT_FAST,
-                language,
-                depth,
-                StringUtils.join(cats, CAT_SEPARATOR),
-                StringUtils.join(ignore, CAT_SEPARATOR),
-                hours,
-                namespace
-                );        
-		return fetchQuery(service, url_query);
+        String url_query =
+                String.format(service.GET_NEW_PAGES_FORMAT_FAST,
+                        language,
+                        depth,
+                        StringUtils.join(cats, CAT_SEPARATOR),
+                        StringUtils.join(ignore, CAT_SEPARATOR),
+                        hours,
+                        namespace,
+                        service.format.getFormatType().name()
+                );
+        return fetchQuery(service, url_query);
     }
 
     public static String loadNewPagesWithTemplatesForCatWithService(Service service,
@@ -411,7 +418,8 @@ public class WikiTools {
                 hours,
                 namespace,
                 templatesParam,
-                StringUtils.join(templates, CAT_SEPARATOR));
+                StringUtils.join(templates, CAT_SEPARATOR),
+                service.format.getFormatType().name());
         return fetchQuery(service, url);
     }
 
@@ -441,7 +449,9 @@ public class WikiTools {
                 hours,
                 namespace,
                 templatesParam,
-                StringUtils.join(templates, CAT_SEPARATOR));        
+                StringUtils.join(templates, CAT_SEPARATOR),
+                service.format.getFormatType().name()
+        );
         return fetchQuery(service, url);
     }
 
@@ -449,7 +459,7 @@ public class WikiTools {
 		URI uri = null;
 		try {
 			uri = new URI(HTTP, service.DOMAIN, service.PATH, query, null);
-		} catch (URISyntaxException e) {			
+		} catch (URISyntaxException e) {
 			log.error(e.toString());
 			return null;
 		}
@@ -477,9 +487,9 @@ public class WikiTools {
 				page = HTTPTools.fetch(uri.toASCIIString(), true, true, true);
 			}
 		}
-		return page;  
+		return page;
 	}
-	
+
 	public static void setFastMode(boolean fast) {
 		fastMode = fast;
 	}

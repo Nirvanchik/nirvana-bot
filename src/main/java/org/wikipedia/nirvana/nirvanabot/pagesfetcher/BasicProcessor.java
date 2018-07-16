@@ -90,6 +90,8 @@ public abstract class BasicProcessor implements PageListProcessor {
 			namespaceIdentifier = wiki.namespaceIdentifier(namespace);
 		}
 
+		assert service.getFormat() instanceof TabularFormat;
+
         TabFormatDescriptor descriptor = ((TabularFormat)service.getFormat()).getFormatDescriptor();
 
 		StringReader sr = new StringReader(pageList);
@@ -195,6 +197,8 @@ public abstract class BasicProcessor implements PageListProcessor {
 	}
 	@Override
 	public boolean revisionAvailable() {
+        assert service.getFormat() instanceof TabularFormat;
+
 		return (((TabularFormat)service.getFormat()).getFormatDescriptor().getRevidPos()>=0);
 	}
 
