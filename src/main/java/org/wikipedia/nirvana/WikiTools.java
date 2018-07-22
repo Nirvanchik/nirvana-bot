@@ -23,6 +23,11 @@
 
 package org.wikipedia.nirvana;
 
+import static org.wikipedia.nirvana.parser.format.TabularFormat.CSV_CATSCAN_FORMAT;
+import static org.wikipedia.nirvana.parser.format.TabularFormat.TSV_CATSCAN2_FORMAT;
+import static org.wikipedia.nirvana.parser.format.TabularFormat.TSV_CATSCAN3_FORMAT;
+import static org.wikipedia.nirvana.parser.format.TabularFormat.TSV_PETSCAN_FORMAT;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,8 +39,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wikipedia.nirvana.parser.format.Format;
-
-import static org.wikipedia.nirvana.parser.format.TabularFormat.*;
 
 /**
  * @author kin
@@ -266,7 +269,7 @@ public class WikiTools {
                 depth,
                 category,
                 namespace,
-                service.format.getFormatType().name());
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, url_query);
     }
 
@@ -286,7 +289,7 @@ public class WikiTools {
                 StringUtils.join(cats, CAT_SEPARATOR),
                 StringUtils.join(ignore, CAT_SEPARATOR),
                 namespace,
-                service.format.getFormatType().name());
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, url_query);
     }
 
@@ -313,7 +316,7 @@ public class WikiTools {
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
                 namespace,
-                service.format.getFormatType().name());
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, url_query);
     }
 
@@ -343,7 +346,7 @@ public class WikiTools {
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
                 namespace,
-                service.format.getFormatType().name());
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, url_query);
     }
 
@@ -362,7 +365,7 @@ public class WikiTools {
                     category,
                     hours,
                     namespace,
-                    service.format.getFormatType().name());
+                    service.format.getFormatType().getFormatType());
         } else {
             url_query =
                     String.format(service.GET_NEW_PAGES_FORMAT,
@@ -370,7 +373,7 @@ public class WikiTools {
                             depth,
                             category,
                             hours,
-                            service.format.getFormatType().name());
+                            service.format.getFormatType().getFormatType());
         }
         return fetchQuery(service, url_query);
 	}
@@ -391,7 +394,7 @@ public class WikiTools {
                         StringUtils.join(ignore, CAT_SEPARATOR),
                         hours,
                         namespace,
-                        service.format.getFormatType().name()
+                        service.format.getFormatType().getFormatType()
                 );
         return fetchQuery(service, url_query);
     }
@@ -419,7 +422,7 @@ public class WikiTools {
                 namespace,
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
-                service.format.getFormatType().name());
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, url);
     }
 
@@ -450,7 +453,7 @@ public class WikiTools {
                 namespace,
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
-                service.format.getFormatType().name()
+                service.format.getFormatType().getFormatType()
         );
         return fetchQuery(service, url);
     }
