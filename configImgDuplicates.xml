@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>no comments</comment>
+<entry key="log4j-settings">config/log4j-log.properties</entry>
+<entry key="wiki-login">NirvanaBot</entry>
+<entry key="wiki-password"></entry>
+<entry key="wiki-account-file">loginImgDuplicates.xml</entry>
+<entry key="infobox-templates">Учёный Персона</entry>
+
+</properties>

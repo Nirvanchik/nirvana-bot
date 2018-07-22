@@ -250,13 +250,13 @@ public class NirvanaBot extends BasicBot{
     @Deprecated
     private boolean longTask = true;
 
-	private NirvanaWiki commons = null;
+	protected NirvanaWiki commons = null;
 	
-	private ServiceManager serviceManager;
+	protected ServiceManager serviceManager;
 
     private int botTimeout = 0;
 
-    private int servicesTimeout = 0;
+    protected int servicesTimeout = 0;
 
     private String wikiTranslationPage = null;
     private String customTranslationFile = null;
