@@ -105,7 +105,6 @@ public class WikiTools {
                 null,
                 null,
                 null,
-                null,
                 true),
         @Deprecated
         CATSCAN2("catscan2", CATSCAN2_DOMAIN, CATSCAN2_PATH,
@@ -119,7 +118,6 @@ public class WikiTools {
                 "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=%6$s&doit=1",
                 null,
                 null,
-                "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\S+$",
                 true),
         CATSCAN3("catscan3", CATSCAN3_DOMAIN, CATSCAN3_PATH,
                 TSV_CATSCAN3_FORMAT, true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
@@ -132,7 +130,6 @@ public class WikiTools {
                 "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1&max_age=%5$d&only_new=1&sortby=title&format=%6$s&doit=1",
                 null,
                 null,
-                "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\d+\\s+\\S+$",
                 false),
         PETSCAN("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
                 TSV_PETSCAN_FORMAT,
@@ -149,7 +146,6 @@ public class WikiTools {
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
                         "&%7$s=%8$s&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on" +
                         "&sortorder=descending&format=%9$s&doit=",
-                "^\\d+\\s+\\S+\\s+\\d+\\s+(\\S+\\s+)?\\d+\\s+\\d+\\s*$",
                 false);
         public final String name;
 		public final String DOMAIN;
@@ -168,7 +164,6 @@ public class WikiTools {
 		public final String GET_NEW_PAGES_FORMAT_FAST;
         public final String GET_NEWPAGES_WITH_TEMPLATE_FORMAT;
         public final String GET_NEWPAGES_WITH_TEMPLATE_FORMAT_FAST;
-		public final String LINE_RULE;
         public final boolean DOWN;
 
         private static Integer testFeatures = null;
@@ -185,7 +180,6 @@ public class WikiTools {
 				String getNewPagesFormatFast,
                 String getNewPagesWithTemplateFormat,
                 String getNewPagesWithTemplateFormatFast,
-                String lineRule,
                 boolean down) {
 			this.name = name;
 			this.DOMAIN = domain;
@@ -204,7 +198,6 @@ public class WikiTools {
 			this.GET_NEW_PAGES_FORMAT_FAST = getNewPagesFormatFast;
             this.GET_NEWPAGES_WITH_TEMPLATE_FORMAT = getNewPagesWithTemplateFormat;
             this.GET_NEWPAGES_WITH_TEMPLATE_FORMAT_FAST = getNewPagesWithTemplateFormatFast;
-			this.LINE_RULE = lineRule;
             this.DOWN = down;
 			this.toString();
 		}
@@ -266,7 +259,7 @@ public class WikiTools {
                 depth,
                 category,
                 namespace,
-                service.format.getFormatType().name());
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, url_query);
     }
 
@@ -286,7 +279,7 @@ public class WikiTools {
                 StringUtils.join(cats, CAT_SEPARATOR),
                 StringUtils.join(ignore, CAT_SEPARATOR),
                 namespace,
-                service.format.getFormatType().name());
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, url_query);
     }
 
@@ -313,7 +306,7 @@ public class WikiTools {
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
                 namespace,
-                service.format.getFormatType().name());
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, url_query);
     }
 
@@ -343,7 +336,7 @@ public class WikiTools {
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
                 namespace,
-                service.format.getFormatType().name());
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, url_query);
     }
 
@@ -362,7 +355,7 @@ public class WikiTools {
                     category,
                     hours,
                     namespace,
-                    service.format.getFormatType().name());
+                    service.format.getFormatType().getFormatType());
         } else {
             url_query =
                     String.format(service.GET_NEW_PAGES_FORMAT,
@@ -370,7 +363,7 @@ public class WikiTools {
                             depth,
                             category,
                             hours,
-                            service.format.getFormatType().name());
+                            service.format.getFormatType().getFormatType());
         }
         return fetchQuery(service, url_query);
 	}
@@ -391,7 +384,7 @@ public class WikiTools {
                         StringUtils.join(ignore, CAT_SEPARATOR),
                         hours,
                         namespace,
-                        service.format.getFormatType().name()
+                        service.format.getFormatType().getFormatType()
                 );
         return fetchQuery(service, url_query);
     }
@@ -419,7 +412,7 @@ public class WikiTools {
                 namespace,
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
-                service.format.getFormatType().name());
+                service.format.getFormatType().getFormatType());
         return fetchQuery(service, url);
     }
 
@@ -450,7 +443,7 @@ public class WikiTools {
                 namespace,
                 templatesParam,
                 StringUtils.join(templates, CAT_SEPARATOR),
-                service.format.getFormatType().name()
+                service.format.getFormatType().getFormatType()
         );
         return fetchQuery(service, url);
     }

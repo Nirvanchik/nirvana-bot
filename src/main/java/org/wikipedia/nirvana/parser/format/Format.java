@@ -14,6 +14,10 @@ public interface Format {
         FormatType(String formatType) {
             this.formatType = formatType;
         }
+
+        public String getFormatType() {
+            return formatType;
+        }
     }
 
     FormatDescriptor getFormatDescriptor();

@@ -131,7 +131,7 @@ public class PageListProcessorSlow extends BasicProcessor {
 	        }
 	        BufferedReader br = new BufferedReader(new StringReader(pageList));
         	for(int j=0;j<descriptor.getSkipLines();j++) br.readLine();
-        	Pattern p = Pattern.compile(LINE_RULE);
+        	Pattern p = Pattern.compile(descriptor.getLineRule());
         	int j = 0;
 	        while ((line = br.readLine()) != null)
 	        {

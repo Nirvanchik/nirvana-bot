@@ -227,7 +227,7 @@ public class NirvanaBot extends BasicBot{
     private static DiscussionPagesSettings DISCUSSION_PAGES_SETTINGS = DiscussionPagesSettings.EMPTY;
 	private static String DISCUSSION_PAGES_SETTINGS_WIKI = null;
 	
-	private static int DEFAULT_NAMESPACE = 0;
+	public static int DEFAULT_NAMESPACE = 0;
 	
 	private static String DEFAULT_HEADER = null;
 	private static String DEFAULT_FOOTER = null;

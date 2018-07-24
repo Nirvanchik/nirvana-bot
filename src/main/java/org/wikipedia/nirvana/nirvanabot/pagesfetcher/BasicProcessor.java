@@ -55,8 +55,6 @@ public abstract class BasicProcessor implements PageListProcessor {
 	protected int namespace;
 	protected PageListFetcher fetcher;
 
-    // Regex to check validity of line
-    protected String LINE_RULE;
     // We will not check every line if output has thousands lines for better performance
     protected final int LINES_TO_CHECK = 25;
 
@@ -71,11 +69,7 @@ public abstract class BasicProcessor implements PageListProcessor {
 		this.language = lang;
 		this.depth = depth;
 		this.namespace = namespace;
-		this.LINE_RULE = "^.+$";
 		this.fetcher = fetcher;
-		if (service.LINE_RULE != null) {
-			this.LINE_RULE = service.LINE_RULE;
-		}
         log = LogManager.getLogger(this.getClass().getName());
 	}
 
@@ -97,7 +91,7 @@ public abstract class BasicProcessor implements PageListProcessor {
 		StringReader sr = new StringReader(pageList);
 		BufferedReader b = new BufferedReader(sr);
 		for(int j=0;j<descriptor.getSkipLines();j++) b.readLine();
-		Pattern p = Pattern.compile(LINE_RULE);
+		Pattern p = Pattern.compile(descriptor.getLineRule());
 
 		int j = 0;
         while ((line = b.readLine()) != null)
