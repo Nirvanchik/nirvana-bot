@@ -35,9 +35,9 @@ import org.wikipedia.nirvana.ServiceError;
  *
  */
 public interface PageListProcessor {
-	public abstract ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError;
+	ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError;
 	
-	public abstract boolean revisionAvailable();
+	boolean revisionAvailable();
 	
-	public abstract boolean mayHaveDuplicates();
+	boolean mayHaveDuplicates();
 }
