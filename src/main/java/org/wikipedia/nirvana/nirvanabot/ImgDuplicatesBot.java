@@ -1,20 +1,26 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import org.apache.logging.log4j.util.Strings;
+import org.wikipedia.Wiki;
+import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
 import org.wikipedia.nirvana.nirvanabot.templates.SimpleTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
+import org.wikipedia.nirvana.parser.format.TabFormatDescriptor;
+import org.wikipedia.nirvana.parser.parser.DefaultPageListParser;
+import org.wikipedia.nirvana.parser.parser.PageListParser;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author kmorozov
  */
-
 public class ImgDuplicatesBot extends NirvanaBot {
 
     private String[] INFOBOX_TEMPLATES;
@@ -43,11 +49,23 @@ public class ImgDuplicatesBot extends NirvanaBot {
         TemplateFilter templateFilter = new SimpleTemplateFilter(Arrays.asList(INFOBOX_TEMPLATES), WikiTools.EnumerationType.OR);
         PageListFetcher fetcher = new FetcherFactory.PagesWithTemplatesFetcher(templateFilter);
 
+        WikiTools.Service service = WikiTools.Service.PETSCAN;
+        NirvanaWiki wiki = createCommonsWiki();
+
         try {
-            String pages = fetcher.loadNewPagesForCat(WikiTools.Service.PETSCAN, "", "ru", 0, 0);
+            String rawPageList = fetcher.loadNewPagesForCat(service, "", "ru", 0, 0);
 
-            if (!Strings.isEmpty(pages)) {
+            if (!Strings.isEmpty(rawPageList)) {
+                PageListParser parser = new DefaultPageListParser((TabFormatDescriptor) service.getFormat().getFormatDescriptor());
+                try {
+                    List<Wiki.Revision> pages = parser.parsePagesList(service, wiki, rawPageList);
 
+                    if (pages != null && pages.size() > 0) {
+
+                    }
+                } catch (ServiceError serviceError) {
+                    serviceError.printStackTrace();
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
