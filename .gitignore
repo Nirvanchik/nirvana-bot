@@ -22,6 +22,7 @@
 /tmp/*
 /loginNirvanaBot.xml
 /loginNirvanaTestBot.xml
+/loginImgDuplicates.xml
 
 # Some test code that I don't want to commit
 /src/main/java/org/wikipedia/nirvana/test/*
