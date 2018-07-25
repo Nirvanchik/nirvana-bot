@@ -33,21 +33,25 @@ public class DefaultPageListParser implements PageListParser {
 
     private final TabFormatDescriptor descriptor;
     private final Pattern lineRulePattern;
+    private final WikiTools.Service service;
+    private final NirvanaWiki wiki;
     private final int namespace;
 
-    public DefaultPageListParser(TabFormatDescriptor descriptor, int namespace) {
+    public DefaultPageListParser(WikiTools.Service service, NirvanaWiki wiki, TabFormatDescriptor descriptor, int namespace) {
         this.descriptor = descriptor;
         this.namespace = namespace;
+        this.service = service;
+        this.wiki = wiki;
 
         lineRulePattern = Pattern.compile(descriptor.getLineRule());
     }
 
-    public DefaultPageListParser(TabFormatDescriptor descriptor) {
-        this(descriptor, NirvanaBot.DEFAULT_NAMESPACE);
+    public DefaultPageListParser(WikiTools.Service service, NirvanaWiki wiki) {
+        this(service, wiki, (TabFormatDescriptor) service.getFormat().getFormatDescriptor(), NirvanaBot.DEFAULT_NAMESPACE);
     }
 
     @Override
-    public List<Wiki.Revision> parsePagesList(WikiTools.Service service, NirvanaWiki wiki, String rawPageList) throws IOException, ServiceError {
+    public List<Wiki.Revision> parsePagesList(String rawPageList) throws IOException, ServiceError {
         if (rawPageList.startsWith("ERROR : MYSQL error")) {
             log.error("Invalid service output: " + StringTools.trancateTo(rawPageList, 100));
             throw new ServiceError("Invalid output of service" + service.getName());

@@ -32,6 +32,7 @@ import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.WikiTools.Service;
+import org.wikipedia.nirvana.parser.parser.DefaultPageListParser;
 
 /**
  * @author kin
@@ -58,13 +59,9 @@ public class PageListProcessorFast extends BasicProcessor {
 	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor#getNewPages(org.wikipedia.nirvana.NirvanaWiki)
 	 */
 	@Override
-	public ArrayList<Revision> getNewPages(NirvanaWiki wiki)
-	        throws IOException, InterruptedException, ServiceError {
-		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(50);
-		HashSet<String> pages = new HashSet<String>();
+	public List<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError {
 		String text = fetcher.loadNewPagesForCatListAndIgnore(service, categories, categoriesToIgnore, language, depth, namespace);
-		parsePageList(wiki, pages, pageInfoList, null, text);	
-		return pageInfoList;
+		return (new DefaultPageListParser(service, wiki)).parsePagesList(text);
 	}
 
 	/* (non-Javadoc)

@@ -60,9 +60,9 @@ public class ProcessorCombinator implements PageListProcessor {
 	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicProcessor#getNewPages(org.wikipedia.nirvana.NirvanaWiki)
 	 */
 	@Override
-	public ArrayList<Revision> getNewPages(NirvanaWiki wiki)
+	public List<Revision> getNewPages(NirvanaWiki wiki)
 	        throws IOException, InterruptedException, ServiceError {
-		ArrayList<Revision> list;
+		List<Revision> list;
 		log.debug("getting results from main fetcher");
 		list = fetchers.get(0).getNewPages(wiki);
 		for(int i=1;i<fetchers.size();i++) {

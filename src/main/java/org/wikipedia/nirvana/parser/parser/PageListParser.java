@@ -13,5 +13,5 @@ import java.util.List;
  */
 public interface PageListParser {
 
-    List<Wiki.Revision> parsePagesList(WikiTools.Service service, NirvanaWiki wiki, String rawPageList) throws IOException, ServiceError;
+    List<Wiki.Revision> parsePagesList(String rawPageList) throws IOException, ServiceError;
 }
