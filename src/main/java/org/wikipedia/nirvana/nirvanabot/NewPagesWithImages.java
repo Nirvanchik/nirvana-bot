@@ -98,7 +98,7 @@ public class NewPagesWithImages extends NewPages {
 		}*/
 		
 		PageListProcessor pageListProcessor = createPageListProcessor();
-		ArrayList<Revision> pageInfoListNotFiltered = pageListProcessor.getNewPages(wiki);
+		List<Revision> pageInfoListNotFiltered = pageListProcessor.getNewPages(wiki);
 		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
 		
 		for(Revision r: pageInfoListNotFiltered) {

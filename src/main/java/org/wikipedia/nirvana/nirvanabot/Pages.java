@@ -32,6 +32,7 @@ import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author kin
@@ -87,7 +88,7 @@ public class Pages extends NewPages {
     }
 
 	@Override
-	public void sortPages(ArrayList<Revision> pageInfoList, boolean byRevision) {
+	public void sortPages(List<Revision> pageInfoList, boolean byRevision) {
 		// no sort (sorted by default)
 		// In CATSCAN2 sort is disabled so we have to sort actually until it's fixed on catscan2
 		sortPagesByName(pageInfoList);

@@ -206,7 +206,7 @@ public class DiscussedPages extends Pages {
 	}
 	
 	@Override
-	public void sortPages(ArrayList<Revision> pageInfoList, boolean byRevision) {
+	public void sortPages(List<Revision> pageInfoList, boolean byRevision) {
 		// no sort (sort implemented in another place)
 	}	
 

@@ -606,7 +606,7 @@ public class NewPages implements PortalModule{
 			return fetchers.get(0);
 	}
 	
-	public void sortPagesByRevision(ArrayList<Revision> pageInfoList) {
+	public void sortPagesByRevision(List<Revision> pageInfoList) {
 		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
 			@Override
@@ -617,7 +617,7 @@ public class NewPages implements PortalModule{
 		});
 	}
 
-	public void sortPagesById(ArrayList<Revision> pageInfoList) {
+	public void sortPagesById(List<Revision> pageInfoList) {
 		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
 			@Override
@@ -628,7 +628,7 @@ public class NewPages implements PortalModule{
 		});
 	}
 	
-	public void sortPagesByName(ArrayList<Revision> pageInfoList) {
+	public void sortPagesByName(List<Revision> pageInfoList) {
 		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
 			@Override
@@ -650,7 +650,7 @@ public class NewPages implements PortalModule{
 		});
 	}
 	
-	public void sortPages(ArrayList<Revision> pageInfoList, boolean byRevision) {
+	public void sortPages(List<Revision> pageInfoList, boolean byRevision) {
 		if(byRevision) {
 			sortPagesByRevision(pageInfoList);
 		} else {
@@ -669,7 +669,7 @@ public class NewPages implements PortalModule{
     			getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
     		}
 		}
-		ArrayList<Revision> pageInfoList = pageListProcessor.getNewPages(wiki);
+		List<Revision> pageInfoList = pageListProcessor.getNewPages(wiki);
 		
 		pageInfoList = filterPagesByCondition(pageInfoList, wiki);
 		
@@ -681,7 +681,7 @@ public class NewPages implements PortalModule{
 		return pageInfoList;
 	}
 	
-	protected ArrayList<Revision> filterPagesByCondition(ArrayList<Revision> pageInfoList, NirvanaWiki wiki) throws IOException {
+	protected List<Revision> filterPagesByCondition(List<Revision> pageInfoList, NirvanaWiki wiki) throws IOException {
         if (this.templateFilter == null ||
                 (!templateFilter.paramValueFiltering() && !needsCustomTemlateFiltering)) {
 			return pageInfoList;
@@ -908,7 +908,7 @@ public class NewPages implements PortalModule{
 		return d;
 	}
 
-    private void removeDuplicatesInSortedList(ArrayList<Revision> list) {
+    private void removeDuplicatesInSortedList(List<Revision> list) {
     	log.debug("removing duplicates from list");
 	    int i = 1;
 	    while(i<list.size()) {
