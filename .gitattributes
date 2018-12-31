@@ -32,6 +32,8 @@
 *.java text
 # Next files hava CRLF line endings in git (not normalized).
 # TODO: Convert line endings here to LF
+.classpath -text
+.project -text
 src/main/java/org/wikipedia/nirvana/archive/Archive.java -text
 src/main/java/org/wikipedia/nirvana/archive/ArchiveFactory.java -text
 src/main/java/org/wikipedia/nirvana/archive/ArchiveSettings.java -text
