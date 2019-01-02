@@ -58,7 +58,7 @@ public class NirvanaWiki extends Wiki {
 	
     private static final long serialVersionUID = -8745212681497644127L;
 
-    private static Logger log;	
+    protected static Logger log;
 
     private final String language;
     private Localizer localizer;
