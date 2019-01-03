@@ -54,7 +54,6 @@ public class MockNirvanaWiki extends NirvanaWiki {
     private Map<String, String []> whatLinksHereMap = new HashMap<>();
 
     private LinkedList<String> fetchQueue = new LinkedList<>();
-    private LinkedList<List<String>> fetchLinesQueue = new LinkedList<>();
 
     private User user;
 
@@ -205,17 +204,6 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     public void mockFetchSequential(String response) {
         fetchQueue.addLast(response);
-    }
-
-    @Override
-    protected List<String> fetchLines(String url, String caller) throws IOException {
-        log.debug("fetchLines url: {}", url);
-        Assert.assertFalse(fetchLinesQueue.isEmpty());
-        return fetchLinesQueue.getFirst();
-    }
-
-    public void mockFetchLinesSequential(List<String> response) {
-        fetchLinesQueue.addLast(response);
     }
 
     @Override

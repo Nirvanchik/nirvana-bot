@@ -438,11 +438,11 @@ public class Wiki implements Serializable
     // So we don't use is by default but don't prohibit.
     private boolean usePost = false;
     private int throttle = 10000; // throttle
-    protected int maxlag = 5;
+    private int maxlag = 5;
     private int assertion = ASSERT_NONE; // assertion mode
     private transient int statusinterval = 100; // status check
     private String useragent = "Wiki.java/" + version + " (https://github.com/MER-C/wiki-java/)";
-    protected boolean zipped = true;
+    private boolean zipped = true;
     private boolean markminor = false, markbot = false;
     private boolean resolveredirect = false;
     private String protocol = "https://";
@@ -461,10 +461,10 @@ public class Wiki implements Serializable
     private static final long serialVersionUID = -8745212681497643456L;
 
     // time to open a connection
-    protected static final int CONNECTION_CONNECT_TIMEOUT_MSEC = 30000; // 30 seconds
+    private static final int CONNECTION_CONNECT_TIMEOUT_MSEC = 30000; // 30 seconds
     // time for the read to take place. (needs to be longer, some connections are slow
     // and the data volume is large!)
-    protected static final int CONNECTION_READ_TIMEOUT_MSEC = 180000; // 180 seconds
+    private static final int CONNECTION_READ_TIMEOUT_MSEC = 180000; // 180 seconds
     // log2(upload chunk size). Default = 22 => upload size = 4 MB. Disable
     // chunked uploads by setting a large value here (50 = 1 PB will do).
     private static final int LOG2_CHUNK_SIZE = 22;

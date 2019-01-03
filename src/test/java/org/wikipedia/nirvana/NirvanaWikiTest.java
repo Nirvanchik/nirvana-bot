@@ -24,7 +24,6 @@
 package org.wikipedia.nirvana;
 
 import org.wikipedia.Wiki;
-import org.wikipedia.nirvana.MockNirvanaWiki.EditInfoMinimal;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 
@@ -36,7 +35,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -237,12 +235,6 @@ public class NirvanaWikiTest {
 
         wiki.mockPageText("P", text);
         wiki.mockNamespace("P", Wiki.MAIN_NAMESPACE);
-        wiki.mockFetchLinesSequential(Arrays.asList(
-                "Demo - this is a demo page.",
-                "Here goes some dummy text.",
-                "",
-                "== Some topic ==",
-                "* Dummy item"));
 
         List<String> lines = wiki.getPageLines("P");
 
