@@ -29,20 +29,14 @@ import org.wikipedia.nirvana.localization.Localizer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 import javax.security.auth.login.LoginException;
 
@@ -58,7 +52,7 @@ public class NirvanaWiki extends Wiki {
 	
     private static final long serialVersionUID = -8745212681497644127L;
 
-    private static Logger log;	
+    protected static Logger log;
 
     private final String language;
     private Localizer localizer;
@@ -362,81 +356,13 @@ public class NirvanaWiki extends Wiki {
 		return nobots;
 	}
 	
-	@Deprecated
 	public String [] getPageLinesArray(String title) throws IOException {
-		List<String> lines = getPageLines(title); 
-        return lines.toArray(new String[lines.size()]);
+		String text = getPageText(title); 
+        return text.split("\n");
 	}
-	
+
 	public List<String> getPageLines(String title) throws IOException {
-        // pitfall check
-        if (namespace(title) < 0)
-            throw new UnsupportedOperationException("Cannot retrieve Special: or Media: pages!");
-    
-        // go for it
-        String url = base + URLEncoder.encode(title, "UTF-8") + "&action=raw";
-        List<String> items = fetchLines(url, "getPageLines");
-        log(Level.INFO, "getPageLines", "Successfully retrieved text of " + title);
-        return decodeList(items);
-	}
- 
-	protected String [] decodeArray(String items[]) {
-	 	for(int i=0;i<items.length;i++) {
-	 		items[i] = decode(items[i]);
-		}
-	 	return items;
-    }
-	
-	protected List<String> decodeList(List<String> items) {
-	 	for(int i=0;i<items.size();i++) {
-	 		items.set(i, decode(items.get(i)));
-		}
-	 	return items;
-    }
-	
-	protected List<String> fetchLines(String url, String caller) throws IOException {
-		logurl(url, caller);
-	    URLConnection connection = new URL(url).openConnection();
-	    connection.setConnectTimeout(CONNECTION_CONNECT_TIMEOUT_MSEC);
-	    connection.setReadTimeout(CONNECTION_READ_TIMEOUT_MSEC);
-	    setCookies(connection);
-	    connection.connect();
-	    grabCookies(connection);
-	
-		    // check lag
-		int lag = connection.getHeaderFieldInt("X-Database-Lag", -5);
-		if (lag > maxlag)
-		{
-		    try
-		    {
-		        synchronized(this)
-		        {
-		            int time = connection.getHeaderFieldInt("Retry-After", 10);
-		            log(Level.WARNING, caller, "Current database lag " + lag + " s exceeds " + maxlag + " s, waiting " + time + " s.");
-		            Thread.sleep(time * 1000);
-		        }
-		    }
-		    catch (InterruptedException ex)
-		    {
-		        // nobody cares
-		    }
-		    return fetchLines(url, caller); // retry the request
-		    }
-		 
-		    
-		    BufferedReader in = new BufferedReader(new InputStreamReader(
-		        zipped ? new GZIPInputStream(connection.getInputStream()) : connection.getInputStream(), "UTF-8"));
-		
-		// get the text
-		String line;
-		ArrayList<String> lines = new ArrayList<String>(1000);
-		while ((line = in.readLine()) != null)
-		{
-		    lines.add(line);
-		    //text.append("\n");
-		}
-	    in.close();
-	    return lines;
+        return Arrays.asList(getPageLinesArray(title));
 	}
  
 	 /**

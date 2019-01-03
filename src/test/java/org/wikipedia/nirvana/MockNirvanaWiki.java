@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,11 +46,14 @@ public class MockNirvanaWiki extends NirvanaWiki {
     private Map<String,String []> whatTranscludesMap = new HashMap<>();
     private Map<String, String> pageTextMap = new HashMap<>();
     private Map<Long, String> namespaceIdMap = new HashMap<>();
+    private Map<String, Integer> namespaceMap = new HashMap<>();
     private Map<String, Revision> topRevMap = new HashMap<>();
     private Map<String, Revision> firstRevMap = new HashMap<>();
     private Map<String, String []> pageTemplatesMap = new HashMap<>();
     private Map<String, Boolean> pageExistsMap = new HashMap<>();
     private Map<String, String []> whatLinksHereMap = new HashMap<>();
+
+    private LinkedList<String> fetchQueue = new LinkedList<>();
 
     private User user;
 
@@ -193,11 +197,18 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     @Override
     protected String fetch(String url, String caller) throws IOException {
-        throw new RuntimeException("Fetch is not allowed in tests!");
+        log.debug("fetch url: {}", url);
+        Assert.assertFalse(fetchQueue.isEmpty());
+        return fetchQueue.removeFirst();
+    }
+
+    public void mockFetchSequential(String response) {
+        fetchQueue.addLast(response);
     }
 
     @Override
     protected String post(String url, String text, String caller) throws IOException {
+        log.debug("post url: {}", url);
         throw new RuntimeException("Post is not allowed in tests!");
     }
 
@@ -236,6 +247,16 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     public void mockNamespaceIdentifier(Long namespaceNumber, String namespaceName) {
         namespaceIdMap.put(namespaceNumber, namespaceName);
+    }
+
+    @Override
+    public int namespace(String title) throws IOException {
+        Assert.assertTrue(namespaceMap.containsKey(title));
+        return namespaceMap.get(title);
+    }
+
+    public void mockNamespace(String title, Integer namespaceNumber) {
+        namespaceMap.put(title, namespaceNumber);
     }
 
     @Override

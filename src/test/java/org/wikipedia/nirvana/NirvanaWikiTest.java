@@ -23,7 +23,7 @@
 
 package org.wikipedia.nirvana;
 
-import org.wikipedia.nirvana.MockNirvanaWiki.EditInfoMinimal;
+import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 
@@ -35,7 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -218,5 +218,32 @@ public class NirvanaWikiTest {
                 "= Warning =\n" +
                 "Here god comes. ~~~~\n";
         wiki.validateEdit("Project talk:A", expected);
+    }
+
+    @Test
+    public void getPageLines() throws LoginException, IOException {
+        TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
+        MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz", "/w", "https://", "ru");
+        wiki.login("AlphaBot", "123456", true);
+
+        String text =
+                "Demo - this is a demo page.\n" +
+                "Here goes some dummy text.\n" +
+                "\n" +
+                "== Some topic ==\n" +
+                "* Dummy item";
+
+        wiki.mockPageText("P", text);
+        wiki.mockNamespace("P", Wiki.MAIN_NAMESPACE);
+
+        List<String> lines = wiki.getPageLines("P");
+
+        List<String> expected = Arrays.asList(
+                "Demo - this is a demo page.",
+                "Here goes some dummy text.",
+                "",
+                "== Some topic ==",
+                "* Dummy item");
+        Assert.assertEquals(expected, lines);
     }
 }
