@@ -235,6 +235,20 @@ public class MockNirvanaWiki extends NirvanaWiki {
         return text;
     }
 
+    @Override
+    public String[] getPageText(String[] titles) throws IOException {
+        String[] result = new String [titles.length];
+        for (int i = 0; i < titles.length; i++) {
+            String title = titles[i];
+            String text = null;
+            if (pageTextMap.containsKey(title)) {
+                text = pageTextMap.get(title);
+            }
+            result[i] = text;
+        }
+        return result;
+    }
+
     public void mockPageText(String title, String text) {
         pageTextMap.put(title, text);
     }
@@ -328,20 +342,6 @@ public class MockNirvanaWiki extends NirvanaWiki {
             String title = titles[i];
             if (!pageTemplatesMap.containsKey(title)) result[i] = new String[0];
             else result[i] = pageTemplatesMap.get(title); 
-        }
-        return result;
-    }
-
-    @Override
-    public String[] getPagesTexts(String... titles) throws IOException {
-        String[] result = new String [titles.length];
-        for (int i = 0; i < titles.length; i++) {
-            String title = titles[i];
-            String text = null;
-            if (pageTextMap.containsKey(title)) {
-                text = pageTextMap.get(title);
-            }
-            result[i] = text;
         }
         return result;
     }

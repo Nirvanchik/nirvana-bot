@@ -33,7 +33,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,6 +56,7 @@ public class NirvanaWiki extends Wiki {
     private static final long serialVersionUID = -8745212681497644127L;
 
     protected static Logger log;
+    protected static Log4jLoggerWrapper loggerWrapper;
 
     private final String language;
     private Localizer localizer;
@@ -65,12 +69,102 @@ public class NirvanaWiki extends Wiki {
 
     static {
         log = LogManager.getLogger(NirvanaWiki.class.getName());
+        loggerWrapper = new Log4jLoggerWrapper(log);
+        Wiki.setLogger(loggerWrapper);
     }
+
+    // TODO (KIN): Use nice SLF4J instead of this monstrous wrapper.
+    private static class Log4jLoggerWrapper extends java.util.logging.Logger {
+        private static final Map<Level, org.apache.logging.log4j.Level> LEVELS =
+                Collections.unmodifiableMap(
+                        new HashMap<Level, org.apache.logging.log4j.Level>() {
+                            private static final long serialVersionUID = 1L;
+                        {
+                            put(Level.ALL, org.apache.logging.log4j.Level.ALL);
+                            put(Level.FINEST, org.apache.logging.log4j.Level.TRACE);
+                            put(Level.FINE, org.apache.logging.log4j.Level.DEBUG);
+                            put(Level.CONFIG, org.apache.logging.log4j.Level.INFO);
+                            put(Level.INFO, org.apache.logging.log4j.Level.INFO);
+                            put(Level.WARNING, org.apache.logging.log4j.Level.WARN);
+                            put(Level.SEVERE, org.apache.logging.log4j.Level.ERROR);
+                            put(Level.OFF, org.apache.logging.log4j.Level.OFF);
+                        }
+                        });
+        protected Logger log;
+
+        protected Log4jLoggerWrapper(Logger log) {
+            super("Wiki", null);
+            this.log = log;
+        }
+
+        @Override        
+        public void log(Level level,
+                   String msg) {
+            org.apache.logging.log4j.Level log4jLevel =
+                    LEVELS.getOrDefault(level, org.apache.logging.log4j.Level.TRACE);
+            log.log(log4jLevel, msg);
+        }
+
+        @Override
+        public void log(Level level,
+                   String msg,
+                   Object param1) {
+            org.apache.logging.log4j.Level log4jLevel =
+                    LEVELS.getOrDefault(level, org.apache.logging.log4j.Level.TRACE);
+            log.log(log4jLevel, msg, param1);            
+        }
+
+        @Override
+        public void log(Level level,
+                   String msg,
+                   Object[] params) {
+            org.apache.logging.log4j.Level log4jLevel =
+                    LEVELS.getOrDefault(level, org.apache.logging.log4j.Level.TRACE);
+            log.log(log4jLevel, msg, params);
+        }
+
+        @Override
+        public void logp(Level level,
+                String sourceClass,
+                String sourceMethod,
+                String msg) {
+            org.apache.logging.log4j.Level log4jLevel =
+                    LEVELS.getOrDefault(level, org.apache.logging.log4j.Level.TRACE);
+            String mess = "[" + sourceClass + "#" + sourceMethod + "] " + msg;
+            log.log(log4jLevel, mess);
+        }
+
+        @Override
+        public void logp(Level level,
+                String sourceClass,
+                String sourceMethod,
+                String msg,
+                Object param1) {
+            org.apache.logging.log4j.Level log4jLevel =
+                    LEVELS.getOrDefault(level, org.apache.logging.log4j.Level.TRACE);
+            String mess = "[" + sourceClass + "#" + sourceMethod + "] " + msg;
+            log.log(log4jLevel, mess, param1);
+        }
+
+        @Override
+        public void logp(Level level,
+                String sourceClass,
+                String sourceMethod,
+                String msg,
+                Object[] params) {
+            org.apache.logging.log4j.Level log4jLevel =
+                    LEVELS.getOrDefault(level, org.apache.logging.log4j.Level.TRACE);
+            String mess = "[" + sourceClass + "#" + sourceMethod + "] " + msg;
+            log.log(log4jLevel, mess, params);
+        }
+
+    }
+
 	/**
 	 * @param domain
 	 */
 	public NirvanaWiki(String domain) {
-		super(domain);
+        super(domain);
         language = DEFAULT_LANGUAGE;
 	}
 	

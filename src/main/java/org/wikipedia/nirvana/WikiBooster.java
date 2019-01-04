@@ -124,7 +124,8 @@ public class WikiBooster {
      * @param wiki {@link org.wikipedia.nirvana.NirvanaWiki NirvanaWiki} instance.
      * @param revs list of revisions of class {@link org.wikipedia.Wiki.Revision Revision}.
      */
-    public static WikiBooster create(NirvanaWiki wiki, List<Revision> revs, List<String> templates) {
+    public static WikiBooster create(NirvanaWiki wiki, List<Revision> revs,
+            List<String> templates) {
         List<String> pages = new ArrayList<>(revs.size());
         for (int i = 0; i < revs.size(); i++) {
             pages.add(revs.get(i).getPage());
@@ -175,7 +176,7 @@ public class WikiBooster {
         }
         if (pageTextCache == null) {
             log.debug("Request texts for " + pages.size() + " pages.");
-            String[] texts = wiki.getPagesTexts(pages.toArray(new String[pages.size()]));
+            String[] texts = wiki.getPageText(pages.toArray(new String[pages.size()]));
             pageTextCache = new HashMap<>();
             for (int i = 0; i < pages.size(); i++) {
                 pageTextCache.put(pages.get(i), texts[i]);
@@ -201,8 +202,8 @@ public class WikiBooster {
      *
      * @param title the title of the page.
      * @param template the template name with namespace prefix.
-     * @return <true> if asked page is using asked template
-     * @see org.wikipedia.Wiki#hasTemplate(String[], String) 
+     * @return true if asked page is using asked template
+     * @see org.wikipedia.Wiki#hasTemplate(String[], String[])
      */
     public boolean hasTemplate(String title, String template) throws IOException {
         if (templates == null) {
