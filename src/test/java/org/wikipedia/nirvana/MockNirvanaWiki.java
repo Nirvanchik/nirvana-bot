@@ -184,7 +184,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     }
 
     @Override
-    public synchronized void login(String username, char[] password, boolean rateLimit)
+    public synchronized void login(String username, char[] password)
             throws IOException, FailedLoginException {
         // We don't login in tests
         user = new MockUser(username);

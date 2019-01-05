@@ -120,7 +120,7 @@ public class NirvanaWikiTest {
     public void addTopicToDiscussionPage_addsTopicToBottom() throws LoginException, IOException {
         TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
         MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz", "/w", "https://", "ru");
-        wiki.login("AlphaBot", "123456", true);
+        wiki.login("AlphaBot", "123456");
         String discussion = 
                 "= Some topic =\n" +
                 "Hello. This is it. Vasya Pupkin, 27 April 2017.\n";
@@ -143,7 +143,7 @@ public class NirvanaWikiTest {
     public void addTopicToDiscussionPage_duplicates() throws LoginException, IOException {
         TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
         MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz", "/w", "https://", "ru");
-        wiki.login("AlphaBot", "123456", true);
+        wiki.login("AlphaBot", "123456");
         String discussion = 
                 "= Some topic =\n" +
                 "Hello. This is it. Vasya Pupkin, 27 April 2017.\n" +
@@ -178,7 +178,7 @@ public class NirvanaWikiTest {
     public void addTopicToDiscussionPage_doesNotDuplicate() throws LoginException, IOException {
         TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
         MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz", "/w", "https://", "ru");
-        wiki.login("AlphaBot", "123456", true);
+        wiki.login("AlphaBot", "123456");
         String discussion = 
                 "= Some topic =\n" +
                 "Hello. This is it. Vasya Pupkin, 27 April 2017.\n" +
@@ -201,7 +201,7 @@ public class NirvanaWikiTest {
     public void addTopicToDiscussionPage_addsSignature() throws LoginException, IOException {
         TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
         MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz", "/w", "https://", "ru");
-        wiki.login("AlphaBot", "123456", true);
+        wiki.login("AlphaBot", "123456");
         String discussion = 
                 "= Some topic =\n" +
                 "Hello. This is it. Vasya Pupkin, 27 April 2017.\n";
@@ -224,7 +224,7 @@ public class NirvanaWikiTest {
     public void getPageLines() throws LoginException, IOException {
         TestLocalizationManager.init(Localizer.DEFAULT_LOCALIZATION);
         MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz", "/w", "https://", "ru");
-        wiki.login("AlphaBot", "123456", true);
+        wiki.login("AlphaBot", "123456");
 
         String text =
                 "Demo - this is a demo page.\n" +
