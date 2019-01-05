@@ -1013,7 +1013,7 @@ public class Wiki implements Serializable
                 throw new FailedLoginException("Login failed: throttled (wait: "
                     + wait + ")");
             }
-            throw new FailedLoginException("Login failed: unknown reason.");
+            throw new FailedLoginException("Login failed: unknown reason. " + (line == null? "": line));
         }
     }
 
