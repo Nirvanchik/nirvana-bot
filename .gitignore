@@ -12,6 +12,7 @@
 # Build system input and output dirs
 /lib/*
 /bin/*
+/target/*
 
 # Bot generated dirs and files
 /out/*
