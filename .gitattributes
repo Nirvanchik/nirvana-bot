@@ -31,6 +31,7 @@
 COPYING text
 NOTICE text
 .classpath text
+.gitignore text
 .project text
 *.ini text
 *.java text

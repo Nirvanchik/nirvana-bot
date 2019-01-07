@@ -11,6 +11,7 @@
 
 # Build system input and output dirs
 /lib/*
+/tests/lib/*
 /bin/*
 /target/*
 
