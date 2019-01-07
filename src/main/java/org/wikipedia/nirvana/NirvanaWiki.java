@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
 import javax.security.auth.login.LoginException;
 
 /**
- * based on Wiki.java version 0.31   
+ * based on Wiki.java version 0.33
  */
 public class NirvanaWiki extends Wiki {
     private static final String DEFAULT_LANGUAGE = "en";
