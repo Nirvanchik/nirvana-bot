@@ -95,6 +95,7 @@ src/main/java/org/wikipedia/nirvana/WikiTools.java -text
 *.properties text
 *.sh text
 *.txt text
+release-notes-ru.txt -text
 *.xml text
 
 # Declare files that will always have CRLF line endings on checkout.
