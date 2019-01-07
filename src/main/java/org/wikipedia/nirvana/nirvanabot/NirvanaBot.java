@@ -77,7 +77,6 @@ import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.WikiTools.EnumerationType;
-import org.wikipedia.nirvana.WikiUtils;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
@@ -90,6 +89,7 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
 import org.wikipedia.nirvana.nirvanabot.templates.ComplexTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.SimpleTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFindItem;
+import org.wikipedia.nirvana.wiki.WikiUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
