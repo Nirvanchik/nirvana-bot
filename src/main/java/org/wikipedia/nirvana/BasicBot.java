@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.security.auth.login.FailedLoginException;
 
 /**
@@ -90,7 +91,7 @@ public abstract class BasicBot {
 
     protected static Logger log = null;
 
-	protected static Properties properties = null;
+    protected static Properties properties = null;
 
 	protected boolean DEBUG_MODE = false;
 	
@@ -404,35 +405,56 @@ public abstract class BasicBot {
 		}
 	}
 
-	public static boolean TryParseTemplate(String template, 
-										   String userNamespace, 
-										   String text, 
-										   Map<String, String> parameters, 
-										   boolean splitByNewLine)
-    {
-		log.debug("portal settings parse started");
-		log.debug("template = "+template);
-		log.debug("text = "+StringTools.trancateTo(text, 100));
-        //String str = "^\\{\\{"+newpagesTemplateName+".*\\}\\}.*$"; // works
-        //String str = "^(\\{\\{"+newpagesTemplateName+".*(\\{\\{.+\\}\\})?.*\\}\\})(.*)$";
-		String recognizeTemplate = template;
-		String userEn = "User:";
-		String userLc = userNamespace+":";
-		if(recognizeTemplate.startsWith(userEn))  {
-			recognizeTemplate = recognizeTemplate.substring(userEn.length());			
-		} else if (recognizeTemplate.startsWith(userLc)) {
-			recognizeTemplate = recognizeTemplate.substring(userLc.length());			
-		}
-		recognizeTemplate = "("+userEn+"|"+userLc+")"+recognizeTemplate.replace("(", "\\(").replace(")", "\\)");
-		// We don't start from ^ because we allow any text before template
-		
-		if (!WikiUtils.parseTemplate(recognizeTemplate, text, parameters, splitByNewLine)) {
-			log.error("portal settings parse error");
+    // TODO (Nirvanchik): Allow templates from any namespace?
+    /**
+     * Parse bot template from wiki text. "Bot template" is a wiki template which is used to
+     * provide configuration parameters for wiki bot. This function will search the first
+     * occurrence of bot template only.
+     *
+     * @param template Title of template which is used to provide bot parameters.
+     *                 Normally template is expected to be in User namespace. Namespace name
+     *                 can be omitted in title but the function will always search template
+     *                 of User namespace.
+     * @param userNamespaceLoc Localized name of user namespace.
+     * @param text Wiki text in which bot parameters should be parsed.
+     * @param parameters Key-value map where bot parameters will be stored.
+     * @return true if bot template found and parsed successfully.
+     */
+    public static boolean tryParseTemplate(String template,
+                                           @Nullable String userNamespaceLoc,
+                                           String text,
+                                           Map<String, String> parameters) {
+        log.debug("Bot settings parsing started for template: {}", template);
+        log.debug("Text (truncated to 100): {}", StringTools.trancateTo(text, 100));
+        String templateRe = getUserTemplateRe(template, userNamespaceLoc);
+        if (!WikiUtils.parseBotTemplate(templateRe, text, parameters)) {
+            // TODO (Nirvanchik): return error code with error details.
+            log.error("Failed to parse bot settings");
 			return false;
 		}
-
         parameters.put("BotTemplate", template);
-        log.debug("portal settings parse finished");
         return true;
+    }
+
+    static String getUserTemplateRe(String template,
+                                    @Nullable String userNamespaceLoc) {
+        String userPrefix = "";
+        String templateName;
+        String userEnPrefix = "User";
+        if (template.startsWith(userEnPrefix)) {
+            templateName = template.substring(userEnPrefix.length() + ":".length());
+        } else if (userNamespaceLoc != null && template.startsWith(userNamespaceLoc + ":")) {
+            templateName = template.substring(userNamespaceLoc.length() + ":".length());
+        } else {
+            templateName = template;
+        }
+        userPrefix = userEnPrefix + ":";
+        if (userNamespaceLoc != null) {
+            userPrefix = String.format("(%s:|%s:)", userEnPrefix, userNamespaceLoc);
+        }
+        // Escape "(" and ")" in template name.
+        templateName = templateName.replace("(", "\\(").replace(")", "\\)");
+        // We don't start from ^ because we allow any text before template
+        return userPrefix + templateName;
     }
 }

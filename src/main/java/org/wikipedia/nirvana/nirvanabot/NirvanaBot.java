@@ -483,7 +483,7 @@ public class NirvanaBot extends BasicBot{
 			throw e;
 		}
 		Map<String, String> options = new HashMap<String, String>();		
-		if(!TryParseTemplate(newpagesTemplate, userNamespace, overridenPropertiesText,options, true)) {
+        if (!tryParseTemplate(newpagesTemplate, userNamespace, overridenPropertiesText, options)) {
 			log.info("no default settings for this template: "+newpagesTemplate);
             return false;
 		}
@@ -797,7 +797,7 @@ public class NirvanaBot extends BasicBot{
     				}
     				
     				Map<String, String> parameters = new HashMap<String, String>();
-    				if(TryParseTemplate(newpagesTemplate, userNamespace, portalSettingsText, parameters, true)) {
+                    if (tryParseTemplate(newpagesTemplate, userNamespace, portalSettingsText, parameters)) {
     					log.info("validate portal settings OK");					
     					logPortalSettings(parameters);
     					NewPagesData data = new NewPagesData();

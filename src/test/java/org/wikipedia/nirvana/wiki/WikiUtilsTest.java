@@ -23,6 +23,8 @@
 
 package org.wikipedia.nirvana.wiki;
 
+import static org.wikipedia.nirvana.wiki.WikiUtils.findMatchingBraceOfTemplate;
+
 import org.wikipedia.nirvana.localization.LocalizedTemplate;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
@@ -36,6 +38,7 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Unit-tests for {@link WikiUtils}.
@@ -175,4 +178,108 @@ public class WikiUtilsTest {
                 WikiUtils.removeCategories("Ho\n[[Категория:Кат1]]\n[[Категория:Кат2]]\nBo\n"));
     }
 
+    @Test
+    public void testFindMatchingBraceOfTemplate() {
+        Assert.assertEquals(3, findMatchingBraceOfTemplate("{{T}}", 2));
+        Assert.assertEquals(13, findMatchingBraceOfTemplate("{{Templ|param}}", 2));
+        Assert.assertEquals(13, findMatchingBraceOfTemplate("{{Templ|param}}", 7));
+        Assert.assertEquals(17, findMatchingBraceOfTemplate("{{Templ|p1=a|p2=b}}", 7));
+        Assert.assertEquals(19, findMatchingBraceOfTemplate("{{Templ\n|p1=a\n|p2=b}}", 7));
+        Assert.assertEquals(23, findMatchingBraceOfTemplate("{{Templ\n|p1={{a}}\n|p2=b}}", 7));
+        Assert.assertEquals(23, findMatchingBraceOfTemplate("{{Templ|p1={{a{{Xyz}}}}}}", 7));
+        Assert.assertEquals(23, findMatchingBraceOfTemplate("{{Templ|p1={{{{Xyz}}d}}}}", 7));
+        
+        Assert.assertEquals(-1, findMatchingBraceOfTemplate("{{T}sdgsdg", 2));
+        Assert.assertEquals(-1, findMatchingBraceOfTemplate("{{T{{x}}|b=c}sdgsdg", 2));
+    }
+
+    @SuppressWarnings("serial")
+    @Test
+    public void testParseBotTemplate() {
+        TreeMap<String, String> params = new TreeMap<>();
+        String wikiText =
+                "Some text\n" +
+                "{{Templ\n" +
+                "|param1 = val1\n" +
+                " |param2 = val2\n" +
+                "\t|param3 = val3\n" +
+                " |param4 = val4 val4 val4\n" +
+                " |param5 = val5 line1\n" +
+                "val5 line2\n" +
+                " |param6 = val6 {{Templ2}}\n" +
+                " |param7 = val7 | line1\n" +
+                " val7 |line2\n" +
+                " |param8 = val8\n" +
+                "}} some text here";
+        TreeMap<String, String> expected = new TreeMap<String, String>() {
+            {
+                put("param1", "val1");
+                put("param2", "val2");
+                put("param3", "val3");
+                put("param4", "val4 val4 val4");
+                put("param5", "val5 line1\nval5 line2");
+                put("param6", "val6 {{Templ2}}");
+                put("param7", "val7 | line1\n val7 |line2");
+                put("param8", "val8");
+            }
+        };
+        boolean success = WikiUtils.parseBotTemplate("Templ", wikiText, params);
+        Assert.assertTrue(success);
+        Assert.assertEquals(expected, params);
+    }
+
+    @SuppressWarnings("serial")
+    @Test
+    public void testParseWikiTemplate_withNewLine() {
+        TreeMap<String, String> params = new TreeMap<>();
+        String wikiText =
+                "Some text\n" +
+                "{{Templ\n" +
+                "|param1 = val1\n" +
+                " |param2 = val2\n" +
+                "\t|param3 = val3\n" +
+                " |param4 = val4 val4 val4\n" +
+                " |param5 = val5 line1\n" +
+                "val5 line2\n" +
+                " |param6 = val6 {{Templ2}}\n" +
+                " |param7 = val7 | param8\n" +
+                " line2 |param9\n" +
+                " |param10 = val10\n" +
+                "}} some text here";
+        boolean success = WikiUtils.parseWikiTemplate("Templ", wikiText, params);
+        TreeMap<String, String> expected = new TreeMap<String, String>() {
+            {
+                put("param1", "val1");
+                put("param2", "val2");
+                put("param3", "val3");
+                put("param4", "val4 val4 val4");
+                put("param5", "val5 line1\nval5 line2");
+                put("param6", "val6 {{Templ2}}");
+                put("param7", "val7");
+                put("param8\n line2", null);
+                put("param9", null);
+                put("param10", "val10");
+            }
+        };        
+        Assert.assertTrue(success);
+        Assert.assertEquals(expected, params);
+    }
+
+    @SuppressWarnings("serial")
+    @Test
+    public void testParseWikiTemplate_oneLine() {
+        TreeMap<String, String> params = new TreeMap<>();
+        String wikiText = "xyz {{Templ|param1=val1|A|x=y|z={{t2}}}}";
+        boolean success = WikiUtils.parseWikiTemplate("Templ", wikiText, params);
+        TreeMap<String, String> expected = new TreeMap<String, String>() {
+            {
+                put("param1", "val1");
+                put("A", null);
+                put("x", "y");
+                put("z", "{{t2}}");
+            }
+        };
+        Assert.assertTrue(success);
+        Assert.assertEquals(expected, params);
+    }
 }

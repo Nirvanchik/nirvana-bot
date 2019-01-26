@@ -59,7 +59,7 @@ public class WikiUtils {
      * escaped blocks or nowiki/code sections.
      *
      * @param text Any wiki text with template.
-     * @param start Start index where to start search.
+     * @param start Start index where to start search. Must point after opening bracket ("{{").
      * @return Index where matching brace detected.
      */
     public static int findMatchingBraceOfTemplate(String text, int start) {
@@ -69,12 +69,14 @@ public class WikiUtils {
         for (int i = begin; i < text.length() - 1; ++i) {
             if (text.charAt(i) == '{' && text.charAt(i + 1) == '{') {
                 ++level;
+                ++i;
             } else if (text.charAt(i) == '}' && text.charAt(i + 1) == '}') {
                 --level;
                 if (level == 0) {
                     end = i;
                     break;
                 }
+                ++i;
             }
         }
         return end;
@@ -109,12 +111,6 @@ public class WikiUtils {
     public static boolean parseWikiTemplate(String templateRegex, String text,
             Map<String, String> parameters) {
         return parseTemplateImpl(templateRegex, text, parameters, false);
-    }
-
-    @Deprecated
-    public static boolean parseTemplate(String templateRegex, String text,
-            Map<String, String> parameters, boolean botTemplate) {
-        return parseTemplateImpl(templateRegex, text, parameters, botTemplate);
     }
 
     private static boolean parseTemplateImpl(String templateRegex, String text,
