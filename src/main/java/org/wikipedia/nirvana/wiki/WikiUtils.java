@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 /**
  * Utility static methods for processing Wiki pages.
  * Examples:
@@ -281,9 +283,10 @@ public class WikiUtils {
      * @return Updated template code with inserted text.
      */
     public static String addTextToTemplateLastNoincludeSectionBeforeCats(
-            String categoryKey, String templateText, String insertText) {
+            @Nullable String categoryKey, String templateText, String insertText) {
         String text;
         String separator = "\n";
+        String separator2 = "\n";
         int indexOfLastNoinclude = templateText.lastIndexOf("<noinclude>");
         if (indexOfLastNoinclude < 0) {
             text = templateText + "<noinclude>" + insertText + "</noinclude>";
@@ -292,24 +295,16 @@ public class WikiUtils {
                     indexOfLastNoinclude);
             if (indexOfLastNoincludeCloser < 0) {
                 log.warn("Oops! The template code doesn't close <noinclude> section!");
-                if (templateText.endsWith(separator)) {
-                    separator = "";
-                }
-                text = templateText + separator + insertText;
                 indexOfLastNoincludeCloser = templateText.length();
-            } else {
-                if (templateText.charAt(indexOfLastNoincludeCloser - 1) == '\n') {
-                    separator = "";
-                }
-                text = templateText.substring(0, indexOfLastNoincludeCloser) +
-                        separator +
-                        insertText +
-                        templateText.substring(indexOfLastNoincludeCloser);
             }
             // here we have a range of (indexOfLastNoinclude,indexOfLastNoincludeCloser)
             int insertPlace = findCategoriesSectionInTextRange(
                     categoryKey, templateText, indexOfLastNoinclude, indexOfLastNoincludeCloser);
-            if (templateText.charAt(insertPlace - 1) == '\n') {
+            if (insertPlace > 0 && templateText.charAt(insertPlace - 1) == '\n') {
+                insertPlace--;
+                separator2 = "";
+            }
+            if (insertPlace > 0 && templateText.charAt(insertPlace - 1) == '\n') {
                 separator = "";
             }
             String start = templateText;
@@ -321,6 +316,7 @@ public class WikiUtils {
             text = start +
                     separator +
                     insertText +
+                    separator2 +
                     end;
         }
         return text;
@@ -331,29 +327,25 @@ public class WikiUtils {
      *
      * Category section beginning is described as the first English category record
      * ([[Category:<>]]) or similar record localized to language ([[Категория:<>]]).
-     * Returns index of the first category record found.
+     * Returns index of the first category record found or "end" value if not found.
      *
-     * @param categoryKey Localized name of "Category" namespace.
+     * @param categoryKey Localized name of "Category" namespace. If null, only English word will
+     *                    be searched.
      * @param text Wiki page text
      * @param start Where to start search (wiki page fragment begin).
      * @param end Where to finish search (wiki page fragment end). Not inclusive.
      * @return begin of "Category" section or -1 if not found.
      */
-    public static int findCategoriesSectionInTextRange(String categoryKey, String text, int start,
-            int end) {
-        String categoryDetected = "[[" + categoryKey + ":";
-        String categoryEnDetected = "[[Category:";
-        int index = text.indexOf(categoryDetected, start);
-        if (index < 0 || index >= end) {
-            index = text.indexOf(categoryEnDetected, start);
+    public static int findCategoriesSectionInTextRange(@Nullable String categoryKey, String text,
+            int start, int end) {
+        int index1 = end;
+        if (categoryKey != null) {
+            index1 = text.indexOf("[[" + categoryKey + ":", start);
         }
-        if (index > 0 && index < end) {
-            if (text.charAt(index - 1) == '\n') {
-                index--;
-            }
-            return index;
-        }
-        return end;
+        if (index1 < 0 || index1 > end) index1 = end;
+        int index2 = text.indexOf("[[Category:", start);
+        if (index2 < 0 || index2 > end) index2 = end;        
+        return Math.min(index1, index2);
     }
 
     /**

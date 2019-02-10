@@ -23,6 +23,8 @@
 
 package org.wikipedia.nirvana.wiki;
 
+import static org.wikipedia.nirvana.wiki.WikiUtils.addTextToTemplateLastNoincludeSectionBeforeCats;
+import static org.wikipedia.nirvana.wiki.WikiUtils.findCategoriesSectionInTextRange;
 import static org.wikipedia.nirvana.wiki.WikiUtils.findMatchingBraceOfTemplate;
 
 import org.wikipedia.nirvana.localization.LocalizedTemplate;
@@ -281,5 +283,192 @@ public class WikiUtilsTest {
         };
         Assert.assertTrue(success);
         Assert.assertEquals(expected, params);
+    }
+
+    @Test
+    public void removeNoWikiText() {
+        Assert.assertEquals("Some text other text.",
+                WikiUtils.removeNoWikiText("Some text<nowiki></nowiki> other text."));
+        Assert.assertEquals("Some text other text.",
+                WikiUtils.removeNoWikiText("Some text<nowiki>inside nowiki</nowiki> other text."));
+        Assert.assertEquals("Some text\n\n other text.",
+                WikiUtils.removeNoWikiText(
+                        "Some text\n<nowiki>inside nowiki</nowiki>\n other text."));
+        Assert.assertEquals("Some text other text. More text.",
+                WikiUtils.removeNoWikiText(
+                        "Some text<nowiki>nowiki 1</nowiki> other text." +
+                        "<nowiki>nowiki 2</nowiki> More text."));
+    }
+
+    @Test
+    public void removeComments() {
+        Assert.assertEquals("Some text other text.",
+                WikiUtils.removeComments("Some text<!-- bla bla bla--> other text."));
+        Assert.assertEquals("Some text\n other text.",
+                WikiUtils.removeComments("Some text\n<!-- bla \nbla \nbla--> other text."));
+        Assert.assertEquals("Some text other text. More text.",
+                WikiUtils.removeComments(
+                        "Some text<!-- comment 1--> other text." +
+                        "<!-- comment 2 --> More text."));
+    }
+
+    @Test
+    public void removePreTags() {
+        Assert.assertEquals("Some text other text.",
+                WikiUtils.removePreTags("Some text<pre></pre> other text."));
+        Assert.assertEquals("Some text bla bla bla other text.",
+                WikiUtils.removePreTags("Some text <pre>bla bla bla</pre> other text."));
+        Assert.assertEquals("Some text\n bla \nbla \nbla other text.",
+                WikiUtils.removePreTags("Some text\n<pre> bla \nbla \nbla</pre> other text."));
+        Assert.assertEquals("Some text bla bla bla other text. bla bla bla More text.",
+                WikiUtils.removePreTags(
+                        "Some text <pre>bla bla bla</pre> other text. " +
+                        "<pre>bla bla bla</pre> More text."));
+        Assert.assertEquals("Some text other text.",
+                WikiUtils.removePreTags("Some text<pre> other text."));
+        Assert.assertEquals("Some text other text.",
+                WikiUtils.removePreTags("Some text</pre> other text."));
+    }
+
+    @Test
+    public void addPreTags() {
+        Assert.assertEquals("<pre>\nSome text.</pre>\n",
+                WikiUtils.addPreTags("Some text."));
+        Assert.assertEquals("<pre>\nSome text.\nOther text.\n</pre>\n",
+                WikiUtils.addPreTags("Some text.\nOther text.\n"));
+    }
+
+    @Test
+    public void testFindCategoriesSectionInTextRange() {
+        String wikiText = "";
+        Assert.assertEquals(0,
+                findCategoriesSectionInTextRange(null, wikiText, 0, wikiText.length()));
+        wikiText = "Blablabla\n\nxoxo";
+        Assert.assertEquals(15,
+                findCategoriesSectionInTextRange(null, wikiText, 0, wikiText.length()));
+        Assert.assertEquals(5,
+                findCategoriesSectionInTextRange(null, wikiText, 0, 5));
+        wikiText = "Blabla\n" +
+                "[[Category:Godo]]\n" +
+                "xoxo";
+        Assert.assertEquals(7,
+                findCategoriesSectionInTextRange(null, wikiText, 0, wikiText.length()));
+        Assert.assertEquals(7,
+                findCategoriesSectionInTextRange("Категория", wikiText, 0, wikiText.length()));
+        Assert.assertEquals(5,
+                findCategoriesSectionInTextRange(null, wikiText, 0, 5));
+        Assert.assertEquals(5,
+                findCategoriesSectionInTextRange("Категория", wikiText, 0, 5));
+        wikiText = "Blabla\n" +
+                "[[Категория:Капуста]]\n" +
+                "xoxo";
+        Assert.assertEquals(7,
+                findCategoriesSectionInTextRange("Категория", wikiText, 0, wikiText.length()));
+        Assert.assertEquals(5,
+                findCategoriesSectionInTextRange("Категория", wikiText, 0, 5));
+        wikiText = "Blabla\n" +
+                "[[Категория:Капуста]]\n" +
+                "[[Категория:Баклажан]]\n" +
+                "xoxo";
+        Assert.assertEquals(7,
+                findCategoriesSectionInTextRange("Категория", wikiText, 0, wikiText.length()));
+        wikiText = "Blabla\n" +
+                "[[Категория:Капуста]]\n" +
+                "[[Category:Godo]]\n" +
+                "xoxo";
+        Assert.assertEquals(7,
+                findCategoriesSectionInTextRange("Категория", wikiText, 0, wikiText.length()));
+        wikiText = "Blabla\n" +
+                "[[Category:Godo]]\n" +
+                "[[Категория:Капуста]]\n" +
+                "xoxo";
+        Assert.assertEquals(7,
+                findCategoriesSectionInTextRange("Категория", wikiText, 0, wikiText.length()));
+    }
+
+    @Test
+    public void testAddTextToTemplateLastNoincludeSectionBeforeCats() {
+        String text = "";
+        String expe = "<noinclude>Abc</noinclude>";
+        String result = addTextToTemplateLastNoincludeSectionBeforeCats(null, text, "Abc");
+        Assert.assertEquals(expe, result);
+
+        text = "Mama go home.";
+        expe = "Mama go home.<noinclude>Abc</noinclude>";
+        result = addTextToTemplateLastNoincludeSectionBeforeCats(null, text, "Abc");
+        Assert.assertEquals(expe, result);
+
+        text = "Mama go home.<noinclude>Some text.</noinclude>";
+        expe = "Mama go home.<noinclude>Some text.\nAbc\n</noinclude>";
+        result = addTextToTemplateLastNoincludeSectionBeforeCats(null, text, "Abc");
+        Assert.assertEquals(expe, result);
+
+        text = "Mama go home.<noinclude>Some text.</noinclude>...\n" +
+                "<noinclude>Another text.</noinclude>";
+        expe = "Mama go home.<noinclude>Some text.</noinclude>...\n" +
+                "<noinclude>Another text.\n" +
+                "Abc\n" +
+                "</noinclude>";
+        result = addTextToTemplateLastNoincludeSectionBeforeCats(null, text, "Abc");
+        Assert.assertEquals(expe, result);
+
+        text = "Mama go home.<noinclude>Some text.</noinclude>...\n" +
+                "<noinclude>Another text.\n" +
+                "</noinclude>";
+        expe = "Mama go home.<noinclude>Some text.</noinclude>...\n" +
+                "<noinclude>Another text.\n" +
+                "Abc\n" +
+                "</noinclude>";
+        result = addTextToTemplateLastNoincludeSectionBeforeCats(null, text, "Abc");
+        Assert.assertEquals(expe, result);
+
+        text = "Mama go home.<noinclude>Some text.</noinclude>...\n" +
+                "<noinclude>Another text." +
+                "[[Category:Home]]" +
+                "</noinclude>";
+        expe = "Mama go home.<noinclude>Some text.</noinclude>...\n" +
+                "<noinclude>Another text.\n" +
+                "Abc\n" +
+                "[[Category:Home]]" +
+                "</noinclude>";
+        result = addTextToTemplateLastNoincludeSectionBeforeCats(null, text, "Abc");
+        Assert.assertEquals(expe, result);
+
+        text = "Mama go home.<noinclude>Some text.</noinclude>...\n" +
+                "<noinclude>Another text.\n" +
+                "[[Category:Home]]" +
+                "</noinclude>";
+        expe = "Mama go home.<noinclude>Some text.</noinclude>...\n" +
+                "<noinclude>Another text.\n" +
+                "Abc\n" +
+                "[[Category:Home]]" +
+                "</noinclude>";
+        result = addTextToTemplateLastNoincludeSectionBeforeCats(null, text, "Abc");
+        Assert.assertEquals(expe, result);
+
+        text = "Mama go home.<noinclude>Some text.</noinclude>...\n" +
+                "<noinclude>Another text.\n" +
+                "\n" +
+                "[[Category:Home]]" +
+                "</noinclude>";
+        expe = "Mama go home.<noinclude>Some text.</noinclude>...\n" +
+                "<noinclude>Another text.\n" +
+                "Abc\n" +
+                "[[Category:Home]]" +
+                "</noinclude>";
+        result = addTextToTemplateLastNoincludeSectionBeforeCats(null, text, "Abc");
+        Assert.assertEquals(expe, result);
+
+        // Bad case. We must not crash here, just do our job.
+        text = "Mama go home.<noinclude>Some text.</noinclude>...\n" +
+                "<noinclude>Another text.\n" +
+                "\n" +
+                "[[Category:Home]]";
+        expe = "Mama go home.<noinclude>Some text.</noinclude>...\n" +
+                "<noinclude>Another text.\n" +
+                "Abc\n" +
+                "[[Category:Home]]";
+        result = addTextToTemplateLastNoincludeSectionBeforeCats(null, text, "Abc");
+        Assert.assertEquals(expe, result);
     }
 }
