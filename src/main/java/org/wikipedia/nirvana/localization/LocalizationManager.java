@@ -28,9 +28,9 @@ import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.TextUtils;
-import org.wikipedia.nirvana.WikiUtils;
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.wiki.WikiUtils;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

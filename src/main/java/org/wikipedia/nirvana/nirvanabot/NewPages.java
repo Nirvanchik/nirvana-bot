@@ -1057,7 +1057,7 @@ public class NewPages implements PortalModule{
 	    String settingsText = r.getText();
 	    Map<String, String> options = new HashMap<String,String>();
 	    String userNamespace = wiki.namespaceIdentifier(Wiki.USER_NAMESPACE);
-        if (BasicBot.TryParseTemplate(template, userNamespace, settingsText, options, true)) {
+        if (BasicBot.tryParseTemplate(template, userNamespace, settingsText, options)) {
 	    	headerLastUsed = NirvanaBot.getDefaultHeader();
 	    	footerLastUsed = NirvanaBot.getDefaultFooter();
 	    	middleLastUsed = NirvanaBot.getDefaultMiddle();

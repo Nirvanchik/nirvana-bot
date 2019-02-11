@@ -199,7 +199,7 @@ public class StatisticsBot extends BasicBot {
 
 				
 				Map<String, String> options = new HashMap<String, String>();
-				if(!TryParseTemplate(statSettingsTemplate, userNamespace, portalSettingsText, options, true)) {
+                if (!tryParseTemplate(statSettingsTemplate, userNamespace, portalSettingsText, options)) {
 					log.error("validate portal settings FAILED");
 					continue;
 				}

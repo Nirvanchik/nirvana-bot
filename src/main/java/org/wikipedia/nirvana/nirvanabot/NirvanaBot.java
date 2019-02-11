@@ -77,7 +77,6 @@ import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.WikiTools.EnumerationType;
-import org.wikipedia.nirvana.WikiUtils;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
@@ -90,6 +89,7 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
 import org.wikipedia.nirvana.nirvanabot.templates.ComplexTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.SimpleTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFindItem;
+import org.wikipedia.nirvana.wiki.WikiUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -483,7 +483,7 @@ public class NirvanaBot extends BasicBot{
 			throw e;
 		}
 		Map<String, String> options = new HashMap<String, String>();		
-		if(!TryParseTemplate(newpagesTemplate, userNamespace, overridenPropertiesText,options, true)) {
+        if (!tryParseTemplate(newpagesTemplate, userNamespace, overridenPropertiesText, options)) {
 			log.info("no default settings for this template: "+newpagesTemplate);
             return false;
 		}
@@ -797,7 +797,7 @@ public class NirvanaBot extends BasicBot{
     				}
     				
     				Map<String, String> parameters = new HashMap<String, String>();
-    				if(TryParseTemplate(newpagesTemplate, userNamespace, portalSettingsText, parameters, true)) {
+                    if (tryParseTemplate(newpagesTemplate, userNamespace, portalSettingsText, parameters)) {
     					log.info("validate portal settings OK");					
     					logPortalSettings(parameters);
     					NewPagesData data = new NewPagesData();
