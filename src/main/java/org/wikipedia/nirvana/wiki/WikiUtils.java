@@ -160,7 +160,8 @@ public class WikiUtils {
             String[] eqParts = p.split("=", 2);
             if (eqParts.length > 1) {
                 String key = eqParts[0].trim().toLowerCase();
-                if ((botTemplate && key.equals("align") || key.equals("style"))) {
+                // TODO: Do we still need this ugly workaround?
+                if (botTemplate && (key.equals("align") || key.equals("style"))) {
                     appendToLastVal(parameters, lastKey, p);
                 } else {
                     String value = removeComments(eqParts[1]).trim();
@@ -185,8 +186,8 @@ public class WikiUtils {
         return true;
     }
 
-    private static void appendToLastVal(Map<String, String> parameters, String value,
-            String lastKey) {
+    private static void appendToLastVal(Map<String, String> parameters, String lastKey,
+            String value) {
         value = removeComments(value).trim();
         String lastVal = parameters.get(lastKey) + "|" + value;
         parameters.put(lastKey, lastVal);
@@ -359,18 +360,7 @@ public class WikiUtils {
         }
         if (discussion.isEmpty()) return text;
 
-        Localizer localizer = Localizer.getInstance();
-        boolean toBottom = true;
-        LocalizedTemplate template = localizer.localizeTemplateStrict("Новые сверху");
-        if (template != null) {
-            toBottom = !containsTemplate(discussion, template.localizeName());
-        }
-        if (toBottom) {
-            template = localizer.localizeTemplateStrict("Новые сверху 2");
-            if (template != null) {
-                toBottom = !containsTemplate(discussion, template.localizeName());
-            }
-        }
+        boolean toBottom = discussionRequiresAddToBottom(discussion);
         StringBuilder result = new StringBuilder();
         if (toBottom) {
             result.append(discussion);
@@ -385,11 +375,33 @@ public class WikiUtils {
     }
 
     /**
+     * Find out where talk page requires to add new topics: top or bottom. 
+     *
+     * @param discussion Talk page text.
+     * @return true if can add to bottom or false otherwise.
+     */
+    public static boolean discussionRequiresAddToBottom(String discussion) {
+        Localizer localizer = Localizer.getInstance();
+        LocalizedTemplate template = localizer.localizeTemplateStrict("Новые сверху");
+        if (template != null) {
+            if (containsTemplate(discussion, template.localizeName())) {
+                return false;
+            }
+        }
+        template = localizer.localizeTemplateStrict("Новые сверху 2");
+        if (template != null) {
+            if (containsTemplate(discussion, template.localizeName())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Checks if specified text contains specified template. 
      */
     public static boolean containsTemplate(String text, String template) {
-        assert template != null && !template.isEmpty();
-        if (text == null) return false;
+        assert text != null && template != null && !template.isEmpty();
         if (text.isEmpty()) return false;
         return text.contains("{{" + StringUtils.capitalize(template)) ||
                 text.contains("{{" + StringUtils.uncapitalize(template));

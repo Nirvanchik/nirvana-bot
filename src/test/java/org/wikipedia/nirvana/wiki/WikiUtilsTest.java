@@ -67,7 +67,6 @@ public class WikiUtilsTest {
 
     @Test
     public void containsTemplate() {
-        Assert.assertFalse(WikiUtils.containsTemplate(null, "t"));
         Assert.assertFalse(WikiUtils.containsTemplate("", "t"));
         Assert.assertTrue(WikiUtils.containsTemplate("sometext{{templ}}othertext", "templ"));
         Assert.assertTrue(WikiUtils.containsTemplate("sometext {{templ}} othertext", "templ"));
@@ -94,8 +93,19 @@ public class WikiUtilsTest {
     }
 
     @Test
-    public void addTextToDiscussion_addsToBottomWhenNotSpecified() {
+    public void addTextToDiscussion_addsToBottomByDefault() {
         String discussion = "Old text is here\n";
+        String topic = "New topic\n";
+        String expected =
+                "Old text is here\n" +
+                "\n" +
+                "New topic\n";
+        Assert.assertEquals(expected, WikiUtils.addTextToDiscussion(topic, discussion));
+    }
+    
+    @Test
+    public void addTextToDiscussion_addsToBottomWhenNoNewLine() {
+        String discussion = "Old text is here";
         String topic = "New topic\n";
         String expected =
                 "Old text is here\n" +
@@ -157,6 +167,28 @@ public class WikiUtilsTest {
                 "Some other text";
         Assert.assertEquals(expected, WikiUtils.addTextToDiscussion(topic, discussion));
     }
+    
+    @Test
+    public void addTextToDiscussion_addsToTopWhenTemplate2SpecifiedLocalized() {
+        TestLocalizationManager.reset();
+        Map<String, LocalizedTemplate> localizedTemplates = new HashMap<>();
+        localizedTemplates.put("Новые сверху 2",
+                new LocalizedTemplate("Новые сверху 2", "Add to top 2"));
+        TestLocalizationManager.init(null, localizedTemplates);
+
+        String discussion =
+                "Old text is here\n" +
+                "{{Add to top 2}}\n" +
+                "Some other text";
+        String topic = "New topic\n";
+        String expected =
+                "New topic\n" +
+                "\n" +
+                "Old text is here\n" +
+                "{{Add to top 2}}\n" +
+                "Some other text";
+        Assert.assertEquals(expected, WikiUtils.addTextToDiscussion(topic, discussion));
+    }
 
     @Test
     public void getPortalFromSettingsSubPage() {
@@ -166,6 +198,8 @@ public class WikiUtilsTest {
                 WikiUtils.getPortalFromSettingsSubPage("Portal:A1/New Pages/Settings"));
         Assert.assertEquals("Portal:A1",
                 WikiUtils.getPortalFromSettingsSubPage("Portal:A1/Settings"));
+        Assert.assertEquals(null,
+                WikiUtils.getPortalFromSettingsSubPage("Portal:A1"));
     }
 
     @Test
@@ -212,6 +246,7 @@ public class WikiUtilsTest {
                 " |param7 = val7 | line1\n" +
                 " val7 |line2\n" +
                 " |param8 = val8\n" +
+                "|val8 line2 \n" +  // should be merged to param8
                 "}} some text here";
         TreeMap<String, String> expected = new TreeMap<String, String>() {
             {
@@ -222,11 +257,41 @@ public class WikiUtilsTest {
                 put("param5", "val5 line1\nval5 line2");
                 put("param6", "val6 {{Templ2}}");
                 put("param7", "val7 | line1\n val7 |line2");
-                put("param8", "val8");
+                put("param8", "val8|val8 line2");
             }
         };
         boolean success = WikiUtils.parseBotTemplate("Templ", wikiText, params);
         Assert.assertTrue(success);
+        Assert.assertEquals(expected, params);
+    }
+
+    @SuppressWarnings("serial")
+    @Test
+    public void testParseBotTemplate_respectHtmlCodeInParams() {
+        TreeMap<String, String> params = new TreeMap<>();
+        String wikiText =
+                "Some text\n" +
+                "{{Templ\n" +
+                "|подвал = \\n{|align=\"center\" style=\"margin-top:1em;\"\\n\n" +
+                "|style=\"padding:0 1em 0 0\"|[[Image:Fil.svg|Арх]] [[Портал:Евр/Арх|Арх]]\\n" +
+                "|[[Image:Rob.svg]] [[Портал:Евр/Нов/Параметры|Пар]]\\n|}\n" + 
+                "|архив = Портал:Европейский союз/Новые статьи/Архив\n" +
+                "}} some text here";
+        TreeMap<String, String> expected = new TreeMap<String, String>() {
+            {
+                put("подвал", "\\n{|align=\"center\" style=\"margin-top:1em;\"\\n" +
+                        "|style=\"padding:0 1em 0 0\"|[[Image:Fil.svg|Арх]] " +
+                        "[[Портал:Евр/Арх|Арх]]\\n" +
+                        "|[[Image:Rob.svg]] [[Портал:Евр/Нов/Параметры|Пар]]\\n|}");
+                put("архив", "Портал:Европейский союз/Новые статьи/Архив");
+            }
+        };
+        boolean success = WikiUtils.parseBotTemplate("Templ", wikiText, params);
+        Assert.assertTrue(success);
+        // These comparisons are for Eclipse nice visual diff.
+        Assert.assertEquals(expected.get("подвал"), params.get("подвал"));
+        Assert.assertEquals(expected.get("архив"), params.get("архив"));
+        // Eclipse shows maps diff badly (cannot unfold it).
         Assert.assertEquals(expected, params);
     }
 
@@ -269,6 +334,27 @@ public class WikiUtilsTest {
 
     @SuppressWarnings("serial")
     @Test
+    public void testParseWikiTemplate_commentMustBeRemoved() {
+        TreeMap<String, String> params = new TreeMap<>();
+        String wikiText =
+                "Some text\n" +
+                "{{Templ\n" +
+                "|param1 = val1 <!-- Dummy comment-->val1_end\n" +
+                " |param2 = val2\n" +
+                "}} some text here";
+        boolean success = WikiUtils.parseWikiTemplate("Templ", wikiText, params);
+        TreeMap<String, String> expected = new TreeMap<String, String>() {
+            {
+                put("param1", "val1 val1_end");
+                put("param2", "val2");
+            }
+        };        
+        Assert.assertTrue(success);
+        Assert.assertEquals(expected, params);
+    }
+
+    @SuppressWarnings("serial")
+    @Test
     public void testParseWikiTemplate_oneLine() {
         TreeMap<String, String> params = new TreeMap<>();
         String wikiText = "xyz {{Templ|param1=val1|A|x=y|z={{t2}}}}";
@@ -286,11 +372,31 @@ public class WikiUtilsTest {
     }
 
     @Test
+    public void testParseWikiTemplate_notFound() {
+        TreeMap<String, String> params = new TreeMap<>();
+        String wikiText = "xyz {{empl|param1=val1}}";
+        boolean success = WikiUtils.parseWikiTemplate("Templ", wikiText, params);
+        Assert.assertFalse(success);
+    }
+
+    @Test
+    public void testParseWikiTemplate_brokenTemplate() {
+        TreeMap<String, String> params = new TreeMap<>();
+        String wikiText = "xyz {{Templ|param1=val1{{Some Text}}.";
+        boolean success = WikiUtils.parseWikiTemplate("Templ", wikiText, params);
+        Assert.assertFalse(success);
+    }
+
+    @Test
     public void removeNoWikiText() {
+        Assert.assertEquals("Some text.",
+                WikiUtils.removeNoWikiText("Some text."));
         Assert.assertEquals("Some text other text.",
                 WikiUtils.removeNoWikiText("Some text<nowiki></nowiki> other text."));
         Assert.assertEquals("Some text other text.",
                 WikiUtils.removeNoWikiText("Some text<nowiki>inside nowiki</nowiki> other text."));
+        Assert.assertEquals("Some text",
+                WikiUtils.removeNoWikiText("Some text<nowiki>inside nowiki other text."));
         Assert.assertEquals("Some text\n\n other text.",
                 WikiUtils.removeNoWikiText(
                         "Some text\n<nowiki>inside nowiki</nowiki>\n other text."));
