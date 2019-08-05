@@ -99,6 +99,31 @@ src/main/java/org/wikipedia/nirvana/WikiTools.java -text
 *.sh text
 *.txt text
 *.xml text
+# Next files hava CRLF line endings in git (not normalized).
+# TODO: Convert line endings here to LF
+config_archive.xml -text
+config_archive_test.xml -text
+config_clean_archive.xml -text
+config_clean_archive_dev.xml -text
+config_debug.xml -text
+config_debug_be.xml -text
+config_debug_uk.xml -text
+config_development.xml -text
+config_development_be.xml -text
+config_example.xml -text
+config_statistics.xml -text
+config_statistics_dev.xml -text
+config_statistics_task.xml -text
+config_uk.xml -text
+config_userinfo.xml -text
+configNirvanaBe.xml -text
+configNirvanaTaskBe.xml -text
+configRecoverArchive.xml -text
+configRecoverArchiveTest.xml -text
+configRu.xml -text
+configTask.xml -text
+loginUserExample.xml -text
+pom.xml -text
 
 # Declare files that will always have CRLF line endings on checkout.
 # CMD are srcipts for Windows shell only.
