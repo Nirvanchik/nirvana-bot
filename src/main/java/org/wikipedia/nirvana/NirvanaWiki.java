@@ -42,6 +42,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 
 /**
@@ -65,7 +66,11 @@ public class NirvanaWiki extends Wiki {
 	private boolean dumpMode = false;
     private String dumpFolder = null;
 	private boolean logDomain = false;
-	//rev_comment` varbinary(767) NOT NULL, Summaries longer than 200 characters are
+
+    private String username;
+    private char[] password;
+
+    //rev_comment` varbinary(767) NOT NULL, Summaries longer than 200 characters are
     //*  truncated server-side.
 
     static {
@@ -563,5 +568,24 @@ public class NirvanaWiki extends Wiki {
         if (addSignature) message = message + SIGN + '\n';
         discussion = WikiUtils.addTextToDiscussion(message, discussion);
         edit(page, discussion, summary);
+    }
+
+    /**
+     * Overridden method. Log in to Wiki.
+     */
+    public synchronized void login(String username, char[] password) throws IOException,
+            FailedLoginException {
+        this.username = username;
+        this.password = password;
+        super.login(username, password);
+    }
+
+    /**
+     * Relogin (log out and immediately log in).
+     * Call it when there was no interaction with Wiki for too long.
+     */
+    public synchronized void relogin() throws FailedLoginException, IOException {
+        super.logout();
+        super.login(this.username, this.password);
     }
 }

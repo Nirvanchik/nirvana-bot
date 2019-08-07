@@ -23,17 +23,20 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
+import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
+import javax.annotation.Nullable;
 
 /**
  * @author kin
@@ -57,8 +60,24 @@ public class ServicePinger {
 	
 	private long timeout = TIMEOUT;
 
+    @Nullable
+    private AfterDowntimeCallback afterDowntimeCallback;
+
     static {
         sLog = LogManager.getLogger(ServicePinger.class.getName());
+    }
+
+    /**
+     * Callback interface.
+     * External user can implement it and add some action to call
+     * when services come back online after been down.
+     */
+    public interface AfterDowntimeCallback {
+        /**
+         * Called when services come back online.
+         * @param downtime down time in milliseconds.
+         */
+        void afterDowntime(long downtime) throws BotFatalError;
     }
 
     public ServicePinger(OnlineService... servicesList) {
@@ -66,7 +85,17 @@ public class ServicePinger {
         log = LogManager.getLogger(getClass().getName());
     	log.debug("Build ServicePinger of services: " + StringUtils.join(services, ", "));
     }
-    
+
+    /**
+     * Sets callback action that will be called after downtime when services
+     * come online.
+     *
+     * @param callback Callback instance.
+     */
+    public void setAfterDowntimeCallback(AfterDowntimeCallback callback) {
+        afterDowntimeCallback = callback;
+    }
+
     public void addService(OnlineService service) {
         log.debug("Add service to ServicePinger: " + service.toString());
         services.add(service);
@@ -91,23 +120,25 @@ public class ServicePinger {
     	}
     }
 
-    public long tryToSolveProblems() throws InterruptedException, ServiceWaitTimeoutException {
+    public long tryToSolveProblems() throws InterruptedException, ServiceWaitTimeoutException,
+            BotFatalError {
     	long start = currentTimeMillis();
    		tryToSolveProblemsByWaiting();
     	long end = currentTimeMillis();
     	return end - start;
     }
 
-    private void tryToSolveProblemsByWaiting() throws InterruptedException, ServiceWaitTimeoutException {
+    private void tryToSolveProblemsByWaiting() throws InterruptedException,
+            ServiceWaitTimeoutException, BotFatalError {
     	long firstFailTime = currentTimeMillis();
     	long currentDelay = RECHECK_DELAY_1;
     	boolean ok = false;
     	while (!ok) {
-    		long lastFailTime = currentTimeMillis();
-    		if (lastFailTime - firstFailTime > RECHECK_1_TIMEOUT) {
+            long downtime = currentTimeMillis() - firstFailTime;
+            if (downtime > RECHECK_1_TIMEOUT) {
     			currentDelay = RECHECK_DELAY_2;
     		}
-    		if (lastFailTime - firstFailTime > timeout) {
+            if (downtime > timeout) {
                 if (timeout > 0 ) {
                     log.warn("Stop waiting after more then "+ timeout +" ms passed");
                 }
@@ -120,9 +151,12 @@ public class ServicePinger {
     		sleep(currentDelay);    	
     		ok = isOk();    		
     	}
+        if (afterDowntimeCallback != null) {
+            afterDowntimeCallback.afterDowntime(currentTimeMillis() - firstFailTime);
+        }
     }
     
-    protected long currentTimeMillis() {
+	protected long currentTimeMillis() {
     	return System.currentTimeMillis();
     }
     

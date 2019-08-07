@@ -39,6 +39,7 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServiceGroup;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServiceGroup.Listener;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger;
+import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 
@@ -142,6 +143,16 @@ public class ServiceManager {
 		servicePinger.setTimeout(timeout);
 	}
 
+    /**
+     * Sets callback action that will be called after downtime when services
+     * come online.
+     *
+     * @param callback Callback instance.
+     */
+	public void setAfterDowntimeCallback(AfterDowntimeCallback callback) {
+		servicePinger.setAfterDowntimeCallback(callback);
+	}
+
 	public WikiTools.Service getActiveService() {
 		return activeService;
 	}
@@ -156,8 +167,8 @@ public class ServiceManager {
 			activeService = pageListFetchServiceGroup.getActiveService().getService();
 		}
 	}
-	
-	public boolean checkServices() throws InterruptedException {
+
+    public boolean checkServices() throws InterruptedException, BotFatalError {
 		try {
 	        if (!servicePinger.isOk()) {
 	        	servicePinger.tryToSolveProblems();

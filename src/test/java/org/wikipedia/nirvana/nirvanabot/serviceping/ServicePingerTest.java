@@ -23,21 +23,27 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.RECHECK_1_TIMEOUT;
 import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.RECHECK_DELAY_1;
 import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.RECHECK_DELAY_2;
 import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.TIMEOUT;
 
+import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
 
 import org.junit.After;
+import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import junit.framework.Assert;
 
 /**
  * @author kin
@@ -101,7 +107,8 @@ public class ServicePingerTest {
         }
 
         @Override
-        public long tryToSolveProblems() throws InterruptedException, ServiceWaitTimeoutException {
+        public long tryToSolveProblems() throws InterruptedException, ServiceWaitTimeoutException,
+                BotFatalError {
         	currentTime = 0;
         	waitTimeTicks.clear();
         	return super.tryToSolveProblems();
@@ -174,9 +181,9 @@ public class ServicePingerTest {
 		Assert.assertTrue(manager.isOk());
 		Assert.assertTrue(service1.checkOkCalled && service2.checkOkCalled && service3.checkOkCalled);
 	}
-	
+
 	@Test
-	public void resolveProblemsByWaiting_shortTime() throws InterruptedException {
+	public void resolveProblemsByWaiting_shortTime() throws Exception {
 		TestService service1 = new TestService("service1");
 		TestService service2 = new TestService("service2");
 		TestService service3 = new TestService("service3");
@@ -184,12 +191,7 @@ public class ServicePingerTest {
 		service2.checkOkReturnVal = false;
 		manager.setFailingServiceAndTimeToRecover(service2, RECHECK_1_TIMEOUT/2);
 		Assert.assertFalse(manager.isOk());
-		long waitTime = 0;
-		try {
-			waitTime = manager.tryToSolveProblems();
-        } catch (ServiceWaitTimeoutException e) {
-	        Assert.fail();
-        }
+        long waitTime = manager.tryToSolveProblems();
 		Assert.assertTrue(waitTime > RECHECK_DELAY_1 && waitTime < RECHECK_1_TIMEOUT);
 		List<Long> times = manager.getTimeTicks();
 		Assert.assertTrue(times.size() > 0);
@@ -197,9 +199,9 @@ public class ServicePingerTest {
 			Assert.assertTrue(time > 0 && time < RECHECK_1_TIMEOUT);
 		}
 	}
-	
+
 	@Test
-	public void resolveProblemsByWaiting_longTime() throws InterruptedException {
+    public void resolveProblemsByWaiting_longTime() throws Exception {
 		TestService service1 = new TestService("service1");
 		TestService service2 = new TestService("service2");
 		TestService service3 = new TestService("service3");
@@ -207,12 +209,7 @@ public class ServicePingerTest {
 		service2.checkOkReturnVal = false;
 		manager.setFailingServiceAndTimeToRecover(service2, TIMEOUT/2);
 		Assert.assertFalse(manager.isOk());
-		long waitTime = 0;
-		try {
-			waitTime = manager.tryToSolveProblems();
-        } catch (ServiceWaitTimeoutException e) {
-	        Assert.fail();
-        }
+        long waitTime = manager.tryToSolveProblems();
 		Assert.assertTrue(waitTime > RECHECK_DELAY_1 && waitTime > RECHECK_DELAY_2 && waitTime > RECHECK_1_TIMEOUT && waitTime < TIMEOUT);
 		List<Long> times = manager.getTimeTicks();
 		Assert.assertTrue(times.size() > 0);
@@ -230,9 +227,9 @@ public class ServicePingerTest {
 		}
 		Assert.assertTrue(timeEncreased);
 	}
-	
-	@Test
-	public void resolveProblemsByWaiting_timeout() throws InterruptedException {
+
+	@Test(expected = ServiceWaitTimeoutException.class)
+    public void resolveProblemsByWaiting_timeout() throws Exception {
 		TestService service1 = new TestService("service1");
 		TestService service2 = new TestService("service2");
 		TestService service3 = new TestService("service3");
@@ -240,11 +237,24 @@ public class ServicePingerTest {
 		service2.checkOkReturnVal = false;
 		manager.setFailingServiceAndTimeToRecover(service2, TIMEOUT*2);
 		Assert.assertFalse(manager.isOk());
-		try {
-			manager.tryToSolveProblems();
-        } catch (ServiceWaitTimeoutException e) {
-	        return;
-        }
-		Assert.fail();
+        manager.tryToSolveProblems();
 	}
+
+    @Test
+    public void callCallbackAfterDowntime() throws Exception {
+        TestService service1 = new TestService("service1");
+        TestService service2 = new TestService("service2");
+        TestService service3 = new TestService("service3");
+        TestServicesManager manager = new TestServicesManager(service1, service2, service3);
+        AfterDowntimeCallback callback = mock(AfterDowntimeCallback.class);
+        manager.setAfterDowntimeCallback(callback);
+        service2.checkOkReturnVal = false;
+        manager.setFailingServiceAndTimeToRecover(service2, RECHECK_1_TIMEOUT / 2);
+        Assume.assumeFalse(manager.isOk());
+
+        manager.tryToSolveProblems();
+
+        verify(callback, times(1)).afterDowntime(Mockito.anyLong());
+    }
+
 }

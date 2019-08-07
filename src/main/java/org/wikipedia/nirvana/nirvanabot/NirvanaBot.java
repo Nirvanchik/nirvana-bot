@@ -86,6 +86,7 @@ import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInBody;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInCard;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderUniversal;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
+import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.templates.ComplexTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.SimpleTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFindItem;
@@ -102,6 +103,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 
 /**
@@ -244,6 +246,7 @@ public class NirvanaBot extends BasicBot{
     private static final String DEFAULT_REPORT_PREAMBULA_FILE = "templates/Report_preambula.txt";
     private String reportPreambulaFile = DEFAULT_REPORT_PREAMBULA_FILE;
 
+    private static final long NO_RELOGIN_MIN_DOWNTIME_MS = 60L * 1000L;
 
 	private int startNumber = 1;
 
@@ -617,6 +620,20 @@ public class NirvanaBot extends BasicBot{
         serviceManager = createServiceManager();
 
         serviceManager.setTimeout(servicesTimeout);
+        
+        serviceManager.setAfterDowntimeCallback(new AfterDowntimeCallback() {
+
+            @Override
+            public void afterDowntime(long downtime) throws BotFatalError {
+                if (downtime > NO_RELOGIN_MIN_DOWNTIME_MS) {
+                    try {
+                    	log.warn("Relogin after downtime of {} seconds", downtime / 1000);
+                        wiki.relogin();
+                    } catch (FailedLoginException | IOException e) {
+                        throw new BotFatalError(e);
+                    }
+                }
+            }});
 
 		if (!serviceManager.checkServices()) {
             throw new BotFatalError("Some services are down.");

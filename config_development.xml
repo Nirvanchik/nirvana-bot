@@ -57,6 +57,6 @@
 <entry key="starts-per-day">2</entry>
 <entry key="long-task">no</entry>
 <entry key="bot-timeout">0</entry>
-<entry key="services-timeout">0</entry>
+<entry key="services-timeout">120000</entry>
 
 </properties>
