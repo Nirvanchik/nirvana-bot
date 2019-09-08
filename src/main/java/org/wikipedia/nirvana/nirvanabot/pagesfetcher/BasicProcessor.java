@@ -84,9 +84,14 @@ public abstract class BasicProcessor implements PageListProcessor {
 
 	public void parsePageList(NirvanaWiki wiki, HashSet<String> pages, ArrayList<Revision> pageInfoList, HashSet<String> ignore, String pageList) throws IOException, ServiceError {
         if (pageList.startsWith("ERROR : MYSQL error")) {
-        	log.error("Invalid service output: "+StringTools.trancateTo(pageList, 100));
+            log.error("Invalid service output. See first 300 chars: {}",
+                    StringTools.trancateTo(pageList, 300));
         	throw new ServiceError("Invalid output of service: "+service.getName());
-        }		
+        }
+        if (!pageList.contains("\n")) {
+            log.warn("Service output looks bad - no new lines. See first 300 chars: {}",
+                    StringTools.trancateTo(pageList, 300));
+        }
 		String line;
 		String namespaceIdentifier = "";
 		if (namespace!=0) {
