@@ -30,6 +30,11 @@ import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
 import java.io.IOException;
 import java.util.List;
 
+// TODO: Make it instance-based class.
+// Client should create an instance of this class and call
+// factory methods.
+// Implementations may be hidden from user visibility.
+// This will serve good for testing.
 /**
  * @author kin
  *

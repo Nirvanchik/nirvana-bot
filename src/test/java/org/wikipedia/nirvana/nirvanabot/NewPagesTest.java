@@ -23,16 +23,22 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+
+import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mockito;
 
-import junit.framework.Assert;
 
 /**
  * Unit tests for {@link NewPages}.
@@ -111,5 +117,24 @@ public class NewPagesTest {
         String expected = "* [[Антохлор]]";
         String result = NewPages.unmarkDeleted(item);
         Assert.assertEquals(expected, result);
+    }
+
+    private PortalParam makeTestParam() {
+        PortalParam param = new PortalParam();
+        return param;
+    }
+
+    // TODO: Finish this test when it is possible to mock PageListFetcher and PageListProcessor.
+    @Ignore()
+    @Test(expected = DangerousEditException.class)
+    public void cancelEditWhenDangerous() throws Exception {
+        NirvanaWiki wiki = Mockito.mock(NirvanaWiki.class);
+        String oldText = "* item 1\n* item 2\n* item3";
+        when(wiki.getPageText(anyString())).thenReturn(oldText);
+        when(wiki.getTopRevision(anyString())).thenReturn(null);
+        ReportItem reportData = Mockito.mock(ReportItem.class);
+        PortalParam param = this.makeTestParam();
+        NewPages newPages = new NewPages(param);
+        //newPages.update(wiki, reportData, "comment");
     }
 }

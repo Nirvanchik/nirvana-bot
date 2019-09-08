@@ -280,17 +280,18 @@ public class NirvanaBot extends BasicBot{
 			portalModule = null;
 		}
 	}
-	
+
 	public enum BotError {
 		NONE,
 		UNKNOWN_ERROR,
 		BOT_ERROR,
-		SERVICE_ERROR,		
+        SERVICE_ERROR,
+        INTERNAL_ERROR,
 		IO_ERROR,
 		SETTINGS_ERROR,
         FATAL
 	};
-	
+
 	public static String getDefaultFooter() {
 		return DEFAULT_FOOTER;
 	}
@@ -877,6 +878,15 @@ public class NirvanaBot extends BasicBot{
     					//e.printStackTrace();
     					log.error("OOOOPS!!!", e); // print stack trace
     				}	
+                } catch (DangerousEditException e) {
+                    log.error(e.toString()); 
+                    if (retry_count < retryMax) {
+                        log.info("RETRY AGAIN");
+                        retry = true;
+                    } else {
+                        reporter.portalError();
+                        reportItem.error(BotError.INTERNAL_ERROR);
+                    }
     			} catch (ServiceError | IOException e) {
     				log.error(e.toString());
     				

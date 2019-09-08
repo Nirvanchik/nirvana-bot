@@ -27,6 +27,7 @@ import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -84,5 +85,10 @@ public class PortalParam {
 		imageSearchTags = null;
 		fairUseImageTemplates = null;
 		updatesPerDay = 1;
+        delimeter = "\n";
+        categories = new ArrayList<String>();
+        categoriesToIgnore = new ArrayList<String>();
+        usersToIgnore = new ArrayList<String>();
+        deletedFlag = Deleted.REMOVE;
 	}
 }
