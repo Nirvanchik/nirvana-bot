@@ -354,7 +354,7 @@ public class MockNirvanaBot extends NirvanaBot {
         try {
             when(manager.checkServices()).thenReturn(true);
             when(manager.getMainWikiService()).thenReturn(mockWikiService);
-            when(manager.getActiveService()).thenReturn(WikiTools.Service.PETSCAN);
+            when(manager.getActiveService()).thenReturn(WikiTools.Service.PETSCAN_OLD);
         } catch (InterruptedException e) {
             // Ignored, is not going to come here
         }

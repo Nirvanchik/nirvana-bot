@@ -185,7 +185,7 @@ public class NirvanaBot extends BasicBot{
 	private static int DEFAULT_MAXITEMS = 20;
 	private static int DEFAULT_HOURS = 500;
 
-    private static String DEFAULT_SERVICE_NAME = WikiTools.Service.PETSCAN.name;
+    private static String DEFAULT_SERVICE_NAME = WikiTools.Service.PETSCAN_OLD.name;
 	private static String SELECTED_SERVICE_NAME = SERVICE_AUTO;
 
 	private static boolean DEFAULT_USE_FAST_MODE = true;

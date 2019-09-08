@@ -49,7 +49,7 @@ public class WikiTools {
 	private static final String CATSCAN3_DOMAIN = LABS_DOMAIN;
 	private static final String CATSCAN2_PATH = "/catscan2/catscan2.php";
 	private static final String CATSCAN3_PATH = "/catscan3/catscan2.php";
-    private static final String PETSCAN_DOMAIN = "petscan.wmflabs.org";
+    private static final String PETSCANOLD_DOMAIN = "petscan1.wmflabs.org";
     private static final String PETSCAN_PATH = "/";
 	public static final String HTTP = "http";
 	private static final int TIMEOUT_DELAY = 10000; // 10 sec
@@ -131,7 +131,7 @@ public class WikiTools {
                 null,
                 "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\d+\\s+\\S+$",
                 false),
-        PETSCAN ("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
+        PETSCAN_OLD ("petscan", PETSCANOLD_DOMAIN, PETSCAN_PATH,
                 1, 3, 1, -1, 2,
                 true, true, false, 17856,  // 2 year = 24*31*12*2 = 8928*2;
                 ServiceFeatures.PETSCAN_FEATURES,
@@ -242,7 +242,7 @@ public class WikiTools {
 		}
 
         public static Service getDefaultServiceForFeature(int feature, Service defaultValue) {
-            return Service.PETSCAN;
+            return Service.PETSCAN_OLD;
         }
 
         public static boolean hasService(String name) {
