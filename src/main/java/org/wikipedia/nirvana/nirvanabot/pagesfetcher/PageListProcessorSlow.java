@@ -40,8 +40,8 @@ import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.StringTools;
-import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.wiki.CatScanTools;
 
 /**
  * @author kin
@@ -59,8 +59,8 @@ public class PageListProcessorSlow extends BasicProcessor {
 	 * @param hours
 	 * @param namespace
 	 */
-	public PageListProcessorSlow(WikiTools.Service service, List<String> cats, List<String> ignore, String lang,
-	        int depth, int namespace, PageListFetcher fetcher) {
+    public PageListProcessorSlow(CatScanTools.Service service, List<String> cats,
+            List<String> ignore, String lang, int depth, int namespace, PageListFetcher fetcher) {
 		super(service, cats, ignore, lang, depth, namespace, fetcher);		
 	}
 

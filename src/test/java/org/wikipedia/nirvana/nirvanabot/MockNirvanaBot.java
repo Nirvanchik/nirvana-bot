@@ -29,10 +29,10 @@ import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.MockNirvanaWiki;
 import org.wikipedia.nirvana.MockNirvanaWiki.EditInfoMinimal;
-import org.wikipedia.nirvana.MockWikiTools;
 import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
+import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.MockCatScanTools;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 
 import org.apache.commons.lang3.StringUtils;
@@ -147,7 +147,7 @@ public class MockNirvanaBot extends NirvanaBot {
             JSONArray jsonResponces = (JSONArray) jsonObject.get("wiki_tools");
             if (jsonResponces != null) {
                 List<String> wikiToolsResponces = parseMultilineStringArray(jsonResponces);
-                MockWikiTools.mockResponses(wikiToolsResponces);
+                MockCatScanTools.mockResponses(wikiToolsResponces);
             }
 
             JSONArray jsonEdits = (JSONArray) jsonObject.get("expected_edits");
@@ -354,7 +354,7 @@ public class MockNirvanaBot extends NirvanaBot {
         try {
             when(manager.checkServices()).thenReturn(true);
             when(manager.getMainWikiService()).thenReturn(mockWikiService);
-            when(manager.getActiveService()).thenReturn(WikiTools.Service.PETSCAN_OLD);
+            when(manager.getActiveService()).thenReturn(CatScanTools.Service.PETSCAN_OLD);
         } catch (InterruptedException e) {
             // Ignored, is not going to come here
         }
@@ -381,7 +381,7 @@ public class MockNirvanaBot extends NirvanaBot {
      */
     public void validateQueries() {
         if (expectedQueries != null) {
-            Assert.assertEquals(expectedQueries, MockWikiTools.getQueries());
+            Assert.assertEquals(expectedQueries, MockCatScanTools.getQueries());
         }
     }
 }

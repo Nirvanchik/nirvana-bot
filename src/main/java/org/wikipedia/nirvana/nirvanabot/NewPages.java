@@ -33,9 +33,6 @@ import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.WikiBooster;
-import org.wikipedia.nirvana.WikiTools;
-import org.wikipedia.nirvana.WikiTools.Service;
-import org.wikipedia.nirvana.WikiTools.ServiceFeatures;
 import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveFactory;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
@@ -51,6 +48,9 @@ import org.wikipedia.nirvana.nirvanabot.pagesfetcher.ProcessorCombinator;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFinder;
+import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.CatScanTools.Service;
+import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -126,7 +126,7 @@ public class NewPages implements PortalModule{
     protected String middle;
     protected int maxItems;
     protected int hours;
-    protected WikiTools.Service service;
+    protected CatScanTools.Service service;
     protected String delimeter;    
     protected int depth;
     protected int namespace;
@@ -557,8 +557,8 @@ public class NewPages implements PortalModule{
 
     // TODO: Make factory and instantiate it from factory.
     // This will simplify unit-testing.
-	protected PageListProcessor createPageListProcessorWithFetcher(WikiTools.Service service, PageListFetcher fetcher,
-			List<String> categories, List<String> categoriesToIgnore) {
+    protected PageListProcessor createPageListProcessorWithFetcher(CatScanTools.Service service,
+            PageListFetcher fetcher, List<String> categories, List<String> categoriesToIgnore) {
 		if (service.supportsFastMode() && fastMode) {
 			return new PageListProcessorFast(service, categories, categoriesToIgnore, language, depth, namespace, fetcher);
 		} else {
@@ -574,11 +574,11 @@ public class NewPages implements PortalModule{
             fetcher = createSimpleFetcher();
         } else {
             Service service = this.service;
-            if (!service.supportsFeature(WikiTools.ServiceFeatures.NEWPAGES_WITH_TEMPLATE)) {
+            if (!service.supportsFeature(CatScanTools.ServiceFeatures.NEWPAGES_WITH_TEMPLATE)) {
                 service = Service.getDefaultServiceForFeature(
                         ServiceFeatures.NEWPAGES_WITH_TEMPLATE, this.service);
             }
-            if (service.supportsFeature(WikiTools.ServiceFeatures.NEWPAGES_WITH_TEMPLATE)) {
+            if (service.supportsFeature(CatScanTools.ServiceFeatures.NEWPAGES_WITH_TEMPLATE)) {
                 fetcher = new FetcherFactory.NewPagesWithTemplatesFetcher(templateFilter, hours);
             } else {
                 needsCustomTemlateFiltering = true;

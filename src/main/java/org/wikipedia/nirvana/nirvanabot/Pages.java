@@ -24,12 +24,12 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.WikiTools;
-import org.wikipedia.nirvana.WikiTools.Service;
-import org.wikipedia.nirvana.WikiTools.ServiceFeatures;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
+import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.CatScanTools.Service;
+import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
 
 import java.util.ArrayList;
 
@@ -59,12 +59,12 @@ public class Pages extends NewPages {
         if (templateFilter == null) {
             fetcher = createSimpleFetcher();
 		} else {
-            WikiTools.Service service = this.service;
-			if (!service.supportsFeature(WikiTools.ServiceFeatures.PAGES_WITH_TEMPLATE)) {
-                service = WikiTools.Service.getDefaultServiceForFeature(
-                        WikiTools.ServiceFeatures.PAGES_WITH_TEMPLATE, this.service);
+            CatScanTools.Service service = this.service;
+            if (!service.supportsFeature(CatScanTools.ServiceFeatures.PAGES_WITH_TEMPLATE)) {
+                service = CatScanTools.Service.getDefaultServiceForFeature(
+                        CatScanTools.ServiceFeatures.PAGES_WITH_TEMPLATE, this.service);
     		}
-            if (service.supportsFeature(WikiTools.ServiceFeatures.PAGES_WITH_TEMPLATE)) {
+            if (service.supportsFeature(CatScanTools.ServiceFeatures.PAGES_WITH_TEMPLATE)) {
                 fetcher = new FetcherFactory.PagesWithTemplatesFetcher(templateFilter);
             } else {
                 needsCustomTemlateFiltering = true;

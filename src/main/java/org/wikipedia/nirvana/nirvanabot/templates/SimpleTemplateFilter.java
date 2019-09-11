@@ -23,7 +23,7 @@
 
 package org.wikipedia.nirvana.nirvanabot.templates;
 
-import org.wikipedia.nirvana.WikiTools.EnumerationType;
+import org.wikipedia.nirvana.wiki.CatScanTools.EnumerationType;
 
 import java.util.ArrayList;
 import java.util.Collections;

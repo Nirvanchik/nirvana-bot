@@ -29,7 +29,7 @@ import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.StringTools;
-import org.wikipedia.nirvana.WikiTools;
+import org.wikipedia.nirvana.wiki.CatScanTools;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 public abstract class BasicProcessor implements PageListProcessor {
     protected final Logger log;
 
-	protected WikiTools.Service service;
+    protected CatScanTools.Service service;
     protected List<String> categories;
 	protected List<String> categoriesToIgnore;
 	protected String language;
@@ -66,7 +66,7 @@ public abstract class BasicProcessor implements PageListProcessor {
     /**
 	 * 
 	 */
-	public BasicProcessor(WikiTools.Service service, List<String> cats, List<String> ignore, 
+    public BasicProcessor(CatScanTools.Service service, List<String> cats, List<String> ignore, 
 			String lang, int depth, int namespace, PageListFetcher fetcher) {
 		this.service = service;
 		this.categories = cats;

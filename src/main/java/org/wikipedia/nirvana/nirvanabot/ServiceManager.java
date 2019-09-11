@@ -30,8 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.wikipedia.nirvana.NirvanaWiki;
-import org.wikipedia.nirvana.WikiTools;
-import org.wikipedia.nirvana.WikiTools.Service;
 import org.wikipedia.nirvana.nirvanabot.serviceping.CatscanService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.InternetService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.NetworkInterface;
@@ -41,6 +39,8 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.ServiceGroup.Listener;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
+import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 
 import org.apache.logging.log4j.LogManager;
@@ -55,7 +55,7 @@ public class ServiceManager {
 
 	private final ServicePinger servicePinger;
     private ServiceGroup<CatscanService> pageListFetchServiceGroup = null;
-	private WikiTools.Service activeService = null;
+    private CatScanTools.Service activeService = null;
     private WikiService mainWiki = null;
     private InternetService internet = null;
     private OnlineService catscan = null;
@@ -87,13 +87,15 @@ public class ServiceManager {
     }
 
     public void updateCatScan(String defaultServiceName, String selectedServiceName) throws BotFatalError {
-        WikiTools.Service defaultService = WikiTools.Service.getServiceByName(defaultServiceName);
+        CatScanTools.Service defaultService =
+                CatScanTools.Service.getServiceByName(defaultServiceName);
         assert defaultService != null;
 
         if (selectedServiceName.equalsIgnoreCase(SERVICE_AUTO)) {
             activeService = defaultService;
         } else {
-            activeService = WikiTools.Service.getServiceByName(selectedServiceName, defaultService);
+            activeService =
+                    CatScanTools.Service.getServiceByName(selectedServiceName, defaultService);
         }
         log.info("Selected service is: " + activeService.getName());
 
@@ -153,7 +155,7 @@ public class ServiceManager {
 		servicePinger.setAfterDowntimeCallback(callback);
 	}
 
-	public WikiTools.Service getActiveService() {
+    public CatScanTools.Service getActiveService() {
 		return activeService;
 	}
 

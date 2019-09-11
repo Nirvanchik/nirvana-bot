@@ -21,25 +21,27 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana;
+package org.wikipedia.nirvana.wiki;
+
+import org.wikipedia.nirvana.wiki.CatScanTools;
 
 import java.util.List;
 
 /**
- * This is just a wrapper for {@link WikiTools} to access its package-visible methods not intended
+ * This is just a wrapper for {@link CatScanTools} to access its package-visible methods not intended
  * for public access.
  */
-public class MockWikiTools {
+public class MockCatScanTools {
 
     public static void reset() {
-        WikiTools.resetFromTest();
+        CatScanTools.resetFromTest();
     }
     
     public static void mockResponses(List<String> responces) {
-        WikiTools.mockResponces(responces);
+        CatScanTools.mockResponces(responces);
     }
 
     public static List<String> getQueries() {
-        return WikiTools.getQueries();
+        return CatScanTools.getQueries();
     }
 }

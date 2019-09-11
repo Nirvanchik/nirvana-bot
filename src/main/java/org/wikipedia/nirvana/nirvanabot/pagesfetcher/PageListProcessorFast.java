@@ -31,7 +31,7 @@ import java.util.List;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
-import org.wikipedia.nirvana.WikiTools.Service;
+import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 
 /**
  * @author kin

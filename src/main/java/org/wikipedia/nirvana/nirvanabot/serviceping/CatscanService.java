@@ -23,8 +23,8 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
-import org.wikipedia.nirvana.WikiTools;
-import org.wikipedia.nirvana.WikiTools.ServiceFeatures;
+import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -36,12 +36,12 @@ import java.util.Date;
  *
  */
 public class CatscanService extends InternetService {
-	WikiTools.Service service;
+    CatScanTools.Service service;
 
 	/**
 	 * @param priority
 	 */
-	public CatscanService(WikiTools.Service service) {
+    public CatscanService(CatScanTools.Service service) {
 		this(service.getName(), service);
 	}
 
@@ -49,34 +49,35 @@ public class CatscanService extends InternetService {
 	 * @param name
 	 * @param priority
 	 */
-	public CatscanService(String name, WikiTools.Service service) {
+    public CatscanService(String name, CatScanTools.Service service) {
 		super(name);
 		this.service = service;
 	}
-	
-	public WikiTools.Service getService() {
+
+    public CatScanTools.Service getService() {
 		return service;
 	}
-	
+
 	@Override
 	protected boolean checkAvailable() {
 		URL url;
         try {
-	        url = new URL(WikiTools.HTTP + "://" + service.DOMAIN + service.PATH);
+            url = new URL(CatScanTools.HTTP + "://" + service.DOMAIN + service.PATH);
         } catch (MalformedURLException e) {
 	        throw new RuntimeException(e);
         }
 		return checkConnection(url);
 	}
-	
+
 	@Override
     protected boolean checkWorking() throws InterruptedException {	    
         if (service.supportsFeature(ServiceFeatures.PAGES)) {
 			try {
 				Date date = new Date();
 				log.debug("time: "+date.toString());
-				WikiTools.setFastMode(true);
-	            String result = WikiTools.loadPagesForCatWithService(service, "HTML", "ru", 1, 0);
+                CatScanTools.setFastMode(true);
+                String result = CatScanTools.loadPagesForCatWithService(service, "HTML", "ru", 1,
+                        0);
 	            date = new Date();
 	            log.debug("time: "+date.toString());
 	            if (result == null || result.isEmpty()) {
@@ -91,7 +92,7 @@ public class CatscanService extends InternetService {
             	setLastError("Exception when calling loadPagesForCatWithService(): " + e.toString());
 	            return false;
             } finally {
-            	WikiTools.setFastMode(false);
+                CatScanTools.setFastMode(false);
             }
         } 
         if (service.supportsFeature(ServiceFeatures.NEWPAGES)) {
@@ -99,8 +100,9 @@ public class CatscanService extends InternetService {
 					//System.currentTimeMillis();
 					Date date = new Date();
 					log.debug("time: "+date.toString());
-					WikiTools.setFastMode(true);
-		            String result = WikiTools.loadNewPagesForCatWithService(service, "HTML", "ru", 0, 50*12*31*24, 0);
+                    CatScanTools.setFastMode(true);
+                    String result = CatScanTools.loadNewPagesForCatWithService(service, "HTML",
+                            "ru", 0, 50*12*31*24, 0);
 		            date = new Date();
 		            log.debug("time: "+date.toString());
 		            if (result == null || result.isEmpty()) {
@@ -115,7 +117,7 @@ public class CatscanService extends InternetService {
 	            	setLastError("Exception when calling loadNewPagesForCatWithService(): " + e.toString());
 		            return false;
 	            } finally {
-	            	WikiTools.setFastMode(false);
+                    CatScanTools.setFastMode(false);
 	            }
 		} /*else {
 			setLastError("This is an unexpected service which doesn't support required things");

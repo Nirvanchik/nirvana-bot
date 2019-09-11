@@ -23,9 +23,9 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import org.wikipedia.nirvana.WikiTools;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
+import org.wikipedia.nirvana.wiki.CatScanTools;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class PortalParam {
 	public List<String> categoriesToIgnore;
 	public List<String> usersToIgnore;
 	public String page;
-	public WikiTools.Service service;
+    public CatScanTools.Service service;
 	public String archive;
 	public ArchiveSettings archSettings;
 	public int ns;

@@ -25,12 +25,12 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.MockDateTools;
-import org.wikipedia.nirvana.MockWikiTools;
 import org.wikipedia.nirvana.BasicBot;
-import org.wikipedia.nirvana.WikiTools.Service;
-import org.wikipedia.nirvana.WikiTools.ServiceFeatures;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.MockNirvanaBot.TestError;
+import org.wikipedia.nirvana.wiki.MockCatScanTools;
+import org.wikipedia.nirvana.wiki.CatScanTools.Service;
+import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -45,7 +45,8 @@ import junit.framework.Assert;
 /**
  * This is gonna be the main unit-acceptance-test for almost all main bot logic code.
  * The idea is to mock real wiki data in mocked {@link org.wikipedia.Wiki} class, mock responses in
- * {@link org.wikipedia.nirvana.WikiTools} class and simulate conditions of real bot running.
+ * {@link org.wikipedia.nirvana.wiki.CatScanTools} class and simulate conditions of real bot
+ * running.
  * So, we run the bot and check if his edits in our mocked {@link 
  * org.wikipedia.nirvana.MockNirvanaWiki MockNirvanaWiki} are correct.
  */
@@ -73,7 +74,7 @@ public class NirvanaBotTest {
 
     @After
     public void tearDown() throws Exception {
-        MockWikiTools.reset();
+        MockCatScanTools.reset();
         TestLocalizationManager.reset();
         MockDateTools.reset();
         TestPortalConfig.reset();

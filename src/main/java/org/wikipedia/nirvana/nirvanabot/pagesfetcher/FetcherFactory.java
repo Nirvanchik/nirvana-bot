@@ -23,9 +23,9 @@
 
 package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
-import org.wikipedia.nirvana.WikiTools;
-import org.wikipedia.nirvana.WikiTools.Service;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
+import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 
 import java.io.IOException;
 import java.util.List;
@@ -55,13 +55,15 @@ public abstract class FetcherFactory {
 		public String loadNewPagesForCatListAndIgnore(Service service,
 	            List<String> categories, List<String> categoriesToIgnore,
 	            String language, int depth, int namespace) throws IOException, InterruptedException {
-			return WikiTools.loadNewPagesForCatListAndIgnoreWithService(service, categories, categoriesToIgnore, language, depth, hours, namespace);
+            return CatScanTools.loadNewPagesForCatListAndIgnoreWithService(service, categories,
+                    categoriesToIgnore, language, depth, hours, namespace);
 		}
 
         @Override
         public String loadNewPagesForCat(Service service, String category, String language,
                 int depth, int namespace) throws IOException, InterruptedException {
-        	return WikiTools.loadNewPagesForCatWithService(service, category, language, depth, hours, namespace);
+            return CatScanTools.loadNewPagesForCatWithService(service, category, language, depth,
+                    hours, namespace);
         }
 	}
 
@@ -79,7 +81,7 @@ public abstract class FetcherFactory {
                 List<String> categories, List<String> categoriesToIgnore,
                 String language, int depth, int namespace) throws IOException,
                 InterruptedException {
-            return WikiTools.loadNewPagesWithTemplatesForCatListAndIgnoreWithService(
+            return CatScanTools.loadNewPagesWithTemplatesForCatListAndIgnoreWithService(
                     service, categories, categoriesToIgnore, language, depth, depth,
                     templateFilter.getTemplates(), templateFilter.listType(), namespace);
         }
@@ -88,7 +90,7 @@ public abstract class FetcherFactory {
         public String loadNewPagesForCat(Service service, String category,
                 String language, int depth, int namespace) throws IOException,
                 InterruptedException {
-            return WikiTools.loadNewPagesWithTemplatesForCatWithService(
+            return CatScanTools.loadNewPagesWithTemplatesForCatWithService(
                     service, category, language, depth, hours, templateFilter.getTemplates(),
                     templateFilter.listType(), namespace);
         }
@@ -106,17 +108,19 @@ public abstract class FetcherFactory {
 		        List<String> categories, List<String> categoriesToIgnore,
 		        String language, int depth, int namespace) throws IOException,
 		        InterruptedException {		
-			return WikiTools.loadPagesForCatListAndIgnoreWithService(service, categories, categoriesToIgnore, language, depth, namespace);
+            return CatScanTools.loadPagesForCatListAndIgnoreWithService(service, categories,
+                    categoriesToIgnore, language, depth, namespace);
 		}
 
         @Override
         public String loadNewPagesForCat(Service service, String category,
                 String language, int depth, int namespace) throws IOException,
                 InterruptedException {
-        	return WikiTools.loadPagesForCatWithService(service, category, language, depth, namespace);
+            return CatScanTools.loadPagesForCatWithService(service, category, language, depth,
+                    namespace);
         }
 	}
-	
+
 	public static class PagesWithTemplatesFetcher implements PageListFetcher {
         TemplateFilter templateFilter;
 
@@ -129,7 +133,7 @@ public abstract class FetcherFactory {
 		        List<String> categories, List<String> categoriesToIgnore,
 		        String language, int depth, int namespace) throws IOException,
 		        InterruptedException {
-			return WikiTools.loadPagesWithTemplatesForCatListAndIgnoreWithService(service, 
+            return CatScanTools.loadPagesWithTemplatesForCatListAndIgnoreWithService(service,
                     categories, categoriesToIgnore, language, depth, templateFilter.getTemplates(),
                     templateFilter.listType(), namespace);
 		}
@@ -138,7 +142,7 @@ public abstract class FetcherFactory {
         public String loadNewPagesForCat(Service service, String category,
                 String language, int depth, int namespace) throws IOException,
                 InterruptedException {
-        	return WikiTools.loadPagesWithTemplatesForCatWithService(service, 
+            return CatScanTools.loadPagesWithTemplatesForCatWithService(service,
                     category, language, depth, templateFilter.getTemplates(),
                     templateFilter.listType(), namespace);
         }

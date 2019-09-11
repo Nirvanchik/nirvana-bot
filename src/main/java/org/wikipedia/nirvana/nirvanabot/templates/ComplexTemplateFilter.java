@@ -23,7 +23,7 @@
 
 package org.wikipedia.nirvana.nirvanabot.templates;
 
-import org.wikipedia.nirvana.WikiTools.EnumerationType;
+import org.wikipedia.nirvana.wiki.CatScanTools.EnumerationType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +39,7 @@ public class ComplexTemplateFilter extends SimpleTemplateFilter {
 
     /**
      * Creates an instance having list of {@link TemplateFindItem} and {@link
-     * org.wikipedia.nirvana.WikiTools.EnumerationType EnumerationType}. 
+     * org.wikipedia.nirvana.wiki.CatScanTools.EnumerationType EnumerationType}. 
      */
     public ComplexTemplateFilter(List<TemplateFindItem> items, EnumerationType enumType) {        
         super(null, enumType);

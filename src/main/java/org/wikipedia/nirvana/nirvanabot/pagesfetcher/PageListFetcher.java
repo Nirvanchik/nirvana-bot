@@ -23,10 +23,10 @@
 
 package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
+import org.wikipedia.nirvana.wiki.CatScanTools.Service;
+
 import java.io.IOException;
 import java.util.List;
-
-import org.wikipedia.nirvana.WikiTools.Service;
 
 /**
  * @author kin

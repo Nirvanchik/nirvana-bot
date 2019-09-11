@@ -75,8 +75,6 @@ import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
-import org.wikipedia.nirvana.WikiTools;
-import org.wikipedia.nirvana.WikiTools.EnumerationType;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
@@ -90,7 +88,9 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeC
 import org.wikipedia.nirvana.nirvanabot.templates.ComplexTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.SimpleTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFindItem;
+import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.WikiUtils;
+import org.wikipedia.nirvana.wiki.CatScanTools.EnumerationType;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -185,7 +185,7 @@ public class NirvanaBot extends BasicBot{
 	private static int DEFAULT_MAXITEMS = 20;
 	private static int DEFAULT_HOURS = 500;
 
-    private static String DEFAULT_SERVICE_NAME = WikiTools.Service.PETSCAN_OLD.name;
+    private static String DEFAULT_SERVICE_NAME = CatScanTools.Service.PETSCAN_OLD.name;
 	private static String SELECTED_SERVICE_NAME = SERVICE_AUTO;
 
 	private static boolean DEFAULT_USE_FAST_MODE = true;
@@ -453,7 +453,7 @@ public class NirvanaBot extends BasicBot{
 	}
 	
 	private static boolean validateService(String service) {
-        return WikiTools.Service.hasService(service);
+        return CatScanTools.Service.hasService(service);
 	}
 
 	private static boolean validateSelectedService(String service) {
@@ -1089,7 +1089,7 @@ public class NirvanaBot extends BasicBot{
                     service.equalsIgnoreCase(SERVICE_AUTO)) {
 				// do nothing - it's all done
 			} else {
-    			param.service = WikiTools.Service.getServiceByName(service); 
+                param.service = CatScanTools.Service.getServiceByName(service); 
     			if (param.service == null) {
     				param.service = serviceManager.getActiveService();
                     log.warn(String.format(ERROR_INVALID_PARAMETER_EN, PortalConfig.KEY_SERVICE,
@@ -1170,17 +1170,17 @@ public class NirvanaBot extends BasicBot{
                 log.debug("use hack: replace \n by ,");
                 option = option.replace("\\n", ",");
             }
-            WikiTools.EnumerationType enumType = WikiTools.EnumerationType.OR;
+            CatScanTools.EnumerationType enumType = CatScanTools.EnumerationType.OR;
             if (option.startsWith("!") || option.startsWith("^")) {
                 option = option.substring(1);
-                enumType = WikiTools.EnumerationType.NONE;
+                enumType = CatScanTools.EnumerationType.NONE;
             }
 			if (!option.isEmpty()) {
                 String sep = ",";
                 if (option.contains(";")) {
                     sep = ";";
-                    if (enumType != WikiTools.EnumerationType.NONE) {
-                        enumType = WikiTools.EnumerationType.AND;
+                    if (enumType != CatScanTools.EnumerationType.NONE) {
+                        enumType = CatScanTools.EnumerationType.AND;
                     }
 				}
                 List<String> templates = BotUtils.optionToList(option, true, sep);
