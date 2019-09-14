@@ -102,7 +102,7 @@ public class ServiceManager {
         Map<Service, CatscanService> servicesMap = new HashMap<>();
         ArrayList<CatscanService> services = new ArrayList<>();
         for (Service s: Service.values()) {
-            if (!s.DOWN) {
+            if (!s.down) {
                 CatscanService service = new CatscanService(s);
                 service.dependsOn(internet);
                 servicesMap.put(s, service);

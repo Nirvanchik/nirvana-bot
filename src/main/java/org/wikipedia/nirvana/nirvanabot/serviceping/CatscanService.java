@@ -62,7 +62,7 @@ public class CatscanService extends InternetService {
 	protected boolean checkAvailable() {
 		URL url;
         try {
-            url = new URL(CatScanTools.HTTP + "://" + service.DOMAIN + service.PATH);
+            url = new URL(CatScanTools.HTTP + "://" + service.domain + service.path);
         } catch (MalformedURLException e) {
 	        throw new RuntimeException(e);
         }

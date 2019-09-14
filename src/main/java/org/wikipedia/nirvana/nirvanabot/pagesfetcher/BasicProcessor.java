@@ -76,8 +76,8 @@ public abstract class BasicProcessor implements PageListProcessor {
 		this.namespace = namespace;
 		this.LINE_RULE = "^.+$";
 		this.fetcher = fetcher;
-		if (service.LINE_RULE != null) {
-			this.LINE_RULE = service.LINE_RULE;
+        if (service.lineRule != null) {
+            this.LINE_RULE = service.lineRule;
 		}
         log = LogManager.getLogger(this.getClass().getName());
 	}
@@ -99,9 +99,11 @@ public abstract class BasicProcessor implements PageListProcessor {
 		}
 		StringReader sr = new StringReader(pageList);
 		BufferedReader b = new BufferedReader(sr);
-		for(int j=0;j<service.SKIP_LINES;j++) b.readLine();
+        for (int j = 0; j < service.skipLines; j++) {
+            b.readLine();
+        }
 		Pattern p = Pattern.compile(LINE_RULE);
-		
+
 		int j = 0;
         while ((line = b.readLine()) != null)
         {
@@ -116,7 +118,7 @@ public abstract class BasicProcessor implements PageListProcessor {
             int thisNS = 0; // articles by default
             if (!service.filteredByNamespace) {
             	try {
-            		thisNS = Integer.parseInt(groups[service.NS_POS]);
+                    thisNS = Integer.parseInt(groups[service.nsPos]);
             	} catch (NumberFormatException e) {
             		log.warn("invalid namespace detected", e);
             	}
@@ -124,7 +126,7 @@ public abstract class BasicProcessor implements PageListProcessor {
             // то что мы ищем совпадает с тем, что нашли
             if (service.filteredByNamespace || thisNS == namespace)
             {
-                String title = groups[service.TITLE_POS].replace('_', ' ');
+                String title = groups[service.titlePos].replace('_', ' ');
                 if (ignore != null && ignore.contains(title))
                 {
                     continue;
@@ -138,18 +140,18 @@ public abstract class BasicProcessor implements PageListProcessor {
                 if (!pages.contains(title))
                 {
                 	long revId=0;
-                	if (service.REVID_POS>=0) {
+                    if (service.revidPos >= 0) {
 		                try {
-		                	revId = Long.parseLong(groups[service.REVID_POS]);
+                            revId = Long.parseLong(groups[service.revidPos]);
 		                } catch(NumberFormatException e) {
 		                	log.error(e.toString());
 		                	continue;
 		                }
                 	}
                 	long id = 0;
-                	if (service.ID_POS>=0) {
+                    if (service.idPos >= 0) {
                 		try {
-		                	id = Long.parseLong(groups[service.ID_POS]);
+                            id = Long.parseLong(groups[service.idPos]);
 		                } catch(NumberFormatException e) {
 		                	log.error(e.toString());
 		                	continue;
@@ -166,9 +168,9 @@ public abstract class BasicProcessor implements PageListProcessor {
                 // пространство а потом переименовываются в основное пространство
             	//String title = groups[TITLE_POS].replace('_', ' ');
             	long revId=0;
-            	if (service.REVID_POS>=0) {
+                if (service.revidPos >= 0) {
 	                try {
-	                	revId = Long.parseLong(groups[service.REVID_POS]);
+                        revId = Long.parseLong(groups[service.revidPos]);
 	                } catch(NumberFormatException e) {
 	                	log.error(e.toString());
 	                	continue;
@@ -200,7 +202,7 @@ public abstract class BasicProcessor implements PageListProcessor {
 	}
 	@Override
 	public boolean revisionAvailable() {		
-		return (service.REVID_POS>=0);
+        return (service.revidPos >= 0);
 	}
-	
+
 }

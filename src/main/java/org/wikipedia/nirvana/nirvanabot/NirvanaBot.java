@@ -1212,7 +1212,7 @@ public class NirvanaBot extends BasicBot{
                 DEFAULT_DEPTH, MAX_DEPTH);
 
         param.hours = parseIntegerKeyWithMaxVal(config, PortalConfig.KEY_HOURS, data.errors,
-                DEFAULT_HOURS, param.service.MAX_HOURS);
+                DEFAULT_HOURS, param.service.maxHours);
 
         int defaultMaxItems = DEFAULT_MAXITEMS;
         if (isTypeWithUnlimitedItems(type)) {

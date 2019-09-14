@@ -124,7 +124,9 @@ public class PageListProcessorSlow extends BasicProcessor {
 	        	throw new ServiceError("Invalid output of service: "+service.getName());
 	        }
 	        BufferedReader br = new BufferedReader(new StringReader(pageList));
-        	for(int j=0;j<service.SKIP_LINES;j++) br.readLine();
+            for (int j = 0; j < service.skipLines; j++) {
+                br.readLine();
+            }
         	Pattern p = Pattern.compile(LINE_RULE);
         	int j = 0;
 	        while ((line = br.readLine()) != null)
@@ -136,16 +138,15 @@ public class PageListProcessorSlow extends BasicProcessor {
 	        		throw new ServiceError("Invalid output of service: "+service.getName());
 	        	}
 	            String[] groups = line.split("\t");
-	            if (groups[service.NS_POS].equals(String.valueOf(this.namespace)))
-	            {
-	                String title = groups[service.TITLE_POS].replace('_', ' ');
+                if (groups[service.nsPos].equals(String.valueOf(this.namespace))) {
+	                String title = groups[service.titlePos].replace('_', ' ');
 	                ignore.add(title);
-	            } else if (groups[service.NS_POS].equals(String.valueOf(Wiki.USER_NAMESPACE)) &&
+                } else if (groups[service.nsPos].equals(String.valueOf(Wiki.USER_NAMESPACE)) &&
 	            		namespace!= Wiki.USER_NAMESPACE) {
 	            	long revId=0;
-                	if(service.REVID_POS>=0) {
+                    if (service.revidPos >= 0) {
 		                try {
-		                	revId = Long.parseLong(groups[service.REVID_POS]);
+                            revId = Long.parseLong(groups[service.revidPos]);
 		                } catch(NumberFormatException e) {
 		                	log.error(e.toString());
 		                	continue;
