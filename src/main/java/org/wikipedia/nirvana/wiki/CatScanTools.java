@@ -114,6 +114,7 @@ public class CatScanTools {
         @Deprecated
         public static final int CATSCAN2_FEATURES =
                 PAGES | NEWPAGES | FAST_MODE | PAGES_WITH_TEMPLATE;
+        @Deprecated
         /**
          * Features of {@link CatScanTools.Service#CATSCAN3}.
          */
@@ -171,6 +172,7 @@ public class CatScanTools {
                 null,
                 "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\S+$",
                 true),
+        @Deprecated
         CATSCAN3("catscan3", CATSCAN3_DOMAIN, CATSCAN3_PATH,
                 2, 2, 0, -1, 1, true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
                 ServiceFeatures.CATSCAN3_FEATURES,
@@ -189,7 +191,7 @@ public class CatScanTools {
                 null,
                 null,
                 "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\d+\\s+\\S+$",
-                false),
+                true),
         PETSCAN_OLD("petscan", PETSCANOLD_DOMAIN, PETSCAN_PATH,
                 1, 3, 1, -1, 2,
                 true, true, false, 17856,  // 2 year = 24*31*12*2 = 8928*2;
