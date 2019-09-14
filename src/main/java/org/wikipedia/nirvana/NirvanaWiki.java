@@ -417,21 +417,18 @@ public class NirvanaWiki extends Wiki {
     public boolean allowEditsByCurrentBot(String text) {
     	return NirvanaWiki.allowBots(text, this.getCurrentUser().getUsername());
     }
-    
+
 	public static boolean allowBots(String text, String user)
     {
-		log.debug("=> allowBots()");
 		String pattern = "\\{\\{(nobots|bots\\|(allow=none|deny=(.*?" + user + ".*?|all)|optout=all))\\}\\}";
     	//Pattern p = Pattern.compile("\\[\\[(?<article>.+)\\]\\]");
     	Pattern p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
     	Matcher m = p.matcher(text);
     	boolean b1 = m.find();
-    	log.debug("m.find() finished");
     	pattern = "\\{\\{(bots\\|(allow=([^\\}]+?)))\\}\\}"; 
     	p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
     	m = p.matcher(text);
     	boolean b2 = false;
-    	//m.find()
     	if(m.find()) {
     		String who = m.group(3);
     		if(who.trim().compareToIgnoreCase("none")!=0 && 
@@ -440,11 +437,9 @@ public class NirvanaWiki extends Wiki {
     			b2 = true;    			
     		}
     	}
-    	log.debug("m.find() finished");
-    	log.debug("<= allowBots()");
         return (!b1 && !b2);  
     }
-	
+
 	public static String getAllowBotsString(String text) {
 		String nobots = "";
 		String pattern = "(\\{\\{(nobots|bots\\|([^\\}]+))\\}\\})";
