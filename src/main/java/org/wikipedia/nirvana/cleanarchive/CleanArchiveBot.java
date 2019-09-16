@@ -27,10 +27,10 @@ import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.TextUtils;
-import org.wikipedia.nirvana.WikiBooster;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.wiki.WikiBooster;
 
 import org.apache.commons.lang3.StringUtils;
 

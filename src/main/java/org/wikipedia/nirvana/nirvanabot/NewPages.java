@@ -32,7 +32,6 @@ import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.StringTools;
-import org.wikipedia.nirvana.WikiBooster;
 import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveFactory;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
@@ -49,6 +48,7 @@ import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFinder;
 import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.WikiBooster;
 import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
 

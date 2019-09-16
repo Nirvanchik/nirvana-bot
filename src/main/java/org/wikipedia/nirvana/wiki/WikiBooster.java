@@ -21,9 +21,10 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana;
+package org.wikipedia.nirvana.wiki;
 
 import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.NirvanaWiki;
 
 import org.apache.commons.collections.keyvalue.MultiKey;
 import org.apache.commons.collections.map.MultiKeyMap;
