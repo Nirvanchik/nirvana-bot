@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.wiki;
 
 import org.wikipedia.nirvana.HTTPTools;
+import org.wikipedia.nirvana.annotation.VisibleForTesting;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -314,8 +315,10 @@ public class CatScanTools {
             return ((features & feature) != 0); 
         }
 
+        @VisibleForTesting
         public static void setTestFeatures(Integer features) {
             testFeatures = features;
+            testMode = true;
         }
 
         /**
@@ -789,6 +792,7 @@ public class CatScanTools {
         fastMode = fast;
     }
 
+    @VisibleForTesting
     static void mockResponces(List<String> responces) {
         testMode = true;
         if (mockedResponses == null) {
@@ -798,6 +802,7 @@ public class CatScanTools {
         mockedResponses.addAll(responces);
     }
 
+    @VisibleForTesting
     static void resetFromTest() {
         if (mockedResponses != null) mockedResponses.clear();
         if (savedQueries != null) savedQueries.clear();
@@ -805,6 +810,7 @@ public class CatScanTools {
         Service.setTestFeatures(null);
     }
 
+    @VisibleForTesting
     static List<String> getQueries() {
         return savedQueries;
     }
