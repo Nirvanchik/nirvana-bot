@@ -48,7 +48,7 @@ import java.util.Set;
  * don't waste thousands of HTTP GET/POST requests to download what you want, you use tens or
  * hundreds instead. Each HTTP GET is expensive, it takes time, it adds a load to network.
  *
- * WARNING!    The booster can consume a lot of memory. Consider downloading 10k pages with 20 KB size
+ * WARNING! The booster can consume a lot of memory. Consider downloading 10k pages with 20 KB size
  * each one. That will take about 100 MB of memory.
  */
 public class WikiBooster {
