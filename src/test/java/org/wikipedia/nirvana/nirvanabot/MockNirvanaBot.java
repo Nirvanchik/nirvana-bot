@@ -27,13 +27,13 @@ import static org.mockito.Mockito.when;
 
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.MockNirvanaWiki;
-import org.wikipedia.nirvana.MockNirvanaWiki.EditInfoMinimal;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
+import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.MockCatScanTools;
-import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
+import org.wikipedia.nirvana.wiki.MockNirvanaWiki;
+import org.wikipedia.nirvana.wiki.MockNirvanaWiki.EditInfoMinimal;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;

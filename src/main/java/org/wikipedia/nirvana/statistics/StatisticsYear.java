@@ -31,8 +31,8 @@ import java.util.Map;
 
 import javax.management.BadAttributeValueExpException;
 
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 /**
  * @author kin

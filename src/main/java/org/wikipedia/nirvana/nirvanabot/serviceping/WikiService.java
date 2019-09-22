@@ -23,12 +23,12 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
-
-import org.wikipedia.nirvana.NirvanaWiki;
 
 /**
  * @author kin

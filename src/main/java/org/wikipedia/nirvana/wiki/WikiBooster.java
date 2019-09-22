@@ -24,7 +24,6 @@
 package org.wikipedia.nirvana.wiki;
 
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.NirvanaWiki;
 
 import org.apache.commons.collections.keyvalue.MultiKey;
 import org.apache.commons.collections.map.MultiKeyMap;
@@ -81,7 +80,7 @@ public class WikiBooster {
      * WARNING! You will not be able to use {@link #hasTemplate(String, String)} if create an
      * instance with this constructor.
      * 
-     * @param wiki {@link org.wikipedia.nirvana.NirvanaWiki NirvanaWiki} instance.
+     * @param wiki {@link org.wikipedia.nirvana.wiki.NirvanaWiki NirvanaWiki} instance.
      * @param pages an array of pages.
      */
     public WikiBooster(NirvanaWiki wiki, String[] pages) {
@@ -95,7 +94,7 @@ public class WikiBooster {
      * WARNING! You will not be able to use {@link #hasTemplate(String, String)} if create an
      * instance with this constructor.
      * 
-     * @param wiki {@link org.wikipedia.nirvana.NirvanaWiki NirvanaWiki} instance.
+     * @param wiki {@link org.wikipedia.nirvana.wiki.NirvanaWiki NirvanaWiki} instance.
      * @param pages list of pages.
      */
     public WikiBooster(NirvanaWiki wiki, List<String> pages) {
@@ -106,7 +105,7 @@ public class WikiBooster {
      * Constructor taking a wiki instance, page list and templates list.
      * If you need a booster for another set of pages, please create a new instance for that.
      * 
-     * @param wiki {@link org.wikipedia.nirvana.NirvanaWiki NirvanaWiki} instance.
+     * @param wiki {@link org.wikipedia.nirvana.wiki.NirvanaWiki NirvanaWiki} instance.
      * @param pages list of pages.
      * @param templates list of templates.
      */
@@ -129,7 +128,7 @@ public class WikiBooster {
      * Page list will be taken from those revisions.
      * If you need a booster for another set of pages, please create a new instance for that.
      * 
-     * @param wiki {@link org.wikipedia.nirvana.NirvanaWiki NirvanaWiki} instance.
+     * @param wiki {@link org.wikipedia.nirvana.wiki.NirvanaWiki NirvanaWiki} instance.
      * @param revs list of revisions of class {@link org.wikipedia.Wiki.Revision Revision}.
      */
     public static WikiBooster create(NirvanaWiki wiki, List<Revision> revs,

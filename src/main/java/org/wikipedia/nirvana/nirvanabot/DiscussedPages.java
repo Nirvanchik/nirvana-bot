@@ -28,9 +28,9 @@ import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.BotUtils;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.HTTPTools;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.DiscussionPagesSettings.DiscussionPageTemplate;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;
 import java.util.ArrayList;

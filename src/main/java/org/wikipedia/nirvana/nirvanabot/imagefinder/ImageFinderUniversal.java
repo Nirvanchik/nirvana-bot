@@ -23,9 +23,9 @@
 
 package org.wikipedia.nirvana.nirvanabot.imagefinder;
 
-import java.io.IOException;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
-import org.wikipedia.nirvana.NirvanaWiki;
+import java.io.IOException;
 
 /**
  * @author kin

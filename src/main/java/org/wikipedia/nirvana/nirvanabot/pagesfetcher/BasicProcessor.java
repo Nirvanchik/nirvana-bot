@@ -26,10 +26,10 @@ package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

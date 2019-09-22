@@ -31,8 +31,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.MockNirvanaWiki;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 

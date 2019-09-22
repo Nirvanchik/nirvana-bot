@@ -26,12 +26,12 @@ import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
 import org.apache.commons.collections.keyvalue.MultiKey;
 import org.apache.commons.collections.map.MultiKeyMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.wikipedia.nirvana.NirvanaWiki;
 
 /**
  * @author kin

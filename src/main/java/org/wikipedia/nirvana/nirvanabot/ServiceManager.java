@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.nirvanabot.serviceping.CatscanService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.InternetService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.NetworkInterface;
@@ -40,6 +39,7 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
 import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 

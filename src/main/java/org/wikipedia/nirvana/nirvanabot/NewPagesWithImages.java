@@ -36,11 +36,11 @@ import org.wikipedia.nirvana.BotUtils;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.BasicBot;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinder;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 /**
  * @author kin

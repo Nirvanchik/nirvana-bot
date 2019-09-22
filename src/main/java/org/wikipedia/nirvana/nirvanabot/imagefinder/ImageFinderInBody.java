@@ -23,10 +23,10 @@
 
 package org.wikipedia.nirvana.nirvanabot.imagefinder;
 
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
 import java.io.IOException;
 import java.util.regex.Pattern;
-
-import org.wikipedia.nirvana.NirvanaWiki;
 
 /**
  * @author kin

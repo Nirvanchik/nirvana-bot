@@ -33,10 +33,10 @@ import java.util.regex.Pattern;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -32,8 +32,9 @@ import java.util.TreeMap;
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.wikipedia.nirvana.NirvanaWiki;
+
 import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 
 /**

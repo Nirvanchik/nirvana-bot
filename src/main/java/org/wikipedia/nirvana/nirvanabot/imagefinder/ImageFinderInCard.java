@@ -31,8 +31,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
 import org.apache.commons.lang3.StringUtils;
-import org.wikipedia.nirvana.NirvanaWiki;
 
 /**
  * @author kin

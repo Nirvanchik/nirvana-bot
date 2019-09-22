@@ -24,8 +24,8 @@ package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.TextUtils;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

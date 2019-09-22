@@ -23,8 +23,8 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;
 

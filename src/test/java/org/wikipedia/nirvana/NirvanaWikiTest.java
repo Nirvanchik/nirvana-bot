@@ -26,6 +26,8 @@ package org.wikipedia.nirvana;
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
+import org.wikipedia.nirvana.wiki.MockNirvanaWiki;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.junit.After;
 import org.junit.AfterClass;

@@ -24,7 +24,7 @@
 package org.wikipedia.nirvana.nirvanabot.templates;
 
 import org.wikipedia.Wiki;
-import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.wikipedia.nirvana.wiki.WikiBooster;
 import org.wikipedia.nirvana.wiki.WikiUtils;
 

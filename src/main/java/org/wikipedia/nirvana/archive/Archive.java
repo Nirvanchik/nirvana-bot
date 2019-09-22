@@ -28,8 +28,8 @@ import java.util.Calendar;
 
 import javax.security.auth.login.LoginException;
 
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

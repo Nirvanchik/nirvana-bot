@@ -23,14 +23,14 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.MockDateTools;
-import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.MockNirvanaBot.TestError;
-import org.wikipedia.nirvana.wiki.MockCatScanTools;
 import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
+import org.wikipedia.nirvana.wiki.MockCatScanTools;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -48,7 +48,7 @@ import junit.framework.Assert;
  * {@link org.wikipedia.nirvana.wiki.CatScanTools} class and simulate conditions of real bot
  * running.
  * So, we run the bot and check if his edits in our mocked {@link 
- * org.wikipedia.nirvana.MockNirvanaWiki MockNirvanaWiki} are correct.
+ * org.wikipedia.nirvana.wiki.MockNirvanaWiki MockNirvanaWiki} are correct.
  */
 public class NirvanaBotTest {
     public static final String TEST_DATA_PATH = "src/test/resources/test_data/";

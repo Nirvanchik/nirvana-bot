@@ -21,7 +21,9 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana;
+package org.wikipedia.nirvana.wiki;
+
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Assert;

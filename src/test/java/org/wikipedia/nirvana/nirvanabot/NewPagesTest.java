@@ -26,9 +26,9 @@ package org.wikipedia.nirvana.nirvanabot;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.junit.After;
 import org.junit.AfterClass;

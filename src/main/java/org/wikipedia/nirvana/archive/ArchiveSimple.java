@@ -29,8 +29,9 @@ import java.util.Calendar;
 
 import javax.security.auth.login.LoginException;
 
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
 import org.apache.commons.lang3.StringUtils;
-import org.wikipedia.nirvana.NirvanaWiki;
 
 public class ArchiveSimple extends Archive {
 	protected ArrayList<String> items;

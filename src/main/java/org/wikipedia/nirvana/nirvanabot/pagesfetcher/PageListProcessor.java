@@ -27,8 +27,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 /**
  * @author kin

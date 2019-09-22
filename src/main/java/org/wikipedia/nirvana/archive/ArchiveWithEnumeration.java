@@ -29,8 +29,9 @@ import java.util.Calendar;
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.wikipedia.nirvana.NirvanaWiki;
+
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 /**
  * @author kin

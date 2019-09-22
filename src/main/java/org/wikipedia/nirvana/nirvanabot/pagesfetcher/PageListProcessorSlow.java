@@ -37,11 +37,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 /**
  * @author kin

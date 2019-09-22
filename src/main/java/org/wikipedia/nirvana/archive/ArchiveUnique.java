@@ -31,8 +31,8 @@ import java.util.HashMap;
 import javax.security.auth.login.LoginException;
 
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 /**
  * @author kin

@@ -22,7 +22,7 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
-import org.wikipedia.nirvana.NirvanaWiki;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.FileNotFoundException;
 import java.util.Arrays;

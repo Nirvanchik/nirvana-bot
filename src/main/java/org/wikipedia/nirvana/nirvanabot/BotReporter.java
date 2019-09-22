@@ -24,8 +24,8 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.localization.Localizer;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

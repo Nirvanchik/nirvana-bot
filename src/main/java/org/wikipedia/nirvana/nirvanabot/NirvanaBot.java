@@ -73,7 +73,6 @@ import org.wikipedia.nirvana.BotUtils;
 import org.wikipedia.nirvana.DateTools;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.BasicBot;
-import org.wikipedia.nirvana.NirvanaWiki;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
@@ -89,6 +88,7 @@ import org.wikipedia.nirvana.nirvanabot.templates.ComplexTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.SimpleTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFindItem;
 import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.wikipedia.nirvana.wiki.WikiUtils;
 import org.wikipedia.nirvana.wiki.CatScanTools.EnumerationType;
 

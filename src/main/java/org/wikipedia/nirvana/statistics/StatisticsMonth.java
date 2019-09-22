@@ -22,6 +22,8 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -30,8 +32,6 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import javax.management.BadAttributeValueExpException;
-
-import org.wikipedia.nirvana.NirvanaWiki;
 
 /**
  * @author kin
