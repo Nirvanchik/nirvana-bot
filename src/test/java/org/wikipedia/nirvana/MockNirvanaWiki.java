@@ -347,7 +347,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     }
 
     @Override
-    public boolean[][] hasTemplates(String[] titles, String... templates) throws IOException {
+    public boolean[][] hasTemplates(String[] titles, String[] templates) throws IOException {
         boolean[][] results = new boolean[titles.length][];
         for (int i = 0; i < titles.length; i++) {
             String title = titles[i];

@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /**
  * This is a thing that increases bot performance greatly. When you know what pages texts you're
  * going to download or what pages templates you're going to get you and so on you can use this
@@ -55,12 +57,17 @@ public class WikiBooster {
     private static final Logger log;
     private final NirvanaWiki wiki;
     private final List<String> pages;
+    @Nullable
     private final List<String> templates;
     private final Set<String> pagesSet;
+    @Nullable
     private final Set<String> templatesSet;
+    @Nullable
     private Map<String, List<String>> templatesCache = null;
+    @Nullable
     private Map<String, String> pageTextCache = null;
     private int templatesNs = -1;
+    @Nullable
     private MultiKeyMap hasTemplatesCache = null;
 
     static {
@@ -78,7 +85,7 @@ public class WikiBooster {
      * @param pages an array of pages.
      */
     public WikiBooster(NirvanaWiki wiki, String[] pages) {
-        this(wiki, new ArrayList<>(Arrays.asList(pages)), null);
+        this(wiki, Arrays.asList(pages), null);
     }
 
     /**
@@ -105,10 +112,10 @@ public class WikiBooster {
      */
     public WikiBooster(NirvanaWiki wiki, List<String> pages, List<String> templates) {
         this.wiki = wiki;
-        this.pages = pages;
+        this.pages = new ArrayList<>(pages);
         pagesSet = new HashSet<>(pages);
         if (templates != null && templates.size() > 0) {
-            this.templates = templates;
+            this.templates = new ArrayList<>(templates);
             this.templatesSet = new HashSet<>(templates);            
         } else {
             this.templates = null;
@@ -138,16 +145,16 @@ public class WikiBooster {
      * Gets the list of templates used on a particular page that are in a particular namespace(s).
      *
      * @param title the title of the page.
-     * @param ns a list of namespaces to filter by, empty = all namespaces.
+     * @param ns namespace of template.
      * @return the list of templates used on that page in that namespace.
      * @see org.wikipedia.Wiki#getTemplates(String, int...)
      */
     public List<String> getTemplates(String title, int ns) throws IOException {
         if (!pagesSet.contains(title)) {
-            throw new RuntimeException("The booster is not prepared for page: " + title);
+            throw new IllegalStateException("The booster is not prepared for page: " + title);
         }
         if (templatesNs != -1 && templatesNs != ns) {
-            throw new RuntimeException(
+            throw new IllegalStateException(
                     String.format("Unexpected namespace: %d. The booster was used with %d",
                             ns, templatesNs));
         }
@@ -173,7 +180,7 @@ public class WikiBooster {
      */
     public String getPageText(String title) throws IOException {
         if (!pagesSet.contains(title)) {
-            throw new RuntimeException("The booster is not prepared for page: " + title);
+            throw new IllegalStateException("The booster is not prepared for page: " + title);
         }
         if (pageTextCache == null) {
             log.debug("Request texts for " + pages.size() + " pages.");
@@ -196,6 +203,13 @@ public class WikiBooster {
     public void removePage(String title) {
         pages.remove(title);
         pagesSet.remove(title);
+        if (pageTextCache != null) {
+            pageTextCache.remove(title);
+        }
+        if (templatesCache != null) {
+            templatesCache.remove(title);
+        }
+        // TODO: Remove data from hasTemplatesCache
     }
 
     /**
@@ -208,7 +222,7 @@ public class WikiBooster {
      */
     public boolean hasTemplate(String title, String template) throws IOException {
         if (templates == null) {
-            throw new RuntimeException("This class is not prepared to be used with templates");
+            throw new IllegalStateException("This class is not prepared to be used with templates");
         }
         if (!pagesSet.contains(title)) {
             throw new IllegalStateException("The booster is not prepared for page: " + title);
