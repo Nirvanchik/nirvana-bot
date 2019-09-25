@@ -1,5 +1,5 @@
 /**
- *  @(#)NirvanaWikiTest.java 06.02.2017
+ *  @(#)NirvanaWikiTest.java
  *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -21,12 +21,11 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana;
+package org.wikipedia.nirvana.wiki;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
-import org.wikipedia.nirvana.wiki.MockNirvanaWiki;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.junit.After;
