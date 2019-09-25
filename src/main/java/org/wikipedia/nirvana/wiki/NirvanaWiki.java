@@ -42,10 +42,17 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 
 /**
+ * Wiki.java extensions for easy bot development.
+ * The most important:
+ * 1) logging via log4j
+ * 2) debug mode: edit() saves old and new versions of page text to file instead of real editing.
+ * 3) helper methods like allowBots() or isRedirect()
+ * 4) extra methods to minimize repeatable code working with Wiki.java: prepend(), etc. 
  * based on Wiki.java version 0.33
  */
 public class NirvanaWiki extends Wiki {
@@ -53,8 +60,8 @@ public class NirvanaWiki extends Wiki {
     private static final String REDIRECT_NAME_RU = "перенаправление";
     private static final String SIGN = " ~~~~";
 
-	protected static final String DEFULT_DUMP_FOLDER = "dump";
-	
+    protected static final String DEFULT_DUMP_FOLDER = "dump";
+    
     private static final long serialVersionUID = -8745212681497644127L;
 
     protected static Logger log;
@@ -63,15 +70,12 @@ public class NirvanaWiki extends Wiki {
     private final String language;
     private Localizer localizer;
     Pattern redirectPattern;
-	private boolean dumpMode = false;
+    private boolean dumpMode = false;
     private String dumpFolder = null;
-	private boolean logDomain = false;
+    private boolean logDomain = false;
 
     private String username;
     private char[] password;
-
-    //rev_comment` varbinary(767) NOT NULL, Summaries longer than 200 characters are
-    //*  truncated server-side.
 
     static {
         log = LogManager.getLogger(NirvanaWiki.class.getName());
@@ -166,27 +170,47 @@ public class NirvanaWiki extends Wiki {
 
     }
 
-	/**
-	 * @param domain
-	 */
-	public NirvanaWiki(String domain) {
+    /**
+     * Public constructor.
+     *
+     * @param domain Wiki site domain. Example: "en.wikipedia.org".
+     */
+    public NirvanaWiki(String domain) {
         super(domain);
         language = DEFAULT_LANGUAGE;
-	}
-	
-	/**
-	 * @param domain
-	 * @param scriptPath
-	 */
-	public NirvanaWiki(String domain, String scriptPath) {
-		super(domain, scriptPath);
+    }
+    
+    /**
+     * Public constructor.
+     *
+     * @param domain Wiki site domain. Example: "en.wikipedia.org".
+     * @param scriptPath Wiki site API path. Example: "/w".
+     */
+    public NirvanaWiki(String domain, String scriptPath) {
+        super(domain, scriptPath);
         language = DEFAULT_LANGUAGE;
-	}
+    }
 
-	public NirvanaWiki(String domain, String scriptPath, String protocol) {
+    /**
+     * Public constructor.
+     *
+     * @param domain Wiki site domain. Example: "en.wikipedia.org".
+     * @param scriptPath Wiki site API path. Example: "/w".
+     * @param protocol Protocol to use ("https://", "http://").
+     */
+    public NirvanaWiki(String domain, String scriptPath, String protocol) {
         this(domain, scriptPath, protocol, DEFAULT_LANGUAGE);
-	}
+    }
 
+    /**
+     * Public constructor.
+     *
+     * @param domain Wiki site domain. Example: "en.wikipedia.org".
+     * @param scriptPath Wiki site API path. Example: "/w".
+     * @param protocol Protocol to use ("https://", "http://").
+     * @param language Wiki site language. Language is used for correct work of isRedirect() method
+     *         which is language-dependent.
+     */
     public NirvanaWiki(String domain, String scriptPath, String protocol, String language) {
         super(domain, scriptPath, protocol);
         if (language == null) {
@@ -223,80 +247,83 @@ public class NirvanaWiki extends Wiki {
         }
     }
 
-	public void setDumpMode(String folder) {
-		dumpMode = true;
-		dumpFolder = folder;
-	}
+    /**
+     * Enables dump mode. In dump mode edit() method doesn't do real edit. It writes old and updated
+     * versions of the page to a file (dump) in specified folder.
+     *
+     * @param folder Folder path where dumps will be written.
+     */
+    public void setDumpMode(String folder) {
+        dumpMode = true;
+        dumpFolder = folder;
+    }
 
     /**
      *  Don't use hardcoded output folders.
      */
     @Deprecated
-	public void setDumpMode() {
-		setDumpMode(DEFULT_DUMP_FOLDER);
-	}
+    public void setDumpMode() {
+        setDumpMode(DEFULT_DUMP_FOLDER);
+    }
 
-	/**
+    /**
      *  Logs a successful result.
      *  @param text string the string to log
      *  @param method what we are currently doing
      *  @param level the level to log at
      *  @since 0.06
      */
-    protected void log(Level level, String method, String text)
-    {
+    protected void log(Level level, String method, String text) {
         StringBuilder sb = new StringBuilder(100);
-        if(logDomain) {
-        	sb.append('[');
-        	sb.append(domain);
+        if (logDomain) {
+            sb.append('[');
+            sb.append(domain);
             sb.append("] ");
         }
         sb.append(method);
         sb.append("() - ");
         sb.append(text);
         sb.append('.');
-        if(level==Level.SEVERE) {
-        	log.error(sb.toString());
-        } else if(level==Level.WARNING) {
-        	log.warn(sb.toString());
-        } else if(level==Level.CONFIG || level==Level.INFO) {
-        	log.info(sb.toString());
-        } else if(level==Level.FINE) {
-        	log.debug(sb.toString());
+        if (level == Level.SEVERE) {
+            log.error(sb.toString());
+        } else if (level == Level.WARNING) {
+            log.warn(sb.toString());
+        } else if (level == Level.CONFIG || level == Level.INFO) {
+            log.info(sb.toString());
+        } else if (level == Level.FINE) {
+            log.debug(sb.toString());
         } else {
-        	log.trace(sb.toString());
+            log.trace(sb.toString());
         }
     }
     
-	/**
+    /**
      *  Logs a successful result.
      *  @param text string the string to log
      *  @param method what we are currently doing
      *  @param level the level to log at
-     *  @since 0.06
      */
-    protected void log(Level level, String method, String text, Exception e)
-    {
+    protected void log(Level level, String method, String text, Exception ex) {
         StringBuilder sb = new StringBuilder(100);
-        if(logDomain) {
-        	sb.append('[');
-        	sb.append(domain);
+        if (logDomain) {
+            sb.append('[');
+            sb.append(domain);
             sb.append("] ");
         }
         sb.append(method);
         sb.append("() - ");
         sb.append(text);
         sb.append('.');
-        if(level==Level.SEVERE) {
-        	log.error(sb.toString(), e);
-        } else if(level==Level.WARNING) {
-        	log.warn(sb.toString(), e);
-        } else if(level==Level.CONFIG || level==Level.INFO) {
-        	log.info(sb.toString(), e);
-        } else if(level==Level.FINE) {
-        	log.debug(sb.toString(), e);
+        if (level == Level.SEVERE) {
+            log.error(sb.toString(), ex);
+        } else if (level == Level.WARNING) {
+            log.warn(sb.toString(), ex);
+        } else if (level == Level.CONFIG || level == Level.INFO) {
+            log.info(sb.toString(), ex);
+        } else if (level == Level.FINE) {
+            log.debug(sb.toString(), ex);
         } else {
-        	log.trace(sb.toString(), e);
+            log.trace(sb.toString(), ex);
         }
     }
 
@@ -306,229 +333,384 @@ public class NirvanaWiki extends Wiki {
      *  @param method what we are currently doing
      *  @since 0.08
      */
-    protected void logurl(String url, String method)
-    {
+    protected void logurl(String url, String method) {
         log.debug(method + "() - fetching URL: " + url);
     }
     
     @Override
     public synchronized void edit(String title, String text, String summary, boolean minor,
             boolean bot, int section, Calendar basetime) throws IOException, LoginException {
-    	if(!this.dumpMode) {
+        if (!this.dumpMode) {
             super.edit(title, text, summary, minor, bot, section, null);
-    	} else {
-    		String fileNew = title+".new.txt";
-    		String fileOld = title+".old.txt";
-    		String old = null;
-    		try {old=this.getPageText(title);} catch (FileNotFoundException e) {old="";}
+        } else {
+            String fileNew = title + ".new.txt";
+            String fileOld = title + ".old.txt";
+            String old = null;
+            try {
+                old = this.getPageText(title);
+            } catch (FileNotFoundException e) {
+                old = "";
+            }
             FileTools.dump(old, dumpFolder, fileOld);
             FileTools.dump(text, dumpFolder, fileNew);
-    	}
+        }
     }
-    
-    public void edit(String title, String text, String summary, boolean minor, boolean bot) throws IOException, LoginException
-    {
+
+    /**
+     * Edits a page by setting its text to the supplied value.
+     * The same as {@link #edit(String, String, String, boolean, boolean, int, Calendar)} but
+     * with default basetime and section arguments. Basetime is null and section is whole text.
+     */
+    public void edit(String title, String text, String summary, boolean minor, boolean bot)
+            throws IOException, LoginException {
         edit(title, text, summary, minor, bot, -2, null);
     }
     
-    public void edit(String title, String text, String summary) throws IOException, LoginException
-    {
+    /**
+     * Edits a page by setting its text to the supplied value.
+     * The same as {@link #edit(String, String, String, boolean, boolean, int, Calendar)} but
+     * with default basetime, section, minor, and bot arguments. Basetime is null, section is whole
+     * text, minor is false, bot is true.
+     */
+    public void edit(String title, String text, String summary) throws IOException, LoginException {
         edit(title, text, summary, false, true, -2, null);
     }
-    
-    public boolean editIfChanged(String title, String text, String summary, boolean minor, boolean bot) throws IOException, LoginException
-    {
-    	String old = null;
-    	try {
-    		old = this.getPageText(title);
-    	} catch(FileNotFoundException e) {
-    		// ignore. all job is done not here :)
-    	}
-    	if(old==null || old.length()!=text.length() || !old.equals(text)) { // to compare lengths is faster than comparing 5k chars
-    		log.debug("editing "+title);
+
+    /**
+     * Edits page only if page text was changed. First it gets current page text, then compares it
+     * with a new one and then edits if required.
+     *
+     * @param title the title of the page
+     * @param text the text of the page
+     * @param summary the edit summary or the title of the new section. See
+     *     [[Help:Edit summary]]. Summaries longer than 200 characters are
+     *     truncated server-side.
+     * @param minor whether the edit should be marked as minor, See [[Help:Minor edit]].
+     * @param bot whether to mark the edit as a bot edit (ignored if one does not have the necessary
+     *     permissions)
+     * @return <code>true</code> if edit was done.
+     */
+    public boolean editIfChanged(String title, String text, String summary, boolean minor,
+            boolean bot) throws IOException, LoginException {
+        String old = "";
+        try {
+            old = this.getPageText(title);
+        } catch (FileNotFoundException e) {
+            // ignore. all job is done not here :)
+        }
+        // to compare lengths is faster than comparing 5k chars
+        if (old.length() != text.length() || !old.equals(text)) {
+            log.debug("Editing {}", title);
             edit(title, text, summary, minor, bot, -2, null);
-    		return true;
-    	} else {
-    		log.debug("skip updating "+title+ " (no changes)");
-    	}
-    	return false;
+            return true;
+        } else {
+            log.debug("Skip updating {} (no changes)", title);
+        }
+        return false;
     }
 
-    public void prepend(String title, String stuff, boolean minor, boolean bot) throws IOException, LoginException
-    {
+    /**
+     * Add string at the beginning of wiki page.
+     *
+     * @param title The title of the page.
+     * @param stuff String to add at the beginning.
+     * @param minor whether the edit should be marked as minor, See [[Help:Minor edit]].
+     * @param bot whether to mark the edit as a bot edit (ignored if one does not have the necessary
+     *     permissions)
+     */
+    public void prepend(String title, String stuff, boolean minor, boolean bot)
+            throws IOException, LoginException {
         StringBuilder text = new StringBuilder(100000);
         text.append(stuff);
         text.append(getPageText(title));
         edit(title, text.toString(), "+" + stuff, minor, bot);
     }
     
-    public void prepend(String title, String stuff, String comment, boolean minor, boolean bot) throws IOException, LoginException
-    {
+    /**
+     * Add string at the beginning of wiki page.
+     *
+     * @param title The title of the page.
+     * @param stuff String to add at the beginning.
+     * @param comment Edit comment (summary).
+     * @param minor whether the edit should be marked as minor, See [[Help:Minor edit]].
+     * @param bot whether to mark the edit as a bot edit (ignored if one does not have the necessary
+     *     permissions)
+     */
+    public void prepend(String title, String stuff, String comment, boolean minor, boolean bot)
+            throws IOException, LoginException {
         StringBuilder text = new StringBuilder(100000);
         text.append(stuff);
         text.append(getPageText(title));
         this.edit(title, text.toString(), comment, minor, bot);
     }
-    
-    public void prependOrCreate(String title, String stuff, String comment, boolean minor, boolean bot) throws IOException, LoginException
-    {
-    	log.debug("prependOrCreate -> "+title +" appended text size = "+stuff.length());
-    	if(stuff.isEmpty()) return;
+
+    /**
+     * Add string at the beginning of wiki page. Create it new page if it dosn't exist.
+     *
+     * @param title The title of the page.
+     * @param stuff String to add at the beginning.
+     * @param comment Edit comment (summary).
+     * @param minor whether the edit should be marked as minor, See [[Help:Minor edit]].
+     * @param bot whether to mark the edit as a bot edit (ignored if one does not have the necessary
+     *     permissions)
+     */
+    public void prependOrCreate(String title, String stuff, String comment, boolean minor,
+            boolean bot) throws IOException, LoginException {
+        log.debug("prependOrCreate() -> Page {} will be appended with text size = {}", title,
+                stuff.length());
+        if (stuff.isEmpty()) return;
         StringBuilder text = new StringBuilder(100000);
         text.append(stuff);
         try {
-        	log.debug("prependOrCreate -> getting old text");
-        	text.append(getPageText(title));
-        	log.debug("prependOrCreate -> new text size = "+text.length());
+            text.append(getPageText(title));
         } catch (FileNotFoundException e) {
-        	log.debug("page "+title+" does not exist -> create");
+            log.debug("Page {} does not exist. It will be created.", title);
         }
         this.edit(title, text.toString(), comment, minor, bot);
-        log.debug("prependOrCreate -> EXIT(OK)");
     }
-    
-    public void append(String title, String stuff, String comment, boolean minor, boolean bot) throws IOException, LoginException
-    {
+
+    /**
+     * Add string at the end of wiki page.
+     *
+     * @param title The title of the page.
+     * @param stuff String to add at the beginning.
+     * @param comment Edit comment (summary).
+     * @param minor whether the edit should be marked as minor, See [[Help:Minor edit]].
+     * @param bot whether to mark the edit as a bot edit (ignored if one does not have the necessary
+     *     permissions)
+     */
+    public void append(String title, String stuff, String comment, boolean minor, boolean bot)
+            throws IOException, LoginException {
         StringBuilder text = new StringBuilder(100000);        
         text.append(getPageText(title));
         text.append(stuff);
         this.edit(title, text.toString(), comment, minor, bot);
     }
-    
-    public void appendOrCreate(String title, String stuff, String comment, boolean minor, boolean bot) throws IOException, LoginException
-    {
-    	if(stuff.isEmpty()) return;
+
+    /**
+     * Add string at the end of wiki page. Create it new page if it dosn't exist.
+     *
+     * @param title The title of the page.
+     * @param stuff String to add at the beginning.
+     * @param comment Edit comment (summary).
+     * @param minor whether the edit should be marked as minor, See [[Help:Minor edit]].
+     * @param bot whether to mark the edit as a bot edit (ignored if one does not have the necessary
+     *     permissions)
+     */
+    public void appendOrCreate(String title, String stuff, String comment, boolean minor,
+            boolean bot) throws IOException, LoginException {
+        if (stuff.isEmpty()) return;
         StringBuilder text = new StringBuilder(100000);        
         try {
-        	text.append(getPageText(title));
+            text.append(getPageText(title));
         } catch (FileNotFoundException e) {
-        	log.debug("page "+title+" does not exist -> create");
+            log.debug("Page {} does not exist. It will be created.", title);
         }
         text.append(stuff);
         this.edit(title, text.toString(), comment, minor, bot);
     }
 
+    /**
+     * @return <code>true</code> if the specified page is a redirect.
+     */
     public boolean isRedirect(String article) {
         checkRedirectPattern();
         Matcher m = redirectPattern.matcher(article);
         return m.matches();
     }
 
+    /**
+     * Find out if it is allowed to edit this page by current user. Users can forbid editing any
+     * page using Bots or Nobots template for all bots, or for specified bots.
+     * See [[Template:Bots]], [[Template:Nobots]] for more details.
+     *
+     * @param text Wiki text of wiki page.
+     * @return <code>true</code> if editing is allowed.
+     */
     public boolean allowEditsByCurrentBot(String text) {
-    	return NirvanaWiki.allowBots(text, this.getCurrentUser().getUsername());
+        return NirvanaWiki.allowBots(text, this.getCurrentUser().getUsername());
     }
 
-	public static boolean allowBots(String text, String user)
-    {
-		String pattern = "\\{\\{(nobots|bots\\|(allow=none|deny=(.*?" + user + ".*?|all)|optout=all))\\}\\}";
-    	//Pattern p = Pattern.compile("\\[\\[(?<article>.+)\\]\\]");
-    	Pattern p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
-    	Matcher m = p.matcher(text);
-    	boolean b1 = m.find();
-    	pattern = "\\{\\{(bots\\|(allow=([^\\}]+?)))\\}\\}"; 
-    	p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
-    	m = p.matcher(text);
-    	boolean b2 = false;
-    	if(m.find()) {
-    		String who = m.group(3);
-    		if(who.trim().compareToIgnoreCase("none")!=0 && 
-    			who.trim().compareToIgnoreCase("all")!=0 &&
-    			!who.contains(user)) {
-    			b2 = true;    			
-    		}
-    	}
+    /**
+     * Find out if it is allowed to edit this page by specified user. Users can forbid editing any
+     * page using Bots or Nobots template for all bots, or for specified bots.
+     * See [[Template:Bots]], [[Template:Nobots]] for more details.
+     *
+     * @param text Wiki text of wiki page.
+     * @param user User (bot) name.
+     * @return <code>true</code> if editing is allowed.
+     */
+    public static boolean allowBots(String text, String user) {
+        String pattern = "\\{\\{(nobots|bots\\|(allow=none|deny=(.*?" + user +
+                ".*?|all)|optout=all))\\}\\}";
+        //Pattern p = Pattern.compile("\\[\\[(?<article>.+)\\]\\]");
+        Pattern p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher m = p.matcher(text);
+        boolean b1 = m.find();
+        pattern = "\\{\\{(bots\\|(allow=([^\\}]+?)))\\}\\}"; 
+        p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        m = p.matcher(text);
+        boolean b2 = false;
+        if (m.find()) {
+            String who = m.group(3);
+            if (who.trim().compareToIgnoreCase("none") != 0 && 
+                    who.trim().compareToIgnoreCase("all") != 0 &&
+                    !who.contains(user)) {
+                b2 = true;                
+            }
+        }
         return (!b1 && !b2);  
     }
 
-	public static String getAllowBotsString(String text) {
-		String nobots = "";
-		String pattern = "(\\{\\{(nobots|bots\\|([^\\}]+))\\}\\})";
-    	Pattern p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
-    	Matcher m = p.matcher(text);
-    	if(m.find()) {
-    		nobots = m.group(1);
-    	}
-		return nobots;
-	}
-	
-	public String [] getPageLinesArray(String title) throws IOException {
-		String text = getPageText(title); 
-        return text.split("\n");
-	}
+    /**
+     * Gets allow-bots string found in page text or null if not found. Allow-bots string is a
+     * wiki code with [[Bots]] or [[Nobots]] template.
+     * See https://ru.wikipedia.org/wiki/Шаблон:Nobots.
+     * See https://ru.wikipedia.org/wiki/Шаблон:Bots
+     * See https://en.wikipedia.org/wiki/Template:Bots
+     *
+     * @param text Wiki text of the page.
+     * @return Allow-bots string or <code>null</code>.
+     */
+    public static String getAllowBotsString(String text) {
+        String nobots = "";
+        String pattern = "(\\{\\{(nobots|bots\\|([^\\}]+))\\}\\})";
+        Pattern p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher m = p.matcher(text);
+        if (m.find()) {
+            nobots = m.group(1);
+        }
+        return nobots;
+    }
 
-	public List<String> getPageLines(String title) throws IOException {
+    /**
+     * Get page text split by lines.
+     *
+     * @param title Title of the page.
+     * @return page contents put in array of lines. 
+     */
+    public String [] getPageLinesArray(String title) throws IOException {
+        String text = getPageText(title); 
+        return text.split("\n");
+    }
+
+    /**
+     * Get page text split by lines.
+     *
+     * @param title Title of the page.
+     * @return page contents put in list of strings. 
+     */
+    public List<String> getPageLines(String title) throws IOException {
         return Arrays.asList(getPageLinesArray(title));
-	}
+    }
  
-	 /**
-	 *  Gets the first revision of a page.
-	 *  @param title a page
-	 *  @return the oldest revision of that page
-	 *  @throws IOException if a network error occurs
-	 *  @since 0.24
-	 */
-	public Revision getFirstRevision(String title, boolean resolveRedirect) throws IOException
-	{
-		boolean was = isResolvingRedirects();
-	    this.setResolveRedirects(resolveRedirect);
-	    Revision r = super.getFirstRevision(title);
-	    setResolveRedirects(was);
-	    return r;
-	}
-	
-	/**
-	 *  Gets the most recent revision of a page.
-	 *  @param title a page
-	 *  @return the most recent revision of that page
-	 *  @throws IOException if a network error occurs
-	 *  @since 0.24
-	 */
-	public Revision getTopRevisionWithNewTitle(String title, boolean resolveRedirect) throws IOException
-	{
-		boolean was = isResolvingRedirects();
-	    this.setResolveRedirects(resolveRedirect);
-	    Revision r = super.getTopRevision(title);
-	    setResolveRedirects(was);
-	    return r;
-	}
-	
-    public boolean exists(String title) throws IOException
-    {
+    /**
+     *  Gets the first revision of a page.
+     *  @param title a page
+     *  @return the oldest revision of that page
+     *  @throws IOException if a network error occurs
+     *  @since 0.24
+     */
+    public Revision getFirstRevision(String title, boolean resolveRedirect) throws IOException {
+        boolean was = isResolvingRedirects();
+        this.setResolveRedirects(resolveRedirect);
+        Revision r = super.getFirstRevision(title);
+        setResolveRedirects(was);
+        return r;
+    }
+    
+    /**
+     *  Gets the most recent revision of a page.
+     *  @param title a page
+     *  @return the most recent revision of that page
+     *  @throws IOException if a network error occurs
+     *  @since 0.24
+     */
+    public Revision getTopRevisionWithNewTitle(String title, boolean resolveRedirect)
+            throws IOException {
+        boolean was = isResolvingRedirects();
+        this.setResolveRedirects(resolveRedirect);
+        Revision r = super.getTopRevision(title);
+        setResolveRedirects(was);
+        return r;
+    }
+
+    /**
+     * Check if the specified page exists in wiki.
+     *
+     * @param title Title of the page.
+     * @return <code>true</code> if exists.
+     */
+    public boolean exists(String title) throws IOException {
         return exists(new String[] { title })[0];
     }
-    
-    public Revision[] getPageHistory(String title, Calendar start, Calendar end) throws IOException {
-    	return getPageHistory(title, start, end, false);
+
+    /**
+     * Get page history in the specified time range.
+     *
+     * @param title Title of the page.
+     * @param start Starting date.
+     * @param end Ending date.
+     * @return Array of revisions made in this time range.
+     */
+    public Revision[] getPageHistory(String title, Calendar start, Calendar end)
+            throws IOException {
+        return getPageHistory(title, start, end, false);
     }
-    
+
+    /**
+     * Get namespace prefixed page title.
+     *
+     * @param namespace Namespace integer id.
+     * @param name Title of the page.
+     * @return Title of the page with namespace name. Example: [[Template:Bots]].
+     */
     public String prefixedName(int namespace, String name) throws IOException {
-    	assert namespace != Wiki.MAIN_NAMESPACE;
-    	return namespaceIdentifier(namespace) + ":" + name;
+        assert namespace != Wiki.MAIN_NAMESPACE;
+        return namespaceIdentifier(namespace) + ":" + name;
     }
-    
-    public String getPageTextBefore(String title, Calendar c) throws IOException
-    {
+
+    /**
+     * Gets page text that the page had before the specified date.
+     * Returns null if page did not exist before that date.
+     *
+     * @param title Title of the page.
+     * @param date Date.
+     * @return Page text before that <code>date</code> or null.
+     */
+    @Nullable
+    public String getPageTextBefore(String title, Calendar date) throws IOException {
         // pitfall check
-        if (namespace(title) < 0)
+        if (namespace(title) < 0) {
             throw new UnsupportedOperationException("Cannot retrieve Special: or Media: pages!");
-        
-        Revision revs[] = getPageHistory(title, null, c, false);
+        }
+
+        Revision [] revs = getPageHistory(title, null, date, false);
         if (revs.length == 0) {
-        	return null;
+            return null;
         }
         Revision r = revs[0];        
         return r.getText();
     }
-    
-    public Revision getPageRevisionBefore(String title, Calendar c) throws IOException
-    {
+
+    /**
+     * Searches for last page revision made before specified date.
+     * Returns <code>null</code> if not found.
+     *
+     * @param title Title of the page.
+     * @param date Date.
+     * @return Last revision before <code>date</date> or null.
+     */
+    @Nullable
+    public Revision getPageRevisionBefore(String title, Calendar date) throws IOException {
         // pitfall check
-        if (namespace(title) < 0)
+        if (namespace(title) < 0) {
             throw new UnsupportedOperationException("Cannot retrieve Special: or Media: pages!");
+        }
         
-        Revision revs[] = getPageHistory(title, null, c, false);
+        Revision [] revs = getPageHistory(title, null, date, false);
         if (revs.length == 0) {
-        	return null;
+            return null;
         }
         Revision r = revs[0];  
         return r;
