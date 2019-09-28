@@ -75,7 +75,6 @@ src/main/java/org/wikipedia/nirvana/nirvanabot/pagesfetcher/RevisionWithId.java 
 src/main/java/org/wikipedia/nirvana/nirvanabot/PortalModule.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/PortalParam.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/ReportItem.java -text
-src/main/java/org/wikipedia/nirvana/NirvanaWiki.java -text
 src/main/java/org/wikipedia/nirvana/NumberTools.java -text
 src/main/java/org/wikipedia/nirvana/ServiceError.java -text
 src/main/java/org/wikipedia/nirvana/statistics/ArchiveDatabase2.java -text
@@ -91,8 +90,6 @@ src/main/java/org/wikipedia/nirvana/statistics/StatisticsParam.java -text
 src/main/java/org/wikipedia/nirvana/statistics/StatisticsWeek.java -text
 src/main/java/org/wikipedia/nirvana/statistics/StatisticsYear.java -text
 src/main/java/org/wikipedia/nirvana/StringTools.java -text
-src/main/java/org/wikipedia/nirvana/WikiBooster.java -text
-src/main/java/org/wikipedia/nirvana/WikiTools.java -text
 *.js text
 *.MD text
 *.properties text
