@@ -23,6 +23,7 @@
 
 package org.wikipedia.nirvana.wiki;
 
+import org.wikipedia.Wiki.User;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -54,13 +55,16 @@ public class MockNirvanaWiki extends NirvanaWiki {
     private Map<String, String []> pageTemplatesMap = new HashMap<>();
     private Map<String, Boolean> pageExistsMap = new HashMap<>();
     private Map<String, String []> whatLinksHereMap = new HashMap<>();
+    private Map<String, Map<String, Object>> userInfoMap = new HashMap<>();
 
     private LinkedList<String> fetchQueue = new LinkedList<>();
+    private LinkedList<String> postQueue = new LinkedList<>();
 
     private User user;
 
     private List<EditInfo> edits = new ArrayList<>();
     private boolean allowEdits = false;
+    private boolean allowLogin = false;
 
     public static class EditInfo extends EditInfoMinimal {
         String summary;
@@ -184,12 +188,24 @@ public class MockNirvanaWiki extends NirvanaWiki {
     public void allowEdits(boolean allow) {
         this.allowEdits = allow;
     }
+    
+    /**
+     * If you set to true the real login() method will be called.
+     * Should be used with mocking post() requests.
+     * @see {@link #mockPost(String, String)}
+     */
+    public void allowLogin(boolean allow) {
+        this.allowLogin = allow;
+    }
 
     @Override
     public synchronized void login(String username, char[] password)
             throws IOException, FailedLoginException {
-        // We don't login in tests
+        // We don't login in tests usually.
         user = new MockUser(username);
+        if (allowLogin) {
+            super.login(username, password);
+        }
     }
 
     @Override
@@ -200,18 +216,30 @@ public class MockNirvanaWiki extends NirvanaWiki {
     @Override
     protected String fetch(String url, String caller) throws IOException {
         log.debug("fetch url: {}", url);
-        Assert.assertFalse(fetchQueue.isEmpty());
+        Assert.assertFalse("Unexpected request: " + url, fetchQueue.isEmpty());
         return fetchQueue.removeFirst();
     }
 
     public void mockFetchSequential(String response) {
         fetchQueue.addLast(response);
     }
+    
+    public void mockPostSequential(String response) {
+        postQueue.addLast(response);
+    }
 
+    /**
+     *  Does a text-only HTTP POST.
+     *  @param url the url to post to
+     *  @param text the text to post
+     *  @param caller the caller of this method
+     */
     @Override
     protected String post(String url, String text, String caller) throws IOException {
+        Assert.assertNotNull(url);
         log.debug("post url: {}", url);
-        throw new RuntimeException("Post is not allowed in tests!");
+        Assert.assertFalse("Unexpected post request: " + url, postQueue.isEmpty());
+        return postQueue.removeFirst();
     }
 
     @Override
@@ -227,10 +255,18 @@ public class MockNirvanaWiki extends NirvanaWiki {
     @Override
     public String getPageText(String title) throws IOException {
         if (!pageTextMap.containsKey(title)) {
+            // This breaks a lot of tests in NirvanaBotTest.
+            // TODO: Fix those tests and uncomment it instead of FileNotFoundException
+            // throw new IllegalStateException("Unexpeced getPageText() call with title: " + title);
             throw new FileNotFoundException(title);
         }
         String text = pageTextMap.get(title);
+        if (text == null) {
+            // Page does not exist.
+            throw new FileNotFoundException(title);
+        }
         // TODO(KIN): Do we really need this?
+        // TODO: Remove it. Use null for that.
         if (text.equals("<java.io.FileNotFoundException>")) {
             throw new FileNotFoundException(title);
         }
@@ -259,6 +295,10 @@ public class MockNirvanaWiki extends NirvanaWiki {
     public String namespaceIdentifier(int namespace) throws IOException {
         Assert.assertTrue(namespaceIdMap.containsKey(new Long(namespace)));
         return namespaceIdMap.get(new Long(namespace));
+    }
+
+    public void mockNamespaceIdentifier(int namespaceNumber, String namespaceName) {
+        this.mockNamespaceIdentifier((long)namespaceNumber, namespaceName);
     }
 
     public void mockNamespaceIdentifier(Long namespaceNumber, String namespaceName) {
@@ -303,6 +343,10 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     public List<EditInfo> getEdits() {
         return edits;
+    }
+    
+    public void resetEdits() {
+        edits.clear();
     }
 
     /**
@@ -388,5 +432,27 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     public void mockWhatLinksHere(String title, List<String> links) {
         whatLinksHereMap.put(title, links.toArray(new String[links.size()]));
+    }
+
+    public void mockUserInfo(String username, Map<String, Object> info) {
+        userInfoMap.put(username, info);
+    }
+
+    /**
+     *  Gets information about the given users. Overridden method.
+     */
+    @Override
+    public Map<String, Object>[] getUserInfo(String... usernames) throws IOException {
+        Map[] info = new HashMap[usernames.length];
+        for (int i = 0; i < usernames.length; i++) {
+            Assert.assertTrue("User info not found for " + usernames[i],
+                    userInfoMap.containsKey(usernames[i]));
+            info[i] = userInfoMap.get(usernames[i]);
+        }
+        return info;
+    }
+
+    public void debug() {
+        // Empty. Used in tests only.
     }
 }

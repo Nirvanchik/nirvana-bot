@@ -27,6 +27,7 @@ import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.localization.Localizer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -72,15 +73,24 @@ public class NirvanaWiki extends Wiki {
     Pattern redirectPattern;
     private boolean dumpMode = false;
     private String dumpFolder = null;
-    private boolean logDomain = false;
+    protected boolean logDomain = false;
 
     private String username;
     private char[] password;
+    
+    private static final String BOTS_TEMPLATE_RE_STR = "\\{\\{bots\\s*\\|([^\\}]+)\\}\\}";
+    private static final Pattern BOTS_TEMPLATE_RE;
+    private static final String ALLOWBOTS_RE_STR = "(\\{\\{(nobots|bots\\|([^\\}]+))\\}\\})";
+    private static final Pattern ALLOWBOTS_RE;
 
     static {
         log = LogManager.getLogger(NirvanaWiki.class.getName());
         loggerWrapper = new Log4jLoggerWrapper(log);
         Wiki.setLogger(loggerWrapper);
+        BOTS_TEMPLATE_RE = Pattern.compile(BOTS_TEMPLATE_RE_STR,
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        ALLOWBOTS_RE = Pattern.compile(ALLOWBOTS_RE_STR,
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL); 
     }
 
     // TODO (KIN): Use nice SLF4J instead of this monstrous wrapper.
@@ -130,7 +140,8 @@ public class NirvanaWiki extends Wiki {
                    Object[] params) {
             org.apache.logging.log4j.Level log4jLevel =
                     LEVELS.getOrDefault(level, org.apache.logging.log4j.Level.TRACE);
-            log.log(log4jLevel, msg, params);
+
+            log.log(log4jLevel, sanitizeLogMessage(msg, params), params);
         }
 
         @Override
@@ -165,7 +176,19 @@ public class NirvanaWiki extends Wiki {
             org.apache.logging.log4j.Level log4jLevel =
                     LEVELS.getOrDefault(level, org.apache.logging.log4j.Level.TRACE);
             String mess = "[" + sourceClass + "#" + sourceMethod + "] " + msg;
-            log.log(log4jLevel, mess, params);
+            log.log(log4jLevel, sanitizeLogMessage(mess, params), params);
+        }
+
+        private String sanitizeLogMessage(String msg, Object[] params) {
+            String msgLog4j = msg.replace("{0}", "{}").replace("{1}", "{}").replace("{2}", "{}")
+                    .replace("{3}", "{}").replace("{4}", "{}").replace("{5}", "{}")
+                    .replace("{6}", "{}").replace("{7}", "{}").replace("{8}", "{}")
+                    .replace("{9}", "{}");
+            if (StringUtils.countMatches(msgLog4j, "{}") != params.length) {
+                log.warn("Cannot convert next log message to log4j compatible format.");
+                msgLog4j = msg;
+            }
+            return msgLog4j;
         }
 
     }
@@ -256,14 +279,6 @@ public class NirvanaWiki extends Wiki {
     public void setDumpMode(String folder) {
         dumpMode = true;
         dumpFolder = folder;
-    }
-
-    /**
-     *  Don't use hardcoded output folders.
-     */
-    @Deprecated
-    public void setDumpMode() {
-        setDumpMode(DEFULT_DUMP_FOLDER);
     }
 
     /**
@@ -420,10 +435,7 @@ public class NirvanaWiki extends Wiki {
      */
     public void prepend(String title, String stuff, boolean minor, boolean bot)
             throws IOException, LoginException {
-        StringBuilder text = new StringBuilder(100000);
-        text.append(stuff);
-        text.append(getPageText(title));
-        edit(title, text.toString(), "+" + stuff, minor, bot);
+        prepend(title, stuff, "+" + stuff, minor, bot);
     }
     
     /**
@@ -442,6 +454,20 @@ public class NirvanaWiki extends Wiki {
         text.append(stuff);
         text.append(getPageText(title));
         this.edit(title, text.toString(), comment, minor, bot);
+    }
+
+    /**
+     * Add string at the beginning of wiki page. Create it new page if it dosn't exist.
+     *
+     * @param title The title of the page.
+     * @param stuff String to add at the beginning.
+     * @param minor whether the edit should be marked as minor, See [[Help:Minor edit]].
+     * @param bot whether to mark the edit as a bot edit (ignored if one does not have the necessary
+     *     permissions)
+     */
+    public void prependOrCreate(String title, String stuff, boolean minor, boolean bot)
+            throws IOException, LoginException {
+        prependOrCreate(title, stuff, "+" + stuff, minor, bot);
     }
 
     /**
@@ -541,25 +567,38 @@ public class NirvanaWiki extends Wiki {
      * @return <code>true</code> if editing is allowed.
      */
     public static boolean allowBots(String text, String user) {
-        String pattern = "\\{\\{(nobots|bots\\|(allow=none|deny=(.*?" + user +
-                ".*?|all)|optout=all))\\}\\}";
-        //Pattern p = Pattern.compile("\\[\\[(?<article>.+)\\]\\]");
-        Pattern p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        Matcher m = p.matcher(text);
-        boolean b1 = m.find();
-        pattern = "\\{\\{(bots\\|(allow=([^\\}]+?)))\\}\\}"; 
-        p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        m = p.matcher(text);
-        boolean b2 = false;
-        if (m.find()) {
-            String who = m.group(3);
-            if (who.trim().compareToIgnoreCase("none") != 0 && 
-                    who.trim().compareToIgnoreCase("all") != 0 &&
-                    !who.contains(user)) {
-                b2 = true;                
-            }
+        if (text.contains("{{nobots") || text.contains("{{Nobots")) {
+            return false;
         }
-        return (!b1 && !b2);  
+        Matcher m = BOTS_TEMPLATE_RE.matcher(text);
+        if (m.find()) {
+            String paramsString = m.group(1);
+            String [] params = paramsString.split("\\|");
+            for (String param: params) {
+                if (param.contains("allow=none") || param.contains("deny=all") ||
+                        param.contains("optout=all")) {
+                    return false;
+                }
+                if (param.contains("allow=all") || param.contains("deny=none")) {
+                    return true;
+                }
+                if (param.trim().startsWith("deny=")) {
+                    String value = param.trim().replace("deny=", "").trim();
+                    String [] userList = value.split("\\s*,\\s*");
+                    if (Arrays.asList(userList).contains(user)) {
+                        return false;
+                    }
+                }
+                if (param.trim().startsWith("allow=")) {
+                    String value = param.trim().replace("allow=", "").trim();
+                    String [] userList = value.split("\\s*,\\s*");
+                    if (!Arrays.asList(userList).contains(user)) {
+                        return false;
+                    }
+                }
+            }
+        }        
+        return true;  
     }
 
     /**
@@ -574,9 +613,7 @@ public class NirvanaWiki extends Wiki {
      */
     public static String getAllowBotsString(String text) {
         String nobots = "";
-        String pattern = "(\\{\\{(nobots|bots\\|([^\\}]+))\\}\\})";
-        Pattern p = Pattern.compile(pattern,Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        Matcher m = p.matcher(text);
+        Matcher m = ALLOWBOTS_RE.matcher(text);
         if (m.find()) {
             nobots = m.group(1);
         }
@@ -680,16 +717,8 @@ public class NirvanaWiki extends Wiki {
      */
     @Nullable
     public String getPageTextBefore(String title, Calendar date) throws IOException {
-        // pitfall check
-        if (namespace(title) < 0) {
-            throw new UnsupportedOperationException("Cannot retrieve Special: or Media: pages!");
-        }
-
-        Revision [] revs = getPageHistory(title, null, date, false);
-        if (revs.length == 0) {
-            return null;
-        }
-        Revision r = revs[0];        
+        Revision r = getPageRevisionBefore(title, date);
+        if (r == null) return null;
         return r.getText();
     }
 
@@ -735,21 +764,35 @@ public class NirvanaWiki extends Wiki {
             // ignore
         }
         if (noDuplicate && discussion != null && discussion.contains(message)) {
-            log.info("Message already exists at %s", page);
+            log.info("Message already exists at {}", page);
             return;
         }
         if (discussion != null && !allowEditsByCurrentBot(discussion)) {
-            log.info("People don't allow edits for this bot on the page %s", page);
+            log.info("People don't allow edits for this bot on the page {}", page);
             return;
         }
         if (addSignature) message = message + SIGN + '\n';
         discussion = WikiUtils.addTextToDiscussion(message, discussion);
         edit(page, discussion, summary);
     }
+    
+    /**
+     *  Overridden method. Log in to the wiki. 
+     *
+     *  @param username a username
+     *  @param password a string with the password
+     */
+    @Override
+    public synchronized void login(String username, String password) throws IOException,
+            FailedLoginException {
+        this.login(username, password.toCharArray());
+    }
+
 
     /**
-     * Overridden method. Log in to Wiki.
+     * Overridden method. Log in to the wiki.
      */
+    @Override
     public synchronized void login(String username, char[] password) throws IOException,
             FailedLoginException {
         this.username = username;
@@ -762,7 +805,7 @@ public class NirvanaWiki extends Wiki {
      * Call it when there was no interaction with Wiki for too long.
      */
     public synchronized void relogin() throws FailedLoginException, IOException {
-        super.logout();
-        super.login(this.username, this.password);
+        this.logout();
+        this.login(this.username, this.password);
     }
 }

@@ -293,6 +293,9 @@ public class MockNirvanaBot extends NirvanaBot {
     }
 
     private String parseMultiLineString(Object object) {
+        if (object == null) {
+            return null;
+        }
         if (object instanceof String) {
             return (String) object;
         } else {
