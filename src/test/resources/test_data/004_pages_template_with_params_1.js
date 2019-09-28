@@ -65,7 +65,11 @@
 			{
 				"title": "Tacit Fury",
 				"text": [""]
-			}
+            },
+            {
+                "title": "Проект:Project 1/Новые статьи",
+                "text": null
+            }
 		],
 		"firstRevision": [
 			{

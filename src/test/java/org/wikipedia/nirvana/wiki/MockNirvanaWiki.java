@@ -255,10 +255,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     @Override
     public String getPageText(String title) throws IOException {
         if (!pageTextMap.containsKey(title)) {
-            // This breaks a lot of tests in NirvanaBotTest.
-            // TODO: Fix those tests and uncomment it instead of FileNotFoundException
-            // throw new IllegalStateException("Unexpeced getPageText() call with title: " + title);
-            throw new FileNotFoundException(title);
+            throw new IllegalStateException("Unexpected getPageText() call with title: " + title);
         }
         String text = pageTextMap.get(title);
         if (text == null) {

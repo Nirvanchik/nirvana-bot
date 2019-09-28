@@ -66,7 +66,11 @@
 			{
 				"title": "Another Case",
 				"text": ["Some text 2.\n {{rq|notability|something}}"]
-			}
+            },
+            {
+                "title": "Проект:Project 1/Новые статьи",
+                "text": null
+            }
 		],
 		"firstRevision": [
 			{

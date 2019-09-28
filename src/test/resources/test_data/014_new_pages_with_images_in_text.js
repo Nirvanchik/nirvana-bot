@@ -69,7 +69,15 @@
 			{
 				"title": "Цейлонский рыбозмей",
 				"text": ["Начало.", "какой-то текст [[Файл:CaecilianNHM edited.PNG|left|mini|100px]] текст", "Конец."]
-			}
+            },
+            {
+                "title": "Проект:Project 1/Новые статьи",
+                "text": null
+            },
+            {
+                "title": "MULTIVERSE",
+                "text": null
+            }
 		],
 		"firstRevision": [
 			{
