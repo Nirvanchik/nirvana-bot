@@ -27,7 +27,7 @@ import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.DiscussionPagesSettings.DiscussionPageTemplate;
-import org.wikipedia.nirvana.util.BotUtils;
+import org.wikipedia.nirvana.util.OptionsUtils;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.HTTPTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
@@ -179,7 +179,7 @@ public class DiscussedPages extends Pages {
 		}
 		if (this.prefix != null && !prefix.isEmpty()) {
 			List<DiscussionPageTemplate> list2 = new ArrayList<>();
-            List<String> prefixes = BotUtils.optionToList(prefix);
+            List<String> prefixes = OptionsUtils.optionToList(prefix);
 			for (String prefix:prefixes) {
 				boolean found = false;
 				for (DiscussionPageTemplate t:list) {

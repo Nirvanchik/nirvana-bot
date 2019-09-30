@@ -66,7 +66,7 @@ import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_SMALL;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_SORT;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_TOSORT;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_YES;
-import static org.wikipedia.nirvana.util.BotUtils.validateIntegerSetting;
+import static org.wikipedia.nirvana.util.OptionsUtils.validateIntegerSetting;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.BasicBot;
@@ -84,7 +84,7 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeC
 import org.wikipedia.nirvana.nirvanabot.templates.ComplexTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.SimpleTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFindItem;
-import org.wikipedia.nirvana.util.BotUtils;
+import org.wikipedia.nirvana.util.OptionsUtils;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
@@ -428,7 +428,7 @@ public class NirvanaBot extends BasicBot{
 
         enabledTypesString = properties.getProperty("type", enabledTypesString);
         if (enabledTypesString.isEmpty()) enabledTypesString = TYPE_ALL;
-        enabledTypes = BotUtils.optionToSet(enabledTypesString);
+        enabledTypes = OptionsUtils.optionToSet(enabledTypesString);
         if (enabledTypes.isEmpty()) {
             log.fatal("Specify at least 1 portal section type to update");
             return false;
@@ -1183,7 +1183,7 @@ public class NirvanaBot extends BasicBot{
                         enumType = CatScanTools.EnumerationType.AND;
                     }
 				}
-                List<String> templates = BotUtils.optionToList(option, true, sep);
+                List<String> templates = OptionsUtils.optionToList(option, true, sep);
                 if (!templates.isEmpty()) {
                     param.templateFilter = new SimpleTemplateFilter(templates, enumType);
 				}
@@ -1287,7 +1287,7 @@ public class NirvanaBot extends BasicBot{
 
     private List<TemplateFindItem> parseTemplatesWithData(String option, List<String> errors) {
     	List<TemplateFindItem> templateDataItems = new ArrayList<>();
-        List<String> items = BotUtils.optionToList(option, true, ",");
+        List<String> items = OptionsUtils.optionToList(option, true, ",");
     	for (String item : items) {
     		try {
 	            templateDataItems.add(TemplateFindItem.parseTemplateFindData(item));
@@ -1531,7 +1531,7 @@ public class NirvanaBot extends BasicBot{
 			if (replaceAdditionalSeparator) {
 				option = option.replace(ADDITIONAL_SEPARATOR, DEPTH_SEPARATOR);
 			}
-            return BotUtils.optionToList(option, true);
+            return OptionsUtils.optionToList(option, true);
 		}
         return new ArrayList<>();
 	}

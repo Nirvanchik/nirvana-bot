@@ -23,7 +23,7 @@
 
 package org.wikipedia.nirvana.util;
 
-import org.wikipedia.nirvana.util.BotUtils;
+import org.wikipedia.nirvana.util.OptionsUtils;
 
 import org.junit.Test;
 
@@ -34,21 +34,21 @@ import java.util.Properties;
 import junit.framework.Assert;
 
 /**
- * Unit tests for {@link BotUtils}.
+ * Unit tests for {@link OptionsUtils}.
  */
-public class BotUtilsTest {
+public class OptionsUtilsTest {
 
     @Test
     public void validateIntegerSetting() throws IOException {
         Properties props = new Properties();
         props.load(new StringReader("a: 10\nx: abc"));
 
-        Assert.assertEquals(10, BotUtils.validateIntegerSetting(props, "a", 5, false));
-        Assert.assertEquals(5, BotUtils.validateIntegerSetting(props, "b", 5, false));
-        Assert.assertEquals(5, BotUtils.validateIntegerSetting(props, "x", 5, false));
+        Assert.assertEquals(10, OptionsUtils.validateIntegerSetting(props, "a", 5, false));
+        Assert.assertEquals(5, OptionsUtils.validateIntegerSetting(props, "b", 5, false));
+        Assert.assertEquals(5, OptionsUtils.validateIntegerSetting(props, "x", 5, false));
 
-        Assert.assertEquals(10, BotUtils.validateIntegerSetting(props, "a", 5, true));
-        Assert.assertEquals(5, BotUtils.validateIntegerSetting(props, "b", 5, true));
-        Assert.assertEquals(5, BotUtils.validateIntegerSetting(props, "x", 5, true));
+        Assert.assertEquals(10, OptionsUtils.validateIntegerSetting(props, "a", 5, true));
+        Assert.assertEquals(5, OptionsUtils.validateIntegerSetting(props, "b", 5, true));
+        Assert.assertEquals(5, OptionsUtils.validateIntegerSetting(props, "x", 5, true));
     }
 }

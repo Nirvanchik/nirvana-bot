@@ -36,11 +36,11 @@ import java.util.Set;
 /**
  * Utility code for bot settings processing.
  */
-public class BotUtils {
+public class OptionsUtils {
     public static final Logger sLog;
 
     static {
-        sLog = LogManager.getLogger(BotUtils.class.getName());
+        sLog = LogManager.getLogger(OptionsUtils.class.getName());
     }
 
     /**

@@ -23,7 +23,7 @@
 
 package org.wikipedia.nirvana.statistics;
 
-import static org.wikipedia.nirvana.util.BotUtils.validateIntegerSetting;
+import static org.wikipedia.nirvana.util.OptionsUtils.validateIntegerSetting;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.BasicBot;
@@ -32,7 +32,7 @@ import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
-import org.wikipedia.nirvana.util.BotUtils;
+import org.wikipedia.nirvana.util.OptionsUtils;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.NumberTools;
@@ -363,7 +363,7 @@ public class StatisticsBot extends BasicBot {
 
     private static List<String> optionToList(Map<String, String> options, String key) {
 		if (options.containsKey(key)) {			
-            return BotUtils.optionToList(options.get(key), false);
+            return OptionsUtils.optionToList(options.get(key), false);
 		}
         return new ArrayList<>();
 	}

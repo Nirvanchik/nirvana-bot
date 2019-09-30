@@ -30,7 +30,7 @@ import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinder;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
-import org.wikipedia.nirvana.util.BotUtils;
+import org.wikipedia.nirvana.util.OptionsUtils;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.HTTPTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
@@ -86,7 +86,7 @@ public class NewPagesWithImages extends NewPages {
         this.formatString = formatString.replace(BotVariables.FILE_NAME, "%4$s");
 		this.imageFinder = imageFinder;
 		this.commons = commons;
-        this.fairUseImageTemplates = BotUtils.optionToList(param.fairUseImageTemplates);
+        this.fairUseImageTemplates = OptionsUtils.optionToList(param.fairUseImageTemplates);
 	}
 
     @Override
