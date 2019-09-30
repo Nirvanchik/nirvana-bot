@@ -22,6 +22,16 @@
  * */
 package org.wikipedia.nirvana.archive;
 
+import org.wikipedia.nirvana.BasicBot;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.localization.Localizer;
+import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.util.DateTools;
+import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.TextUtils;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,16 +41,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
-
-import org.wikipedia.nirvana.DateTools;
-import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.BasicBot;
-import org.wikipedia.nirvana.TextUtils;
-import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
-import org.wikipedia.nirvana.localization.Localizer;
-import org.wikipedia.nirvana.nirvanabot.BotFatalError;
-import org.wikipedia.nirvana.nirvanabot.NewPages;
-import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
 /**
  * @author kin

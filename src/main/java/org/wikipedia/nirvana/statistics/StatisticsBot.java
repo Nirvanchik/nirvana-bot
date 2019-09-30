@@ -23,7 +23,21 @@
 
 package org.wikipedia.nirvana.statistics;
 
-import static org.wikipedia.nirvana.BotUtils.validateIntegerSetting;
+import static org.wikipedia.nirvana.util.BotUtils.validateIntegerSetting;
+
+import org.wikipedia.Wiki;
+import org.wikipedia.nirvana.BasicBot;
+import org.wikipedia.nirvana.archive.ArchiveSettings;
+import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.localization.Localizer;
+import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.util.BotUtils;
+import org.wikipedia.nirvana.util.DateTools;
+import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.NumberTools;
+
+import org.apache.commons.lang3.time.StopWatch;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,19 +48,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.login.LoginException;
-
-import org.apache.commons.lang3.time.StopWatch;
-import org.wikipedia.Wiki;
-import org.wikipedia.nirvana.BotUtils;
-import org.wikipedia.nirvana.DateTools;
-import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.BasicBot;
-import org.wikipedia.nirvana.NumberTools;
-import org.wikipedia.nirvana.archive.ArchiveSettings;
-import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
-import org.wikipedia.nirvana.localization.Localizer;
-import org.wikipedia.nirvana.nirvanabot.BotFatalError;
-import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 
 /**
  * @author kin

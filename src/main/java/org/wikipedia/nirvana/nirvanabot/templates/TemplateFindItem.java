@@ -24,8 +24,9 @@
 package org.wikipedia.nirvana.nirvanabot.templates;
 
 import org.apache.commons.lang3.StringUtils;
-import org.wikipedia.nirvana.StringTools;
+
 import org.wikipedia.nirvana.nirvanabot.BadFormatException;
+import org.wikipedia.nirvana.util.StringTools;
 
 /**
  * @author kin

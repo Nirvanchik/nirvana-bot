@@ -22,13 +22,15 @@
  * */
 package org.wikipedia.nirvana;
 
+import org.wikipedia.Wiki;
+import org.wikipedia.nirvana.util.FileTools;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-
-import org.apache.commons.lang3.StringUtils;
-import org.wikipedia.Wiki;
 
 /**
  * @author kin

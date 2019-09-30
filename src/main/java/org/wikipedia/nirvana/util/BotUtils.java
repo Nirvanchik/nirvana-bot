@@ -21,7 +21,7 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana;
+package org.wikipedia.nirvana.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

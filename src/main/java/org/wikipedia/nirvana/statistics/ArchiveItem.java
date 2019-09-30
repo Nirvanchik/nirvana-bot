@@ -23,12 +23,12 @@
 
 package org.wikipedia.nirvana.statistics;
 
-import java.util.Calendar;
-
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.HTTPTools;
+import org.wikipedia.nirvana.util.HTTPTools;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.util.Calendar;
 
 @JsonIgnoreProperties({"getDateAsInt","dateAsInt","getQuarter","quarter"})
 public class ArchiveItem {

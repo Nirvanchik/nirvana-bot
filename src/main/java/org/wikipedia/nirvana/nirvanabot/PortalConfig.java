@@ -23,9 +23,9 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.localization.Localizer;
+import org.wikipedia.nirvana.util.StringTools;
 
 import java.util.Map;
 

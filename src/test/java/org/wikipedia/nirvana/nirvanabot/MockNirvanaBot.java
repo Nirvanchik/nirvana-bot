@@ -26,8 +26,8 @@ package org.wikipedia.nirvana.nirvanabot;
 import static org.mockito.Mockito.when;
 
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
+import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.MockCatScanTools;

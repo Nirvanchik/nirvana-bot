@@ -21,7 +21,9 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana;
+package org.wikipedia.nirvana.util;
+
+import org.wikipedia.nirvana.util.BotUtils;
 
 import org.junit.Test;
 

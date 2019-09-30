@@ -33,9 +33,9 @@ import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.wikipedia.nirvana.StringTools;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 public class ArchiveWithHeaders extends Archive{

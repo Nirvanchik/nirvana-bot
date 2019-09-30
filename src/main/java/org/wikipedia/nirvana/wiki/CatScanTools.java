@@ -23,8 +23,8 @@
 
 package org.wikipedia.nirvana.wiki;
 
-import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
+import org.wikipedia.nirvana.util.HTTPTools;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;

@@ -23,7 +23,6 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import static org.wikipedia.nirvana.BotUtils.validateIntegerSetting;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.LIST_TYPE_DISCUSSED_PAGES;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.LIST_TYPE_DISCUSSED_PAGES2;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.LIST_TYPE_DISCUSSED_PAGES_OLD;
@@ -67,11 +66,9 @@ import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_SMALL;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_SORT;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_TOSORT;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_YES;
+import static org.wikipedia.nirvana.util.BotUtils.validateIntegerSetting;
 
 import org.wikipedia.Wiki;
-import org.wikipedia.nirvana.BotUtils;
-import org.wikipedia.nirvana.DateTools;
-import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
@@ -87,6 +84,9 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeC
 import org.wikipedia.nirvana.nirvanabot.templates.ComplexTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.SimpleTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFindItem;
+import org.wikipedia.nirvana.util.BotUtils;
+import org.wikipedia.nirvana.util.DateTools;
+import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.wikipedia.nirvana.wiki.WikiUtils;

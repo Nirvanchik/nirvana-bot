@@ -22,9 +22,9 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
-import org.wikipedia.nirvana.DateTools;
-import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.TextUtils;
+import org.wikipedia.nirvana.util.DateTools;
+import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.TextUtils;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;

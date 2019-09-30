@@ -22,6 +22,16 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
+import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.NumberTools;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,16 +54,6 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import javax.management.BadAttributeValueExpException;
-
-import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.NumberTools;
-import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
-import org.wikipedia.nirvana.wiki.NirvanaWiki;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author kin

@@ -21,9 +21,10 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana;
+package org.wikipedia.nirvana.util;
 
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
+import org.wikipedia.nirvana.util.DateTools;
 
 import org.junit.After;
 import org.junit.AfterClass;

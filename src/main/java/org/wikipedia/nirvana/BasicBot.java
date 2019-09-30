@@ -25,6 +25,8 @@ package org.wikipedia.nirvana;
 
 import org.wikipedia.nirvana.annotation.LocalizedBySettings;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.wikipedia.nirvana.wiki.WikiUtils;
 

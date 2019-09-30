@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 import javax.security.auth.login.FailedLoginException;
 
 import org.wikipedia.Wiki;
-import org.wikipedia.nirvana.FileTools;
+import org.wikipedia.nirvana.util.FileTools;
 
 /**
  * @author kin

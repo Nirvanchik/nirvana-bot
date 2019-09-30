@@ -26,9 +26,9 @@ package org.wikipedia.nirvana.nirvanabot.imagefinder;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
-import org.wikipedia.nirvana.FileTools;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
+import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.junit.After;

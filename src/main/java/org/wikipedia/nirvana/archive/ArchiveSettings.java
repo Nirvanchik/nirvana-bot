@@ -22,9 +22,9 @@
  * */
 package org.wikipedia.nirvana.archive;
 
-import java.util.Calendar;
+import org.wikipedia.nirvana.util.DateTools;
 
-import org.wikipedia.nirvana.DateTools;
+import java.util.Calendar;
 
 /**
  * @author kin

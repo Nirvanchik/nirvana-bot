@@ -25,11 +25,11 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.BotUtils;
-import org.wikipedia.nirvana.DateTools;
-import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.DiscussionPagesSettings.DiscussionPageTemplate;
+import org.wikipedia.nirvana.util.BotUtils;
+import org.wikipedia.nirvana.util.DateTools;
+import org.wikipedia.nirvana.util.HTTPTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;

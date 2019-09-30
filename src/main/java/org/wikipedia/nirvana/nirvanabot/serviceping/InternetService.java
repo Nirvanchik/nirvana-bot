@@ -23,14 +23,14 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
+import org.wikipedia.nirvana.util.HTTPTools;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.wikipedia.nirvana.HTTPTools;
 
 /**
  * @author kin

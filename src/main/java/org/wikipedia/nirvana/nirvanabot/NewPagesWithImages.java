@@ -23,24 +23,25 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.BotUtils;
-import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.HTTPTools;
 import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinder;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
+import org.wikipedia.nirvana.util.BotUtils;
+import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.HTTPTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 /**
  * @author kin

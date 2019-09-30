@@ -24,10 +24,10 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.nirvana.BasicBot;
-import org.wikipedia.nirvana.FileTools;
-import org.wikipedia.nirvana.MockDateTools;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.MockNirvanaBot.TestError;
+import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.MockDateTools;
 import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
 import org.wikipedia.nirvana.wiki.MockCatScanTools;
