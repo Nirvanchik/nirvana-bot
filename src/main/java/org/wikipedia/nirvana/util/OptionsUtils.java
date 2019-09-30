@@ -1,6 +1,6 @@
 /**
- *  @(#)BotUtils.java 09.04.2017
- *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)OptionsUtils.java
+ *  Copyright © 2019 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -52,7 +52,12 @@ public class OptionsUtils {
 
     /**
      * Converts String option with multiple values separated by comma into list of Strings.
-     * Items may have double quotes - they will be removed.
+     *
+     * If <code>withDQuotes</code> argument is <code>true</code>, items may be optionally folded
+     * into double quotes - they will be removed. Double quotes are used when some of the items have
+     * ',' in their contents. All items or no items should be with double quotes. Mixed content of
+     * double-quoted and simple strings not allowed.
+     * Limitations: it's not possible to parse list if items have both double quotes and comma.
      */
     public static List<String> optionToList(String option, boolean withDQuotes) {
         return optionToList(option, withDQuotes, ",");
@@ -61,6 +66,19 @@ public class OptionsUtils {
     /**
      * Converts String option with multiple values separated by specific separator into list of
      * Strings. Items may have double quotes - they will be removed.
+     * Converts String option with multiple values separated by specific separator into list of
+     * Strings.
+     *
+     * If <code>withDQuotes</code> argument is <code>true</code>, items may be optionally folded
+     * into double quotes - they will be removed. Double quotes are used when some of the items have
+     * ',' in their contents. All items or no items should be with double quotes. Mixed content of
+     * double-quoted and simple strings not allowed.
+     * Limitations: it's not possible to parse list if items have both double quotes and comma.
+     *
+     * @param option option string to parse.
+     * @param withDQuotes set to <code>true</code> to remove optional double quotes from every item.
+     * @param separator Separator string. This string is a regular expression put in split() method.
+     * @return list of items parsed from input string.
      */
     public static List<String> optionToList(String option, boolean withDQuotes, String separator) {
         ArrayList<String> list = new ArrayList<String>();
@@ -77,6 +95,12 @@ public class OptionsUtils {
     /**
      * Converts String option with multiple values separated by specific separator into set of
      * Strings. Items may have double quotes - they will be removed.
+     * 
+     * The same as {@link #optionToList(String, boolean, String)} but returned collection is a set.
+     * @param option option string to parse.
+     * @param withDQuotes set to <code>true</code> to remove optional double quotes from every item.
+     * @param separator Separator string. This string is a regular expression put in split() method.
+     * @return set of items parsed from input string.
      */
     public static Set<String> optionToSet(String option, boolean withDQuotes, String separator) {
         Set<String> set = new HashSet<>();        
