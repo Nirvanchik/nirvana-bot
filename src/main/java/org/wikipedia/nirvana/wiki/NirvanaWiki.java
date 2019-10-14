@@ -366,6 +366,9 @@ public class NirvanaWiki extends Wiki {
             } catch (FileNotFoundException e) {
                 old = "";
             }
+            if (old == null) {
+                old = "";
+            }
             FileTools.dump(old, dumpFolder, fileOld);
             FileTools.dump(text, dumpFolder, fileNew);
         }
@@ -627,7 +630,10 @@ public class NirvanaWiki extends Wiki {
      * @return page contents put in array of lines. 
      */
     public String [] getPageLinesArray(String title) throws IOException {
-        String text = getPageText(title); 
+        String text = getPageText(title);
+        if (text == null) {
+            return new String[0];
+        }
         return text.split("\n");
     }
 
