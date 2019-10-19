@@ -291,14 +291,18 @@ public class NewPages implements PortalModule{
     protected String getFormatString() {
     	return formatString;
     }
-    
+
     public String getOldText(Wiki wiki) throws IOException {
-    	try
-		{
-			return wiki.getPageText(this.pageName);
+        String text = null;
+        try {
+            text = wiki.getPageText(this.pageName);
 		} catch (java.io.FileNotFoundException e) {
 			return "";
 		}
+        if (text == null) {
+            text = "";
+        }
+        return text;
     }
 
 	public class Data {		

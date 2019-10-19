@@ -201,13 +201,16 @@ public class ArchiveParser {
 		String lines[] = null;
 		String text = null;
 		try {
-			text = wiki.getPageText(archive).trim();
-		} catch (FileNotFoundException e) {
-			log.warn("Archive "+archive + " not found (skiped)");
-			return;
-		}
-		lines = text.split("\n"); 
-		
+            text = wiki.getPageText(archive);
+        } catch (FileNotFoundException e) {
+            // Ignored.
+        }
+        if (text == null) {
+            log.warn("Archive {} not found (skiped)", archive);
+            return;
+        }
+        lines = text.trim().split("\n"); 
+
 		if(lines.length==0) {
 			log.warn("archive "+archive+" is empty");
 			return;

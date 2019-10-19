@@ -416,6 +416,9 @@ public class NirvanaWiki extends Wiki {
         } catch (FileNotFoundException e) {
             // ignore. all job is done not here :)
         }
+        if (old == null) {
+            old = "";
+        }
         // to compare lengths is faster than comparing 5k chars
         if (old.length() != text.length() || !old.equals(text)) {
             log.debug("Editing {}", title);
@@ -455,7 +458,11 @@ public class NirvanaWiki extends Wiki {
             throws IOException, LoginException {
         StringBuilder text = new StringBuilder(100000);
         text.append(stuff);
-        text.append(getPageText(title));
+        String oldText = getPageText(title);
+        if (oldText == null) {
+            throw new IOException(String.format("Page %s does not exist.", title));
+        }
+        text.append(oldText);
         this.edit(title, text.toString(), comment, minor, bot);
     }
 
@@ -490,9 +497,15 @@ public class NirvanaWiki extends Wiki {
         if (stuff.isEmpty()) return;
         StringBuilder text = new StringBuilder(100000);
         text.append(stuff);
+        String oldText = null;
         try {
-            text.append(getPageText(title));
+            oldText = getPageText(title);
         } catch (FileNotFoundException e) {
+            // Ignore
+        }
+        if (oldText != null) {
+            text.append(oldText);
+        } else {
             log.debug("Page {} does not exist. It will be created.", title);
         }
         this.edit(title, text.toString(), comment, minor, bot);
@@ -510,8 +523,12 @@ public class NirvanaWiki extends Wiki {
      */
     public void append(String title, String stuff, String comment, boolean minor, boolean bot)
             throws IOException, LoginException {
-        StringBuilder text = new StringBuilder(100000);        
-        text.append(getPageText(title));
+        StringBuilder text = new StringBuilder(100000);
+        String oldText = getPageText(title);
+        if (oldText == null) {
+            throw new IOException(String.format("Page %s does not exist.", title));
+        }
+        text.append(oldText);
         text.append(stuff);
         this.edit(title, text.toString(), comment, minor, bot);
     }
@@ -529,10 +546,16 @@ public class NirvanaWiki extends Wiki {
     public void appendOrCreate(String title, String stuff, String comment, boolean minor,
             boolean bot) throws IOException, LoginException {
         if (stuff.isEmpty()) return;
-        StringBuilder text = new StringBuilder(100000);        
+        StringBuilder text = new StringBuilder(100000);
+        String oldText = null;
         try {
-            text.append(getPageText(title));
+            oldText = getPageText(title);
         } catch (FileNotFoundException e) {
+            // Ignore
+        }
+        if (oldText != null) {
+            text.append(oldText);
+        } else {
             log.debug("Page {} does not exist. It will be created.", title);
         }
         text.append(stuff);

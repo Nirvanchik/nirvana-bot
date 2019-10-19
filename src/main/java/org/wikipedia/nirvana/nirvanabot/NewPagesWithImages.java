@@ -101,9 +101,9 @@ public class NewPagesWithImages extends NewPages {
 		PageListProcessor pageListProcessor = createPageListProcessor();
 		ArrayList<Revision> pageInfoListNotFiltered = pageListProcessor.getNewPages(wiki);
 		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
-		
+
 		for(Revision r: pageInfoListNotFiltered) {
-			String article = "";
+            String article = null;
 			long revId = r.getRevid();
 			long id = ((RevisionWithId)r).getId();
 			String title = r.getPage();
@@ -111,8 +111,12 @@ public class NewPagesWithImages extends NewPages {
             try {
             	article = wiki.getPageText(r.getPage());
             } catch(java.io.FileNotFoundException e) {
-            	log.warn(e.toString()+" "+r.getPage()); // page was created and renamed or deleted after that
-            	continue;
+                // Ignore
+            }
+            if (article == null) {
+                // Page was created and renamed or deleted after that
+                log.warn("Page {} does not exist.", r.getPage()); 
+                continue;
             }
             if (wiki.isRedirect(article)) {            
             	if(pageListProcessor.revisionAvailable()) {
@@ -289,9 +293,12 @@ public class NewPagesWithImages extends NewPages {
     	try {
 	        text = wiki.getPageText(wiki.namespaceIdentifier(NirvanaWiki.FILE_NAMESPACE)+":"+image);
     	} catch (FileNotFoundException e) {
-    		log.info("Failed to get text for image (probably it's on commons): "+image);
-    		// Most likely this image comes from Commons and is free to use therefore
-    		return true;
+            // Ignore
+        }
+        if (text == null) {
+            log.info("Failed to get text for image (probably it's on commons): {}", image);
+            // Most likely this image comes from Commons and is free to use therefore
+            return true;
         }
 
         for (String tmpl : this.fairUseImageTemplates) {

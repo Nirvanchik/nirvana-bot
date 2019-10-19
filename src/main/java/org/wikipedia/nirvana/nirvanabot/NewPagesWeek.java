@@ -155,6 +155,9 @@ public class NewPagesWeek extends NewPages {
 			} catch (FileNotFoundException e) {
 				// ignore
 			}
+            if (text == null) {
+                text = "";
+            }
 			if (true/*dayNum == LAST_DAY || dayNum == 0*/) {
 				analyzeOldText(wiki, text, d, dayBuf);
 				if (dayNum == LAST_DAY) {

@@ -473,19 +473,24 @@ public class NirvanaBot extends BasicBot{
 		}
 		return defaultValue;
 	}
-	
+
     private boolean loadOverridenProperties(String newpagesTemplate) throws IOException	{
         if(overridenPropertiesPage==null || overridenPropertiesPage.isEmpty()) {
             return false;
         }
 		log.info("loading overriden properties from page "+overridenPropertiesPage);
-		String overridenPropertiesText = null;
+        String overridenPropertiesText = null;
 		try {
 			overridenPropertiesText = wiki.getPageText(overridenPropertiesPage);
-		} catch (IOException e) {			
+		} catch (FileNotFoundException e) {			
 			log.fatal("Failed to read overriden properties page: "+overridenPropertiesPage);
 			throw e;
 		}
+        if (overridenPropertiesText == null) {
+            log.fatal("Failed to read overriden properties page: " + overridenPropertiesPage);
+            throw new IOException(
+                    "Failed to read overriden properties page: " + overridenPropertiesPage);
+        }
 		Map<String, String> options = new HashMap<String, String>();		
         if (!tryParseTemplate(newpagesTemplate, userNamespace, overridenPropertiesText, options)) {
 			log.info("no default settings for this template: "+newpagesTemplate);

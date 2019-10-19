@@ -85,8 +85,11 @@ public class ArchiveFactory {
 					try{
 						text = wiki.getPageText(name);
 					} catch(FileNotFoundException e) {
-						//log.info("archive "+arname+" is empty");
+                        // Ignore
 					}
+                    if (text == null) {
+                        text = "";
+                    }
 				}
 				archive = new ArchiveWithEnumeration(text,archiveSettings.addToTop,delimeter);
 			}			
