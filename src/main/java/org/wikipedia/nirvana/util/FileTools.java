@@ -1,6 +1,6 @@
 /**
- *  @(#)FileTools.java 07/04/2012
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)
+ *  @(#)FileTools.java
+ *  Copyright © 2011 Dmitry Trofimovich (KIN)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,51 +30,52 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
+
 /**
- * @author kin
- *
+ * Utilities for reading and writing files.
+ * Default encoding for all operations is UTF-8 but it can be changed using
+ * {@link #setDefaultEncoding(String)} method.
  */
 public class FileTools {
-	public static final String UTF8 = "UTF-8";
-	public static final String CP1251 = "CP1251";
-	public static String DEFAULT_ENCODING = UTF8;
+    public static final String UTF8 = "UTF-8";
+    public static final String CP1251 = "CP1251";
+    public static String sDefaultEncoding = UTF8;
     private static String sDefaultOut = null;
 
     protected static org.apache.logging.log4j.Logger log4j;
-	protected static Logger logger;
-	static {
-		try {
+    protected static Logger logger;
+
+    static {
+        try {
             log4j = org.apache.logging.log4j.LogManager.getLogger(FileTools.class.getName());
-		} catch (java.lang.NoClassDefFoundError e) {
-			logger = Logger.getLogger("FileTools");
-		}
-	}
-	
-	public void setDefaultEncoding(String encoding) {
-		DEFAULT_ENCODING = encoding;
-	}
+        } catch (java.lang.NoClassDefFoundError e) {
+            logger = Logger.getLogger("FileTools");
+        }
+    }
+
+    /**
+     * Sets default encoding. All subsequent method calls in this class will use this encoding
+     * if not specified explicitely in arguments.
+     *
+     * @param encoding Encoding name. Use constants from this class: {@link #UTF8}, {@link #CP1251},
+     *     etc.
+     */
+    public static void setDefaultEncoding(String encoding) {
+        sDefaultEncoding = encoding;
+    }
 
     public static void setDefaultOut(String folder) {
         sDefaultOut = folder;
     }
 
-    public static void dump(String text, String file) throws IOException {
-        assert sDefaultOut != null;
-
-        dump(text, sDefaultOut, file, DEFAULT_ENCODING);
+    private static void logD(Object ob) {
+        if (log4j != null) {
+            log4j.debug(ob);
+        } else {
+            logger.fine(ob.toString());
+        }
     }
-
-	public static void dump(String text, String folder, String file) throws IOException {
-		dump(text, folder, file, DEFAULT_ENCODING);
-	}
-	
-	private static void logD(Object ob) {
-		if (log4j!=null) {
-			log4j.debug(ob);
-		} else {
-			logger.fine(ob.toString());
-		}
-	}
 
     private static void logW(Object ob) {
         if (log4j != null) {
@@ -84,181 +85,378 @@ public class FileTools {
         }
     }
 
-	private static void logE(Object ob) {
-		if (log4j!=null) {
-			log4j.error(ob);
-		} else {
-			logger.severe(ob.toString());
-		}
-	}
-	
-	public static void dump(String text, String folder, String file, String encoding) throws IOException {
-		String path = "";
-		if(folder!=null) {
-			if(folder.endsWith("\\"))
-				folder = folder.substring(0, folder.length()-1);
-			String folderGood = folder;//.replaceAll("\\\\", "_");
-			File parentFolder = new File(folderGood);
-			if(!parentFolder.exists()) {
-				parentFolder.mkdirs();		
-			}	
-			if(!folderGood.isEmpty())
-				path = folderGood+"\\";
-		}
-		String fileGood = path+normalizeFileName(file);
-		FileOutputStream out = new FileOutputStream(new File(fileGood));
-		OutputStreamWriter or = new OutputStreamWriter(out, encoding);
-		or.write(text);
-		or.close();
-	}
-	
-	public static void append(String text, String file) throws IOException {
-		append(text,file,UTF8);
-	}
-	
-	public static void append(String text, String file, String encoding) throws IOException {
-		FileOutputStream out = new FileOutputStream(new File(file),true);
-		OutputStreamWriter or = new OutputStreamWriter(out, encoding);
-		or.write(text);
-		or.close();
-	}
-	
-	public static void appendOld(String text, String file) throws IOException {
-		FileOutputStream out = new FileOutputStream(new File(file),true);
-		out.write(text.getBytes());
-		out.close();
-	}
-	
-	public static void writeFile(String text, String file) throws IOException {
-		writeFile(text, file, UTF8);
-	}
-	
-	public static void writeFile(String text, String file, String encoding) throws IOException {
-		FileOutputStream out = new FileOutputStream(new File(file));
-		OutputStreamWriter or = new OutputStreamWriter(out, encoding);
-		or.write(text);
-		or.close();
-	}
-	
-	public static String normalizeFileName(String file) {
-		return file.replaceAll("\\\\|\\/|\\:|\\*|\\?", "_");
-	}
-	
-	public static String readWikiFile(String folder, String file) throws IOException {
-		return readWikiFile(folder, file, DEFAULT_ENCODING);
-	}
-	
-	public static String readWikiFile(String folder, String file, String encoding) throws IOException {
-		File fileGood = new File(folder+"\\"+normalizeFileName(file));
-		logD("reading  file: "+fileGood.getPath());
-		logD("absolute path: "+ fileGood.getAbsolutePath());
-		
-		FileInputStream in = new FileInputStream(fileGood);
-		BufferedReader b = new BufferedReader(new InputStreamReader(in, encoding));       
-        String line;
-        StringBuilder text = new StringBuilder(100000);
-        while ((line = b.readLine()) != null)
-        {	        	
-            text.append(line);
-            text.append("\n");
+    private static void logE(Object ob) {
+        if (log4j != null) {
+            log4j.error(ob);
+        } else {
+            logger.severe(ob.toString());
         }
-        in.close();
-	    return text.toString();
-	}
+    }
 
+    /**
+     * Dump text to file.
+     * Mostly used to save Wiki pages to disk.
+     * Default encoding will be used when converting Unicode characters.
+     * Default parent folder will be used to save file (can be changed with
+     * {@link #setDefaultOut(String)} method). 
+     * File name will be normalized (see {@link #normalizeFileName(String)} for details.
+     *
+     * @param text Text to write to file (wiki code).
+     * @param file File name.
+     * @throws IOException if failed to write file.
+     */
+    public static void dump(String text, String file) throws IOException {
+        assert sDefaultOut != null;
+
+        dump(text, sDefaultOut, file, sDefaultEncoding);
+    }
+
+    /**
+     * Dump text to file.
+     * Mostly used to save Wiki pages to disk.
+     * Default encoding will be used when converting Unicode characters.
+     * 
+     * The same as {@link #writeFile(String, String, String)} but with some features:
+     *   - you should specify parent folder and file name separately;
+     *   - parent folder may be missing: it will be created;
+     *   - file name will be normalized (see {@link #normalizeFileName(String)} for details.
+     *
+     * @param text Text to write to file (wiki code).
+     * @param folder Parent folder (path) of the file.
+     * @param file File name.
+     * @throws IOException if failed to write file.
+     */
+    public static void dump(String text, String folder, String file) throws IOException {
+        dump(text, folder, file, sDefaultEncoding);
+    }
+
+    /**
+     * Dump text to file.
+     * Mostly used to save Wiki pages to disk.
+     * 
+     * The same as {@link #writeFile(String, String, String)} but with some features:
+     *   - you should specify parent folder and file name separately;
+     *   - parent folder may be missing: it will be created;
+     *   - file name will be normalized (see {@link #normalizeFileName(String)} for details.
+     *
+     * @param text Text to write to file (wiki code).
+     * @param folder Parent folder (path) of the file.
+     * @param file File name.
+     * @param encoding Encoding to use.
+     * @throws IOException if failed to write file.
+     */
+    public static void dump(String text, @Nullable String folder, String file, String encoding)
+            throws IOException {
+        String path = "";
+        if (folder != null) {
+            if (folder.endsWith(File.separator)) {
+                folder = folder.substring(0, folder.length() - 1);
+            }
+            String folderGood = folder;
+            File parentFolder = new File(folderGood);
+            if (!parentFolder.exists()) {
+                parentFolder.mkdirs();        
+            }    
+            if (!folderGood.isEmpty()) {
+                path = folderGood + File.separator;
+            }
+        }
+        String fileGood = path + normalizeFileName(file);
+        try (OutputStreamWriter or = new OutputStreamWriter(
+                new FileOutputStream(new File(fileGood)), encoding)) {
+            or.write(text);
+        }
+    }
+
+    /**
+     * Add text to the end of file.
+     * File must exist or {@link FileNotFoundException} will be raised.
+     * 
+     * @param text Text to write at the end of file.
+     * @param file File name or file path.
+     * @throws FileNotFoundException if file not found.
+     * @throws IOException if failed to write file.
+     */
+    public static void append(String text, String file) throws FileNotFoundException, IOException {
+        append(text, file, UTF8);
+    }
+
+    /**
+     * Add text to the end of file.
+     * File must exist or {@link FileNotFoundException} will be raised.
+     * 
+     * @param text Text to write at the end of file.
+     * @param file File name or file path.
+     * @param encoding Encoding to use when converting Unicode chars.
+     * @throws FileNotFoundException if file not found.
+     * @throws IOException if failed to write file.
+     */
+    public static void append(String text, String file, String encoding)
+            throws FileNotFoundException, IOException {
+        try (OutputStreamWriter or = new OutputStreamWriter(
+                new FileOutputStream(new File(file), true), encoding)) {
+            or.write(text);
+        }
+    }
+
+    /**
+     * Add text to the end of file.
+     */
+    @Deprecated
+    public static void appendOld(String text, String file) throws IOException {
+        try (FileOutputStream out = new FileOutputStream(new File(file), true)) {
+            out.write(text.getBytes());
+        }
+    }
+
+    /**
+     * Write string to file.
+     * Default encoding is used to convert Unicode chars in the file.
+     *
+     * @param text A String with text to save.
+     * @param file File name or file path.
+     * @throws IOException if failed to write file.
+     */
+    public static void writeFile(String text, String file) throws IOException {
+        writeFile(text, file, UTF8);
+    }
+
+    /**
+     * Write string to file.
+     *
+     * @param text A String with text to save.
+     * @param file File name or file path.
+     * @param encoding Encoding to use when saving file.
+     * @throws IOException if failed to write file.
+     */
+    public static void writeFile(String text, String file, String encoding) throws IOException {
+        try (OutputStreamWriter or = new OutputStreamWriter(
+                new FileOutputStream(new File(file)), encoding)) {
+            or.write(text);
+        }
+    }
+
+    /**
+     * Normalize file name. That means replace all characters that cannot be used in path with '_'.
+     *
+     * @param file File name.
+     * @return Normalized file name.
+     */
+    public static String normalizeFileName(String file) {
+        return file.replaceAll("\\\\|\\/|\\:|\\*|\\?", "_");
+    }
+
+    /**
+     * Reads wiki file - a file where a wiki page was written.
+     * Default encoding (set by {@link #setDefaultEncoding(String)}) will be used.
+     * "wiki file" means:
+     *   - file name is normalized (forbidden path symbols replaced with '_');
+     *   - line endings are replaced to universal format ('\n');
+     *   - last line ends with line ending.
+     *
+     * @param folder Folder name or path with the required file.
+     * @param file File name (or Wiki page title represented as file name).
+     * @return String with wiki text.
+     * @throws FileNotFoundException if file not found.
+     * @throws IOException if failed to read file.
+     */
+    public static String readWikiFile(String folder, String file) throws IOException {
+        return readWikiFile(folder, file, sDefaultEncoding);
+    }
+
+    /**
+     * Reads wiki file - a file where a wiki page was written.
+     * That means:
+     *   - file name is normalized (forbidden path symbols replaced with '_');
+     *   - line endings are replaced to universal format ('\n');
+     *   - last line ends with line ending.
+     *
+     * @param folder Folder name or path with the required file.
+     * @param file File name (or Wiki page title represented as file name).
+     * @param encoding Encoding to decode string.
+     * @return String with wiki text.
+     * @throws FileNotFoundException if file not found.
+     * @throws IOException if failed to read file.
+     */
+    public static String readWikiFile(String folder, String file, String encoding)
+            throws FileNotFoundException, IOException {
+        File fileGood = new File(folder + "\\" + normalizeFileName(file));
+        logD("reading  file: " + fileGood.getPath());
+        logD("absolute path: " +  fileGood.getAbsolutePath());
+        StringBuilder text = new StringBuilder(100000);
+        try (BufferedReader b = new BufferedReader(new InputStreamReader(
+                new FileInputStream(fileGood), encoding))) {
+            String line;
+            while ((line = b.readLine()) != null) {                
+                text.append(line);
+                text.append("\n");
+            }
+        }
+        return text.toString();
+    }
+
+    /**
+     * Reads file contents to string. Default encoding will be used to read file.
+     * Never raises exception.
+     * Returns null if fails to read file.
+     *
+     * @param fileName File name (or file path).
+     * @return String with file contents or <code>null</code>.
+     */
+    @Nullable
     public static String readFileSilently(String fileName) {
-        return readFileSilently(fileName, null, DEFAULT_ENCODING);
+        return readFileSilently(fileName, null, sDefaultEncoding);
     }
 
+    /**
+     * Reads file contents to string. Default encoding will be used to read file.
+     * Never raises exception.
+     * Returns default value if fails to read file.
+     *
+     * @param fileName File name (or file path).
+     * @param defaultVal Default value.
+     * @return String with file contents or default value.
+     */
     public static String readFileSilently(String fileName, String defaultVal) {
-        return readFileSilently(fileName, defaultVal, DEFAULT_ENCODING);
+        return readFileSilently(fileName, defaultVal, sDefaultEncoding);
     }
 
+    /**
+     * Reads file contents to string.
+     * Never raises exception.
+     * Returns default value if failes to read file.
+     *
+     * @param fileName File name (or file path).
+     * @param defaultVal Default value.
+     * @param encoding Encoding with which to convert file to Unicode.
+     * @return String with file contents or default value.
+     */
     public static String readFileSilently(String fileName, String defaultVal, String encoding) {
         String text = defaultVal;
-		try {
-	        text = readFile(fileName, encoding);			
+        try {
+            text = readFile(fileName, encoding);            
         } catch (IOException e) {
             logE("Failed to read file: " + fileName);
             logE(e);
-		}
-        if (text == defaultVal && defaultVal != null) {
-            logW("Using default value instead: "+ defaultVal);
         }
-		return text;
-	}
-	
-	public static String readFile(String fileName) throws IOException {
-		return readFile(fileName, DEFAULT_ENCODING);
-	}
-	
-	public static String readFile(String fileName, String encoding) throws IOException {
-		String text = null;
-		File file = new File(fileName);		
-		
+        if (text == defaultVal && defaultVal != null) {
+            logW("Using default value instead: " + defaultVal);
+        }
+        return text;
+    }
+
+    /**
+     * Reads file to string.
+     * Default encoding will be used to convert file to Unicode String.
+     *
+     * @param fileName File name (or file path).
+     * @return String with file contents parsed to Unicode.
+     */
+    public static String readFile(String fileName)
+            throws FileNotFoundException, IOException {
+        return readFile(fileName, sDefaultEncoding);
+    }
+
+    /**
+     * Reads file to string.
+     *
+     * @param fileName File name (or file path).
+     * @param encoding Encoding to use. We advise to use {@link FileTools#UTF8}.
+     * @return String with file contents parsed to Unicode using specified encoding.
+     */
+    public static String readFile(String fileName, String encoding)
+            throws FileNotFoundException, IOException {
+        String text = null;
+        File file = new File(fileName);        
         StringBuilder sb = new StringBuilder(10000);
-        FileInputStream fis = null;
-        InputStreamReader reader = null;
-        try {
-            fis = new FileInputStream(file);
-            reader = new InputStreamReader(fis, encoding);
-            char buf[] = new char[1000];
+        try (InputStreamReader reader = new InputStreamReader(
+                new FileInputStream(file), encoding)) {
+            char [] buf = new char[1000];
             while (true) {
                 int readCount = reader.read(buf);
                 if (readCount < 0) {
-                  break;
+                    break;
                 }
                 sb.append(buf, 0, readCount);
-              }
+            }
             text = sb.toString();
-        } finally {
-            if (reader != null) reader.close();
-            if (fis != null) fis.close();
         }
-		return text;
-	}
-	
-	@Deprecated
-	public static String [] readFileToArray(String fileName, boolean removeEmpty) {
-		return readFileToArray(fileName, DEFAULT_ENCODING, removeEmpty);
-	}
+        return text;
+    }
+    
+    /**
+     * Reads file contents to string array.
+     */
+    @Deprecated
+    public static String [] readFileToArray(String fileName, boolean removeEmpty)
+            throws FileNotFoundException, IOException {
+        return readFileToArray(fileName, sDefaultEncoding, removeEmpty);
+    }
 
-	public static List<String> readFileToList(String fileName) {
-		return readFileToList(fileName, DEFAULT_ENCODING, true);
-	}
-	
-	public static List<String> readFileToList(String fileName, boolean removeEmpty) {
-		return readFileToList(fileName, DEFAULT_ENCODING, removeEmpty);
-	}
+    /**
+     * Reads file contents to string array.
+     */
+    @Deprecated
+    public static String [] readFileToArray(String fileName, String encoding,
+            boolean removeEmpty) throws FileNotFoundException, IOException {
+        return readFileToList(fileName, encoding, removeEmpty).toArray(new String[0]);
+    }
 
-	@Deprecated
-	public static String [] readFileToArray(String fileName, String encoding, boolean removeEmpty) {
-		return readFileToList(fileName, encoding, removeEmpty).toArray(new String[0]);
-	}
+    /**
+     * Reads file contents to list of strings.
+     * It will use default encoding and will remove all empty lines.
+     * 
+     * @param fileName File name (or file path).
+     * @return list of strings.
+     * @throws FileNotFoundException if file not found.
+     * @throws IOException if failed to read file.
+     */
+    public static List<String> readFileToList(String fileName)
+            throws FileNotFoundException, IOException {
+        return readFileToList(fileName, sDefaultEncoding, true);
+    }
 
-	public static List<String> readFileToList(String fileName, String encoding, boolean removeEmpty) {
-		File file = new File(fileName);
-		ArrayList<String> items = new ArrayList<String>(5000);
-		try {
-	        FileInputStream fis = new FileInputStream(file);
-	        InputStreamReader isr = new InputStreamReader(fis, encoding);
-	        BufferedReader br = new BufferedReader(isr);
-	        String line = "";	        
-	        while((line=br.readLine())!=null) {
-	        	if (!(removeEmpty && line.trim().length() == 0))
-	        		items.add(line);
-	        }	        
-	        br.close();
-			isr.close();
-			fis.close();
-		} catch (FileNotFoundException e) {
-			logE(e.toString());
-			return null;
-		} catch (IOException e) {
-			logE(e.toString());
-			e.printStackTrace();
-			return null;
-		}
-		return items;
-	}
+    /**
+     * Reads file contents to list of strings.
+     *
+     * The same as {@link #readFileToList(String, String, boolean)}.
+     * Default encoding will be used to read file.
+     * Default encoding can be set by {@link FileTools#setDefaultEncoding(String)} method.
+     *
+     * @param fileName File name (or file path).
+     * @param removeEmpty If <code>true</code>, empty lines will be removed from result list.
+     * @return list of strings.
+     * @throws FileNotFoundException if file not found.
+     * @throws IOException if failed to read file.
+     */
+    public static List<String> readFileToList(String fileName, boolean removeEmpty)
+            throws FileNotFoundException, IOException {
+        return readFileToList(fileName, sDefaultEncoding, removeEmpty);
+    }
+
+    /**
+     * Reads file contents to list of strings.
+     *
+     * @param fileName File name (or file path).
+     * @param encoding Encoding to use. We advise to use {@link FileTools#UTF8}.
+     * @param removeEmpty If <code>true</code>, empty lines will be removed from result list.
+     * @return list of strings.
+     * @throws FileNotFoundException if file not found.
+     * @throws IOException if failed to read file.
+     */
+    public static List<String> readFileToList(String fileName, String encoding,
+            boolean removeEmpty) throws FileNotFoundException, IOException {
+        File file = new File(fileName);
+        ArrayList<String> items = new ArrayList<String>(5000);
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                new FileInputStream(file), encoding))) {
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                if (!(removeEmpty && line.trim().length() == 0)) {
+                    items.add(line);
+                }
+            }            
+        }
+        return items;
+    }
 }

@@ -692,11 +692,11 @@ public class NirvanaBot extends BasicBot{
 		List<String> tasks = null;
 		if (TASK) {	
 			log.info("reading tasks from file: "+TASK_LIST_FILE);
-			tasks = FileTools.readFileToList(TASK_LIST_FILE, true);
-			if (tasks == null) {
-				log.fatal("Failed to read tasks file: " + TASK_LIST_FILE);
-				return;
-			}
+            try {
+                tasks = FileTools.readFileToList(TASK_LIST_FILE, true);
+            } catch (IOException e) {
+                throw new BotFatalError("Failed to read tasks file: " + TASK_LIST_FILE);
+            }
 			log.info("loaded tasks: "+tasks.size()+" total");
 			for(String task : tasks) {
 				log.debug("task: "+task);

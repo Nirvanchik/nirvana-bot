@@ -23,19 +23,19 @@
 
 package org.wikipedia.nirvana.archive;
 
+import org.wikipedia.Wiki;
+import org.wikipedia.nirvana.util.FileTools;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.security.auth.login.FailedLoginException;
-
-import org.wikipedia.Wiki;
-import org.wikipedia.nirvana.util.FileTools;
 
 /**
  * @author kin
@@ -85,12 +85,22 @@ public class ArchiveTools {
 		
 		log.log(Level.INFO, "processing file: "+in);
 		String out = "out.txt";
-		String pages[] = FileTools.readFileToArray(args[0], FileTools.UTF8, true);
+        List<String> pages;
+        try {
+            pages = FileTools.readFileToList(args[0], FileTools.UTF8, true);
+        } catch (FileNotFoundException e1) {
+            log.severe("File not found: " + args[0]);
+            return;
+        } catch (IOException e1) {
+            log.severe("Failed to read file: " + args[0]);
+            return;
+        }
 		wiki = new Wiki( "ru.wikipedia.org" );
 		wiki.setMaxLag( 15 );
 		//print( "db lag (seconds): " + wiki.getCurrentDatabaseLag() );
 
 		// wiki.setThrottle( 5000 );
+        // TODO: Remove it out of here.
 		char pw[] = {'y','e','g','h','s','q','1'};
 		try {
 	        wiki.login( "NirvanaBot", pw );
@@ -101,22 +111,20 @@ public class ArchiveTools {
         	log.log(Level.SEVERE, ""+e);
         	return;
         }
-		//wiki.setLogLevel(Level.INFO);
-		//wiki.lo
 
 		int i = 0;
 		Map results[];
 		//Page pagesWithInfo[] = new Page[pages.length];
 		ArrayList<Page> pagesWithInfo = new ArrayList<Page>(100000);
-		while(i<pages.length) {
-			log.info("processing line: "+i + " of "+pages.length);
+        while (i < pages.size()) {
+            log.info("processing line: " + i + " of " + pages.size());
 			int len = PAGE_COUNT_PER_REQUEST;
-			if(i+len>pages.length) {
-				len = pages.length - i;
+            if (i + len > pages.size()) {
+                len = pages.size() - i;
 			}
-			String request[] = Arrays.copyOfRange(pages, i, i+len);
+            List<String> part = pages.subList(i, i + len);
 			try {
-	            results = wiki.getPageInfo(request);
+                results = wiki.getPageInfo(pages.toArray(new String[0]));
             } catch (IOException e) {
             	log.log(Level.SEVERE, ""+e);
 	            wiki.logout();

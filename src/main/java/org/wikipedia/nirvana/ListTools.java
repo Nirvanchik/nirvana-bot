@@ -28,9 +28,12 @@ import org.wikipedia.nirvana.util.FileTools;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * @author kin
@@ -48,6 +51,7 @@ public class ListTools {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		Logger log = Logger.getLogger(ListTools.class.getSimpleName());
 		if(args.length==0) {
 			return;
 		}
@@ -83,20 +87,38 @@ public class ListTools {
 		if(out.isEmpty()) {
 			out = "out_"+cmd.toString()+".txt";			
 		}
-		
-		String lines1[] = FileTools.readFileToArray(list1, FileTools.UTF8, true);
-		String lines2[] = FileTools.readFileToArray(list2, FileTools.UTF8, true);
-		//String lines1[] = FileTools.readFileToList(list1);
-		//String lines2[] = FileTools.readFileToList(list2);
-		if(lines1==null || lines1.length==0) return;
-		if(lines2==null || lines2.length==0) return;
+
+		List<String> lines1;
+        try {
+            lines1 = FileTools.readFileToList(list1, FileTools.UTF8, true);
+        } catch (IOException e1) {
+            log.severe("Failed to read file: " + list1);
+            return;
+        }
+        List<String> lines2;
+        try {
+            lines2 = FileTools.readFileToList(list2, FileTools.UTF8, true);
+        } catch (IOException e1) {
+            log.severe("Failed to read file: " + list2);
+            return;
+        }
+        if (lines1.size() == 0) {
+            log.severe("The first list is empty");
+            return;
+        }
+        if (lines2.size() == 0) {
+            log.severe("The second list is empty");
+            return;
+        }
 		String lines3[] = null;
 		switch(cmd) {
 			case SUBSTRACTION:
-				lines3 = Wiki.relativeComplement(lines1, lines2);
+                lines3 = Wiki.relativeComplement(
+                        lines1.toArray(new String[0]), lines2.toArray(new String[0]));
 				break;
 			case INTERSECTION:
-				lines3 = Wiki.intersection(lines1, lines2);
+                lines3 = Wiki.intersection(
+                        lines1.toArray(new String[0]), lines2.toArray(new String[0]));
 				break;
 			case UNION:
 				lines3 = new String[0];

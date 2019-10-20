@@ -34,6 +34,7 @@ import org.wikipedia.nirvana.wiki.WikiBooster;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -152,8 +153,10 @@ public class CleanArchiveBot extends BasicBot {
         log.info("Read task information in {}", this.taskFile);
         Task task = readTask(this.taskFile);
         log.info("Read pages list in {}", task.badPagesFile);
-        List<String> pages = readPages(task.badPagesFile, task.format);
-        if (pages == null) {
+        List<String> pages;
+        try {
+            pages = readPages(task.badPagesFile, task.format);
+        } catch (IOException e) {
             throw new BotFatalError(String.format("Failed to read %1$s", task.badPagesFile));
         }
         log.info("{} pages{} will be checked.", pages.size(),
@@ -421,7 +424,8 @@ public class CleanArchiveBot extends BasicBot {
         log.info("{} lines removed in all", total);
     }
 
-    private List<String> readPages(String fileName, Format format) {
+    private List<String> readPages(String fileName, Format format)
+            throws FileNotFoundException, IOException {
         if (format.equals(Format.TXT)) {
             return FileTools.readFileToList(fileName);
         } else if (format.equals(Format.TSV)) {
@@ -431,12 +435,10 @@ public class CleanArchiveBot extends BasicBot {
         }
     }
 
-    private List<String> readPagesFromTsv(String fileName) {
+    private List<String> readPagesFromTsv(String fileName)
+            throws FileNotFoundException, IOException {
         List<String> pages = new ArrayList<>();
         List<String> lines = FileTools.readFileToList(fileName);
-        if (lines == null) {
-            return null;
-        }
         int x = 0;
         for (String line: lines) {
             String [] items = line.split("\t");

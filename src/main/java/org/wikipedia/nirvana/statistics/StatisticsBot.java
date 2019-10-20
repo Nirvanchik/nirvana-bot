@@ -160,12 +160,15 @@ public class StatisticsBot extends BasicBot {
 		}
 		java.util.Arrays.sort(portalSettingsPages);
 		
-		String [] tasks = null;
-		if(TASK) {			
-			 tasks = FileTools.readFileToArray(TASK_LIST_FILE, true);
-			 if (tasks == null) {
-				 return;
-			 }
+        List<String> tasks = null;
+        if (TASK) {
+            try {
+                tasks = FileTools.readFileToList(TASK_LIST_FILE, true);
+            } catch (FileNotFoundException e) {
+                throw new BotFatalError("File not found: " + TASK_LIST_FILE);
+            } catch (IOException e) {
+                throw new BotFatalError(e);
+            }
 		}
 
         int i = 0;  // текущий портал
