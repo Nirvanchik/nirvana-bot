@@ -23,6 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 /**
  * Some utility methods for strings manipulations which you won't find in
  * the {@link org.apache.commons.lang3.StringUtils}
@@ -32,6 +34,11 @@ public class StringTools {
 
     /**
      * Trims double quotes if incoming string is quoted.
+     * 
+     * Examples:
+     * a -> a
+     * "a" -> a
+     * "a -> "a
      *
      * @param str a string to trim.
      * @return trimmed string.
@@ -52,24 +59,29 @@ public class StringTools {
      * @return number of occurrences of the character in the string.
      */
     public static int howMany(String str, char ch) {
-        return howMany(str, ch, false);
-    }
-
-    /**
-     * Counts how many times the specified string contains the specified character.
-     *
-     * @param str string to check.
-     * @param ch character to count.
-     * @param continuous if <code>true</code> only adjacent characters will be counted (the first
-     *     sequence).
-     * @return number of occurrences of the character in the string.
-     */
-    public static int howMany(String str, char ch, boolean continuous) {
         int n = 0;
         for (char x : str.toCharArray()) {
             if (x == ch) {
                 n++;
-            } else if (continuous) {
+            }
+        }
+        return n;
+    }
+    
+    /**
+     * Counts how many times the specified string contains the specified character at left
+     * side, only adjacent repeated chars counted.
+     *
+     * @param str string to check.
+     * @param ch character to count.
+     * @return number of occurrences of the character.
+     */
+    public static int countPaddedCharsAtLeft(String str, char ch) {
+        int n = 0;
+        for (char x : str.toCharArray()) {
+            if (x == ch) {
+                n++;
+            } else {
                 break;
             }
         }
@@ -105,7 +117,8 @@ public class StringTools {
      * @param max maximum number of splits to do.
      * @return array with resulting string split to pieces.
      */
-    public static String[] splitBottom(String str, String separatorChars, int max) {
+    @Nullable
+    public static String[] splitBottom(@Nullable String str, String separatorChars, int max) {
 
         if (str == null) {
             return null;
@@ -115,7 +128,7 @@ public class StringTools {
             return new String[0];
         }
         List<String> list = new ArrayList<String>();
-        int sizePlus1 = 1;
+        int splitCount = 0;
         int i = len - 1;
         int start = len;
         boolean match = false;
@@ -125,7 +138,7 @@ public class StringTools {
             while (i >= 0) {
                 if (str.charAt(i) == sep) {
                     if (match) {
-                        if (sizePlus1++ == max) {
+                        if (splitCount++ == max) {
                             i = -1;
                         }
                         list.add(0, str.substring(i + 1, start));

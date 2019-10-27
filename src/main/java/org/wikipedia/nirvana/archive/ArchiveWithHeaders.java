@@ -333,12 +333,9 @@ public class ArchiveWithHeaders extends Archive{
 			if(item.isEmpty()) continue;
             Matcher m = p.matcher(item);
             if(m.matches()) {
-//            	if(part!=null) {
-//            		parts.add(part);
-//            	}
                 if (part != null && part.getSuperHeader() == null && part.isEmpty() &&
-            			( StringTools.howMany(part.getHeaderText(), '=', true)<
-            			  StringTools.howMany(item, '=', true)        )            ) {
+                        (StringTools.countPaddedCharsAtLeft(part.getHeaderText(), '=') <
+                                StringTools.countPaddedCharsAtLeft(item, '='))) {
             		part.pushHeader(m.group("headername").trim(),item);         
             	} else {
             		if(part!=null) {
@@ -390,7 +387,7 @@ public class ArchiveWithHeaders extends Archive{
 		oldItems = StringTools.splitBottom(text.trim(), delimeter, HOW_MANY_ITEMS_TO_PARSE);
 		int first,last;
 		last = oldItems.length-1;		
-		if(oldItems.length==HOW_MANY_ITEMS_TO_PARSE) {
+        if (oldItems.length > HOW_MANY_ITEMS_TO_PARSE) {
 			archivePartialText = oldItems[0];
 			first = 1; 
 		} else {
@@ -419,8 +416,8 @@ public class ArchiveWithHeaders extends Archive{
             	if(part.getHeader()==null) {
             		part.pushHeader(m.group("headername").trim(),item);
                 } else if(part.getHeader() != null && part.getSuperHeader() == null &&
-            			( StringTools.howMany(part.getHeaderText(), '=', true)>
-                  			  StringTools.howMany(item, '=', true)        )     ) {
+                        (StringTools.countPaddedCharsAtLeft(part.getHeaderText(), '=') >
+                                  StringTools.countPaddedCharsAtLeft(item, '='))) {
                     part.pushSuperHeader(m.group("headername").trim(),item);
             	} else {
             		part = createSection(enumeration,m.group("headername").trim(),item,true);
