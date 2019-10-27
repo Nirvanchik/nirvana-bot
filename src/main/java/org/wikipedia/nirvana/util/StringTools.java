@@ -1,6 +1,6 @@
 /**
  *  @(#)StringTools.java
- *  Copyright © 2011-2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright © 2019 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,12 @@ import java.util.List;
 public class StringTools {
     public static final String DOUBLE_QUOTE = "\"";
 
+    /**
+     * Trims double quotes if incoming string is quoted.
+     *
+     * @param str a string to trim.
+     * @return trimmed string.
+     */
     public static String trimDoubleQuoteIfFound(String str) {
         if (str.startsWith(DOUBLE_QUOTE) && str.endsWith(DOUBLE_QUOTE)) {
             str = StringUtils.removeStart(str, DOUBLE_QUOTE);
@@ -38,31 +44,69 @@ public class StringTools {
         return str;
     }
 
-	public static int howMany(String s, char c) {
-		return howMany(s,c,false);
-	}
-
-	public static int howMany(String s, char c, boolean continuous) {
-		int n = 0;
-		for(char x : s.toCharArray()) {
-			if(x==c) {
-				n++;
-			} else if(continuous)
-				break;
-		}
-		return n;
-	}
-	
-    public static String trimLeft(String s) {
-        return s.replaceAll("^\\s+", "");
+    /**
+     * Counts how many times the specified string contains the specified character.
+     *
+     * @param str string to check.
+     * @param ch character to count.
+     * @return number of occurrences of the character in the string.
+     */
+    public static int howMany(String str, char ch) {
+        return howMany(str, ch, false);
     }
-     
-    public static String trimRight(String s) {
-        return s.replaceAll("\\s+$", "");
+
+    /**
+     * Counts how many times the specified string contains the specified character.
+     *
+     * @param str string to check.
+     * @param ch character to count.
+     * @param continuous if <code>true</code> only adjacent characters will be counted (the first
+     *     sequence).
+     * @return number of occurrences of the character in the string.
+     */
+    public static int howMany(String str, char ch, boolean continuous) {
+        int n = 0;
+        for (char x : str.toCharArray()) {
+            if (x == ch) {
+                n++;
+            } else if (continuous) {
+                break;
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Trims empty spaces from the left side of the string.
+     *
+     * @param str string to trim.
+     * @return trimmed string.
+     */
+    public static String trimLeft(String str) {
+        return str.replaceAll("^\\s+", "");
+    }
+
+    /**
+     * Trims empty spaces from the right side of the string.
+     *
+     * @param str string to trim.
+     * @return trimmed string.
+     */
+    public static String trimRight(String str) {
+        return str.replaceAll("\\s+$", "");
     } 
-    
+
+    /**
+     * Splits the string by the specified separator characters from the end (bottom).
+     * Only 1 split character is supported.
+     *
+     * @param str a string to split.
+     * @param separatorChars string with chars used to split (1 character is allowed only).
+     * @param max maximum number of splits to do.
+     * @return array with resulting string split to pieces.
+     */
     public static String[] splitBottom(String str, String separatorChars, int max) {
-        
+
         if (str == null) {
             return null;
         }
@@ -72,7 +116,8 @@ public class StringTools {
         }
         List<String> list = new ArrayList<String>();
         int sizePlus1 = 1;
-        int i = len-1, start = len;
+        int i = len - 1;
+        int start = len;
         boolean match = false;
         if (separatorChars.length() == 1) {
             // Optimise 1 character case
@@ -83,7 +128,7 @@ public class StringTools {
                         if (sizePlus1++ == max) {
                             i = -1;
                         }
-                        list.add(0,str.substring(i+1, start));
+                        list.add(0, str.substring(i + 1, start));
                         match = false;
                     }
                     start = i--;
@@ -93,34 +138,27 @@ public class StringTools {
                 i--;
             }
         } else {
-            // standard case
-        	/*
-            while (i < len) {
-                if (separatorChars.indexOf(str.charAt(i)) >= 0) {
-                    if (match) {
-                        if (sizePlus1++ == max) {
-                            i = len;
-                        }
-                        list.add(str.substring(start, i));
-                        match = false;
-                    }
-                    start = ++i;
-                    continue;
-                }
-                match = true;
-                i++;
-            }*/
+            throw new IllegalArgumentException(String.format(
+                    "\"separatorChars\" argument must have 1 character, but has %d",
+                    separatorChars.length()));
         }
         if (match) {
-        	list.add(0,str.substring(i+1, start));
+            list.add(0, str.substring(i + 1, start));
         }
         return list.toArray(new String[list.size()]);
     }
-    
+
+    /**
+     * Truncates the string from right to specified length. Does nothing if the string is shorter.
+     *
+     * @param text a string to truncate.
+     * @param len length to truncate to.
+     * @return truncated string.
+     */
     public static String trancateTo(String text, int len) {
-    	return text.length()>len?text.substring(0,len):text;
+        return text.length() > len ? text.substring(0, len) : text;
     }
-    
+
     /**
      * Adds same prefix to all list items.
      *
