@@ -1,5 +1,5 @@
 /**
- *  @(#)TextUtils.java 14.01.2017
+ *  @(#)TextUtils.java
  *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -22,8 +22,6 @@
  * */
 
 package org.wikipedia.nirvana.util;
-
-import org.wikipedia.nirvana.BasicBot;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -61,7 +59,7 @@ public class TextUtils {
      * @param parameters map to put result data
      * @param emptyIsNull will put null for params specified as empty ("A=")
      * @param commentSeparators Lines starting with these strings will be skipped.
-     * @return <code>true</code> if there were lines without "=" symbol.
+     * @return <code>false</code> if there were lines without "=" symbol.
      */
     public static boolean textOptionsToMap(String text, Map<String, String> parameters,
             boolean emptyIsNull, String... commentSeparators) {
@@ -70,9 +68,6 @@ public class TextUtils {
         for (String line: lines) {
             String trimLine = line.trim();
             if (trimLine.isEmpty()) continue;
-            if (BasicBot.DEBUG_BUILD) {
-                sLog.debug(trimLine);
-            }
             if (commentSeparators != null && commentSeparators.length > 0) {
                 if (StringUtils.startsWithAny(trimLine, commentSeparators)) {
                     continue;
