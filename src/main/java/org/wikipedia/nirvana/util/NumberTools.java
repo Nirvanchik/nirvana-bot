@@ -1,5 +1,5 @@
 /**
- *  @(#)NumberTools.java 12.10.2014
+ *  @(#)NumberTools.java
  *  Copyright © 2014 Dmitry Trofimovich (KIN, Nirvanchik) (DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -28,33 +28,45 @@ import org.wikipedia.nirvana.annotation.LocalizedByHardcode;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * @author kin
+ * Utility methods for processing numeric data.
  *
  */
 @LocalizedByHardcode
 public class NumberTools {
-	public static final int K = 1024;
-	public static final int M = K*K;
-	public static int parseFileSize(String s) throws NumberFormatException {
-		int size = 0;		
-		int multi = 1;
-        if (StringUtils.endsWithIgnoreCase(s, "K") || StringUtils.endsWithIgnoreCase(s, "К")) {
-			multi = K;
-			s = s.substring(0, s.length()-1).trim();
-        } else if (StringUtils.endsWithIgnoreCase(s, "KB") ||
-                StringUtils.endsWithIgnoreCase(s, "КБ")) {
-			multi = K;
-			s = s.substring(0, s.length()-2).trim();
-        } else if (StringUtils.endsWithIgnoreCase(s, "M") ||
-                StringUtils.endsWithIgnoreCase(s, "М")) {
-			multi = M;
-			s = s.substring(0, s.length()-1).trim();
-        } else if (StringUtils.endsWithIgnoreCase(s, "MB") ||
-                StringUtils.endsWithIgnoreCase(s, "МБ")) {
-			multi = M;
-			s = s.substring(0, s.length()-2).trim();
-		}
-		size = Integer.parseInt(s);		
-		return (size*multi);
-	}
+    public static final int K = 1024;
+    public static final int M = K * K;
+
+    /**
+     * Reads file size from string where size can be specified in bytes, kilobytes or megabytes.
+     * Examples: 5 = 5 bytes, 5 KB = 5 kilobytes, 5 MB = 5 megabytes.
+     *
+     * 'B' character is optional (5 KB = 5 K, 5 MB = 5 M). 
+     *
+     * 'KB' strings allowed in latin or cyrillic alphabet.
+     *
+     * @param str a string to parse file size from.
+     * @return file size in bytes.
+     */
+    public static int parseFileSize(String str) throws NumberFormatException {
+        int size = 0;        
+        int multi = 1;
+        if (StringUtils.endsWithIgnoreCase(str, "K") || StringUtils.endsWithIgnoreCase(str, "К")) {
+            multi = K;
+            str = str.substring(0, str.length() - 1).trim();
+        } else if (StringUtils.endsWithIgnoreCase(str, "KB") ||
+                StringUtils.endsWithIgnoreCase(str, "КБ")) {
+            multi = K;
+            str = str.substring(0, str.length() - 2).trim();
+        } else if (StringUtils.endsWithIgnoreCase(str, "M") ||
+                StringUtils.endsWithIgnoreCase(str, "М")) {
+            multi = M;
+            str = str.substring(0, str.length() - 1).trim();
+        } else if (StringUtils.endsWithIgnoreCase(str, "MB") ||
+                StringUtils.endsWithIgnoreCase(str, "МБ")) {
+            multi = M;
+            str = str.substring(0, str.length() - 2).trim();
+        }
+        size = Integer.parseInt(str);        
+        return (size * multi);
+    }
 }
