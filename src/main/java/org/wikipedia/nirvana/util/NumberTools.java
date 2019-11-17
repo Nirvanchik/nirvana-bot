@@ -42,7 +42,7 @@ public class NumberTools {
      *
      * 'B' character is optional (5 KB = 5 K, 5 MB = 5 M). 
      *
-     * 'KB' strings allowed in latin or cyrillic alphabet.
+     * 'KB' strings allowed in Latin or Cyrillic alphabet.
      *
      * @param str a string to parse file size from.
      * @return file size in bytes.
