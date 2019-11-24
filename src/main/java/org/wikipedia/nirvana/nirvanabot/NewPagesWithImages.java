@@ -32,7 +32,7 @@ import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
 import org.wikipedia.nirvana.util.OptionsUtils;
 import org.wikipedia.nirvana.util.FileTools;
-import org.wikipedia.nirvana.util.HTTPTools;
+import org.wikipedia.nirvana.util.HttpTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.commons.lang3.StringUtils;
@@ -171,9 +171,9 @@ public class NewPagesWithImages extends NewPages {
             	}
 			}
 		    
-		    if (page != null && !usersToIgnore.contains(HTTPTools.removeEscape(page.getUser())))
+            if (page != null && !usersToIgnore.contains(HttpTools.removeEscape(page.getUser())))
 		    {		    	
-		    	String title = HTTPTools.removeEscape(page.getPage());
+                String title = HttpTools.removeEscape(page.getPage());
 		    	String time = null;
 		    	if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) 
 		    		time = page.getTimestamp().getTime().toString();
@@ -190,7 +190,7 @@ public class NewPagesWithImages extends NewPages {
 		    	log.debug("format -> "+this.format);*/
 		    	String element = String.format(this.formatString,
 		    			namespace!=0?title.substring(wiki.namespaceIdentifier(this.namespace).length()+1):title,
-		    			HTTPTools.removeEscape(page.getUser()), 
+                        HttpTools.removeEscape(page.getUser()), 
 		    			time, 
 		    			page.getImage()
 		    			);

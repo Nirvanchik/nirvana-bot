@@ -44,7 +44,7 @@ import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFinder;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
-import org.wikipedia.nirvana.util.HTTPTools;
+import org.wikipedia.nirvana.util.HttpTools;
 import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
@@ -456,7 +456,8 @@ public class NewPages implements PortalModule{
 			String time = formatTimeString(rev);	    	
 	    	String titleToInsert = formatTitleString(title);
 
-	    	element = String.format(formatString, titleToInsert, HTTPTools.removeEscape(user), time);
+            element = String.format(formatString, titleToInsert, HttpTools.removeEscape(user),
+                    time);
 	    	if(deletedFlag==PortalParam.Deleted.MARK && deleted) {
 	    		element = markDeleted(element);
 	    	}
@@ -524,10 +525,10 @@ public class NewPages implements PortalModule{
 		    		throw new Error("not supported mode");
 		    }
 		    
-		    if (page != null && !usersToIgnore.contains(HTTPTools.removeEscape(page.getUser())))
+            if (page != null && !usersToIgnore.contains(HttpTools.removeEscape(page.getUser())))
 		    {
-				String title_old = HTTPTools.removeEscape(pageInfo.getPage());
-		    	String title_new = HTTPTools.removeEscape(page.getPage());
+                String title_old = HttpTools.removeEscape(pageInfo.getPage());
+                String title_new = HttpTools.removeEscape(page.getPage());
 		    	log.debug("check page, title old: "+title_old+", title new: "+title_new);
 		    	boolean deleted = false;
 		    	if (deletedFlag != PortalParam.Deleted.DONT_TOUCH && service.hasDeleted) {		    		 

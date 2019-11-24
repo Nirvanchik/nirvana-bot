@@ -23,7 +23,7 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
-import org.wikipedia.nirvana.util.HTTPTools;
+import org.wikipedia.nirvana.util.HttpTools;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -88,7 +88,7 @@ public class InternetService extends DoubleCheckService {
     private boolean checkHtmlSiteWorking(URL url) {
     	String result = null;
     	try {
-	        result = HTTPTools.fetch(url);	        
+            result = HttpTools.fetch(url);
         } catch (IOException e) {
         	setLastError("IOException when fetching url: " + url.toString()+" " + e.toString());
 	        return false;

@@ -38,7 +38,7 @@ import java.net.URLConnection;
  *
  * Additionally, has utility method for HTML entity processing.
  */
-public class HTTPTools {
+public class HttpTools {
     private static final String USER_AGENT = "NirvanaBot";
     private static final String DEFAULT_ENCODING = "UTF-8";
     private static final Logger log;
@@ -52,7 +52,7 @@ public class HTTPTools {
     private static final int CONNECTION_READ_TIMEOUT_MSEC_SHORT = 60 * 1000;
 
     static {
-        log = LogManager.getLogger(HTTPTools.class.getName());
+        log = LogManager.getLogger(HttpTools.class.getName());
     }
 
     /**

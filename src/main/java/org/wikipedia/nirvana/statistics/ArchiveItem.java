@@ -24,7 +24,7 @@
 package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.util.HTTPTools;
+import org.wikipedia.nirvana.util.HttpTools;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -51,20 +51,20 @@ public class ArchiveItem {
 	public ArchiveItem() {
 		// default constructor
 	}
-		
+
 	public ArchiveItem(Revision r) {
-		this.article = HTTPTools.removeEscape(r.getPage());
-		this.user = HTTPTools.removeEscape(r.getUser());
+        this.article = HttpTools.removeEscape(r.getPage());
+        this.user = HttpTools.removeEscape(r.getUser());
 		Calendar c = r.getTimestamp();
 		this.year = c.get(Calendar.YEAR);
 		this.month = c.get(Calendar.MONTH);
 		this.day = c.get(Calendar.DAY_OF_MONTH);
 		this.size = r.getSize();
 	}
-	
+
 	public ArchiveItem(Revision r, int size) {
-		this.article = HTTPTools.removeEscape(r.getPage());
-		this.user = HTTPTools.removeEscape(r.getUser());
+        this.article = HttpTools.removeEscape(r.getPage());
+        this.user = HttpTools.removeEscape(r.getUser());
 		Calendar c = r.getTimestamp();
 		this.year = c.get(Calendar.YEAR);
 		this.month = c.get(Calendar.MONTH);
