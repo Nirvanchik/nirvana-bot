@@ -33,10 +33,20 @@ public class XmlTools {
      * Mostly used to unescape some text string received from MediaWiki Rest API, which likes to
      * escape such symbols in their XML responces.
      *
-     * @param line String to unescape.
+     * @param text String to unescape.
      * @return Unescaped string.
      */
-    public static String removeEscape(String line) {
-        return line.replace("&quot;","\"").replace("&#039;", "'").replace("&amp;", "&");
+    public static String removeEscape(String text) {
+        return text.replace("&quot;","\"").replace("&#039;", "'").replace("&amp;", "&");
+    }
+
+    /**
+     * Unescapes escaped string where "&quot;" words are replaced with '"' symbols.
+     *
+     * @param text text to unescape.
+     * @return unescaped text.
+     */
+    public static String unescapeSimple(String text) {
+        return text.replace("&quot;","\"");
     }
 }

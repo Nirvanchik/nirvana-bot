@@ -44,4 +44,10 @@ public class XmlToolsTest {
         Assert.assertEquals("With &this",
                 XmlTools.removeEscape("With &amp;this"));
     }
+
+    @Test
+    public void testUnescapeSimple() {
+        Assert.assertEquals("Some title with \"word\"",
+                XmlTools.unescapeSimple("Some title with &quot;word&quot;"));
+    }
 }

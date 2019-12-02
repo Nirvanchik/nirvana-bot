@@ -75,6 +75,7 @@ public class HttpTools {
         return fetch(url, false, false, true);
     }
 
+    @Deprecated
     /**
      * Fetch text from the specified url to a string.
      *
@@ -86,9 +87,24 @@ public class HttpTools {
      */
     public static String fetch(String url, boolean longTimeout, boolean removeEscape,
             boolean customUserAgent) throws IOException {
-        return fetch(new URL(url), longTimeout, removeEscape, customUserAgent);
+        String text = fetch(new URL(url), longTimeout, customUserAgent);
+        return XmlTools.unescapeSimple(text);
     }
 
+    /**
+     * Fetch text from the specified url to a string.
+     *
+     * @param url Url to fetch.
+     * @param longTimeout if <code>true</code> long timeout values will be used.
+     * @param customUserAgent whether to use internal userAgent. 
+     * @return a string with fetched text.
+     */
+    public static String fetch(String url, boolean longTimeout, boolean customUserAgent)
+            throws IOException {
+        return fetch(new URL(url), longTimeout, customUserAgent);
+    }
+
+    @Deprecated
     // TODO: Remove "removeEscape" out of this class to respect "single responsibility" principle.
     // This class does not know what it is fetching and it is not its level to do that.
     /**
@@ -102,6 +118,20 @@ public class HttpTools {
      */
     public static String fetch(URL url, boolean longTimeout, boolean removeEscape,
             boolean customUserAgent) throws IOException {
+        String text = fetch(url, longTimeout, customUserAgent);
+        return XmlTools.unescapeSimple(text);
+    }
+
+    /**
+     * Fetch text from the specified url to a string.
+     *
+     * @param url Url to fetch.
+     * @param longTimeout if <code>true</code> long timeout values will be used.
+     * @param customUserAgent whether to use internal userAgent. 
+     * @return a string with fetched text.
+     */
+    public static String fetch(URL url, boolean longTimeout, boolean customUserAgent)
+            throws IOException {
         log.debug("fetching url: {}", url);
         // connect
         HttpURLConnection connection = (HttpURLConnection)url.openConnection();
@@ -123,9 +153,6 @@ public class HttpTools {
 
             String line;
             while ((line = in.readLine()) != null) {
-                if (removeEscape) {
-                    line = line.replace("&quot;","\"");
-                }
                 text.append(line);
                 text.append("\n");
             }
