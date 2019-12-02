@@ -24,7 +24,7 @@
 package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.util.HttpTools;
+import org.wikipedia.nirvana.util.XmlTools;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -53,8 +53,8 @@ public class ArchiveItem {
 	}
 
 	public ArchiveItem(Revision r) {
-        this.article = HttpTools.removeEscape(r.getPage());
-        this.user = HttpTools.removeEscape(r.getUser());
+        this.article = XmlTools.removeEscape(r.getPage());
+        this.user = XmlTools.removeEscape(r.getUser());
 		Calendar c = r.getTimestamp();
 		this.year = c.get(Calendar.YEAR);
 		this.month = c.get(Calendar.MONTH);
@@ -63,8 +63,8 @@ public class ArchiveItem {
 	}
 
 	public ArchiveItem(Revision r, int size) {
-        this.article = HttpTools.removeEscape(r.getPage());
-        this.user = HttpTools.removeEscape(r.getUser());
+        this.article = XmlTools.removeEscape(r.getPage());
+        this.user = XmlTools.removeEscape(r.getUser());
 		Calendar c = r.getTimestamp();
 		this.year = c.get(Calendar.YEAR);
 		this.month = c.get(Calendar.MONTH);

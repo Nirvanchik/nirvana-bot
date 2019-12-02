@@ -28,8 +28,8 @@ import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.DiscussionPagesSettings.DiscussionPageTemplate;
 import org.wikipedia.nirvana.util.OptionsUtils;
+import org.wikipedia.nirvana.util.XmlTools;
 import org.wikipedia.nirvana.util.DateTools;
-import org.wikipedia.nirvana.util.HttpTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;
@@ -84,11 +84,11 @@ public class DiscussedPages extends Pages {
                     checkPlaceholders(formatExt);
 	    			String link = discussion.template.formatLinkForPage(
 	    					discussion.discussionPage, title, stripFragment(discussion.discussionFragment));
-                    element = String.format(formatExt, titleToInsert, HttpTools.removeEscape(user),
+                    element = String.format(formatExt, titleToInsert, XmlTools.removeEscape(user),
                             time, link);
 	    		} else {
                     element = String.format(formatString, titleToInsert,
-                            HttpTools.removeEscape(user), time);
+                            XmlTools.removeEscape(user), time);
 	    		}
 	    	} else {
 	    		element = String.format(NirvanaBot.DEFAULT_FORMAT_STRING, titleToInsert);

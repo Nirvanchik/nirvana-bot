@@ -171,16 +171,4 @@ public class HttpTools {
         File file = new File(fileName);
         download(url, file);
     }
-
-    /**
-     * Unescape some HTML-escapted characters: ", ', &.
-     * Mostly used to unescape some text string received from MediaWiki Rest API, which likes to
-     * escape such symbols in their XML responces.
-     *
-     * @param line String to unescape.
-     * @return Unescaped string.
-     */
-    public static String removeEscape(String line) {
-        return line.replace("&quot;","\"").replace("&#039;", "'").replace("&amp;", "&");
-    }
 }
