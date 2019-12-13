@@ -14,5 +14,6 @@
 	<classpathentry kind="lib" path="lib/log4j-api-2.7.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-core-2.7.jar"/>
 	<classpathentry kind="lib" path="lib/jsr305-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/wiremock-jre8-standalone-2.25.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

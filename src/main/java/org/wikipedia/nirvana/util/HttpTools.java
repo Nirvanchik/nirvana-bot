@@ -36,9 +36,11 @@ import java.net.URLConnection;
  * Allows customizing user-agent and network timeouts.  
  * Used for REST API requests, texts downloading.
  *
- * Additionally, has utility method for HTML entity processing.
+ * WARNING! Use it for TEXT fetching only!
+ * All fetching methods convert CRLF => LF and add LF at the end.
  */
 public class HttpTools {
+    // TODO: Make it configurable.
     private static final String USER_AGENT = "NirvanaBot";
     private static final String DEFAULT_ENCODING = "UTF-8";
     private static final Logger log;
@@ -75,7 +77,6 @@ public class HttpTools {
         return fetch(url, false, false, true);
     }
 
-    @Deprecated
     /**
      * Fetch text from the specified url to a string.
      *
@@ -85,9 +86,13 @@ public class HttpTools {
      * @param customUserAgent whether to use internal userAgent. 
      * @return a string with fetched text.
      */
+    @Deprecated
     public static String fetch(String url, boolean longTimeout, boolean removeEscape,
             boolean customUserAgent) throws IOException {
         String text = fetch(new URL(url), longTimeout, customUserAgent);
+        if (!removeEscape) {
+            return text;
+        }
         return XmlTools.unescapeSimple(text);
     }
 
@@ -104,9 +109,6 @@ public class HttpTools {
         return fetch(new URL(url), longTimeout, customUserAgent);
     }
 
-    @Deprecated
-    // TODO: Remove "removeEscape" out of this class to respect "single responsibility" principle.
-    // This class does not know what it is fetching and it is not its level to do that.
     /**
      * Fetch text from the specified url to a string.
      *
@@ -116,9 +118,15 @@ public class HttpTools {
      * @param customUserAgent whether to use internal userAgent. 
      * @return a string with fetched text.
      */
+    // TODO: Remove "removeEscape" out of this class to respect "single responsibility" principle.
+    // This class does not know what it is fetching and it is not its level to do that.
+    @Deprecated
     public static String fetch(URL url, boolean longTimeout, boolean removeEscape,
             boolean customUserAgent) throws IOException {
         String text = fetch(url, longTimeout, customUserAgent);
+        if (!removeEscape) {
+            return text;
+        }
         return XmlTools.unescapeSimple(text);
     }
 
