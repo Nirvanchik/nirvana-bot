@@ -49,9 +49,6 @@ src/main/java/org/wikipedia/nirvana/archive/ArchiveWithHeaders.java -text
 src/main/java/org/wikipedia/nirvana/archive/ArchiveWithHeadersWithItemsCount.java -text
 src/main/java/org/wikipedia/nirvana/archive/NirvanaArchiveBot.java -text
 src/main/java/org/wikipedia/nirvana/cleanarchive/CleanArchiveBot.java
-src/main/java/org/wikipedia/nirvana/DateTools.java -text
-src/main/java/org/wikipedia/nirvana/FileTools.java -text
-src/main/java/org/wikipedia/nirvana/HTTPTools.java -text
 src/main/java/org/wikipedia/nirvana/ListTools.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/BotReporter.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/DiscussedPages.java -text
@@ -75,7 +72,6 @@ src/main/java/org/wikipedia/nirvana/nirvanabot/pagesfetcher/RevisionWithId.java 
 src/main/java/org/wikipedia/nirvana/nirvanabot/PortalModule.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/PortalParam.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/ReportItem.java -text
-src/main/java/org/wikipedia/nirvana/NumberTools.java -text
 src/main/java/org/wikipedia/nirvana/ServiceError.java -text
 src/main/java/org/wikipedia/nirvana/statistics/ArchiveDatabase2.java -text
 src/main/java/org/wikipedia/nirvana/statistics/ArchiveItem.java -text
@@ -89,7 +85,6 @@ src/main/java/org/wikipedia/nirvana/statistics/StatisticsMonth.java -text
 src/main/java/org/wikipedia/nirvana/statistics/StatisticsParam.java -text
 src/main/java/org/wikipedia/nirvana/statistics/StatisticsWeek.java -text
 src/main/java/org/wikipedia/nirvana/statistics/StatisticsYear.java -text
-src/main/java/org/wikipedia/nirvana/StringTools.java -text
 *.js text
 *.MD text
 *.properties text
