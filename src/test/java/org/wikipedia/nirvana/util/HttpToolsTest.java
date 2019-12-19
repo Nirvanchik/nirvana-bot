@@ -119,15 +119,6 @@ public class HttpToolsTest {
     }
 
     @Test
-    public void testFetch_withUnescape() throws IOException {
-        withSimpleGet("Some &quot;content&quot;");
-     
-        String response = HttpTools.fetch("http://localhost:8089/test", false, true, false);
-         
-        Assert.assertEquals("Some \"content\"" + "\n", response);
-    }
-
-    @Test
     public void testDownload() throws IOException {
         withSimpleGet();
 

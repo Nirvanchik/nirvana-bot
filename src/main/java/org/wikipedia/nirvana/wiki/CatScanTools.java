@@ -25,6 +25,7 @@ package org.wikipedia.nirvana.wiki;
 
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.util.HttpTools;
+import org.wikipedia.nirvana.util.XmlTools;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -769,17 +770,17 @@ public class CatScanTools {
 
         String page = null;
         try {
-            page = HttpTools.fetch(uri.toASCIIString(), !fastMode, true, true);
+            page = HttpTools.fetch(uri.toASCIIString(), !fastMode, true);
         } catch (SocketTimeoutException e) {
             if (fastMode) {
                 throw e;
             } else {
                 log.warn("{}, retry again ...", e.getMessage());
                 Thread.sleep(TIMEOUT_DELAY);
-                page = HttpTools.fetch(uri.toASCIIString(), true, true, true);
+                page = HttpTools.fetch(uri.toASCIIString(), true, true);
             }
         }
-        return page;  
+        return XmlTools.unescapeSimple(page);
     }
 
     /**

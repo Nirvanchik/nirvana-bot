@@ -64,7 +64,7 @@ public class HttpTools {
      * @return a string with fetched text.
      */
     public static String fetch(String url) throws IOException {
-        return fetch(url, false, false, true);
+        return fetch(url, false, true);
     }
 
     /**
@@ -74,26 +74,7 @@ public class HttpTools {
      * @return a string with fetched text.
      */
     public static String fetch(URL url) throws IOException {
-        return fetch(url, false, false, true);
-    }
-
-    /**
-     * Fetch text from the specified url to a string.
-     *
-     * @param url Url to fetch.
-     * @param longTimeout if <code>true</code> long timeout values will be used.
-     * @param removeEscape whether to unescape HTML escaped characters. 
-     * @param customUserAgent whether to use internal userAgent. 
-     * @return a string with fetched text.
-     */
-    @Deprecated
-    public static String fetch(String url, boolean longTimeout, boolean removeEscape,
-            boolean customUserAgent) throws IOException {
-        String text = fetch(new URL(url), longTimeout, customUserAgent);
-        if (!removeEscape) {
-            return text;
-        }
-        return XmlTools.unescapeSimple(text);
+        return fetch(url, false, true);
     }
 
     /**
@@ -107,27 +88,6 @@ public class HttpTools {
     public static String fetch(String url, boolean longTimeout, boolean customUserAgent)
             throws IOException {
         return fetch(new URL(url), longTimeout, customUserAgent);
-    }
-
-    /**
-     * Fetch text from the specified url to a string.
-     *
-     * @param url Url to fetch.
-     * @param longTimeout if <code>true</code> long timeout values will be used.
-     * @param removeEscape whether to unescape HTML escaped characters. 
-     * @param customUserAgent whether to use internal userAgent. 
-     * @return a string with fetched text.
-     */
-    // TODO: Remove "removeEscape" out of this class to respect "single responsibility" principle.
-    // This class does not know what it is fetching and it is not its level to do that.
-    @Deprecated
-    public static String fetch(URL url, boolean longTimeout, boolean removeEscape,
-            boolean customUserAgent) throws IOException {
-        String text = fetch(url, longTimeout, customUserAgent);
-        if (!removeEscape) {
-            return text;
-        }
-        return XmlTools.unescapeSimple(text);
     }
 
     /**
