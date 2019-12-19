@@ -1,6 +1,6 @@
 /**
- *  @(#)NirvanaBot.java 1.18 07.01.2019
- *  Copyright © 2011 - 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)NirvanaBot.java 1.19 20.12.2019
+ *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -304,13 +304,13 @@ public class NirvanaBot extends BasicBot{
 		return DEFAULT_MIDDLE;
 	}
 
-    private static final String VERSION = "1.18";
+    private static final String VERSION = "1.19";
 
 	public static String PROGRAM_INFO = 
             "NirvanaBot v" + VERSION + ".\n" +
             "Updates Portal/Project sections at http://ru.wikipedia.org and collects statistics\n" +
 			"See also http://ru.wikipedia.org/User:NirvanaBot\n" +
-            "Copyright (C) 2011-2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)\n" +
+            "Copyright (C) 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)\n" +
 			"\n";
 
 	public void showInfo() {
