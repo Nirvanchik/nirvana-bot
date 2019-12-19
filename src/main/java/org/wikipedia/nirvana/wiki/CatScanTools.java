@@ -780,7 +780,7 @@ public class CatScanTools {
                 page = HttpTools.fetch(uri.toASCIIString(), true, true);
             }
         }
-        return XmlTools.unescapeSimple(page);
+        return page;
     }
 
     /**
