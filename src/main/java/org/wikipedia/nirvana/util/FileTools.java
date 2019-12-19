@@ -200,16 +200,6 @@ public class FileTools {
     }
 
     /**
-     * Add text to the end of file.
-     */
-    @Deprecated
-    public static void appendOld(String text, String file) throws IOException {
-        try (FileOutputStream out = new FileOutputStream(new File(file), true)) {
-            out.write(text.getBytes());
-        }
-    }
-
-    /**
      * Write string to file.
      * Default encoding is used to convert Unicode chars in the file.
      *
@@ -384,24 +374,6 @@ public class FileTools {
         return text;
     }
     
-    /**
-     * Reads file contents to string array.
-     */
-    @Deprecated
-    public static String [] readFileToArray(String fileName, boolean removeEmpty)
-            throws FileNotFoundException, IOException {
-        return readFileToArray(fileName, sDefaultEncoding, removeEmpty);
-    }
-
-    /**
-     * Reads file contents to string array.
-     */
-    @Deprecated
-    public static String [] readFileToArray(String fileName, String encoding,
-            boolean removeEmpty) throws FileNotFoundException, IOException {
-        return readFileToList(fileName, encoding, removeEmpty).toArray(new String[0]);
-    }
-
     /**
      * Reads file contents to list of strings.
      * It will use default encoding and will remove all empty lines.

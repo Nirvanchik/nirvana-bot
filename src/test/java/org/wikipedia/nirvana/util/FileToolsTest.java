@@ -140,18 +140,6 @@ public class FileToolsTest {
     }
 
     @Test
-    public void testAppendOld() throws Exception {
-        File outDir = folder.newFolder("out");
-        File resultFile = new File(outDir, "abc.txt");
-        FileTools.writeFile("Text 1.", resultFile.getPath());
-        
-        FileTools.appendOld("Text 2.", resultFile.getPath());
-        
-        String result = FileTools.readFile(resultFile.getPath());
-        Assert.assertEquals("Text 1.Text 2.", result);
-    }
-
-    @Test
     public void testWriteFile() throws Exception {
         File outDir = folder.newFolder("out");
         File resultFile = new File(outDir, "abc.txt");
@@ -231,25 +219,6 @@ public class FileToolsTest {
         
         String result = FileTools.readFile(resultFile.getPath());
         Assert.assertEquals("Text 1.", result);
-    }
-
-    @Test
-    public void testReadFileToArray() throws Exception {
-        File outDir = folder.newFolder("out");
-        File resultFile = new File(outDir, "abc.txt");
-        FileTools.writeFile("Text 1.\nText 2.", resultFile.getPath());
-        
-        String [] list = FileTools.readFileToArray(resultFile.getPath(), true);
-        
-        Assert.assertEquals(new String[] {"Text 1.", "Text 2."}, list);
-        
-        FileTools.writeFile("Text 1.\n\n\nText 2.", resultFile.getPath());
-        
-        list = FileTools.readFileToArray(resultFile.getPath(), true);
-        Assert.assertEquals(new String[] {"Text 1.", "Text 2."}, list);
-
-        list = FileTools.readFileToArray(resultFile.getPath(), false);
-        Assert.assertEquals(new String[] {"Text 1.", "", "", "Text 2."}, list);
     }
 
     @Test
