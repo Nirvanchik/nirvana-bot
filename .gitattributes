@@ -115,7 +115,6 @@ configRecoverArchiveTest.xml -text
 configRu.xml -text
 configTask.xml -text
 loginUserExample.xml -text
-pom.xml -text
 
 # Declare files that will always have CRLF line endings on checkout.
 # CMD are srcipts for Windows shell only.
