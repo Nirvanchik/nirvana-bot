@@ -184,6 +184,7 @@ public class NirvanaBot extends BasicBot{
 	private static int MAX_MAXITEMS = 5000;
 	private static int DEFAULT_MAXITEMS = 20;
 	private static int DEFAULT_HOURS = 500;
+    private static final int MAX_TRY_COUNT = 100;
 
     private static String DEFAULT_SERVICE_NAME = CatScanTools.Service.PETSCAN_OLD.name;
 	private static String SELECTED_SERVICE_NAME = SERVICE_AUTO;
@@ -215,10 +216,10 @@ public class NirvanaBot extends BasicBot{
 	private static String DEFAULT_DELIMETER = "\n";
 
     /**
-     * This is how many times we will retry each portal page update if it fails.
-     * 0 means that we will not retry.
+     * This is how many times we will try each portal page update.
+     * (Retry if failed). "1" means no retries.
      */
-    private int retryMax = 1;
+    private int globalTryCount = 2;
 
 	private static String overridenPropertiesPage = null;
 
@@ -266,13 +267,19 @@ public class NirvanaBot extends BasicBot{
 
     private Localizer localizer;
 
-    public void setRetryCount(int count) {
-        if (count < 0) throw new RuntimeException("retry count must be 0 or positive value");
-        retryMax = count;
+    /**
+     * Set default try count.
+     *
+     * @param count how many times to try update each portal page (must be >= 1).
+     */
+    public void setTryCount(int count) {
+        if (count < 1) throw new RuntimeException("Try count must be not below 1");
+        globalTryCount = count;
     }
 
 	private static class NewPagesData {
 		ArrayList<String> errors;
+        PortalParam param;
 		PortalModule portalModule;
 		String type = "";
 		NewPagesData() {
@@ -440,6 +447,7 @@ public class NirvanaBot extends BasicBot{
 
         botTimeout = validateIntegerSetting(properties, "bot-timeout", botTimeout, false);
         servicesTimeout = validateIntegerSetting(properties, "services-timeout", servicesTimeout, false);
+        globalTryCount = validateIntegerSetting(properties, "try-count", globalTryCount, false);
 
         wikiTranslationPage = properties.getProperty("wiki-translation-page", null);
         customTranslationFile = properties.getProperty("custom-translation-file", null);
@@ -757,8 +765,9 @@ public class NirvanaBot extends BasicBot{
     		
             int i = 0;  // текущий портал
             int t = 0;  // количество проверенных порталов
-    		int retry_count = 0;
+            int tryNumber = 1;
     		boolean retry = false;
+            int tryCount = globalTryCount;
     		ReportItem reportItem = null;
     		String portalName = null;
 
@@ -771,11 +780,10 @@ public class NirvanaBot extends BasicBot{
     			log.debug("start processing portal No: "+i);
     			if(retry) {
     				retry = false;
-    				log.info("retrying portal: "+portalName);		
-    				retry_count++;
-    				//reportItem = report.get(report.size()-1);
+                    log.info("Retrying portal ({}): {}", tryNumber, portalName);        
+                    tryNumber++;
     			} else {
-    				retry_count = 0;
+                    tryNumber = 1;
     				portalName = portalNewPagesLists[i];
     						
     				//i++;	
@@ -801,10 +809,10 @@ public class NirvanaBot extends BasicBot{
                     i++;
                     continue;
                 }
-    			if(retry_count==0) t++;
+                if (tryNumber == 1) t++;
     			if(t<START_FROM) {log.info("SKIP portal: "+portalName);	reportItem.skip(); i++; continue;}
-    			
-    			if(retry_count==0) reporter.portalChecked();
+
+                if (tryNumber == 1) reporter.portalChecked();
     			boolean mayBeSomeServiceProblem = false;
     			try {
     				serviceManager.timeToFixProblems();
@@ -825,12 +833,13 @@ public class NirvanaBot extends BasicBot{
     					logPortalSettings(parameters);
     					NewPagesData data = new NewPagesData();
     					if (createPortalModule(parameters, data)) {
+                            tryCount = data.param.tryCount;
                             if ((enabledTypes.contains(TYPE_ALL) ||
                                     enabledTypes.contains(data.type)) &&
                                     data.portalModule != null) {
                                 if (DEBUG_MODE || !portalName.contains("ValidParam") ||
                                         !DEBUG_BUILD) {
-									if (retry_count==0) { 
+                                    if (tryNumber == 1) { 
 										reporter.portalProcessed();
 										reportItem.processed();
 									}
@@ -845,6 +854,7 @@ public class NirvanaBot extends BasicBot{
         						log.info("SKIP portal: "+portalName); 
         					}    						
     					} else {
+                            tryCount = data.param.tryCount;
     						log.warn("portal module not created");
     						reportItem.error(BotError.SETTINGS_ERROR);
     					}
@@ -874,7 +884,7 @@ public class NirvanaBot extends BasicBot{
                         UnsupportedOperationException e) {
     				// includes ArrayIndexOfBoundsException
     				log.error(e.toString()); 
-                    if (retry_count < retryMax) {
+                    if (tryNumber < tryCount) {
     					log.info("RETRY AGAIN");
     					retry = true;
     				} else {
@@ -885,7 +895,7 @@ public class NirvanaBot extends BasicBot{
     				}	
                 } catch (DangerousEditException e) {
                     log.error(e.toString()); 
-                    if (retry_count < retryMax) {
+                    if (tryNumber < tryCount) {
                         log.info("RETRY AGAIN");
                         retry = true;
                     } else {
@@ -897,7 +907,7 @@ public class NirvanaBot extends BasicBot{
     				
     				mayBeSomeServiceProblem = true;
 
-                    if (retry_count < retryMax) {
+                    if (tryNumber < tryCount) {
     					log.info("RETRY AGAIN");
     					retry = true;
     				} else {
@@ -931,7 +941,7 @@ public class NirvanaBot extends BasicBot{
     				//e.printStackTrace();
     			} catch (Exception e) {
     				log.error(e.toString()); 
-                    if (retry_count < retryMax) {
+                    if (tryNumber < tryCount) {
     					log.info("RETRY AGAIN");
     					retry = true;
     				} else {
@@ -942,7 +952,7 @@ public class NirvanaBot extends BasicBot{
     				}	
     			} catch (Error e) {
     				log.error(e.toString()); 
-                    if (retry_count < retryMax) {
+                    if (tryNumber < tryCount) {
     					log.info("RETRY AGAIN");
     					retry = true;
     				} else {
@@ -1053,6 +1063,7 @@ public class NirvanaBot extends BasicBot{
         log.debug("Scan portal settings...");
 
 		PortalParam param = new PortalParam();
+        data.param = param;
 		param.lang = LANGUAGE;
         PortalConfig config = new PortalConfig(options);
 
@@ -1248,6 +1259,9 @@ public class NirvanaBot extends BasicBot{
 
         param.fairUseImageTemplates = config.get(PortalConfig.KEY_FAIR_USE_IMAGE_TEMPLATES,
                 FAIR_USE_IMAGE_TEMPLATES);
+
+        param.tryCount = parseIntegerKeyWithMaxVal(config, PortalConfig.KEY_TRY_COUNT,
+                data.errors, globalTryCount, MAX_TRY_COUNT);
 
 		if (!validateParams(param,data.errors)) {
 			return false;

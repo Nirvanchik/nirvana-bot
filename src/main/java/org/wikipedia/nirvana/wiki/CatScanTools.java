@@ -765,7 +765,11 @@ public class CatScanTools {
                 throw new RuntimeException(
                         "fetchQuery() called in test mode when no mocked responces is available!");
             }
-            return mockedResponses.remove(0);
+            String response = mockedResponses.remove(0);
+            if (response.equals("@java.net.SocketTimeoutException")) {
+                throw new SocketTimeoutException();
+            }
+            return response;
         }
 
         String page = null;

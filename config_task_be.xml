@@ -29,5 +29,5 @@
 <entry key="service">auto</entry>
 <entry key="fast-mode">yes</entry>
 <entry key="long-task">no</entry>
-	
+<entry key="try-count">2</entry>	
 </properties>

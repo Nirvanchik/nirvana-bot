@@ -9,4 +9,5 @@
 <entry key="wiki-java-loglevel">OFF</entry>
 <entry key="debug-mode">yes</entry>
 <entry key="update-pause">0</entry>
+<entry key="try-count">1</entry>
 </properties>

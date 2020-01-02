@@ -34,13 +34,12 @@ import org.wikipedia.nirvana.wiki.MockCatScanTools;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
-
-import junit.framework.Assert;
 
 /**
  * This is gonna be the main unit-acceptance-test for almost all main bot logic code.
@@ -53,6 +52,7 @@ import junit.framework.Assert;
 public class NirvanaBotTest {
     public static final String TEST_DATA_PATH = "src/test/resources/test_data/";
     public static final String BOT_CONFIG_DEFAULT = "bot_config_ru_default.xml";
+    public static final String BOT_CONFIG_RETRIES = "bot_config_ru_with_retries.xml";
     public static final String BOT_CONFIG_RU_WITH_DISUSSION_TEMPLATES =
             "bot_config_ru_discussion_templates.xml";
     public static final String BOT_CONFIG_BE = "bot_config_be.xml";
@@ -519,6 +519,61 @@ public class NirvanaBotTest {
         MockNirvanaBot bot =
                 new MockNirvanaBot(BasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{TEST_DATA_PATH + BOT_CONFIG_RU_WITH_DISUSSION_TEMPLATES});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 022.
+     * Similar tests: 023.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     * SERVICE SETTINGS:
+     */
+    @Test
+    public void retry_ok() throws TestError {
+        String config = "022_new_pages_update_retry_default.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(BasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{TEST_DATA_PATH + BOT_CONFIG_RETRIES});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 023.
+     * Similar tests: 022.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     * SERVICE SETTINGS:
+     */
+    @Test
+    public void retry_fails() throws TestError {
+        String config = "023_new_pages_update_retry_fails.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(BasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{TEST_DATA_PATH + BOT_CONFIG_RETRIES});
+        bot.validateQueries();
+        bot.validateEdits();
+    }
+
+    /**
+     * Test case 024.
+     * Similar tests: 022, 023.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     * 2) tryCount = 3
+     * SERVICE SETTINGS:
+     */
+    @Test
+    public void retry_custom() throws TestError {
+        String config = "024_new_pages_update_retry_custom.js";
+        MockNirvanaBot bot =
+                new MockNirvanaBot(BasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{TEST_DATA_PATH + BOT_CONFIG_RETRIES});
         bot.validateQueries();
         bot.validateEdits();
     }

@@ -27,6 +27,7 @@
 <entry key="long-task">yes</entry>
 <entry key="bot-timeout">7200000</entry>
 <entry key="services-timeout">3600000</entry>
+<entry key="try-count">2</entry>
 <entry key="wiki-translation-page">Удзельнік:NirvanaBot/Лакалізацыя</entry>
 
 </properties>

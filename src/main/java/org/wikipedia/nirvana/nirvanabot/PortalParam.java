@@ -62,6 +62,7 @@ public class PortalParam {
 	public int updatesPerDay;
     public TemplateFilter templateFilter = null;
 	public String prefix;
+    public int tryCount;
 
 	public static final int MAX_CAT_GROUPS = 20;
 	

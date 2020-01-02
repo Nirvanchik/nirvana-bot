@@ -58,5 +58,5 @@
 <entry key="long-task">no</entry>
 <entry key="bot-timeout">0</entry>
 <entry key="services-timeout">120000</entry>
-
+<entry key="try-count">2</entry>
 </properties>

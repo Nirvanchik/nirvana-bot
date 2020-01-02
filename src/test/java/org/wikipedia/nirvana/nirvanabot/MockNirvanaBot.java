@@ -27,8 +27,8 @@ import static org.mockito.Mockito.when;
 
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
-import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
+import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.MockCatScanTools;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki;
@@ -40,6 +40,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.junit.Assert;
 import org.mockito.Mockito;
 
 import java.io.FileInputStream;
@@ -50,8 +51,6 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
-
-import junit.framework.Assert;
 
 /**
  * Patches {@link NirvanaBot} to make it work with mocked wiki and mocked services in tests.
@@ -132,7 +131,6 @@ public class MockNirvanaBot extends NirvanaBot {
                 throw new TestError(e);
             }
         }
-        setRetryCount(0);
     }
 
     void initializeFromTestConfig(String testConfigPath) throws IOException, ParseException {
