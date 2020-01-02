@@ -13,6 +13,7 @@
 /lib/*
 /tests/lib/*
 /bin/*
+/target/
 /target/*
 
 # Bot generated dirs and files
@@ -26,4 +27,3 @@
 
 # Some test code that I don't want to commit
 /src/main/java/org/wikipedia/nirvana/test/*
-/src/org/wikipedia/nirvana/test/*
