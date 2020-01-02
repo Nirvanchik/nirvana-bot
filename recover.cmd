@@ -1,3 +1,2 @@
 chcp 866
-java -classpath ^.\bin;.\lib\* ^
-org.wikipedia.nirvana.nirvanabot.NirvanaBot configRecoverArchive.xml
+java -jar target/nirvana-bot-full.jar configRecoverArchive.xml

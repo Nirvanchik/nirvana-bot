@@ -1,3 +1,2 @@
 
-java -classpath ^.\bin;.\lib\* ^
-org.wikipedia.nirvana.nirvanabot.NirvanaBot config_debug_be.xml
+java -jar target/nirvana-bot-full.jar config_debug_be.xml

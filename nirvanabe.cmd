@@ -1,3 +1,2 @@
 chcp 866
-java -classpath ^.\bin;.\lib\* ^
-org.wikipedia.nirvana.nirvanabot.NirvanaBot configNirvanaBe.xml
+java -jar target/nirvana-bot-full.jar configNirvanaBe.xml

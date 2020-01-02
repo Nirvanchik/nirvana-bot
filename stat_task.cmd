@@ -1,3 +1,3 @@
 chcp 866
-java -classpath ^.\bin;.\lib\* ^
+java -cp target/nirvana-bot-full.jar ^
 org.wikipedia.nirvana.statistics.StatisticsBot config_statistics_task.xml

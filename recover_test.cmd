@@ -1,2 +1,1 @@
-java -classpath ^.\bin;.\lib\* ^
-org.wikipedia.nirvana.nirvanabot.NirvanaBot configRecoverArchiveTest.xml
+java -jar target/nirvana-bot-full.jar configRecoverArchiveTest.xml
