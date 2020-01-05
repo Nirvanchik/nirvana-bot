@@ -1,4 +1,8 @@
+@echo off
 chcp 866
-java -jar target/nirvana-bot-full.jar config_be.xml
-java -jar target/nirvana-bot-full.jar config_uk.xml
-java -jar target/nirvana-bot-full.jar config_ru.xml
+:: I use CMD variable to pass bot app to avoid hell with
+:: partiall arguments pass in the underlying script.
+set BOT_APP=nirvana-bot
+runbot config_be.xml
+runbot config_uk.xml
+runbot config_ru.xml

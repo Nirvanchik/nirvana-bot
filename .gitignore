@@ -10,9 +10,11 @@
 /.idea/*
 
 # Build system input and output dirs
+.gradle/
 /lib/*
 /tests/lib/*
 /bin/*
+/build/*
 /target/
 /target/*
 
