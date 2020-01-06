@@ -48,7 +48,7 @@ public class CatScanToolsTest {
 
     @Before
     public void setUp() throws Exception {
-        testedService = CatScanTools.Service.PETSCAN_OLD;
+        testedService = CatScanTools.Service.PETSCAN;
     }
 
     @After

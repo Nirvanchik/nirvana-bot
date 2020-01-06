@@ -84,13 +84,13 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeC
 import org.wikipedia.nirvana.nirvanabot.templates.ComplexTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.SimpleTemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFindItem;
-import org.wikipedia.nirvana.util.OptionsUtils;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.OptionsUtils;
 import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.CatScanTools.EnumerationType;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.wikipedia.nirvana.wiki.WikiUtils;
-import org.wikipedia.nirvana.wiki.CatScanTools.EnumerationType;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -186,7 +186,7 @@ public class NirvanaBot extends BasicBot{
 	private static int DEFAULT_HOURS = 500;
     private static final int MAX_TRY_COUNT = 100;
 
-    private static String DEFAULT_SERVICE_NAME = CatScanTools.Service.PETSCAN_OLD.name;
+    private static String DEFAULT_SERVICE_NAME = CatScanTools.Service.PETSCAN.name;
 	private static String SELECTED_SERVICE_NAME = SERVICE_AUTO;
 
 	private static boolean DEFAULT_USE_FAST_MODE = true;

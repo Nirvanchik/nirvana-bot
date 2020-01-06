@@ -25,7 +25,6 @@ package org.wikipedia.nirvana.wiki;
 
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.util.HttpTools;
-import org.wikipedia.nirvana.util.XmlTools;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -65,6 +64,7 @@ public class CatScanTools {
     private static final String CATSCAN2_PATH = "/catscan2/catscan2.php";
     private static final String CATSCAN3_PATH = "/catscan3/catscan2.php";
     private static final String PETSCANOLD_DOMAIN = "petscan1.wmflabs.org";
+    private static final String PETSCAN_DOMAIN = "petscan.wmflabs.org";
     private static final String PETSCAN_PATH = "/";
     public static final String HTTP = "http";
     private static final int TIMEOUT_DELAY = 10000; // 10 sec
@@ -123,7 +123,7 @@ public class CatScanTools {
         public static final int CATSCAN3_FEATURES =
                 PAGES | NEWPAGES | FAST_MODE | PAGES_WITH_TEMPLATE;
         /**
-         * Features of {@link CatScanTools.Service#PETSCAN_OLD}.
+         * Features of {@link CatScanTools.Service#PETSCAN_OLD, CatScanTools.Service#PETSCAN}.
          */
         public static final int PETSCAN_FEATURES =
                 PAGES | NEWPAGES | FAST_MODE | PAGES_WITH_TEMPLATE | NEWPAGES_WITH_TEMPLATE;
@@ -194,7 +194,31 @@ public class CatScanTools {
                 null,
                 "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\d+\\s+\\S+$",
                 true),
-        PETSCAN_OLD("petscan", PETSCANOLD_DOMAIN, PETSCAN_PATH,
+        PETSCAN_OLD("petscan1", PETSCANOLD_DOMAIN, PETSCAN_PATH,
+                1, 3, 1, -1, 2,
+                true, true, false, 17856,  // 2 year = 24*31*12*2 = 8928*2;
+                ServiceFeatures.PETSCAN_FEATURES,
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1" +
+                    "&sortby=title&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
+                    "&combination=union&ns[%5$d]=1&sortby=title&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1" +
+                    "&sortby=title&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
+                    "&%5$s=%6$s&combination=union&ns[%7$d]=1&sortby=title&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%5$d]=1" +
+                    "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
+                    "&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on&sortorder=descending" +
+                    "&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&%6$s=%7$s&ns[%5$d]=1" +
+                    "&max_age=%4$d&only_new=on&sortorder=descending&sortby=title&format=tsv&doit=",
+                "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&negcats=%4$s" +
+                    "&%7$s=%8$s&combination=union&ns[%6$d]=1&max_age=%5$d&only_new=on" +
+                    "&sortorder=descending&format=tsv&doit=",
+                "^\\d+\\s+\\S+\\s+\\d+\\s+(\\S+\\s+)?\\d+\\s+\\d+\\s*$",
+                false),
+        PETSCAN("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
                 1, 3, 1, -1, 2,
                 true, true, false, 17856,  // 2 year = 24*31*12*2 = 8928*2;
                 ServiceFeatures.PETSCAN_FEATURES,
@@ -348,7 +372,7 @@ public class CatScanTools {
         }
 
         public static Service getDefaultServiceForFeature(int feature, Service defaultValue) {
-            return Service.PETSCAN_OLD;
+            return Service.PETSCAN;
         }
 
         /**
@@ -747,14 +771,23 @@ public class CatScanTools {
         return fetchQuery(service, url);
     }
 
+    private static String fixEncodedUrl(String url) {
+        // Fix for URI#toASCIIString which doesn't encode some chars properly.
+        // '[', ']' chars are not allowed in the query part of URL.
+        // See details here:
+        // - https://stackoverflow.com/questions/40568/are-square-brackets-permitted-in-urls
+        // - https://www.ietf.org/rfc/rfc3986.txt
+        // - https://www.w3.org/Addressing/URL/url-spec.txt
+        return url.replace("[", "%5B").replace("]", "%5D");
+    }
+
     private static String fetchQuery(Service service, String query) throws IOException,
             InterruptedException {
         URI uri = null;
         try {
             uri = new URI(HTTP, service.domain, service.path, query, null);
         } catch (URISyntaxException e) {            
-            log.error(e.toString());
-            return null;
+            throw new RuntimeException(e);
         }
         if (testMode) {
             if (savedQueries == null) savedQueries = new ArrayList<>();
@@ -773,8 +806,13 @@ public class CatScanTools {
         }
 
         String page = null;
+        // query is not url-encoded and uri isn't too.
+        // After calling uri.toASCIIString() we get url-encoded string,
+        // but it still has forbidden characters: '[', ']'.
+        // So, we replace them manually knowing that in host part we don't have them.
+        String endodedUrl = fixEncodedUrl(uri.toASCIIString());
         try {
-            page = HttpTools.fetch(uri.toASCIIString(), !fastMode, true);
+            page = HttpTools.fetch(endodedUrl, !fastMode, true);
         } catch (SocketTimeoutException e) {
             if (fastMode) {
                 throw e;
