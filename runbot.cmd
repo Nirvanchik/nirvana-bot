@@ -5,6 +5,27 @@ if "%OS%"=="Windows_NT" setlocal
 
 if "%BOT_APP%" == "" goto setapp
 
+if "%BOT_APP%" == "nirvana-bot" (
+    set MAIN_CLASS=org.wikipedia.nirvana.nirvanabot.NirvanaBot
+)
+if "%BOT_APP%" == "statistics-bot" (
+    set MAIN_CLASS=org.wikipedia.nirvana.statistics.StatisticsBot
+)
+if "%BOT_APP%" == "archive-bot" (
+    set MAIN_CLASS=org.wikipedia.nirvana.archive.NirvanaArchiveBot
+)
+if "%BOT_APP%" == "clean-archive-bot" (
+    set MAIN_CLASS=org.wikipedia.nirvana.cleanarchive.CleanArchiveBot
+)
+if "%BOT_APP%" == "list-tools" (
+    set MAIN_CLASS=org.wikipedia.nirvana.ListTools
+)
+if "%BOT_APP%" == "archive-tools" (
+    set MAIN_CLASS=org.wikipedia.nirvana.archive.ArchiveTools
+)
+
+if "%MAIN_CLASS%" == "" goto unexpectedbotapp
+
 if exist "target\nirvana-bot-full.jar" goto mavendev
 if exist "build\install\NirvanaBot" goto gradledev
 if exist "bin\%BOT_APP%" goto gradledistrib
@@ -18,24 +39,20 @@ if "%BOT_APP%" == "nirvana-bot" (
     java -jar target/nirvana-bot-full.jar %*
     goto mainEnd
 )
-if "%BOT_APP%" == "statistics-bot" (
-    java -cp target/nirvana-bot-full.jar org.wikipedia.nirvana.statistics.StatisticsBot %*
-	goto mainEnd
-)
-if "%BOT_APP%" == "archive-bot" (
-    java -cp target/nirvana-bot-full.jar org.wikipedia.nirvana.archive.NirvanaArchiveBot %*
-	goto mainEnd
-)
-if "%BOT_APP%" == "clean-archive-bot" (
-    java -cp target/nirvana-bot-full.jar org.wikipedia.nirvana.cleanarchive.CleanArchiveBot %*
-	goto mainEnd
-)
+java -cp target/nirvana-bot-full.jar %MAIN_CLASS% %*
+goto mainEnd
+
+:unexpectedbotapp
 echo Unexpected BOT_APP value: %BOT_APP%
 goto allowedbotapp
 
 :gradledev
 echo Launch %BOT_APP% from Gradle build dir.
-"build\install\NirvanaBot\bin\%BOT_APP%" %*
+if exist "build\install\NirvanaBot\bin\%BOT_APP%" (
+    "build\install\NirvanaBot\bin\%BOT_APP%" %*
+	goto mainEnd
+)
+java -classpath ^.\build\install\NirvanaBot\lib\* %MAIN_CLASS% %*
 goto mainEnd
 
 :gradledistrib

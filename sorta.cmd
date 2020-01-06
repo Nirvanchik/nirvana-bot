@@ -1,3 +1,6 @@
+@echo off
 chcp 1251
-echo arguments: %1 %2 %3
-java -cp target/nirvana-bot-full.jar org.wikipedia.nirvana.archive.ArchiveTools %1 %2 %3
+:: I use CMD variable to pass bot app to avoid hell with
+:: partiall arguments pass in the underlying script.
+set BOT_APP=archive-tools
+runbot %1 %2 %3
