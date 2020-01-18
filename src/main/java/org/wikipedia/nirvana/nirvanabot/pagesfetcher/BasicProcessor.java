@@ -118,6 +118,7 @@ public abstract class BasicProcessor implements PageListProcessor {
             int thisNS = 0; // articles by default
             if (!service.filteredByNamespace) {
             	try {
+                    // TODO: This is broken. New services print namespace as string.
                     thisNS = Integer.parseInt(groups[service.nsPos]);
             	} catch (NumberFormatException e) {
             		log.warn("invalid namespace detected", e);
@@ -127,8 +128,8 @@ public abstract class BasicProcessor implements PageListProcessor {
             if (service.filteredByNamespace || thisNS == namespace)
             {
                 String title = groups[service.titlePos].replace('_', ' ');
-                if (ignore != null && ignore.contains(title))
-                {
+                if (ignore != null && ignore.contains(title)) {
+                    log.debug("Ignore page: {}", title);
                     continue;
                 }
                 if (!service.hasSuffix && namespace != 0)
@@ -159,7 +160,7 @@ public abstract class BasicProcessor implements PageListProcessor {
                 	}
                 	RevisionWithId page = new RevisionWithId(wiki, revId, Calendar.getInstance(), title, "", "", false, false, true, 0, id);
                     pages.add(title);
-                    log.debug("adding page to list:"+title);
+                    log.debug("Add page to list: {}", title);
                     pageInfoList.add(page);
                 }
             } else if(thisNS == Wiki.USER_NAMESPACE &&
@@ -179,6 +180,7 @@ public abstract class BasicProcessor implements PageListProcessor {
             	Revision r = wiki.getRevision(revId);
             	String title = r.getPage();
                 if (ignore.contains(title)) {
+                    log.debug("Ignore page: {}", title);
                     continue;
                 }	                
                 
@@ -194,7 +196,7 @@ public abstract class BasicProcessor implements PageListProcessor {
                 if (!pages.contains(title))
                 {   
                 	pages.add(title);
-                    log.debug("adding page to list:"+title);
+                    log.debug("Add page to list: {}", title);
                     pageInfoList.add(r);
                 }
             }

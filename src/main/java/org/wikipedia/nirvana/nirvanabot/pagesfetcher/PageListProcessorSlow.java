@@ -116,7 +116,7 @@ public class PageListProcessorSlow extends BasicProcessor {
 		if(ignore==null)
 			ignore = new HashSet<String>();
 		for(String category : categoriesToIgnore) {		
-			//log.info("Processing data of " + category);
+            log.debug("Processing data of ignore category: {}", category);
 	        String line;
 	        String pageList = this.pageListsToIgnore.get(category);
 	        if (pageList.startsWith("ERROR : MYSQL error")) {
@@ -137,12 +137,25 @@ public class PageListProcessorSlow extends BasicProcessor {
 	        		log.error("Invalid service output line: "+line);
 	        		throw new ServiceError("Invalid output of service: "+service.getName());
 	        	}
+                // TODO: Move this low level TSV parsing out of here.
 	            String[] groups = line.split("\t");
-                if (groups[service.nsPos].equals(String.valueOf(this.namespace))) {
+
+                int thisNS = 0; // articles by default
+                if (!service.filteredByNamespace) {
+                    try {
+                        // TODO: This is broken. New services print namespace as string.
+                        thisNS = Integer.parseInt(groups[service.nsPos]);
+                    } catch (NumberFormatException e) {
+                        log.warn("invalid namespace detected", e);
+                    }
+                }
+
+                if (service.filteredByNamespace || thisNS == namespace) {
 	                String title = groups[service.titlePos].replace('_', ' ');
+                    log.debug("Add page to ignore list: {}", title);
 	                ignore.add(title);
-                } else if (groups[service.nsPos].equals(String.valueOf(Wiki.USER_NAMESPACE)) &&
-	            		namespace!= Wiki.USER_NAMESPACE) {
+                } else if (thisNS == Wiki.USER_NAMESPACE &&
+                        namespace != Wiki.USER_NAMESPACE) {
 	            	long revId=0;
                     if (service.revidPos >= 0) {
 		                try {
@@ -154,6 +167,7 @@ public class PageListProcessorSlow extends BasicProcessor {
                 	
                 	Revision r = wiki.getRevision(revId);
                 	String title = r.getPage();
+                    log.debug("Add page to ignore list: {}", title);
                 	ignore.add(title);
                 	}
 	            }
