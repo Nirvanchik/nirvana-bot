@@ -435,8 +435,10 @@ public class NewPages implements PortalModule{
 		
 		String formatTitleString(String title) {
 	    	String titleToInsert = title;
-	    	if(namespace!=0) {
-	    		log.debug("namespace = "+namespaceIdentifier+" namespace="+String.valueOf(namespace)+" title="+title);
+            if (namespace != 0) {
+                log.debug("Namespace: {} / {}, title: ", namespaceIdentifier, namespace, title);
+                assert title.contains(":");
+                assert title.length() > namespaceIdentifier.length();
 	    		titleToInsert = title.substring(namespaceIdentifier.length()+1);
 	    	}
 	        // There are pages like /etc or /dev/null which start with '/'
@@ -490,7 +492,7 @@ public class NewPages implements PortalModule{
 	        }
 		}*/
 
-        protected void addNewPage(NirvanaWiki wiki, Revision pageInfo) throws IOException,
+        protected boolean addNewPage(NirvanaWiki wiki, Revision pageInfo) throws IOException,
                 InvalidLineFormatException {
 			Revision page = null;
 		    switch(getRevisionMethod) {
@@ -524,8 +526,16 @@ public class NewPages implements PortalModule{
 		    	default:
 		    		throw new Error("not supported mode");
 		    }
-		    
-            if (page != null && !usersToIgnore.contains(XmlTools.removeEscape(page.getUser()))) {
+
+            if (page == null) {
+                String info = String.format("[rev id: %s, title: %s]",
+                        pageInfo.getRevid() == 0 ? "unknown": String.valueOf(pageInfo.getRevid()),
+                        pageInfo.getPage() == null? "unknown": pageInfo.getPage());
+                log.error("Sorry, revision information not found for page {}", info);
+                return false;
+            }
+
+            if (!usersToIgnore.contains(XmlTools.removeEscape(page.getUser()))) {
                 String title_old = XmlTools.removeEscape(pageInfo.getPage());
                 String title_new = XmlTools.removeEscape(page.getPage());
 		    	log.debug("check page, title old: "+title_old+", title new: "+title_new);
@@ -535,12 +545,12 @@ public class NewPages implements PortalModule{
 	                	log.warn("page " +title_new+" deleted"); // page was created and renamed or deleted after that
 	                	deleted = true;
 	                	if (deletedFlag==PortalParam.Deleted.REMOVE) 
-	                		return;
+                            return false;
 	                }
 		    	}   	
-		    	
+
 		    	boolean renamed = !title_new.equals(title_old);
-		    	
+
 		    	if(renamed) {
 			    	if((renamedFlag & PortalParam.RENAMED_NEW) != 0 ) {
 			    		addNewItem(title_new,deleted,page);
@@ -555,7 +565,9 @@ public class NewPages implements PortalModule{
 		    	} else {
 		    		addNewItem(title_new,deleted,page);
 		    	}
+                return true;
 		    }
+            return false;
 		}	
 	}
 
@@ -891,12 +903,9 @@ public class NewPages implements PortalModule{
         List<Revision> pageInfoList = getNewPages(wiki);
 
 		NewPagesBuffer buffer = createPagesBuffer(wiki);
-		int count = pageInfoList.size();
-		count = count<maxItems?count:maxItems;
-		for (int i = 0; i < count ; ++i)
-		{
-		    buffer.addNewPage(wiki, pageInfoList.get(i));
-		}
+        for (int i = 0; i < pageInfoList.size() && buffer.size() <= maxItems; i++) {
+            buffer.addNewPage(wiki, pageInfoList.get(i));
+        }
 	
 		// Add elements from old page
 		Data d = new Data();
