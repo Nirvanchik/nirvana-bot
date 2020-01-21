@@ -1509,6 +1509,12 @@ public class Wiki implements Serializable
         throw new AssertionError("Unreachable.");
     }
 
+    public int namespaceId(String namespace) throws IOException {
+        ensureNamespaceCache();
+
+        return namespaces.getOrDefault(namespace, -1);
+    }
+
     /**
      *  Gets the namespaces used by this wiki.
      *  @return a map containing e.g. {"Media" : -2, "Special" : -1, ...}.

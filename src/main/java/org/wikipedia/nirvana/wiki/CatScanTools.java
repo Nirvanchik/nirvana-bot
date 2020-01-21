@@ -136,12 +136,36 @@ public class CatScanTools {
     }
 
     /**
+     * All possible namespace identifier formats.
+     */
+    public enum NamespaceFormat {
+        UNKNOWN(false),
+        // For example: 4
+        NUMBER(false),
+        // For example: Проект
+        NAME_STRING(true),
+        // For example: Project
+        CANONICAL_STRING(true);
+
+        /**
+         * Has <code>true</code> if this namespace format is of string type. 
+         */
+        public final boolean isString;
+
+        NamespaceFormat(boolean isString) {
+            this.isString = isString;
+        }
+    }
+
+    /**
      * CatScan service instances with preconfigured parameters.
      */
     public enum Service {
         @Deprecated
         CATSCAN("catscan", CATSCAN_DOMAIN, CATSCAN_PATH, 
-                0, 0, 1, 5, 4, false, false, true, 720,
+                0, 0, 1, 5, 4,
+                NamespaceFormat.NUMBER,
+                false, false, true, 720,
                 ServiceFeatures.CATSCAN_FEATURES,
                 null,
                 null,
@@ -156,7 +180,9 @@ public class CatScanTools {
                 true),
         @Deprecated
         CATSCAN2("catscan2", CATSCAN2_DOMAIN, CATSCAN2_PATH,
-                2, 2, 0, -1, 1, true, false, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
+                2, 2, 0, -1, 1,
+                NamespaceFormat.UNKNOWN,
+                true, false, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
                 ServiceFeatures.CATSCAN2_FEATURES,
                 "language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv" +
                     "&doit=submit",
@@ -176,7 +202,9 @@ public class CatScanTools {
                 true),
         @Deprecated
         CATSCAN3("catscan3", CATSCAN3_DOMAIN, CATSCAN3_PATH,
-                2, 2, 0, -1, 1, true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
+                2, 2, 0, -1, 1,
+                NamespaceFormat.UNKNOWN,
+                true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
                 ServiceFeatures.CATSCAN3_FEATURES,
                 "language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv" +
                     "&doit=submit",
@@ -196,6 +224,7 @@ public class CatScanTools {
                 true),
         PETSCAN_OLD("petscan1", PETSCANOLD_DOMAIN, PETSCAN_PATH,
                 1, 3, 1, -1, 2,
+                NamespaceFormat.NAME_STRING,
                 true, true, false, 17856,  // 2 year = 24*31*12*2 = 8928*2;
                 ServiceFeatures.PETSCAN_FEATURES,
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1" +
@@ -220,6 +249,7 @@ public class CatScanTools {
                 false),
         PETSCAN("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
                 1, 3, 1, -1, 2,
+                NamespaceFormat.CANONICAL_STRING,
                 true, false, false, 17856,  // 2 year = 24*31*12*2 = 8928*2;
                 ServiceFeatures.PETSCAN_FEATURES,
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1" +
@@ -250,6 +280,10 @@ public class CatScanTools {
         public final int titlePos;
         public final int revidPos;
         public final int idPos;
+        /**
+         * Namespace format of the namespace identifier returned by the service.
+         */
+        public final NamespaceFormat namespaceFormat;
         public final boolean filteredByNamespace;
         /**
          * Should be <code>true</code> if page list has titles with namespace suffix.
@@ -273,6 +307,7 @@ public class CatScanTools {
 
         Service(String name, String domain, String path, 
                 int skipLines, int namespacePos, int titlePos, int revidPos, int idPos,
+                NamespaceFormat namespaceFormat,
                 boolean filteredByNamespace, boolean hasSuffix, boolean hasDeleted, int maxHours, 
                 int features,
                 String getPagesFormat,
@@ -293,6 +328,7 @@ public class CatScanTools {
             this.titlePos = titlePos;
             this.revidPos = revidPos;
             this.idPos = idPos;
+            this.namespaceFormat = namespaceFormat;
             this.filteredByNamespace = filteredByNamespace;
             this.hasSuffix = hasSuffix;
             this.hasDeleted = hasDeleted;

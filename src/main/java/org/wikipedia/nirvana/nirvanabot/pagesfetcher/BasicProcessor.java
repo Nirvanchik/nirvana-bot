@@ -29,6 +29,7 @@ import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.CatScanTools.NamespaceFormat;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
@@ -82,6 +83,24 @@ public abstract class BasicProcessor implements PageListProcessor {
         log = LogManager.getLogger(this.getClass().getName());
 	}
 
+    protected int getNamespaceId(NirvanaWiki wiki, String namespaceString)
+            throws IOException, ServiceError {
+        int id;
+        if (service.namespaceFormat == NamespaceFormat.NUMBER) {
+            try {
+                id = Integer.parseInt(namespaceString);
+            } catch (NumberFormatException e) {
+                throw new ServiceError("Service returned non-numeric namespace id", e);
+            }
+        } else if (service.namespaceFormat.isString) {
+            id = wiki.namespaceId(namespaceString);
+        } else {
+            throw new IllegalStateException("Unexpected namespace format: " +
+                    service.namespaceFormat.toString());
+        }
+        return id;
+    }
+
 	public void parsePageList(NirvanaWiki wiki, HashSet<String> pages, ArrayList<Revision> pageInfoList, HashSet<String> ignore, String pageList) throws IOException, ServiceError {
         if (pageList.startsWith("ERROR : MYSQL error")) {
             log.error("Invalid service output. See first 300 chars: {}",
@@ -114,18 +133,15 @@ public abstract class BasicProcessor implements PageListProcessor {
                 FileTools.dump(pageList, "last_service_out_wit_error.txt");
         		throw new ServiceError("Invalid output of service: "+service.getName());
         	}
+            // TODO: Move this low level TSV parsing out of here.
             String[] groups = line.split("\t");
-            int thisNS = 0; // articles by default
+            int thisNs = namespace; 
             if (!service.filteredByNamespace) {
-            	try {
-                    // TODO: This is broken. New services print namespace as string.
-                    thisNS = Integer.parseInt(groups[service.nsPos]);
-            	} catch (NumberFormatException e) {
-            		log.warn("invalid namespace detected", e);
-            	}
+                String namespaceString = groups[service.nsPos];
+                thisNs = getNamespaceId(wiki, namespaceString);
             }
             // то что мы ищем совпадает с тем, что нашли
-            if (service.filteredByNamespace || thisNS == namespace)
+            if (service.filteredByNamespace || thisNs == namespace)
             {
                 String title = groups[service.titlePos].replace('_', ' ');
                 if (ignore != null && ignore.contains(title)) {
@@ -163,7 +179,7 @@ public abstract class BasicProcessor implements PageListProcessor {
                     log.debug("Add page to list: {}", title);
                     pageInfoList.add(page);
                 }
-            } else if(thisNS == Wiki.USER_NAMESPACE &&
+            } else if (thisNs == Wiki.USER_NAMESPACE &&
             		namespace!= Wiki.USER_NAMESPACE) {
                 // Здесь мы обрабатываем случаи, когда статьи сначала проходят через личное
                 // пространство а потом переименовываются в основное пространство
@@ -176,7 +192,12 @@ public abstract class BasicProcessor implements PageListProcessor {
 	                	log.error(e.toString());
 	                	continue;
 	                }
-            	}
+                } else  {
+                    log.error("Page from USER namespace detected");
+                    continue;
+                }
+                // TODO: Rewrite it.
+                //       This will not work for petscan of other services with revidPos == -1
             	Revision r = wiki.getRevision(revId);
             	String title = r.getPage();
                 if (ignore.contains(title)) {
