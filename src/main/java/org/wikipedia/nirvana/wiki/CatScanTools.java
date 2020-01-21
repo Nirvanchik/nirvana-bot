@@ -1,6 +1,6 @@
 /**
  *  @(#)WikiTools.java 
- *  Copyright © 2013-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright © 2020 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -55,10 +55,7 @@ import java.util.List;
 public class CatScanTools {
     private static final Logger log;
     private static final String CAT_SEPARATOR = "\r\n";
-    private static final String TOOLSERVER_DOMAIN = "toolserver.org";
     private static final String LABS_DOMAIN = "tools.wmflabs.org";
-    private static final String CATSCAN_DOMAIN = TOOLSERVER_DOMAIN;
-    private static final String CATSCAN_PATH = "/~daniel/WikiSense/CategoryIntersect.php";
     private static final String CATSCAN2_DOMAIN = LABS_DOMAIN;
     private static final String CATSCAN3_DOMAIN = LABS_DOMAIN;
     private static final String CATSCAN2_PATH = "/catscan2/catscan2.php";
@@ -112,8 +109,6 @@ public class CatScanTools {
          */
         public static final int NEWPAGES_WITH_TEMPLATE = 0b10000;
         @Deprecated
-        public static final int CATSCAN_FEATURES = NEWPAGES;
-        @Deprecated
         public static final int CATSCAN2_FEATURES =
                 PAGES | NEWPAGES | FAST_MODE | PAGES_WITH_TEMPLATE;
         @Deprecated
@@ -161,23 +156,6 @@ public class CatScanTools {
      * CatScan service instances with preconfigured parameters.
      */
     public enum Service {
-        @Deprecated
-        CATSCAN("catscan", CATSCAN_DOMAIN, CATSCAN_PATH, 
-                0, 0, 1, 5, 4,
-                NamespaceFormat.NUMBER,
-                false, false, true, 720,
-                ServiceFeatures.CATSCAN_FEATURES,
-                null,
-                null,
-                null,
-                null,
-                "wikilang=%1$s&wikifam=.wikipedia.org&basecat=%2$s&basedeep=%3$d&mode=rc" +
-                        "&hours=%4$d&onlynew=on&go=Сканировать&format=csv&userlang=ru",
-                null,
-                null,
-                null,
-                null,
-                true),
         @Deprecated
         CATSCAN2("catscan2", CATSCAN2_DOMAIN, CATSCAN2_PATH,
                 2, 2, 0, -1, 1,
@@ -278,17 +256,30 @@ public class CatScanTools {
         public final int skipLines;
         public final int nsPos;
         public final int titlePos;
+        @Deprecated
         public final int revidPos;
         public final int idPos;
         /**
          * Namespace format of the namespace identifier returned by the service.
          */
         public final NamespaceFormat namespaceFormat;
+
+        @Deprecated
+        /**
+         * If service request can be filtered by the required namespace or namespaces list.
+         * Currently is true for all services.
+         */
         public final boolean filteredByNamespace;
         /**
          * Should be <code>true</code> if page list has titles with namespace suffix.
          */
         public final boolean hasSuffix;
+
+        @Deprecated
+        /**
+         * If service response contains pages that are already deleted.
+         * Currently is false for all services.
+         */
         public final boolean hasDeleted;
         public final int maxHours;
         public final int features;
