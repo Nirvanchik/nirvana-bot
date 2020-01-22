@@ -683,18 +683,14 @@ public class NewPages implements PortalModule{
 		PageListProcessor pageListProcessor = createPageListProcessor();
 		log.info("Using pagelist fetcher: "+pageListProcessor);
 		if (getRevisionMethod == GetRevisionMethod.GET_REV) {
-    		if (pageListProcessor.revisionAvailable()) {
-    			getRevisionMethod = GetRevisionMethod.GET_REV;
-    		} else {
-    			getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
-    		}
+            getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
 		}
 		ArrayList<Revision> pageInfoList = pageListProcessor.getNewPages(wiki);
-		
+
 		pageInfoList = filterPagesByCondition(pageInfoList, wiki);
-		
-		sortPages(pageInfoList, pageListProcessor.revisionAvailable());		
-	
+
+        sortPages(pageInfoList, false);
+
 		if(pageListProcessor.mayHaveDuplicates()) {
 			removeDuplicatesInSortedList(pageInfoList);
 		}

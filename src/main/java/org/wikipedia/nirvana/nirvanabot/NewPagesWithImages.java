@@ -119,11 +119,7 @@ public class NewPagesWithImages extends NewPages {
                 continue;
             }
             if (wiki.isRedirect(article)) {            
-            	if(pageListProcessor.revisionAvailable()) {
-            		page = new RevisionWithImage(wiki,wiki.getRevision(revId),id, null);
-            	} else {
-            		page = new RevisionWithImage(wiki, wiki.getFirstRevision(title, true), id, null); 
-            	}
+                page = new RevisionWithImage(wiki, wiki.getFirstRevision(title, true), id, null);
             	//log.debug("REDIRECT to: "+page.getPage());
             	try {
                 	article = wiki.getPageText(page.getPage());
@@ -150,10 +146,9 @@ public class NewPagesWithImages extends NewPages {
             		log.debug("adding page to list: "+title);
             }
 		}
-		
-		sortPages(pageInfoList, pageListProcessor.revisionAvailable());
-		
-	
+
+        sortPages(pageInfoList, false);
+
 		List<String> subset = new ArrayList<String>();
 		List<String> includedPages = new ArrayList<String>();
 		List<String> includedImages = new ArrayList<String>();
@@ -161,16 +156,13 @@ public class NewPagesWithImages extends NewPages {
 		count = count<maxItems?count:maxItems;
 		for (int i = 0; i < count ; ++i)
 		{
-			
+
 			RevisionWithImage page = (RevisionWithImage)pageInfoList.get(i);
 			if(page.getSize()==0) {
-				if(pageListProcessor.revisionAvailable()) {
-            		page = new RevisionWithImage(wiki, wiki.getRevision(page.getRevid()), page.getId(), page.getImage());
-            	} else {
-            		page = new RevisionWithImage(wiki, wiki.getFirstRevision(page.getPage()), page.getId(), page.getImage()); 
-            	}
+                page = new RevisionWithImage(wiki, wiki.getFirstRevision(page.getPage()),
+                        page.getId(), page.getImage()); 
 			}
-		    
+
             if (page != null && !usersToIgnore.contains(XmlTools.removeEscape(page.getUser()))) {		    	
                 String title = XmlTools.removeEscape(page.getPage());
 		    	String time = null;

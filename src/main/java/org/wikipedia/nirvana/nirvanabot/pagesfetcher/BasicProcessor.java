@@ -153,15 +153,6 @@ public abstract class BasicProcessor implements PageListProcessor {
                 
                 if (!pages.contains(title))
                 {
-                	long revId=0;
-                    if (service.revidPos >= 0) {
-		                try {
-                            revId = Long.parseLong(groups[service.revidPos]);
-		                } catch(NumberFormatException e) {
-		                	log.error(e.toString());
-		                	continue;
-		                }
-                	}
                 	long id = 0;
                     if (service.idPos >= 0) {
                 		try {
@@ -171,17 +162,13 @@ public abstract class BasicProcessor implements PageListProcessor {
 		                	continue;
 		                }
                 	}
-                	RevisionWithId page = new RevisionWithId(wiki, revId, Calendar.getInstance(), title, "", "", false, false, true, 0, id);
+                	RevisionWithId page = new RevisionWithId(wiki, 0, Calendar.getInstance(), title, "", "", false, false, true, 0, id);
                     pages.add(title);
                     log.debug("Add page to list: {}", title);
                     pageInfoList.add(page);
                 }
             }
         }//while
-	}
-	@Override
-	public boolean revisionAvailable() {		
-        return (service.revidPos >= 0);
 	}
 
 }

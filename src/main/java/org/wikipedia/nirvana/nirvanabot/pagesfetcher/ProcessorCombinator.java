@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
@@ -70,14 +71,6 @@ public class ProcessorCombinator implements PageListProcessor {
 			list.addAll(fetchers.get(i).getNewPages(wiki));
 		}
 		return list;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicProcessor#revisionAvailable()
-	 */
-	@Override
-	public boolean revisionAvailable() {		
-		return fetchers.get(0).revisionAvailable();
 	}
 
 	/* (non-Javadoc)
