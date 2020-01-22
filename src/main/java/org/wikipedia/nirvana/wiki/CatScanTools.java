@@ -71,9 +71,12 @@ public class CatScanTools {
     private static boolean testMode = false;
     private static List<String> mockedResponses = null;
     private static List<String> savedQueries = null;
-    
+
     private static final String ERR_SERVICE_DOESNT_SUPPORT_FEATURE =
             "Service %s doesn't support this feature.";
+
+    public static final String ERR_SERVICE_FILTER_BY_NAMESPACE_DISABLED =
+            "We do not support service without filtering by namespace feature. Please fix it.";
 
     static {
         log = LogManager.getLogger(CatScanTools.class.getName());
@@ -632,12 +635,7 @@ public class CatScanTools {
                     hours,
                     namespace);
         } else {
-            urlQuery = 
-                    String.format(service.getNewPagesFormat,
-                    language,
-                    depth,
-                    category,
-                    hours);
+            throw new IllegalStateException(ERR_SERVICE_FILTER_BY_NAMESPACE_DISABLED);
         }
         return fetchQuery(service, urlQuery);
     }

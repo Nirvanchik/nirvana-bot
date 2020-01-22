@@ -135,14 +135,11 @@ public abstract class BasicProcessor implements PageListProcessor {
         	}
             // TODO: Move this low level TSV parsing out of here.
             String[] groups = line.split("\t");
-            int thisNs = namespace; 
             if (!service.filteredByNamespace) {
-                String namespaceString = groups[service.nsPos];
-                thisNs = getNamespaceId(wiki, namespaceString);
+                throw new IllegalStateException(
+                        CatScanTools.ERR_SERVICE_FILTER_BY_NAMESPACE_DISABLED);
             }
-            // то что мы ищем совпадает с тем, что нашли
-            if (service.filteredByNamespace || thisNs == namespace)
-            {
+            if (service.filteredByNamespace) {
                 String title = groups[service.titlePos].replace('_', ' ');
                 if (ignore != null && ignore.contains(title)) {
                     log.debug("Ignore page: {}", title);
@@ -178,47 +175,6 @@ public abstract class BasicProcessor implements PageListProcessor {
                     pages.add(title);
                     log.debug("Add page to list: {}", title);
                     pageInfoList.add(page);
-                }
-            } else if (thisNs == Wiki.USER_NAMESPACE &&
-            		namespace!= Wiki.USER_NAMESPACE) {
-                // Здесь мы обрабатываем случаи, когда статьи сначала проходят через личное
-                // пространство а потом переименовываются в основное пространство
-            	//String title = groups[TITLE_POS].replace('_', ' ');
-            	long revId=0;
-                if (service.revidPos >= 0) {
-	                try {
-                        revId = Long.parseLong(groups[service.revidPos]);
-	                } catch(NumberFormatException e) {
-	                	log.error(e.toString());
-	                	continue;
-	                }
-                } else  {
-                    log.error("Page from USER namespace detected");
-                    continue;
-                }
-                // TODO: Rewrite it.
-                //       This will not work for petscan of other services with revidPos == -1
-            	Revision r = wiki.getRevision(revId);
-            	String title = r.getPage();
-                if (ignore.contains(title)) {
-                    log.debug("Ignore page: {}", title);
-                    continue;
-                }	                
-                
-                /*if(namespace!= Wiki.USER_NAMESPACE && userNamespace(title))
-                	continue;*/
-                
-                // Случай когда мы ищем категории, шаблоны и т.д. чтобы отсеять обычные статьи
-                int n = wiki.namespace(title);
-                if (n != namespace) {
-                	continue;
-                }
-                
-                if (!pages.contains(title))
-                {   
-                	pages.add(title);
-                    log.debug("Add page to list: {}", title);
-                    pageInfoList.add(r);
                 }
             }
         }//while

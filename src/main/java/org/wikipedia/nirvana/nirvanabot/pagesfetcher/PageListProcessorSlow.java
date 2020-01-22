@@ -140,36 +140,16 @@ public class PageListProcessorSlow extends BasicProcessor {
                 // TODO: Move this low level TSV parsing out of here.
 	            String[] groups = line.split("\t");
 
-                int thisNs = namespace;
                 if (!service.filteredByNamespace) {
-                    String namespaceString = groups[service.nsPos];
-                    thisNs = getNamespaceId(wiki, namespaceString);
+                    throw new IllegalStateException(
+                            CatScanTools.ERR_SERVICE_FILTER_BY_NAMESPACE_DISABLED);
                 }
 
-                if (service.filteredByNamespace || thisNs == namespace) {
+                if (service.filteredByNamespace) {
 	                String title = groups[service.titlePos].replace('_', ' ');
                     log.debug("Add page to ignore list: {}", title);
 	                ignore.add(title);
-                } else if (thisNs == Wiki.USER_NAMESPACE &&
-                        namespace != Wiki.USER_NAMESPACE) {
-	            	long revId=0;
-                    if (service.revidPos >= 0) {
-		                try {
-                            revId = Long.parseLong(groups[service.revidPos]);
-		                } catch(NumberFormatException e) {
-		                	log.error(e.toString());
-		                	continue;
-		                }
-                	
-                	Revision r = wiki.getRevision(revId);
-                	String title = r.getPage();
-                    log.debug("Add page to ignore list: {}", title);
-                	ignore.add(title);
-                    } else {
-                        log.error("Page from USER namespace detected");
-                        continue;
-                    }
-	            }
+                }
 	        }		    
 		}
 		return ignore;

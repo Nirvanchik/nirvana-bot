@@ -539,15 +539,11 @@ public class NewPages implements PortalModule{
                 String title_old = XmlTools.removeEscape(pageInfo.getPage());
                 String title_new = XmlTools.removeEscape(page.getPage());
 		    	log.debug("check page, title old: "+title_old+", title new: "+title_new);
-		    	boolean deleted = false;
-		    	if (deletedFlag != PortalParam.Deleted.DONT_TOUCH && service.hasDeleted) {		    		 
-	                if(!wiki.exists(title_new)) {	                
-	                	log.warn("page " +title_new+" deleted"); // page was created and renamed or deleted after that
-	                	deleted = true;
-	                	if (deletedFlag==PortalParam.Deleted.REMOVE) 
-                            return false;
-	                }
-		    	}   	
+                final boolean deleted = false;
+                if (service.hasDeleted) {
+                    throw new IllegalStateException(
+                            "We don't handle deleted pages. Please fix it.");
+                }
 
 		    	boolean renamed = !title_new.equals(title_old);
 
