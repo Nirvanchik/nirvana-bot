@@ -1,6 +1,6 @@
 plugins {
-	id 'java'
-	id 'maven'
+    id 'java'
+    id 'maven'
     id 'application'
 }
 
@@ -12,7 +12,7 @@ description = """"""
 sourceCompatibility = 8
 targetCompatibility = 8
 tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
 }
 
 repositories {
@@ -83,36 +83,36 @@ distributions {
         baseName = 'NirvanaBot'
         contents {
             from('.') {
-				include (
-					'*.cmd',
-				    'README.MD', 'README_RU.MD', 'release-notes-ru.txt',
-					'*.xml',
-					'COPYING', 'NOTICE', 'Apache_License.txt',
-					'task.txt', 'task_debug.txt', 'task_debug_be.txt', 'task_debug_uk.txt')
-				exclude 'loginNirvanaBot.xml', 'loginNirvanaTestBot.xml', 'pom.xml'
-			}
-			from('statistics') {
-			    include ('*')
-				into('statistics')
-			}
-			from('config') {
-				include ('*.properties')
-				into ('config')
-			}
-			from('translations') {
-				include ('*.ini')
-				into ('translations')
-			}
-			from('templates') {
-				include ('*')
-				into ('templates')
-			}
+                include (
+                    '*.cmd',
+                    'README.MD', 'README_RU.MD', 'release-notes-ru.txt',
+                    '*.xml',
+                    'COPYING', 'NOTICE', 'Apache_License.txt',
+                    'task.txt', 'task_debug.txt', 'task_debug_be.txt', 'task_debug_uk.txt')
+                exclude 'loginNirvanaBot.xml', 'loginNirvanaTestBot.xml', 'pom.xml'
+            }
+            from('statistics') {
+                include ('*')
+                into('statistics')
+            }
+            from('config') {
+                include ('*.properties')
+                into ('config')
+            }
+            from('translations') {
+                include ('*.ini')
+                into ('translations')
+            }
+            from('templates') {
+                include ('*')
+                into ('templates')
+            }
         }
     }
 }
 
 afterEvaluate { project ->
-	// To correctly put files with Cyrillic file names in zip.
+    // To correctly put files with Cyrillic file names in zip.
     distZip.metadataCharset = 'UTF-8'
 }
 
