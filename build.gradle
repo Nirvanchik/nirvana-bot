@@ -115,3 +115,35 @@ afterEvaluate { project ->
 	// To correctly put files with Cyrillic file names in zip.
 	distZip.metadataCharset = 'CP1251'
 }
+
+tasks.create('dist7z') {
+    group = 'distribution'
+    description = 'Bundles the project as a distribution to 7z (the same as distZip).'
+    Task distZipTask = tasks['distZip']
+    dependsOn distZipTask
+
+    doLast {
+        logger.lifecycle "Unzip distribution: ${distZipTask.archivePath}"
+        def sevenZip = '7z'
+        def tmpDir = "${project.buildDir}/7z"
+        mkdir tmpDir
+        exec {
+            executable '7z'
+            args 'x', distZipTask.archivePath
+            workingDir tmpDir
+            standardOutput System.out
+            errorOutput System.err
+        }
+        def archive = distZipTask.archivePath.path.replace('.zip', '.7z')
+        logger.lifecycle "Compress to 7z: ${archive}"
+        exec {
+            executable '7z'
+            args 'a', archive, distZipTask.archiveName.replace('.zip','')
+            workingDir tmpDir
+            standardOutput System.out
+            errorOutput System.err
+        }
+        delete tmpDir
+    }
+}
+
