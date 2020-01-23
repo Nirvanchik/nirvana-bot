@@ -113,7 +113,7 @@ distributions {
 
 afterEvaluate { project ->
 	// To correctly put files with Cyrillic file names in zip.
-	distZip.metadataCharset = 'CP1251'
+    distZip.metadataCharset = 'UTF-8'
 }
 
 tasks.create('dist7z') {
