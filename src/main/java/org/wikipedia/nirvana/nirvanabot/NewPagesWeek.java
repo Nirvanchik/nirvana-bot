@@ -25,6 +25,7 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.nirvanabot.report.ReportItem;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.FileNotFoundException;

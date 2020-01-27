@@ -40,6 +40,7 @@ import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessorFast;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessorSlow;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.ProcessorCombinator;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
+import org.wikipedia.nirvana.nirvanabot.report.ReportItem;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFinder;
 import org.wikipedia.nirvana.util.DateTools;

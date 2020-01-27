@@ -79,6 +79,8 @@ import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInBody;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderInCard;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinderUniversal;
+import org.wikipedia.nirvana.nirvanabot.report.BotReporter;
+import org.wikipedia.nirvana.nirvanabot.report.ReportItem;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.templates.ComplexTemplateFilter;
