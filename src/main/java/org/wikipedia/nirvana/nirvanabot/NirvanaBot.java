@@ -994,7 +994,7 @@ public class NirvanaBot extends BasicBot{
         reporter.logStatus();
         if (GENERATE_REPORT) {
         	if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "txt")) {        			
-                reporter.reportTXT(outDir + "/" + REPORT_FILE_NAME);
+                reporter.reportTxt(outDir + "/" + REPORT_FILE_NAME);
         	}
             if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "wiki")) {
                 if (serviceManager.getMainWikiService().isOk() == Status.OK) {
