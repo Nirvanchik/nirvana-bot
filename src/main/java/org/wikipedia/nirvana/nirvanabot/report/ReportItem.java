@@ -34,6 +34,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.EqualsExclude;
+
 import java.util.TimeZone;
 
 
@@ -57,8 +60,10 @@ public class ReportItem {
     public String portal;
     Status status;
     BotError error;
+    @EqualsExclude
     @JsonIgnore
     long startTime;
+    @EqualsExclude
     @JsonIgnore
     long endTime;
     long timeDiff;
@@ -315,22 +320,15 @@ public class ReportItem {
         this.error = error;
     }
     
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
+    /**
+     * Compares 2 report items and returns <code>true</true> if they reference the same reported
+     * project page.
+     */
+    public boolean theSameSource(ReportItem second) {
+        if (!template.equals(second.template)) {
             return false;
         }
-        if (!(obj instanceof ReportItem)) {
-            return false;
-        }
-        ReportItem a = (ReportItem)obj;
-        if (!template.equals(a.template)) {
-            return false;
-        }
-        if (!portal.equals(a.portal)) {
+        if (!portal.equals(second.portal)) {
             return false;
         }
         return true;
@@ -377,5 +375,43 @@ public class ReportItem {
         status = Status.selectBest(status, right.status);
     }
     
-    
+    @Override
+    public String toString() {
+        StringBuilder strBuilder = new StringBuilder();
+        strBuilder
+                .append("ReportItem[")
+                .append("template: ")
+                .append(template)
+                .append(", portal: ")
+                .append(portal)
+                .append(", status: ")
+                .append(status)
+                .append(", error: ")
+                .append(error)
+                .append(", time diff: ")
+                .append(timeDiff)
+                .append(", times: ")
+                .append(times)
+                .append(", errors: ")
+                .append(errors)
+                .append(", updated: ")
+                .append(updated)
+                .append(", archived: ")
+                .append(archived)
+                .append(", settingsValid: ")
+                .append(settingsValid)
+                .append(", settingsValid: ")
+                .append(settingsValid)
+                .append(", newPagesFound: ")
+                .append(newPagesFound)
+                .append(", pagesArchived: ")
+                .append(pagesArchived)
+                .append("]");
+        return strBuilder.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return EqualsBuilder.reflectionEquals(this, obj, true);
+    }
 }

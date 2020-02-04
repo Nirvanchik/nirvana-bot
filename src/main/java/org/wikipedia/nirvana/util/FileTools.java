@@ -244,6 +244,23 @@ public class FileTools {
      *   - line endings are replaced to universal format ('\n');
      *   - last line ends with line ending.
      *
+     * @param path File path (must be normalized).
+     * @return String with wiki text.
+     * @throws FileNotFoundException if file not found.
+     * @throws IOException if failed to read file.
+     */
+    public static String readWikiFileFromPath(String path) throws IOException {
+        return readWikiFileImpl(path, sDefaultEncoding);
+    }
+
+    /**
+     * Reads wiki file - a file where a wiki page was written.
+     * Default encoding (set by {@link #setDefaultEncoding(String)}) will be used.
+     * "wiki file" means:
+     *   - file name is normalized (forbidden path symbols replaced with '_');
+     *   - line endings are replaced to universal format ('\n');
+     *   - last line ends with line ending.
+     *
      * @param folder Folder name or path with the required file.
      * @param file File name (or Wiki page title represented as file name).
      * @return String with wiki text.
@@ -270,7 +287,12 @@ public class FileTools {
      */
     public static String readWikiFile(String folder, String file, String encoding)
             throws FileNotFoundException, IOException {
-        File fileGood = new File(folder + "\\" + normalizeFileName(file));
+        return readWikiFileImpl(folder + "\\" + normalizeFileName(file), encoding);
+    }
+
+    private static String readWikiFileImpl(String path, String encoding)
+            throws FileNotFoundException, IOException {
+        File fileGood = new File(path);
         logD("reading  file: " + fileGood.getPath());
         logD("absolute path: " +  fileGood.getAbsolutePath());
         StringBuilder text = new StringBuilder(100000);

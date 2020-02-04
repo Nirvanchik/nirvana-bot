@@ -27,13 +27,12 @@ import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,6 +79,10 @@ public class BotReporter {
     static {
         log = LogManager.getLogger(BotReporter.class.getName());
     }
+    
+    protected Calendar getCurrentTime() {
+        return Calendar.getInstance();
+    }
 
     /**
      * Constructs reporter instance.
@@ -116,7 +119,7 @@ public class BotReporter {
      * @param log <code>true</code> to log start status.
      */
     public void botStarted(boolean log) {
-        timeStarted = Calendar.getInstance();
+        timeStarted = getCurrentTime();
         if (log) {
             logStartStatus();
         }
@@ -128,7 +131,7 @@ public class BotReporter {
      * @param log <code>true</code> to log end status.
      */
     public void botFinished(boolean log) {
-        timeFinished = Calendar.getInstance();
+        timeFinished = getCurrentTime();
         if (log) {
             logEndStatus();
         }
@@ -244,6 +247,21 @@ public class BotReporter {
     }
 
     /**
+     * Prints report to String in TXT format.
+     */
+    public String printReportTxt() {
+        StringBuilder sb = new StringBuilder();
+        //StringBuffer sbuf = new StringBuffer();
+        sb.append(ReportItem.getHeaderTxt()).append(System.lineSeparator());
+        for (ReportItem item : reportItems) {
+            sb.append(item.toStringTxt());
+            sb.append(System.lineSeparator());
+        }
+        sb.append(ReportItem.getFooterTxt());
+        return sb.toString();
+    }
+
+    /**
      * Write report to TXT file.
      *
      * @param fileName a file path to write report in.
@@ -254,23 +272,12 @@ public class BotReporter {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        if (timeFinished == null) {
-            timeFinished = Calendar.getInstance();
-        }
         if (!fileName.endsWith(".txt")) {
             fileName = fileName + ".txt";
         }
         log.info("generating report (TXT) . . .");
-        StringBuilder sb = new StringBuilder();
-        //StringBuffer sbuf = new StringBuffer();
-        sb.append(ReportItem.getHeaderTxt()).append("\r\n");
-        for (ReportItem item : reportItems) {
-            sb.append(item.toStringTxt());
-            sb.append("\r\n");
-        }
-        sb.append(ReportItem.getFooterTxt());
         try {
-            FileTools.writeFile(sb.toString(), fileName);
+            FileTools.writeFile(printReportTxt(), fileName);
         } catch (IOException e) {
             log.error(e.toString());
             e.printStackTrace();
@@ -295,7 +302,7 @@ public class BotReporter {
             // Check last modification time. Ignore if it's too old
             long lastModTime = file.lastModified();
             if (lastModTime != 0) {
-                Calendar c = Calendar.getInstance();
+                Calendar c = getCurrentTime();
                 c.add(Calendar.DAY_OF_MONTH, -1);
                 if (lastModTime > c.getTimeInMillis()) {
                     log.debug("Load old data");
@@ -331,7 +338,7 @@ public class BotReporter {
         ArrayList<ReportItem> rightItems = new ArrayList<ReportItem>(data);
         for (ReportItem left: reportItems) {
             for (int j = 0; j < rightItems.size(); j++) {
-                if (left.equals(rightItems.get(j))) {
+                if (left.theSameSource(rightItems.get(j))) {
                     ReportItem right = rightItems.get(j);
                     left.merge(right);
                     rightItems.remove(j);
@@ -343,16 +350,9 @@ public class BotReporter {
     }
 
     /**
-     * Write a detailed report at wiki.
-     *
-     * @param reportPage a wiki page name to write report in.
+     * Prints report to String in Wiki format.
      */
-    public void doReportWiki(String reportPage) {
-        initLocalizer();
-        if (timeFinished == null) {
-            timeFinished = Calendar.getInstance();
-        }
-        log.info("Generating report (Wiki) . . .");
+    public String printReportWiki() {
         StringBuilder sb = new StringBuilder();
         sb.append(preambula);
         sb.append(ReportItem.getHeaderWiki()).append("\n");
@@ -363,9 +363,20 @@ public class BotReporter {
             i++;
         }
         sb.append(ReportItem.getFooterWiki());
+        return sb.toString();
+    }
+
+    /**
+     * Write a detailed report at wiki.
+     *
+     * @param reportPage a wiki page name to write report in.
+     */
+    public void doReportWiki(String reportPage) {
+        initLocalizer();
+        log.info("Generating report (Wiki) . . .");
 
         try {
-            wiki.edit(reportPage, sb.toString(),
+            wiki.edit(reportPage, printReportWiki(),
                     localizer.localize("Отчёт по работе бота за сутки"));
         } catch (LoginException | IOException e) {
             log.error("Failed to update report.", e);
@@ -386,7 +397,9 @@ public class BotReporter {
 
 
     private void logEndStatus() {
+        Assert.assertNotNull(timeStarted);
         long start = timeStarted.getTimeInMillis();
+        Assert.assertNotNull(timeFinished);
         long end = timeFinished.getTimeInMillis();
         log.info(String.format("BOT STARTED %1$tF %1$tT", timeStarted));
         log.info(String.format("BOT FINISHED %1$tF %1$tT", timeFinished));
@@ -426,6 +439,7 @@ public class BotReporter {
      * @return report items.
      */
     public List<ReportItem> load(File file) {
+        log.info("Load report items from {}", file.getPath());
         ObjectMapper mapper = new ObjectMapper();
         List<ReportItem> items = null;
         try {
@@ -448,12 +462,6 @@ public class BotReporter {
         ObjectMapper mapper = new ObjectMapper();
         try {
             mapper.writeValue(file, reportItems);
-        } catch (JsonParseException e) {
-            log.error(e);
-            return;
-        } catch (JsonMappingException e) {
-            log.error(e);
-            return;
         } catch (IOException e) {
             log.error(e);
             return;
