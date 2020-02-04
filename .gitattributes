@@ -50,7 +50,6 @@ src/main/java/org/wikipedia/nirvana/archive/ArchiveWithHeadersWithItemsCount.jav
 src/main/java/org/wikipedia/nirvana/archive/NirvanaArchiveBot.java -text
 src/main/java/org/wikipedia/nirvana/cleanarchive/CleanArchiveBot.java
 src/main/java/org/wikipedia/nirvana/ListTools.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/BotReporter.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/DiscussedPages.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/imagefinder/ImageFinder.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/imagefinder/ImageFinderInBody.java -text
@@ -71,7 +70,6 @@ src/main/java/org/wikipedia/nirvana/nirvanabot/pagesfetcher/ProcessorCombinator.
 src/main/java/org/wikipedia/nirvana/nirvanabot/pagesfetcher/RevisionWithId.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/PortalModule.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/PortalParam.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/ReportItem.java -text
 src/main/java/org/wikipedia/nirvana/ServiceError.java -text
 src/main/java/org/wikipedia/nirvana/statistics/ArchiveDatabase2.java -text
 src/main/java/org/wikipedia/nirvana/statistics/ArchiveItem.java -text
