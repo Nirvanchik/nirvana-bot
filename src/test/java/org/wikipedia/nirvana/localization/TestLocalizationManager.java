@@ -23,6 +23,7 @@
 
 package org.wikipedia.nirvana.localization;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -59,5 +60,32 @@ public class TestLocalizationManager {
 
     public static void reset() {
         Localizer.resetFromTests();
+    }
+
+    /**
+     * Initialize {@link org.wikipedia.nirvana.localization.Localizer} with English localized
+     * strings used in reporting code (org.wikipedia.nirvana.nirvanabot.report). 
+     */
+    public static void initWithReportingEnglishTranslations() {
+        Map<String, String> translations = new HashMap<>();
+        translations.put("Бот запущен", "Bot started");
+        translations.put("Бот остановлен", "Bot stopped");
+        translations.put("Да", "Yes");
+        translations.put("Нет", "No");
+        translations.put("портал/проект", "portal/project");
+        translations.put("проходов", "launches");
+        translations.put("статус", "status");
+        translations.put("время", "time");
+        translations.put("новых статей", "new pages");
+        translations.put("список обновлен", "list updated");
+        translations.put("статей в архив", "pages in archive");
+        translations.put("архив обновлен", "archive updated");
+        translations.put("ошибок", "errors");
+        translations.put("ошибка", "error");
+        
+        Map<String, LocalizedTemplate> localizedTemplates = new HashMap<>();
+        localizedTemplates.put("Да", new LocalizedTemplate("Да", "Yes"));
+        localizedTemplates.put("Нет", new LocalizedTemplate("Нет", "No"));
+        init(translations, localizedTemplates);
     }
 }

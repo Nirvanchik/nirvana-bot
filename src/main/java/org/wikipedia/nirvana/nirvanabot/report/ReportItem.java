@@ -1,6 +1,6 @@
 /**
  *  @(#)ReportItem.java 
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2020 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -109,6 +109,9 @@ public class ReportItem {
         }
     }
     
+    /**
+     * Default constructor. Used for deserialization by Jackson json lib.
+     */
     public ReportItem() {
         // default constructor
     }
@@ -179,7 +182,7 @@ public class ReportItem {
     public static String getHeaderTxt() {
         String header = String.format("%1$-90s %2$-9s %3$-9s %4$s %5$s  %6$s", 
                 "portal settings page","status","time","new p.","arch.p.","errors");
-        header += "\r\n";
+        header += System.lineSeparator();
         header += String.format("%1$114s %2$s     %3$s  %4$s"," ", "upd.","arch.","Error");
         return header;
     }
@@ -220,6 +223,10 @@ public class ReportItem {
         return "|}";
     }
 
+    protected long getCurrentTimeMillis() {
+        return System.currentTimeMillis();
+    }
+
     /**
      * Generates reporting result line of this portal page in TXT format.
      */
@@ -249,7 +256,7 @@ public class ReportItem {
                 this.pagesArchived, arch,
                 this.errors, this.error.toString());
         if (!name1.isEmpty()) {
-            line = name1 + "\r\n" + line;
+            line = name1 + System.lineSeparator() + line;
         }
         return line;            
     }
@@ -338,14 +345,14 @@ public class ReportItem {
      * Call this when starting updating this portal page.
      */
     public void start() {
-        startTime = System.currentTimeMillis();
+        startTime = getCurrentTimeMillis();
     }
 
     /**
      * Call this after finishing updating this portal page.
      */
     public void end() {
-        endTime = System.currentTimeMillis();
+        endTime = getCurrentTimeMillis();
         timeDiff = endTime - startTime;
     }
 

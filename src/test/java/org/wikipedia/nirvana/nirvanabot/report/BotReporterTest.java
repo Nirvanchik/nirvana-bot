@@ -23,7 +23,6 @@
 
 package org.wikipedia.nirvana.nirvanabot.report;
 
-import org.wikipedia.nirvana.localization.LocalizedTemplate;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotError;
 import org.wikipedia.nirvana.util.FileTools;
@@ -45,11 +44,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.TimeZone;
 
 /**
@@ -141,34 +138,16 @@ public class BotReporterTest {
     
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
+        TestLocalizationManager.initWithReportingEnglishTranslations();
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
+        TestLocalizationManager.reset();
     }
 
     @Before
     public void setUp() throws Exception {
-        Map<String, String> translations = new HashMap<>();
-        translations.put("Бот запущен", "Bot started");
-        translations.put("Бот остановлен", "Bot stopped");
-        translations.put("Да", "Yes");
-        translations.put("Нет", "No");
-        translations.put("портал/проект", "portal/project");
-        translations.put("проходов", "launches");
-        translations.put("статус", "status");
-        translations.put("время", "time");
-        translations.put("новых статей", "new pages");
-        translations.put("список обновлен", "list updated");
-        translations.put("статей в архив", "pages in archive");
-        translations.put("архив обновлен", "archive updated");
-        translations.put("ошибок", "errors");
-        translations.put("ошибка", "error");
-        
-        Map<String, LocalizedTemplate> localizedTemplates = new HashMap<>();
-        localizedTemplates.put("Да", new LocalizedTemplate("Да", "Yes"));
-        localizedTemplates.put("Нет", new LocalizedTemplate("Нет", "No"));
-        TestLocalizationManager.init(translations, localizedTemplates);
         
         mockWiki = new MockNirvanaWiki("en.wikipedia.org");
 
@@ -185,7 +164,6 @@ public class BotReporterTest {
 
     @After
     public void tearDown() throws Exception {
-        TestLocalizationManager.reset();
     }
 
     private static ReportItem newReportItem(String portal) {
