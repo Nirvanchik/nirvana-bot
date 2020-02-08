@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
 
 import java.io.File;
 import java.io.IOException;
@@ -397,9 +396,13 @@ public class BotReporter {
 
 
     private void logEndStatus() {
-        Assert.assertNotNull(timeStarted);
+        if (timeStarted == null) {
+            throw new IllegalStateException("timeStarted is null. botStarted() not called");
+        }
         long start = timeStarted.getTimeInMillis();
-        Assert.assertNotNull(timeFinished);
+        if (timeFinished == null) {
+            throw new IllegalStateException("timeFinished is null. botFinished() not called");
+        }
         long end = timeFinished.getTimeInMillis();
         log.info(String.format("BOT STARTED %1$tF %1$tT", timeStarted));
         log.info(String.format("BOT FINISHED %1$tF %1$tT", timeFinished));
