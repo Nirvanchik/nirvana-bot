@@ -72,6 +72,7 @@ public class TestLocalizationManager {
         translations.put("Бот остановлен", "Bot stopped");
         translations.put("Да", "Yes");
         translations.put("Нет", "No");
+        translations.put("Ошибка", "Error");
         translations.put("портал/проект", "portal/project");
         translations.put("проходов", "launches");
         translations.put("статус", "status");

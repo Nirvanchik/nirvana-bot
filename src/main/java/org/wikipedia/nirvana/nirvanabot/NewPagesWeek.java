@@ -206,8 +206,7 @@ public class NewPagesWeek extends NewPages {
     	middleLastUsed = middle;
     	
 		WeekData data = (WeekData)getData(wiki);
-		reportData.newPagesFound = 0;
-		
+        reportData.willUpdateNewPages();
 		for (Entry<String,Data> entry:data.days.entrySet()) {
 			Data d = entry.getValue();
 			String str;
@@ -216,14 +215,17 @@ public class NewPagesWeek extends NewPages {
 			} else {
 				str = comment;
 			} 
-			//log.debug(next.getKey()+" = "+next.getValue());
-			log.info("Updating [[" + entry.getKey() +"]] " + str);
-			if (wiki.editIfChanged(entry.getKey(), d.newText, str, this.minor, this.bot)) {
-				updated = true;
-				waitPauseIfNeed();
-			}
-			reportData.updated = updated;
-			reportData.newPagesFound += d.newPagesCount;						
+            try {
+                log.info("Updating [[" + entry.getKey() +"]] " + str);
+                if (wiki.editIfChanged(entry.getKey(), d.newText, str, this.minor, this.bot)) {
+                    updated = true;
+                    reportData.newPagesUpdated(d.newPagesCount);
+                    waitPauseIfNeed();
+                }
+            } catch (Exception e) {
+                reportData.newPagesUpdateError();
+                throw e;
+            }
 		}
         updateArchiveIfNeed(wiki, data, reportData);
 

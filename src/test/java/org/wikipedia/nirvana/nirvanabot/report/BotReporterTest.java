@@ -192,6 +192,7 @@ public class BotReporterTest {
     private static ReportItem mockProcessedItem(String name) {
         ReportItem item = newReportItem(name);
         item.processed();
+        item.willUpdateNewPages();
         return item;
     }
 
@@ -204,10 +205,9 @@ public class BotReporterTest {
     private static ReportItem mockUpdatedItem(String name) {
         ReportItem item = newReportItem(name);
         item.processed();
-        item.updated();
-        item.updated = true;
-        item.newPagesFound = 5;
+        item.newPagesUpdated(5);
         item.archiveUpdated(5);
+        item.updated();
         return item;
     }
 

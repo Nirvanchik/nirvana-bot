@@ -26,7 +26,6 @@ package org.wikipedia.nirvana.nirvanabot.report;
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.localization.LocalizedTemplate;
 import org.wikipedia.nirvana.localization.Localizer;
-import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotError;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -68,11 +67,11 @@ public class ReportItem {
     long endTime;
     long timeDiff;
     public int errors;
-    public boolean updated;
+    UpdateStatus updated = UpdateStatus.NONE;
     UpdateStatus archived = UpdateStatus.NONE;
     public boolean settingsValid;
-    public int newPagesFound;
-    int pagesArchived;
+    int newPagesFound = 0;
+    int pagesArchived = 0;
     int times;
 
     /**
@@ -135,23 +134,23 @@ public class ReportItem {
             }
             return left;
         }
-        
+
         public boolean isSuccess() {
             return this == PROCESSED || this == UPDATED;
         }
-        
+
         public boolean isFailure() {
             return this == ERROR;
         }
     }
-    
+
     /**
      * Default constructor. Used for deserialization by Jackson json lib.
      */
     public ReportItem() {
         // default constructor
     }
-    
+
     /**
      * Constructs reporting item object with the given bot settings template and portal name.
      *
@@ -165,18 +164,12 @@ public class ReportItem {
         endTime = 0;
         errors = 0;
         times = 0;
-        //archive = false;
         newPagesFound = 0;
         pagesArchived = 0;
         status = Status.NONE;
         error = BotError.NONE;
         settingsValid = true;
         //this.equals(obj);
-    }
-    
-    private static String wikiYesNoStringRu(boolean value) {
-        initStatics();
-        return value ? ("{{" + templateYes.localizeName() + "}}") : wordNo;
     }
 
     private static void initStatics() {
@@ -284,10 +277,9 @@ public class ReportItem {
             name1 = name2.substring(0, n);
             name2 = name2.substring(n + 1);
         }
-        String upd = this.updated ? NirvanaBot.YES : NirvanaBot.NO;
         line = String.format("%1$-90s %2$-9s %3$9s %4$3d %5$-3s  %6$3d %7$-3s %8$2d %9$-13s", 
                 name2, status, timeString,
-                this.newPagesFound, upd, 
+                this.newPagesFound, updated.english, 
                 this.pagesArchived, archived.english,
                 this.errors, this.error.toString());
         if (!name1.isEmpty()) {
@@ -309,7 +301,8 @@ public class ReportItem {
         if (timeDiff > 0) {
             timeString = String.format("%1$tT", timeDiff - TimeZone.getDefault().getRawOffset());
         }
-        String upd = wikiYesNoStringRu(this.updated);
+        String upd = wikiYesNoCancelStringRu(
+                localizer.localize(updated.russian), updated.isSuccess(), updated.isFailure());
         String arch = wikiYesNoCancelStringRu(
                 localizer.localize(archived.russian), archived.isSuccess(), archived.isFailure());
         //| 2 ||align='left'| {{user|Игорь Васильев}}
@@ -347,6 +340,19 @@ public class ReportItem {
     public void processed() {
         this.status = Status.PROCESSED;
         this.times++;
+    }
+
+    public void willUpdateNewPages() {
+        this.updated = UpdateStatus.NO;
+    }
+
+    public void newPagesUpdated(int count) {
+        this.updated = UpdateStatus.YES;
+        this.newPagesFound += count;
+    }
+
+    public void newPagesUpdateError() {
+        this.updated = UpdateStatus.ERROR;
     }
 
     public void willUpdateArchive() {
@@ -400,6 +406,15 @@ public class ReportItem {
     }
 
     /**
+     * Call this when restarting update task (retry).
+     */
+    public void restart() {
+        if (updated.isFailure()) {
+            updated = UpdateStatus.NONE;
+        }
+    }
+
+    /**
      * Call this after finishing updating this portal page.
      */
     public void end() {
@@ -420,7 +435,7 @@ public class ReportItem {
         times += right.times;
         errors += right.errors;
         settingsValid = settingsValid || right.settingsValid;
-        updated = updated || right.updated;
+        updated = UpdateStatus.selectBest(updated, right.updated);
         archived = UpdateStatus.selectBest(archived, right.archived);
         if (timeDiff > 0 && right.timeDiff > 0) {
             timeDiff = (timeDiff + right.timeDiff) / 2;

@@ -1,6 +1,6 @@
 portal settings page                                                                       status    time      new p. arch.p.  errors
                                                                                                                    upd.     arch.  Error
-Portal 1                                                                                   UPDATED         N/A   5 yes    5 Yes  0 NONE         
-Portal 2                                                                                   PROCESSED       N/A   0 no     0 N/A  0 NONE         
-Portal 3                                                                                   ERROR           N/A   0 no     0 N/A  0 IO_ERROR     
-Portal 4                                                                                   SKIP            N/A   0 no     0 N/A  0 NONE         
+Portal 1                                                                                   UPDATED         N/A   5 Yes    5 Yes  0 NONE         
+Portal 2                                                                                   PROCESSED       N/A   0 No     0 N/A  0 NONE         
+Portal 3                                                                                   ERROR           N/A   0 N/A    0 N/A  0 IO_ERROR     
+Portal 4                                                                                   SKIP            N/A   0 N/A    0 N/A  0 NONE         

@@ -48,10 +48,10 @@ import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.util.XmlTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
-import org.wikipedia.nirvana.wiki.NirvanaWiki;
-import org.wikipedia.nirvana.wiki.WikiBooster;
 import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+import org.wikipedia.nirvana.wiki.WikiBooster;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -1004,8 +1004,7 @@ public class NewPages implements PortalModule{
 		getHeaderFooterChanges(wiki, reportData.template, reportData.portal);
 
 		Data d = getData(wiki, text);
-		reportData.newPagesFound = d.newPagesCount;
-		
+
 		if(text==null) {
 			log.trace("text = null");
 			text="";
@@ -1015,7 +1014,9 @@ public class NewPages implements PortalModule{
 			log.trace("d.newText = null");
 			return false;
 		}
-	    
+
+        reportData.willUpdateNewPages();
+
 		if (d.newText!=null && 
 				!d.newText.isEmpty() && 
 				!(d.newText.equals(text) || d.newText.equals(text.trim())))
@@ -1027,10 +1028,15 @@ public class NewPages implements PortalModule{
 		    if(this.deletedFlag == PortalParam.Deleted.REMOVE && d.deletedCount>0) {
                 str = str + ", -" + d.deletedCount + " " + localizer.localize("удаленных");
 		    }
-		    log.info("Updating [[" + this.pageName+"]] " + str);
-		    wiki.edit(pageName, d.newText, str, this.minor, this.bot);
-		    updated = true;
-		    reportData.updated = updated;
+            try {
+                log.info("Updating [[" + this.pageName+"]] " + str);
+                wiki.edit(pageName, d.newText, str, this.minor, this.bot);
+                updated = true;
+                reportData.newPagesUpdated(d.newPagesCount);
+            } catch (Exception e) {
+                reportData.newPagesUpdateError();
+                throw e;
+            }
             updateArchiveIfNeed(wiki, d, reportData);
 		}
 		return updated;

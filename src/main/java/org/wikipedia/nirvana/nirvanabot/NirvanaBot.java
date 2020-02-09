@@ -785,6 +785,7 @@ public class NirvanaBot extends BasicBot{
     				retry = false;
                     log.info("Retrying portal ({}): {}", tryNumber, portalName);        
                     tryNumber++;
+                    reportItem.restart();
     			} else {
                     tryNumber = 1;
     				portalName = portalNewPagesLists[i];
