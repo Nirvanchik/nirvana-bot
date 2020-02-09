@@ -192,7 +192,7 @@ public class NewPagesWeek extends NewPages {
 	@Override
     public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment)
             throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError,
-            InvalidLineFormatException {
+            InvalidLineFormatException, ArchiveUpdateFailure {
 		boolean updated = false;
 
 		String text = getOldText(wiki);
@@ -207,7 +207,6 @@ public class NewPagesWeek extends NewPages {
     	
 		WeekData data = (WeekData)getData(wiki);
 		reportData.newPagesFound = 0;
-		reportData.pagesArchived = data.archiveCount;
 		
 		for (Entry<String,Data> entry:data.days.entrySet()) {
 			Data d = entry.getValue();
@@ -226,14 +225,8 @@ public class NewPagesWeek extends NewPages {
 			reportData.updated = updated;
 			reportData.newPagesFound += d.newPagesCount;						
 		}
-		
-		if (updated && archive!=null && (data.archiveText!=null || data.archiveItems.size()>0)) {		    	
-			waitPauseIfNeed();
-	    	log.info("Updating archive");
-    		updateArchive(wiki, data, reportData);
-	    }
-		
-		//reportData.newPagesFound = count;	    
+        updateArchiveIfNeed(wiki, data, reportData);
+
 		return updated;
 	}
 }

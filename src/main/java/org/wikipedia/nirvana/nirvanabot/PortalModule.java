@@ -37,5 +37,5 @@ import javax.security.auth.login.LoginException;
 public interface PortalModule {
     public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment)
             throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError,
-            InvalidLineFormatException, DangerousEditException;
+            InvalidLineFormatException, DangerousEditException, ArchiveUpdateFailure;
 }

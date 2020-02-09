@@ -25,6 +25,7 @@ package org.wikipedia.nirvana.nirvanabot.report;
 
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotError;
+import org.wikipedia.nirvana.nirvanabot.report.ReportItem.Status;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
@@ -110,6 +111,12 @@ public class BotReporterTest {
             return super.printReportTxt();
         }
 
+        public ReportItem mockSkippedItem(String name) {
+            ReportItem item = BotReporterTest.mockSkippedItem(name);
+            add(item);
+            return item;
+        }
+
         public ReportItem mockProcessedItem(String name) {
             ReportItem item = BotReporterTest.mockProcessedItem(name);
             add(item);
@@ -170,12 +177,24 @@ public class BotReporterTest {
         return new ReportItem("Template 1", portal);
     }
 
+    private static ReportItem mockSkippedItem(String name) {
+        ReportItem item = newReportItem(name);
+        item.skip();
+        return item;
+    }
+
+    private static ReportItem mockSkippedItem(List<ReportItem> list, String name) {
+        ReportItem item = mockSkippedItem(name);
+        list.add(item);
+        return item;
+    }
+
     private static ReportItem mockProcessedItem(String name) {
         ReportItem item = newReportItem(name);
         item.processed();
         return item;
     }
-    
+
     private static ReportItem mockProcessedItem(List<ReportItem> list, String name) {
         ReportItem item = mockProcessedItem(name);
         list.add(item);
@@ -186,6 +205,9 @@ public class BotReporterTest {
         ReportItem item = newReportItem(name);
         item.processed();
         item.updated();
+        item.updated = true;
+        item.newPagesFound = 5;
+        item.archiveUpdated(5);
         return item;
     }
 
@@ -303,12 +325,13 @@ public class BotReporterTest {
         reporter.mockUpdatedItem("Portal 1");
         reporter.mockProcessedItem("Portal 2");
         reporter.mockErrorItem("Portal 3", BotError.IO_ERROR);
+        reporter.mockSkippedItem("Portal 4");
         reporter.botFinished(true);
         String report = reporter.printReportWiki();
         String expected = FileTools.readWikiFileFromPath(TEST_DATA_DIR + "wiki_report.txt").trim();
         Assert.assertEquals(expected, report);
     }
-    
+
     @Test
     public void testPrintReportTxt() throws IOException {
         TestBotReporter reporter = new TestBotReporter(wiki, cacheDir.getPath(), 10, false,
@@ -319,6 +342,7 @@ public class BotReporterTest {
         reporter.mockUpdatedItem("Portal 1");
         reporter.mockProcessedItem("Portal 2");
         reporter.mockErrorItem("Portal 3", BotError.IO_ERROR);
+        reporter.mockSkippedItem("Portal 4");
         reporter.botFinished(true);
         String report = reporter.printReportTxt();
         String expected = FileTools.readFile(TEST_DATA_DIR + "txt_report.txt");
@@ -359,9 +383,9 @@ public class BotReporterTest {
     public void testMerge() {
         TestBotReporter reporter1 = new TestBotReporter(wiki, cacheDir.getPath(), 10, false,
                 "1.0", preambulaFile.getPath());
-        
+
         List<ReportItem> list2 = new ArrayList<>();
-        
+
         reporter1.mockUpdatedItem("Portal 1");
         reporter1.mockProcessedItem("Portal 2");
         reporter1.mockUpdatedItem("Portal 3");
@@ -371,17 +395,26 @@ public class BotReporterTest {
         mockErrorItem(list2, "Portal 3", BotError.IO_ERROR);
         mockUpdatedItem(list2, "Portal 4");
         mockUpdatedItem(list2, "Portal 5");
-        
+
         reporter1.merge(list2);
-        
+
         ReportItem item1 = mockUpdatedItem("Portal 1");
+
         ReportItem item2 = mockUpdatedItem("Portal 2");
         item2.times = 2;
-        ReportItem item3 = mockErrorItem("Portal 3", BotError.IO_ERROR);
+
+        ReportItem item3 = mockUpdatedItem("Portal 3");
         item3.times = 2;
-        ReportItem item4 = mockErrorItem("Portal 4", BotError.IO_ERROR);
+        item3.status = Status.ERROR;
+        item3.error = BotError.IO_ERROR;
+
+        ReportItem item4 = mockUpdatedItem("Portal 4");
         item4.times = 2;
+        item4.status = Status.ERROR;
+        item4.error = BotError.IO_ERROR;
+
         ReportItem item5 = mockUpdatedItem("Portal 5");
+
         Assert.assertArrayEquals(
                 new ReportItem[] {item1, item2, item3, item4, item5},
                 reporter1.reportItems.toArray(new ReportItem[] {}));

@@ -298,6 +298,7 @@ public class NirvanaBot extends BasicBot{
         INTERNAL_ERROR,
 		IO_ERROR,
 		SETTINGS_ERROR,
+        ARCHIVE_UPDATE_ERROR,
         FATAL
 	};
 
@@ -936,6 +937,10 @@ public class NirvanaBot extends BasicBot{
                             mayBeSomeServiceProblem = true;
                         }
                     }
+                } catch (ArchiveUpdateFailure e) {
+                    log.error("Failed to update archive: {}", e.getCause());
+                    reporter.portalError();
+                    reportItem.error(BotError.ARCHIVE_UPDATE_ERROR);
     			} catch (LoginException e) {
     				log.fatal(e.toString());
     				fatalProblem = true;

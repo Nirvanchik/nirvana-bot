@@ -95,9 +95,9 @@ public class ReportItemTest {
         if (error == null) {
             item.updated();
             item.updated = true;
-            item.archived = true;
             item.newPagesFound = 5;
-            item.pagesArchived = 5;
+            item.willUpdateArchive();
+            item.archiveUpdated(5);
         } else {
             item.error(error);
         }
@@ -116,7 +116,7 @@ public class ReportItemTest {
 
         Assert.assertTrue(String.format("String \"%s\" does not match expected re", reportLine),
                 Pattern.matches(
-                "Portal A\\s+UPDATED\\s+00:01:10\\s+5\\s+yes\\s+5\\s+yes\\s+0\\s+NONE\\s*",
+                "Portal A\\s+UPDATED\\s+00:01:10\\s+5\\s+yes\\s+5\\s+Yes\\s+0\\s+NONE\\s*",
                 reportLine));
         
     }
@@ -132,7 +132,7 @@ public class ReportItemTest {
 
         Assert.assertEquals(
                 "|-\n|1 ||align='left'| [[Portal A]] || 1 || {{Yes|UPDATED}} || 00:01:10 " +
-                "|| 5 || {{Yes}} || 5 || {{Yes}} || 0 || -",
+                "|| 5 || {{Yes}} || 5 || {{Yes|Yes}} || 0 || -",
                 reportLine);
     }
 
@@ -144,7 +144,7 @@ public class ReportItemTest {
 
         Assert.assertEquals(
                 "|-\n|1 ||align='left'| [[Portal A]] || 1 || {{No|ERROR}} || 00:01:10 " +
-                "|| 0 || No || 0 || No || 0 || {{No|IO_ERROR}}",
+                "|| 0 || No || 0 || N/A || 0 || {{No|IO_ERROR}}",
                 reportLine);
     }
 

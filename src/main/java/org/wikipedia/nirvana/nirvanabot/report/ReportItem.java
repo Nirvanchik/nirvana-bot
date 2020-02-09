@@ -69,12 +69,48 @@ public class ReportItem {
     long timeDiff;
     public int errors;
     public boolean updated;
-    public boolean archived;
+    UpdateStatus archived = UpdateStatus.NONE;
     public boolean settingsValid;
     public int newPagesFound;
-    public int pagesArchived;
+    int pagesArchived;
     int times;
-    
+
+    /**
+     * Update status of one update action.
+     * Some of portal pages require 2 update actions: update list, update archive.
+     */
+    enum UpdateStatus {
+        NONE(0, "N/A", "N/A"),
+        NO(1, "No", "Нет"),
+        YES(2, "Yes", "Да"),
+        ERROR(3, "Error", "Ошибка");
+
+        public final int weight;
+        public final String english;
+        public final String russian;
+
+        UpdateStatus(int weight, String englishString, String russianString) {
+            this.weight = weight;
+            english = englishString;
+            russian = russianString;
+        }
+
+        public static UpdateStatus selectBest(UpdateStatus left, UpdateStatus right) {
+            if (right.weight > left.weight) {
+                return right;
+            }
+            return left;
+        }
+
+        public boolean isSuccess() {
+            return this == YES;
+        }
+
+        public boolean isFailure() {
+            return this == ERROR;
+        }
+    }
+
     /**
      * Portal page update statuses.
      *
@@ -249,11 +285,10 @@ public class ReportItem {
             name2 = name2.substring(n + 1);
         }
         String upd = this.updated ? NirvanaBot.YES : NirvanaBot.NO;
-        String arch = this.archived ? NirvanaBot.YES : NirvanaBot.NO;
         line = String.format("%1$-90s %2$-9s %3$9s %4$3d %5$-3s  %6$3d %7$-3s %8$2d %9$-13s", 
                 name2, status, timeString,
                 this.newPagesFound, upd, 
-                this.pagesArchived, arch,
+                this.pagesArchived, archived.english,
                 this.errors, this.error.toString());
         if (!name1.isEmpty()) {
             line = name1 + System.lineSeparator() + line;
@@ -267,13 +302,16 @@ public class ReportItem {
      * @param lineNum line number.
      */
     public String toStringWiki(int lineNum) {
+        initStatics();
+        Localizer localizer = Localizer.getInstance();
         String line = "";
         String timeString = "N/A";
         if (timeDiff > 0) {
             timeString = String.format("%1$tT", timeDiff - TimeZone.getDefault().getRawOffset());
         }
         String upd = wikiYesNoStringRu(this.updated);
-        String arch = wikiYesNoStringRu(this.archived);
+        String arch = wikiYesNoCancelStringRu(
+                localizer.localize(archived.russian), archived.isSuccess(), archived.isFailure());
         //| 2 ||align='left'| {{user|Игорь Васильев}}
         String errorStr = wikiErrorStringRu(error.toString(), error != BotError.NONE);
         String statusStr = wikiYesNoCancelStringRu(status.toString(), status.isSuccess(),
@@ -302,7 +340,7 @@ public class ReportItem {
     public void updated() {
         this.status = Status.UPDATED;
     }
-    
+
     /**
      * Call this when portal page was processed.
      */
@@ -311,13 +349,26 @@ public class ReportItem {
         this.times++;
     }
 
+    public void willUpdateArchive() {
+        this.archived = UpdateStatus.NO;
+    }
+
+    public void archiveUpdated(int count) {
+        this.archived = UpdateStatus.YES;
+        this.pagesArchived = count;
+    }
+
+    public void archiveUpdateError() {
+        this.archived = UpdateStatus.ERROR;
+    }
+
     /**
      * Report error status.
      */
     public void error() {
         this.status = Status.ERROR;
     }
-    
+
     /**
      * Report error status with a known error code.
      * @param error Error code.
@@ -370,7 +421,7 @@ public class ReportItem {
         errors += right.errors;
         settingsValid = settingsValid || right.settingsValid;
         updated = updated || right.updated;
-        archived = archived || right.archived;
+        archived = UpdateStatus.selectBest(archived, right.archived);
         if (timeDiff > 0 && right.timeDiff > 0) {
             timeDiff = (timeDiff + right.timeDiff) / 2;
         } else if (right.timeDiff > 0) {

@@ -985,7 +985,7 @@ public class NewPages implements PortalModule{
 	@Override
     public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment)
             throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError,
-            InvalidLineFormatException, DangerousEditException {
+            InvalidLineFormatException, DangerousEditException, ArchiveUpdateFailure {
 		log.debug("=> update()");
 
         if (checkPlaceholdersBeforeUpdate) {
@@ -1004,7 +1004,6 @@ public class NewPages implements PortalModule{
 		getHeaderFooterChanges(wiki, reportData.template, reportData.portal);
 
 		Data d = getData(wiki, text);
-		reportData.pagesArchived = d.archiveCount;
 		reportData.newPagesFound = d.newPagesCount;
 		
 		if(text==null) {
@@ -1032,16 +1031,30 @@ public class NewPages implements PortalModule{
 		    wiki.edit(pageName, d.newText, str, this.minor, this.bot);
 		    updated = true;
 		    reportData.updated = updated;
-		    //wiki.Save(Page, newText, Module.UpdateComment, !MarkEdits ? MinorFlags.NotMinor : MinorFlags.None, MarkEdits);
-		    if(UPDATE_ARCHIVE && archive!=null && (d.archiveText!=null || d.archiveItems.size()>0)) {		    	
-		    	waitPauseIfNeed();
-		    	log.info("Updating archive");
-	    		updateArchive(wiki, d, reportData);
-		    }
+            updateArchiveIfNeed(wiki, d, reportData);
 		}
 		return updated;
 	}
-	
+
+    protected void updateArchiveIfNeed(NirvanaWiki wiki, Data updateResults,
+            ReportItem reportData) throws InterruptedException, ArchiveUpdateFailure {
+        if (!UPDATE_ARCHIVE || archive == null) {
+            return;
+        }
+        reportData.willUpdateArchive();
+        if (updateResults.archiveText != null || updateResults.archiveItems.size() > 0) {
+            waitPauseIfNeed();
+            log.info("Updating archive");
+            try {
+                updateArchive(wiki, updateResults);
+                reportData.archiveUpdated(updateResults.archiveCount);
+            } catch (Exception e) {
+                reportData.archiveUpdateError();
+                throw new ArchiveUpdateFailure(e);
+            }
+        }
+    }
+
 	protected void waitPauseIfNeed() throws InterruptedException {
 		if(NirvanaBot.UPDATE_PAUSE>0) {
     		log.debug("Waiting "+ NirvanaBot.UPDATE_PAUSE+" ms");
@@ -1104,13 +1117,12 @@ public class NewPages implements PortalModule{
 	    }
     }
 
-	public void updateArchive(NirvanaWiki wiki, Data d, ReportItem reportData) throws LoginException, IOException {
+    public void updateArchive(NirvanaWiki wiki, Data d) throws LoginException, IOException {
     	if(archiveSettings==null || archiveSettings.isSimple()) {	
     		log.debug("archive has simple format");
     		log.info("Updating "+archive);
             String summary = "+" + d.archiveCount + " " + localizer.localize("статей");
             wiki.prependOrCreate(archive, d.archiveText, summary, this.minor, this.bot);
-    		reportData.archived = true;
 	    	return;
     	}
     	
@@ -1162,7 +1174,6 @@ public class NewPages implements PortalModule{
     			thisArchive.update(wiki,ar.getKey(), minor, bot);
     		}
     	}   		
-   		reportData.archived = true;	    		
     	return;
 	}
 		
