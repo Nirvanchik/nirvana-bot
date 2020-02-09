@@ -896,7 +896,7 @@ public class NewPages implements PortalModule{
         List<Revision> pageInfoList = getNewPages(wiki);
 
 		NewPagesBuffer buffer = createPagesBuffer(wiki);
-        for (int i = 0; i < pageInfoList.size() && buffer.size() <= maxItems; i++) {
+        for (int i = 0; i < pageInfoList.size() && buffer.size() < maxItems; i++) {
             buffer.addNewPage(wiki, pageInfoList.get(i));
         }
 	
