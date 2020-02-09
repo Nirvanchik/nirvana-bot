@@ -209,10 +209,10 @@ public class ReportItem {
      * Generates reporting table header in TXT format.
      */
     public static String getHeaderTxt() {
-        String header = String.format("%1$-90s %2$-9s %3$-9s %4$s %5$s  %6$s", 
+        String header = String.format("%1$-90s %2$-9s %3$-9s %4$s  %5$s %6$s", 
                 "portal settings page","status","time","new p.","arch.p.","errors");
         header += System.lineSeparator();
-        header += String.format("%1$114s %2$s     %3$s  %4$s"," ", "upd.","arch.","Error");
+        header += String.format("%1$114s %2$s            %3$s"," ", "upd.", "Error");
         return header;
     }
 
@@ -231,7 +231,6 @@ public class ReportItem {
                 .append(" !! ").append(localizer.localize("время"))
                 .append(" !! ").append(localizer.localize("новых статей"))
                 .append(" !! ").append(localizer.localize("список обновлен"))
-                .append(" !! ").append(localizer.localize("статей в архив"))
                 .append(" !! ").append(localizer.localize("архив обновлен"))
                 .append(" !! ").append(localizer.localize("ошибок"))
                 .append(" !! ").append(localizer.localize("ошибка"));
@@ -277,15 +276,19 @@ public class ReportItem {
             name1 = name2.substring(0, n);
             name2 = name2.substring(n + 1);
         }
-        line = String.format("%1$-90s %2$-9s %3$9s %4$3d %5$-3s  %6$3d %7$-3s %8$2d %9$-13s", 
+        String archivedString = archived.english;
+        if (archived.isSuccess() || this.pagesArchived > 0) {
+            archivedString = String.format("%1$s(%2$d)", archived.english, this.pagesArchived);
+        }
+        line = String.format("%1$-90s %2$-9s %3$9s %4$3d %5$-3s  %6$-8s %7$2d %8$-13s", 
                 name2, status, timeString,
                 this.newPagesFound, updated.english, 
-                this.pagesArchived, archived.english,
+                archivedString,
                 this.errors, this.error.toString());
         if (!name1.isEmpty()) {
             line = name1 + System.lineSeparator() + line;
         }
-        return line;            
+        return line;
     }
 
     /**
@@ -305,15 +308,18 @@ public class ReportItem {
                 localizer.localize(updated.russian), updated.isSuccess(), updated.isFailure());
         String arch = wikiYesNoCancelStringRu(
                 localizer.localize(archived.russian), archived.isSuccess(), archived.isFailure());
+        if (archived.isSuccess() || this.pagesArchived > 0) {
+            arch = String.format("%1$s (%2$2d)", arch, this.pagesArchived);
+        }
         //| 2 ||align='left'| {{user|Игорь Васильев}}
         String errorStr = wikiErrorStringRu(error.toString(), error != BotError.NONE);
         String statusStr = wikiYesNoCancelStringRu(status.toString(), status.isSuccess(),
                 status.isFailure());
         line = String.format(
-                "|-\n|%10$d ||align='left'| [[%1$s]] || %11$d || %2$s || %3$s || %4$d || %5$s " +
-                "|| %6$d || %7$s || %8$d || %9$s", 
+                "|-\n|%9$d ||align='left'| [[%1$s]] || %10$d || %2$s || %3$s || %4$d || %5$s " +
+                "|| %6$s || %7$d || %8$s", 
                 portal, statusStr, timeString, 
-                newPagesFound, upd, pagesArchived, arch,
+                newPagesFound, upd, arch,
                 errors, errorStr,
                 lineNum, times);
         return line;
@@ -323,10 +329,10 @@ public class ReportItem {
      * Call this if skipping this portal page.
      */
     public void skip() {
-        this.status = Status.SKIP;        
+        this.status = Status.SKIP;
         this.times = 0;
     }
-    
+
     /**
      * Call this when portal page was really updated.
      */

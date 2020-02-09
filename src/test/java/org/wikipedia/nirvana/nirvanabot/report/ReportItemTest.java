@@ -139,7 +139,7 @@ public class ReportItemTest {
 
         Assert.assertTrue(String.format("String \"%s\" does not match expected re", reportLine),
                 Pattern.matches(
-                "Portal A\\s+UPDATED\\s+00:01:10\\s+5\\s+Yes\\s+5\\s+Yes\\s+0\\s+NONE\\s*",
+                "Portal A\\s+UPDATED\\s+00:01:10\\s+5\\s+Yes\\s+Yes\\(5\\)\\s+0\\s+NONE\\s*",
                 reportLine));
         
     }
@@ -155,7 +155,7 @@ public class ReportItemTest {
 
         Assert.assertEquals(
                 "|-\n|1 ||align='left'| [[Portal A]] || 1 || {{Yes|UPDATED}} || 00:01:10 " +
-                "|| 5 || {{Yes|Yes}} || 5 || {{Yes|Yes}} || 0 || -",
+                "|| 5 || {{Yes|Yes}} || {{Yes|Yes}} ( 5) || 0 || -",
                 reportLine);
     }
 
@@ -167,7 +167,7 @@ public class ReportItemTest {
 
         Assert.assertEquals(
                 "|-\n|1 ||align='left'| [[Portal A]] || 1 || {{No|ERROR}} || 00:01:10 " +
-                "|| 0 || N/A || 0 || N/A || 0 || {{No|IO_ERROR}}",
+                "|| 0 || N/A || N/A || 0 || {{No|IO_ERROR}}",
                 reportLine);
     }
 
@@ -179,7 +179,7 @@ public class ReportItemTest {
 
         Assert.assertEquals(
                 "|-\n|1 ||align='left'| [[Portal A]] || 1 || {{No|ERROR}} || 00:01:10 " +
-                "|| 0 || {{No|Error}} || 0 || N/A || 0 || {{No|IO_ERROR}}",
+                "|| 0 || {{No|Error}} || N/A || 0 || {{No|IO_ERROR}}",
                 reportLine);
     }
 
@@ -191,7 +191,7 @@ public class ReportItemTest {
 
         Assert.assertEquals(
                 "|-\n|1 ||align='left'| [[Portal A]] || 1 || {{No|ERROR}} || 00:01:10 " +
-                "|| 5 || {{Yes|Yes}} || 0 || {{No|Error}} || 0 || {{No|IO_ERROR}}",
+                "|| 5 || {{Yes|Yes}} || {{No|Error}} || 0 || {{No|IO_ERROR}}",
                 reportLine);
     }
 

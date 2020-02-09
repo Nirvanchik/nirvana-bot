@@ -366,6 +366,9 @@ public class BotReporterTest {
         File reportFile = tmpDir.newFile("report.txt");
         reporter.reportTxt(reportFile.getPath());
         
+        String report = FileTools.readFile(reportFile.getPath());
+        Assert.assertEquals("TEXT REPORT", report);
+        
     }
 
     /**
