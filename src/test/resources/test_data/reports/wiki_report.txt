@@ -1,13 +1,13 @@
 PREAMBULA
 {| class="wikitable sortable" style="text-align:center"
 |-
-! № !! portal/project !! launches !! status !! time !! new pages !! list updated !! archive updated !! errors !! error
+! № !! portal/project !! launches !! tries !! status !! time !! new pages !! list updated !! archive updated !! errors !! error
 |-
-|0 ||align='left'| [[Portal 1]] || 1 || {{Yes|UPDATED}} || N/A || 5 || {{Yes|Yes}} || {{Yes|Yes}} ( 5) || 0 || -
+|0 ||align='left'| [[Portal 1]] || 1 || 1 || {{Yes|UPDATED}} || N/A || 5 || {{Yes|Yes}} || {{Yes|Yes}} ( 5) || 0 || -
 |-
-|1 ||align='left'| [[Portal 2]] || 1 || {{Yes|PROCESSED}} || N/A || 0 || No || N/A || 0 || -
+|1 ||align='left'| [[Portal 2]] || 1 || 1 || {{Yes|PROCESSED}} || N/A || 0 || No || N/A || 0 || -
 |-
-|2 ||align='left'| [[Portal 3]] || 1 || {{No|ERROR}} || N/A || 0 || N/A || N/A || 0 || {{No|IO_ERROR}}
+|2 ||align='left'| [[Portal 3]] || 1 || 1 || {{No|ERROR}} || N/A || 0 || N/A || N/A || 0 || {{No|IO_ERROR}}
 |-
-|3 ||align='left'| [[Portal 4]] || 0 || SKIP || N/A || 0 || N/A || N/A || 0 || -
+|3 ||align='left'| [[Portal 4]] || 0 || 0 || SKIP || N/A || 0 || N/A || N/A || 0 || -
 |}

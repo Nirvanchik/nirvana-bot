@@ -162,10 +162,14 @@ public class BotReporter {
     }
 
     /**
-     * Call this when bot processed portal page.
+     * Call this when bot has processed portal settings and is going to update portal page.
+     *
+     * @param tryNumber try number (starting from 1).
      */
-    public void portalProcessed() {
-        portalsProcessed++;
+    public void portalProcessed(int tryNumber) {
+        if (tryNumber == 1) {
+            portalsProcessed++;
+        }
     }
 
     /**

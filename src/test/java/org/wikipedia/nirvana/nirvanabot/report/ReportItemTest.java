@@ -46,7 +46,7 @@ public class ReportItemTest {
 
     static class TestReportItem extends ReportItem {
         private LinkedList<Long> mockTimeQueue = new LinkedList<>();
-        
+
         public TestReportItem(String template, String name) {
             super(template, name);
         }
@@ -83,28 +83,32 @@ public class ReportItemTest {
     }
 
     private ReportItem prepareAndRunItem() {
-        return prepareAndRunItemImpl(null, false, false, false);
+        return prepareAndRunItemImpl(null, false, false, false, true);
+    }
+
+    private ReportItem prepareAndRunItem(boolean finish) {
+        return prepareAndRunItemImpl(null, false, false, false, finish);
     }
 
     private ReportItem prepareAndRunItem(BotError error) {
-        return prepareAndRunItemImpl(error, true, false, false);
+        return prepareAndRunItemImpl(error, true, false, false, true);
     }
 
     private ReportItem prepareAndRunItemWithUpdateError() {
-        return prepareAndRunItemImpl(BotError.IO_ERROR, false, true, false);
+        return prepareAndRunItemImpl(BotError.IO_ERROR, false, true, false, true);
     }
 
     private ReportItem prepareAndRunItemWithUpdateArchiveError() {
-        return prepareAndRunItemImpl(BotError.IO_ERROR, false, false, true);
+        return prepareAndRunItemImpl(BotError.IO_ERROR, false, false, true, true);
     }
 
     private ReportItem prepareAndRunItemImpl(BotError error, boolean getDataError,
-            boolean updateNewPagesError, boolean updateArchiveError) {
+            boolean updateNewPagesError, boolean updateArchiveError, boolean finish) {
         TestReportItem item = new TestReportItem("Settings Template", "Portal A");
         item.mockTime(1000L);
         item.mockTime(71000L);
         item.start();
-        item.processed();
+        item.processed(1);
         if (!getDataError) {
             item.willUpdateNewPages();
             if (!updateNewPagesError) {
@@ -124,7 +128,9 @@ public class ReportItemTest {
         } else {
             item.error(error);
         }
-        item.end();
+        if (finish) {
+            item.end();
+        }
         return item;
     }
 
@@ -139,7 +145,7 @@ public class ReportItemTest {
 
         Assert.assertTrue(String.format("String \"%s\" does not match expected re", reportLine),
                 Pattern.matches(
-                "Portal A\\s+UPDATED\\s+00:01:10\\s+5\\s+Yes\\s+Yes\\(5\\)\\s+0\\s+NONE\\s*",
+                "Portal A\\s+1\\s+UPDATED\\s+00:01:10\\s+5\\s+Yes\\s+Yes\\(5\\)\\s+0\\s+NONE\\s*",
                 reportLine));
         
     }
@@ -154,7 +160,7 @@ public class ReportItemTest {
         String reportLine = item.toStringWiki(1);
 
         Assert.assertEquals(
-                "|-\n|1 ||align='left'| [[Portal A]] || 1 || {{Yes|UPDATED}} || 00:01:10 " +
+                "|-\n|1 ||align='left'| [[Portal A]] || 1 || 1 || {{Yes|UPDATED}} || 00:01:10 " +
                 "|| 5 || {{Yes|Yes}} || {{Yes|Yes}} ( 5) || 0 || -",
                 reportLine);
     }
@@ -166,7 +172,7 @@ public class ReportItemTest {
         String reportLine = item.toStringWiki(1);
 
         Assert.assertEquals(
-                "|-\n|1 ||align='left'| [[Portal A]] || 1 || {{No|ERROR}} || 00:01:10 " +
+                "|-\n|1 ||align='left'| [[Portal A]] || 1 || 1 || {{No|ERROR}} || 00:01:10 " +
                 "|| 0 || N/A || N/A || 0 || {{No|IO_ERROR}}",
                 reportLine);
     }
@@ -178,7 +184,7 @@ public class ReportItemTest {
         String reportLine = item.toStringWiki(1);
 
         Assert.assertEquals(
-                "|-\n|1 ||align='left'| [[Portal A]] || 1 || {{No|ERROR}} || 00:01:10 " +
+                "|-\n|1 ||align='left'| [[Portal A]] || 1 || 1 || {{No|ERROR}} || 00:01:10 " +
                 "|| 0 || {{No|Error}} || N/A || 0 || {{No|IO_ERROR}}",
                 reportLine);
     }
@@ -190,7 +196,7 @@ public class ReportItemTest {
         String reportLine = item.toStringWiki(1);
 
         Assert.assertEquals(
-                "|-\n|1 ||align='left'| [[Portal A]] || 1 || {{No|ERROR}} || 00:01:10 " +
+                "|-\n|1 ||align='left'| [[Portal A]] || 1 || 1 || {{No|ERROR}} || 00:01:10 " +
                 "|| 5 || {{Yes|Yes}} || {{No|Error}} || 0 || {{No|IO_ERROR}}",
                 reportLine);
     }
@@ -258,4 +264,12 @@ public class ReportItemTest {
         System.out.println(item.toString());
     }
 
+    @Test
+    public void testTryCount() {
+        ReportItem item = prepareAndRunItem(false);
+        item.processed(2);
+        item.processed(3);
+        item.end();
+        Assert.assertEquals(3, item.tries);
+    }
 }

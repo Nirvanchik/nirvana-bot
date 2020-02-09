@@ -191,7 +191,7 @@ public class BotReporterTest {
 
     private static ReportItem mockProcessedItem(String name) {
         ReportItem item = newReportItem(name);
-        item.processed();
+        item.processed(1);
         item.willUpdateNewPages();
         return item;
     }
@@ -204,7 +204,7 @@ public class BotReporterTest {
 
     private static ReportItem mockUpdatedItem(String name) {
         ReportItem item = newReportItem(name);
-        item.processed();
+        item.processed(1);
         item.newPagesUpdated(5);
         item.archiveUpdated(5);
         item.updated();
@@ -219,7 +219,7 @@ public class BotReporterTest {
     
     private static ReportItem mockErrorItem(String name, BotError error) {
         ReportItem item = newReportItem(name);
-        item.processed();
+        item.processed(1);
         item.error(error);
         return item;
     }
@@ -277,28 +277,28 @@ public class BotReporterTest {
         reporter.portalChecked();  // 1
         
         reporter.portalChecked();  // 2
-        reporter.portalProcessed();
+        reporter.portalProcessed(1);
         
         reporter.portalChecked();  // 3
-        reporter.portalProcessed();
+        reporter.portalProcessed(1);
 
         reporter.portalChecked();  // 4
-        reporter.portalProcessed();
+        reporter.portalProcessed(1);
         reporter.portalUpdated();
-    
+
         reporter.portalChecked();  // 5
-        reporter.portalProcessed();
+        reporter.portalProcessed(1);
         reporter.portalUpdated();
 
         reporter.portalChecked();  // 6
-        reporter.portalProcessed();
+        reporter.portalProcessed(1);
         reporter.portalError();
-        
+
         reporter.addToTotal(6);
-        
+
         reporter.botFinished(true);
         reporter.updateEndStatus("Status page", "StatusTemplate");
-        
+
         String extectedStatusWikiText =
                 "{{StatusTemplate|status=0" +
                 "|starttime=2020-02-01 05:10:00|endtime=2020-02-01 05:20:00|time=0 h 10 m 0 s" +

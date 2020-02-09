@@ -73,6 +73,7 @@ public class ReportItem {
     int newPagesFound = 0;
     int pagesArchived = 0;
     int times;
+    int tries = 0;
 
     /**
      * Update status of one update action.
@@ -209,11 +210,8 @@ public class ReportItem {
      * Generates reporting table header in TXT format.
      */
     public static String getHeaderTxt() {
-        String header = String.format("%1$-90s %2$-9s %3$-9s %4$s  %5$s %6$s", 
-                "portal settings page","status","time","new p.","arch.p.","errors");
-        header += System.lineSeparator();
-        header += String.format("%1$114s %2$s            %3$s"," ", "upd.", "Error");
-        return header;
+        return String.format("%1$-86s %2$s %3$-9s %4$-9s %5$s  %6$s   %7$s", 
+                "portal settings page", "tries", "status", "time", "new p.", "arch.p.", "errors");
     }
 
     /**
@@ -226,7 +224,8 @@ public class ReportItem {
         sb.append("|-\n");
         sb.append("! №")
                 .append(" !! ").append(localizer.localize("портал/проект"))
-                .append(" !! ").append(localizer.localize("проходов"))
+                .append(" !! ").append(localizer.localize("запусков"))
+                .append(" !! ").append(localizer.localize("попыток"))
                 .append(" !! ").append(localizer.localize("статус"))
                 .append(" !! ").append(localizer.localize("время"))
                 .append(" !! ").append(localizer.localize("новых статей"))
@@ -280,8 +279,8 @@ public class ReportItem {
         if (archived.isSuccess() || this.pagesArchived > 0) {
             archivedString = String.format("%1$s(%2$d)", archived.english, this.pagesArchived);
         }
-        line = String.format("%1$-90s %2$-9s %3$9s %4$3d %5$-3s  %6$-8s %7$2d %8$-13s", 
-                name2, status, timeString,
+        line = String.format("%1$-90s %2$d %3$-9s %4$9s %5$3d %6$-3s  %7$-8s %8$2d %9$-13s", 
+                name2, tries, status, timeString,
                 this.newPagesFound, updated.english, 
                 archivedString,
                 this.errors, this.error.toString());
@@ -316,12 +315,13 @@ public class ReportItem {
         String statusStr = wikiYesNoCancelStringRu(status.toString(), status.isSuccess(),
                 status.isFailure());
         line = String.format(
-                "|-\n|%9$d ||align='left'| [[%1$s]] || %10$d || %2$s || %3$s || %4$d || %5$s " +
+                "|-\n|%9$d ||align='left'| [[%1$s]] " +
+                "|| %10$d || %11$d || %2$s || %3$s || %4$d || %5$s " +
                 "|| %6$s || %7$d || %8$s", 
                 portal, statusStr, timeString, 
                 newPagesFound, upd, arch,
                 errors, errorStr,
-                lineNum, times);
+                lineNum, times, tries);
         return line;
     }
 
@@ -343,9 +343,12 @@ public class ReportItem {
     /**
      * Call this when portal page was processed.
      */
-    public void processed() {
-        this.status = Status.PROCESSED;
-        this.times++;
+    public void processed(int tryNumber) {
+        if (tryNumber == 1) {
+            this.status = Status.PROCESSED;
+            this.times++;
+        }
+        tries++;
     }
 
     public void willUpdateNewPages() {
@@ -471,6 +474,8 @@ public class ReportItem {
                 .append(timeDiff)
                 .append(", times: ")
                 .append(times)
+                .append(", tries: ")
+                .append(tries)
                 .append(", errors: ")
                 .append(errors)
                 .append(", updated: ")

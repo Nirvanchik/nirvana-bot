@@ -843,10 +843,8 @@ public class NirvanaBot extends BasicBot{
                                     data.portalModule != null) {
                                 if (DEBUG_MODE || !portalName.contains("ValidParam") ||
                                         !DEBUG_BUILD) {
-                                    if (tryNumber == 1) { 
-										reporter.portalProcessed();
-										reportItem.processed();
-									}
+                                    reporter.portalProcessed(tryNumber);
+                                    reportItem.processed(tryNumber);
 									if(data.portalModule.update(wiki, reportItem, COMMENT)) {
 										reporter.portalUpdated();
 										reportItem.updated();
