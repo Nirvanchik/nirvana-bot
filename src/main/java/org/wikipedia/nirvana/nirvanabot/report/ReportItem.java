@@ -442,6 +442,7 @@ public class ReportItem {
         newPagesFound += right.newPagesFound;
         pagesArchived += right.pagesArchived;
         times += right.times;
+        tries += right.tries;
         errors += right.errors;
         settingsValid = settingsValid || right.settingsValid;
         updated = UpdateStatus.selectBest(updated, right.updated);

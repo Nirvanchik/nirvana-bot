@@ -94,6 +94,10 @@ public class ReportItemTest {
         return prepareAndRunItemImpl(error, true, false, false, true);
     }
 
+    private ReportItem prepareAndRunItem(BotError error, boolean finish) {
+        return prepareAndRunItemImpl(error, true, false, false, finish);
+    }
+
     private ReportItem prepareAndRunItemWithUpdateError() {
         return prepareAndRunItemImpl(BotError.IO_ERROR, false, true, false, true);
     }
@@ -237,10 +241,13 @@ public class ReportItemTest {
     public void testMerge() {
         ReportItem item1 = prepareAndRunItem();
         ReportItem item2 = prepareAndRunItem();
+
         item1.merge(item2);
 
         Assert.assertEquals(70000, item1.timeDiff);
         Assert.assertEquals(2, item1.times);
+        Assert.assertEquals(10, item1.newPagesFound);
+        Assert.assertEquals(10, item1.pagesArchived);
         Assert.assertEquals(Status.UPDATED, item1.status);
         Assert.assertEquals(BotError.NONE, item1.error);
 
@@ -250,7 +257,30 @@ public class ReportItemTest {
 
         Assert.assertEquals(70000, item1.timeDiff);
         Assert.assertEquals(2, item1.times);
+        Assert.assertEquals(5, item1.newPagesFound);
+        Assert.assertEquals(5, item1.pagesArchived);
         Assert.assertEquals(Status.ERROR, item1.status);
+        Assert.assertEquals(BotError.IO_ERROR, item1.error);
+
+        item1 = prepareAndRunItem();
+        item2 = prepareAndRunItem(BotError.IO_ERROR, false);
+        item2.restart();
+        item2.processed(2);
+        item2.willUpdateNewPages();
+        item2.newPagesUpdated(5);
+        item2.willUpdateArchive();
+        item2.archiveUpdated(5);
+        item2.updated();
+        item2.end();
+
+        item1.merge(item2);
+
+        Assert.assertEquals(70000, item1.timeDiff);
+        Assert.assertEquals(2, item1.times);
+        Assert.assertEquals(3, item1.tries);
+        Assert.assertEquals(10, item1.newPagesFound);
+        Assert.assertEquals(10, item1.pagesArchived);
+        Assert.assertEquals(Status.UPDATED, item1.status);
         Assert.assertEquals(BotError.IO_ERROR, item1.error);
     }
 
