@@ -1008,6 +1008,7 @@ public class NirvanaBot extends BasicBot{
                 }
             }
 		}
+        reporter.botFinished(false);
         if (UPDATE_STATUS) {
         	try {
 	            reporter.updateEndStatus(STATUS_WIKI_PAGE, STATUS_WIKI_TEMPLATE);
@@ -1015,7 +1016,7 @@ public class NirvanaBot extends BasicBot{
             	log.error(e);	            
             }
         }
-        reporter.botFinished(true);
+        reporter.logEndStatus();
         if (wikiTranslationPage != null && !wikiTranslationPage.isEmpty()) {
             try {
                 localizationManager.refreshWikiTranslations(wiki, wikiTranslationPage);

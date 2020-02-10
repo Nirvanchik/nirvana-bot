@@ -233,6 +233,12 @@ public class BotReporter {
      */
     public void updateEndStatus(String page, String template) throws LoginException, IOException {
         initLocalizer();
+        if (timeStarted == null) {
+            throw new IllegalStateException("timeStarted is null. botStarted() not called");
+        }
+        if (timeFinished == null) {
+            throw new IllegalStateException("timeFinished is null. botFinished() not called");
+        }
         String text = String.format(
                 "{{%1$s|status=0|starttime=%2$tF %2$tT|endtime=%3$tF %3$tT|time=%4$s" +
                 "|total=%5$d|checked=%6$d|processed=%7$d|updated=%8$d|errors=%9$d|version=%10$s}}", 
@@ -399,7 +405,10 @@ public class BotReporter {
     }
 
 
-    private void logEndStatus() {
+    /**
+     * Print to log work timing status (Bot start/finish time and full work time).
+     */
+    public void logEndStatus() {
         if (timeStarted == null) {
             throw new IllegalStateException("timeStarted is null. botStarted() not called");
         }
