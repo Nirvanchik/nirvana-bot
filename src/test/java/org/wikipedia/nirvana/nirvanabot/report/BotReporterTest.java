@@ -401,22 +401,25 @@ public class BotReporterTest {
 
         reporter1.merge(list2);
 
-        ReportItem item1 = mockUpdatedItem("Portal 1");
+        final ReportItem item1 = mockUpdatedItem("Portal 1");
 
-        ReportItem item2 = mockUpdatedItem("Portal 2");
+        final ReportItem item2 = mockUpdatedItem("Portal 2");
         item2.times = 2;
+        item2.tries = 2;
 
-        ReportItem item3 = mockUpdatedItem("Portal 3");
+        final ReportItem item3 = mockUpdatedItem("Portal 3");
         item3.times = 2;
+        item3.tries = 2;
         item3.status = Status.ERROR;
         item3.error = BotError.IO_ERROR;
 
-        ReportItem item4 = mockUpdatedItem("Portal 4");
+        final ReportItem item4 = mockUpdatedItem("Portal 4");
         item4.times = 2;
+        item4.tries = 2;
         item4.status = Status.ERROR;
         item4.error = BotError.IO_ERROR;
 
-        ReportItem item5 = mockUpdatedItem("Portal 5");
+        final ReportItem item5 = mockUpdatedItem("Portal 5");
 
         Assert.assertArrayEquals(
                 new ReportItem[] {item1, item2, item3, item4, item5},
