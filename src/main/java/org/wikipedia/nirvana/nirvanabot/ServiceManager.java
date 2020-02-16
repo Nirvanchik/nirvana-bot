@@ -1,5 +1,5 @@
 /**
- *  @(#)ServiceManager.java 01.04.2016
+ *  @(#)ServiceManager.java
  *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -25,10 +25,7 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import static org.wikipedia.nirvana.nirvanabot.NirvanaBot.SERVICE_AUTO;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
+import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.nirvanabot.serviceping.CatscanService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.InternetService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.NetworkInterface;
@@ -38,13 +35,19 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.ServiceGroup.Listener;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
-import org.wikipedia.nirvana.wiki.CatScanTools;
-import org.wikipedia.nirvana.wiki.NirvanaWiki;
-import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
+import org.wikipedia.nirvana.wiki.CatScanTools;
+import org.wikipedia.nirvana.wiki.CatScanTools.Service;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Nullable;
 
 /**
  * @author kin
@@ -54,11 +57,12 @@ public class ServiceManager {
     protected static final Logger log;
 
 	private final ServicePinger servicePinger;
+    @Nullable
     private ServiceGroup<CatscanService> pageListFetchServiceGroup = null;
-    private CatScanTools.Service activeService = null;
+    protected CatScanTools.Service activeService = null;
     private WikiService mainWiki = null;
     private InternetService internet = null;
-    private OnlineService catscan = null;
+    protected OnlineService catscan = null;
 
     static {
         log = LogManager.getLogger(ServiceManager.class.getName());
@@ -84,6 +88,14 @@ public class ServiceManager {
                  serviceInternet,
                  serviceWiki,
                  serviceCommons);
+    }
+
+    @VisibleForTesting
+    protected ServiceManager(InternetService internet, WikiService mainWiki,
+            ServicePinger servicePinger) {
+        this.internet = internet; 
+        this.mainWiki = mainWiki;
+        this.servicePinger = servicePinger;
     }
 
     public void updateCatScan(String defaultServiceName, String selectedServiceName) throws BotFatalError {
@@ -177,6 +189,7 @@ public class ServiceManager {
 	        }
         } catch (ServiceWaitTimeoutException e) {
 	        log.error(e);
+            mainWiki.setNeedsRelogin(true);
 	        return false;
         }
 		return true;

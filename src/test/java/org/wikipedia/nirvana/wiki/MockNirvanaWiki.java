@@ -192,7 +192,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     /**
      * If you set to true the real login() method will be called.
      * Should be used with mocking post() requests.
-     * @see {@link #mockPost(String, String)}
+     * @see {@link #mockPostSequential}
      */
     public void allowLogin(boolean allow) {
         this.allowLogin = allow;

@@ -231,7 +231,7 @@ public class BotReporter {
      * @param page A Wiki page name with a bot status info (short report).
      * @param template A bot template name used to render bot status nicely.
      */
-    public void updateEndStatus(String page, String template) throws LoginException, IOException {
+    public void updateEndStatus(String page, String template) {
         initLocalizer();
         if (timeStarted == null) {
             throw new IllegalStateException("timeStarted is null. botStarted() not called");
@@ -245,7 +245,11 @@ public class BotReporter {
                 template, timeStarted, timeFinished, printTimeDiff(timeStarted, timeFinished),
                 portalsTotal, portalsChecked, portalsProcessed, portalsUpdated, portalsError,
                 version);
-        wiki.edit(page, text, localizer.localize("Бот остановлен"));
+        try {
+            wiki.edit(page, text, localizer.localize("Бот остановлен"));
+        } catch (LoginException | IOException e) {
+            log.error("Failed to update status page {}: {}", page, e);
+        }
     }
 
     /**

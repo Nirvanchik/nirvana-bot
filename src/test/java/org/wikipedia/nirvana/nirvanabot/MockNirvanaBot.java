@@ -52,6 +52,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.annotation.Nullable;
+
 /**
  * Patches {@link NirvanaBot} to make it work with mocked wiki and mocked services in tests.
  * All mocked data are read from specified json config.
@@ -115,7 +117,7 @@ public class MockNirvanaBot extends NirvanaBot {
      * @param testConfigPath path to js config from which to read mock data
      * @throws TestError in the case when test json data are corrupt or unavailable
      */
-    public MockNirvanaBot(int flags, String testConfigPath) throws TestError {
+    public MockNirvanaBot(int flags, @Nullable String testConfigPath) throws TestError {
         super(flags);
         mockWikiService = Mockito.mock(WikiService.class);
         try {

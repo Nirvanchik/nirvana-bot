@@ -67,6 +67,7 @@ import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_SORT;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_TOSORT;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_YES;
 import static org.wikipedia.nirvana.util.OptionsUtils.validateIntegerSetting;
+import static org.wikipedia.nirvana.util.OptionsUtils.validateLongSetting;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.BasicBot;
@@ -100,11 +101,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 
@@ -127,8 +130,8 @@ public class NirvanaBot extends BasicBot{
 	
 	private boolean TASK = false;
 	private String TASK_LIST_FILE = "task.txt";
-	
-	private String newpagesTemplates[] = null;
+
+    protected String newpagesTemplates[] = null;
 
     private static final String PARAM_VALUE_DEFAULT_EN = "default";
 
@@ -195,14 +198,15 @@ public class NirvanaBot extends BasicBot{
 	private static boolean ERROR_NOTIFICATION = false;
     private static String COMMENT = "обновление";
 
-	private static boolean GENERATE_REPORT = false;
-	private static boolean UPDATE_STATUS = false;
+    // TODO: WTF is it static?
+    protected static boolean GENERATE_REPORT = false;
+    protected static boolean UPDATE_STATUS = false;
 	private static String REPORT_FILE_NAME = "report.txt";
     private static String REPORT_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Отчёт";
     private static String STATUS_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Статус";
     private static String STATUS_WIKI_TEMPLATE =
             "Участник:NirvanaBot/Новые статьи/Отображение статуса";
-	private static String REPORT_FORMAT = "txt";
+    protected static String REPORT_FORMAT = "txt";
     private static String DEFAULT_FORMAT = "* [[%1$s]]";
 	public static String DEFAULT_FORMAT_STRING = "* [[%1$s]]";
 
@@ -213,7 +217,7 @@ public class NirvanaBot extends BasicBot{
     private String listTypeDefault;
 
     private String enabledTypesString = TYPE_ALL;
-    Set<String> enabledTypes;
+    Set<String> enabledTypes = Collections.singleton(TYPE_ALL);
 
 	private static String DEFAULT_DELIMETER = "\n";
 
@@ -223,6 +227,7 @@ public class NirvanaBot extends BasicBot{
      */
     private int globalTryCount = 2;
 
+    @Nullable
 	private static String overridenPropertiesPage = null;
 
     private static String PICTURE_SEARCH_TAGS = "image file,Фото,портрет,Изображение,Файл,File";
@@ -262,11 +267,12 @@ public class NirvanaBot extends BasicBot{
 
     private int botTimeout = 0;
 
-    private int servicesTimeout = 0;
+    private long servicesTimeout = 1L * 60L * 60L * 1000L;  // 1 hour;
 
     private String wikiTranslationPage = null;
     private String customTranslationFile = null;
 
+    private LocalizationManager localizationManager;
     private Localizer localizer;
 
     /**
@@ -279,7 +285,7 @@ public class NirvanaBot extends BasicBot{
         globalTryCount = count;
     }
 
-	private static class NewPagesData {
+    static class NewPagesData {
 		ArrayList<String> errors;
         PortalParam param;
 		PortalModule portalModule;
@@ -449,7 +455,7 @@ public class NirvanaBot extends BasicBot{
 		overridenPropertiesPage = properties.getProperty("overriden-properties-page",null);
 
         botTimeout = validateIntegerSetting(properties, "bot-timeout", botTimeout, false);
-        servicesTimeout = validateIntegerSetting(properties, "services-timeout", servicesTimeout, false);
+        servicesTimeout = validateLongSetting(properties, "services-timeout", servicesTimeout, false);
         globalTryCount = validateIntegerSetting(properties, "try-count", globalTryCount, false);
 
         wikiTranslationPage = properties.getProperty("wiki-translation-page", null);
@@ -627,10 +633,23 @@ public class NirvanaBot extends BasicBot{
         return new ServiceManager(DEFAULT_SERVICE_NAME, SELECTED_SERVICE_NAME, wiki, commons);
     }
 
+    protected BotReporter createReporter(String cacheDir) {
+        return new BotReporter(wiki, cacheDir, 1000, true, getVersion(),
+                reportPreambulaFile);
+    }
+
+    protected long getTimeInMillis() {
+        return Calendar.getInstance().getTimeInMillis();
+    }
+
+    protected void sleep(long millis) throws InterruptedException {
+        Thread.sleep(millis);
+    }
+
     protected void go() throws InterruptedException, BotFatalError {
         String cacheDir = outDir + "/" + "cache";
 
-        long startMillis = Calendar.getInstance().getTimeInMillis();
+        long startMillis = getTimeInMillis();
         commons = createCommonsWiki();
         commons.setMaxLag(maxLag);
 
@@ -644,8 +663,8 @@ public class NirvanaBot extends BasicBot{
             public void afterDowntime(long downtime) throws BotFatalError {
                 if (downtime > NO_RELOGIN_MIN_DOWNTIME_MS) {
                     try {
-                    	log.warn("Relogin after downtime of {} seconds", downtime / 1000);
-                        wiki.relogin();
+                        log.warn("Relogin after downtime of {} seconds", downtime / 1000);
+                        serviceManager.getMainWikiService().relogin();
                     } catch (FailedLoginException | IOException e) {
                         throw new BotFatalError(e);
                     }
@@ -656,11 +675,10 @@ public class NirvanaBot extends BasicBot{
             throw new BotFatalError("Some services are down.");
         }
 
-        LocalizationManager localizationManager = new LocalizationManager(outDir, cacheDir,
+        localizationManager = new LocalizationManager(outDir, cacheDir,
                 LocalizationManager.DEFAULT_TRANSLATIONS_DIR, LANGUAGE, customTranslationFile);
 
-        BotReporter reporter = new BotReporter(wiki, cacheDir, 1000, true, getVersion(),
-                reportPreambulaFile);
+        BotReporter reporter = createReporter(cacheDir);
         
         if (wikiTranslationPage != null && !wikiTranslationPage.isEmpty()) {
             try {
@@ -717,7 +735,7 @@ public class NirvanaBot extends BasicBot{
         boolean noServicesOrTimeout = false;
         for (String newpagesTemplate: newpagesTemplates) {
 
-        	long startT = Calendar.getInstance().getTimeInMillis();
+            long startT = getTimeInMillis();
     		log.info("template to check: "+newpagesTemplate);
 
             String []portalNewPagesLists = null;
@@ -776,7 +794,7 @@ public class NirvanaBot extends BasicBot{
 
     		while(i < portalNewPagesLists.length) {
                 if (!noServicesOrTimeout && botTimeout > 0 &&
-                        (Calendar.getInstance().getTimeInMillis() - startMillis > botTimeout)) {
+                        (getTimeInMillis() - startMillis > botTimeout)) {
                     log.debug("Bot work time exceeded allowed maximum of " + botTimeout + " ms. Stopping bot.");
                     noServicesOrTimeout = true;
                 }
@@ -849,7 +867,7 @@ public class NirvanaBot extends BasicBot{
 										reporter.portalUpdated();
 										reportItem.updated();
 									} 
-									if(UPDATE_PAUSE>0) Thread.sleep(UPDATE_PAUSE);
+                                    if (UPDATE_PAUSE > 0) sleep(UPDATE_PAUSE);
 								}        							
         					} else {
         						reportItem.skip();						
@@ -880,7 +898,7 @@ public class NirvanaBot extends BasicBot{
     					reportItem.error(BotError.SETTINGS_ERROR);
     					log.error("validate portal settings FAILED");
     				}
-    				
+
                 } catch (IllegalArgumentException | IndexOutOfBoundsException |
                         NullPointerException | java.util.zip.ZipException |
                         UnsupportedOperationException e) {
@@ -986,7 +1004,7 @@ public class NirvanaBot extends BasicBot{
     		}
     		reportItem.end();
     		Calendar cEnd = Calendar.getInstance();
-    		long endT = cEnd.getTimeInMillis();
+            long endT = getTimeInMillis();
     		reporter.addToTotal(portalNewPagesLists.length);
 
             log.info("TEMPLATE "+ ((fatalProblem||noServicesOrTimeout)? "STOPPED": "FINISHED")+" at "+String.format("%1$tT", cEnd));
@@ -995,36 +1013,75 @@ public class NirvanaBot extends BasicBot{
     			break;
     		}
     	}
+
         reporter.logStatus();
-        if (GENERATE_REPORT) {
-        	if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "txt")) {        			
-                reporter.reportTxt(outDir + "/" + REPORT_FILE_NAME);
-        	}
-            if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "wiki")) {
-                if (serviceManager.getMainWikiService().isOk() == Status.OK) {
-                    reporter.reportWiki(REPORT_WIKI_PAGE, startNumber == 1);
-                } else {
-                    log.warn("Wiki is not available. Reporting to wiki skipped.");
-                }
-            }
-		}
+
+        updateDetailedReport(reporter);
+
         reporter.botFinished(false);
-        if (UPDATE_STATUS) {
-        	try {
-	            reporter.updateEndStatus(STATUS_WIKI_PAGE, STATUS_WIKI_TEMPLATE);
-            } catch (LoginException | IOException e) {
-            	log.error(e);	            
-            }
-        }
+
+        updateStatus(reporter);
+        updateTranslations();
+
         reporter.logEndStatus();
-        if (wikiTranslationPage != null && !wikiTranslationPage.isEmpty()) {
-            try {
-                localizationManager.refreshWikiTranslations(wiki, wikiTranslationPage);
-            } catch (LoginException | IOException e) {
-                throw new BotFatalError(e);
-            }
-        }
 	}
+
+    private boolean ensureWikiIsOk() throws InterruptedException {
+        if (serviceManager.getMainWikiService().isOk() != Status.OK) {
+            log.error("Wiki site is not available.");
+            return false;
+        }
+        try {
+            serviceManager.getMainWikiService().reloginIfNeed();
+        } catch (FailedLoginException | IOException e) {
+            log.error("Failed to relogin to Wiki site: {}", e);
+            return false;
+        }
+        return true;
+    }
+
+    private void updateDetailedReport(BotReporter reporter) throws InterruptedException {
+        if (!GENERATE_REPORT) {
+            return;
+        }
+        if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "txt")) {                    
+            reporter.reportTxt(outDir + "/" + REPORT_FILE_NAME);
+        }
+        if (!StringUtils.containsIgnoreCase(REPORT_FORMAT, "wiki")) {
+            return;
+        }
+        if (!ensureWikiIsOk()) {
+            log.warn("Detailed report update will be skipped");
+            return;
+        }
+        reporter.reportWiki(REPORT_WIKI_PAGE, startNumber == 1);
+    }
+
+    private void updateStatus(BotReporter reporter) throws InterruptedException {
+        if (!UPDATE_STATUS) {
+            return;
+        }
+        if (!ensureWikiIsOk()) {
+            log.warn("Status report update will be skipped");
+            return;
+        }
+        reporter.updateEndStatus(STATUS_WIKI_PAGE, STATUS_WIKI_TEMPLATE);
+    }
+
+    private void updateTranslations() throws InterruptedException {
+        if (wikiTranslationPage == null || wikiTranslationPage.isEmpty()) {
+            return;
+        }
+        if (!ensureWikiIsOk()) {
+            log.warn("Updating translations will be skipped");
+            return;
+        }
+        try {
+            localizationManager.refreshWikiTranslations(wiki, wikiTranslationPage);
+        } catch (LoginException | IOException e) {
+            log.error("Failed to update translations: {}", e);
+        }
+    }
 
     private void sendErrorNotification(String portalSettingsPage, String error)
             throws IOException, LoginException {
@@ -1066,7 +1123,7 @@ public class NirvanaBot extends BasicBot{
         listTypeDefault = LIST_TYPE_NEW_PAGES;
     }
 
-    private boolean createPortalModule(Map<String, String> options, NewPagesData data) {
+    protected boolean createPortalModule(Map<String, String> options, NewPagesData data) {
         log.debug("Scan portal settings...");
 
 		PortalParam param = new PortalParam();

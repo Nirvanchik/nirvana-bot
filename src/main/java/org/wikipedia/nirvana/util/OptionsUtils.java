@@ -135,6 +135,34 @@ public class OptionsUtils {
         }
     }
 
+    /**
+     * Returns integer value in given {@link Properties} object or default value if it's not found.
+     *
+     * @param props {@link Properties} object, properties must be loaded beforehand.
+     * @param name the name of property to get
+     * @param def default value
+     * @param notifyNotFound write error to log if this property not found
+     * @return property value (converted to int) or default value
+     */
+    public static long validateLongSetting(Properties props, String name, long def,
+            boolean notifyNotFound) {
+        try {
+            if (!props.containsKey(name)) {
+                if (notifyNotFound) {
+                    sLog.info("settings: value of {} not found in settings, use default: {}",
+                            name, def);
+                }
+                return def;
+            }
+            String str = props.getProperty(name);
+            return Long.parseLong(str);
+        } catch (NumberFormatException e) {
+            sLog.error("invalid settings: error when parsing long value of {}, use default: {}",
+                    name, def);
+            return def;
+        }
+    }
+
     private static Collection<String> optionToCollection(String option, boolean withDQuotes,
             String separator, Collection<String> result) {
         String separatorPattern;

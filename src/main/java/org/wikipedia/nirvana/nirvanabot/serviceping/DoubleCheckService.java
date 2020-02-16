@@ -46,7 +46,8 @@ public class DoubleCheckService extends BasicService {
 	protected boolean checkWorking() throws InterruptedException {		
 		return true;
 	}
-	
+
+    @Override
 	protected boolean checkOk() throws InterruptedException {
 		if (!checkAvailable()) {
 			return false;

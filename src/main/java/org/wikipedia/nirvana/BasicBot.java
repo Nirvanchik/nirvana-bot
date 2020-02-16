@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana;
 
 import org.wikipedia.nirvana.annotation.LocalizedBySettings;
+import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.StringTools;
@@ -370,7 +371,14 @@ public abstract class BasicBot {
 		return true;
 	}
 
-    protected void initLog() throws BotFatalError {
+    /**
+     * Initialize logger.
+     * 
+     * Usually called automatically by startWithConfig().
+     * Use this if you are using this class without startWithConfig() method.
+     */
+    @VisibleForTesting
+    public void initLog() throws BotFatalError {
         if ((flags & FLAG_DEFAULT_LOG) != 0) {
             System.out.println(
                     "INFO: logs must be configured automatically from log4j2.properties");

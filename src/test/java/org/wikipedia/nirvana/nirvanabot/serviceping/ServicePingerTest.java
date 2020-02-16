@@ -1,5 +1,5 @@
 /**
- *  @(#)ServicePingerTest.java 18.03.2016
+ *  @(#)ServicePingerTest.java
  *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,6 @@ import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.RECHECK
 import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.RECHECK_DELAY_2;
 import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.TIMEOUT;
 
-import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
 
@@ -42,7 +41,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -71,10 +69,8 @@ public class ServicePingerTest {
         }
 		
 	}
-	
-	private static class TestServicesManager extends ServicePinger {
-		private long currentTime;
-		private List<Long> waitTimeTicks = new ArrayList<>();
+
+    private static class TestServicesManager extends MockServicePinger {
 		private TestService failingService = null;
 		private long timeToRecover = -1;
 
@@ -86,38 +82,15 @@ public class ServicePingerTest {
 	        this.failingService = failingService;
 	        this.timeToRecover = timeToRecover;
         }
-        
-        @Override
-        protected long currentTimeMillis() {
-        	return currentTime;
-        }
-        
+
         @Override
         protected void sleep(long millis) throws InterruptedException {
-        	currentTime += millis;
-        	waitTimeTicks.add(millis);
+            super.sleep(millis);
         	if (failingService != null && timeToRecover != -1 && currentTime >= timeToRecover) {
         		failingService.checkOkReturnVal = true;
         	}
         }
-        
-        @Override
-        public void tryRecoverReplacedServices() throws InterruptedException {
-        	super.tryRecoverReplacedServices();
-        }
 
-        @Override
-        public long tryToSolveProblems() throws InterruptedException, ServiceWaitTimeoutException,
-                BotFatalError {
-        	currentTime = 0;
-        	waitTimeTicks.clear();
-        	return super.tryToSolveProblems();
-        }
-        
-        public List<Long> getTimeTicks() {
-        	return waitTimeTicks;
-        }
-		
 	}
 
 	/**

@@ -30,12 +30,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
+import javax.security.auth.login.FailedLoginException;
+
 /**
  * @author kin
  *
  */
 public class WikiService extends InternetService {
 	NirvanaWiki wiki;
+    boolean reloginRequired;
 
 	/**
 	 * @param name
@@ -49,7 +52,37 @@ public class WikiService extends InternetService {
 		super(name);
 		this.wiki = wiki;
 	}
-	
+
+    /**
+     * Set flag that this Wiki client should relogin to continue working.
+     * Call this after network disconnects or long time inactivity if you don't know if you are
+     * going to interact with this Wiki client.
+     *
+     * @param reloginRequired relogin status value.
+     */
+    public void setNeedsRelogin(boolean reloginRequired) {
+        this.reloginRequired = reloginRequired;
+    }
+
+    /**
+     * Call this if you are going to edit wiki and you fear that there was an inactivity for a long
+     * time.
+     */
+    public void reloginIfNeed() throws FailedLoginException, IOException {
+        if (reloginRequired) {
+            wiki.relogin();
+            reloginRequired = false;
+        }
+    }
+
+    /**
+     * Relogin wiki client immediately.
+     */
+    public void relogin() throws FailedLoginException, IOException {
+        wiki.relogin();
+        reloginRequired = false;
+    }
+
 	@Override
 	protected boolean checkAvailable() {
 		URL url;
@@ -60,7 +93,8 @@ public class WikiService extends InternetService {
         }
 		return checkConnection(url);
 	}
-	
+
+    @Override
 	protected boolean checkWorking() {
 		try {
 	        Map<String, Object> info = wiki.getSiteInfo();
