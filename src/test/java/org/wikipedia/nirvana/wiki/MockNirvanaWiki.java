@@ -23,9 +23,10 @@
 
 package org.wikipedia.nirvana.wiki;
 
-import org.wikipedia.Wiki.User;
-import org.wikipedia.nirvana.wiki.NirvanaWiki;
+import org.wikipedia.Wiki;
 
+import org.apache.commons.collections.keyvalue.MultiKey;
+import org.apache.commons.collections.map.MultiKeyMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Assert;
 
@@ -46,6 +47,7 @@ import javax.security.auth.login.LoginException;
  * Prevents access to Wiki with Mediawiki REST API with methods like <code>edit()</code>.
  */
 public class MockNirvanaWiki extends NirvanaWiki {
+    private static final String ASSERT_MSG = "You forgot to mock something for Wiki.java?";
     private Map<String,String []> whatTranscludesMap = new HashMap<>();
     private Map<String, String> pageTextMap = new HashMap<>();
     private Map<Long, String> namespaceIdMap = new HashMap<>();
@@ -56,6 +58,9 @@ public class MockNirvanaWiki extends NirvanaWiki {
     private Map<String, Boolean> pageExistsMap = new HashMap<>();
     private Map<String, String []> whatLinksHereMap = new HashMap<>();
     private Map<String, Map<String, Object>> userInfoMap = new HashMap<>();
+    private Map<String, MultiKeyMap> pageHistoryMap = new HashMap<>();
+    private Map<Long, Revision> revMap = new HashMap<>();
+    private Map<Long, String> revTextMap = new HashMap<>();
 
     private LinkedList<String> fetchQueue = new LinkedList<>();
     private LinkedList<String> postQueue = new LinkedList<>();
@@ -188,7 +193,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     public void allowEdits(boolean allow) {
         this.allowEdits = allow;
     }
-    
+
     /**
      * If you set to true the real login() method will be called.
      * Should be used with mocking post() requests.
@@ -215,7 +220,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     @Override
     protected String fetch(String url, String caller) throws IOException {
-        log.debug("fetch url: {}", url);
+        log.debug("[MOCK] fetch url: {}", url);
         Assert.assertFalse("Unexpected request: " + url, fetchQueue.isEmpty());
         return fetchQueue.removeFirst();
     }
@@ -237,13 +242,14 @@ public class MockNirvanaWiki extends NirvanaWiki {
     @Override
     protected String post(String url, String text, String caller) throws IOException {
         Assert.assertNotNull(url);
-        log.debug("post url: {}", url);
+        log.debug("[MOCK] post url: {}", url);
         Assert.assertFalse("Unexpected post request: " + url, postQueue.isEmpty());
         return postQueue.removeFirst();
     }
 
     @Override
     public String[] whatTranscludesHere(String title, int... ns) throws IOException {
+        log.debug("[MOCK] whatTranscludesHere: {}", title);
         Assert.assertTrue(whatTranscludesMap.containsKey(title));
         return whatTranscludesMap.get(title);
     }
@@ -254,6 +260,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     @Override
     public String getPageText(String title) throws IOException {
+        log.debug("[MOCK] getPageText: {}", title);
         if (!pageTextMap.containsKey(title)) {
             throw new IllegalStateException("Unexpected getPageText() call with title: " + title);
         }
@@ -272,6 +279,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     @Override
     public String[] getPageText(String[] titles) throws IOException {
+        log.debug("[MOCK] getPageText: {}", String.join(", ", titles));
         String[] result = new String [titles.length];
         for (int i = 0; i < titles.length; i++) {
             String title = titles[i];
@@ -290,6 +298,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     @Override
     public String namespaceIdentifier(int namespace) throws IOException {
+        log.debug("[MOCK] namespaceIdentifier: {}", namespace);
         Assert.assertTrue(namespaceIdMap.containsKey(new Long(namespace)));
         return namespaceIdMap.get(new Long(namespace));
     }
@@ -304,7 +313,9 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     @Override
     public int namespace(String title) throws IOException {
-        Assert.assertTrue(namespaceMap.containsKey(title));
+        log.debug("[MOCK] namespace: {}", title);
+        Assert.assertTrue(ASSERT_MSG, namespaceMap.containsKey(title));
+        // TODO: mock populateNamespaceCache() instead.
         return namespaceMap.get(title);
     }
 
@@ -312,8 +323,13 @@ public class MockNirvanaWiki extends NirvanaWiki {
         namespaceMap.put(title, namespaceNumber);
     }
 
+    public void mockTopRevision(String title, Revision revision) {
+        topRevMap.put(title, revision);
+    }
+
     @Override
     public Revision getTopRevision(String title) throws IOException {
+        log.debug("[MOCK] getTopRevision: {}", title);
         if (!topRevMap.containsKey(title)) return null;
         return topRevMap.get(title);
     }
@@ -324,6 +340,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     @Override
     public Revision getFirstRevision(String title) throws IOException {
+        log.debug("[MOCK] getFirstRevision: {}", title);
         if (!firstRevMap.containsKey(title)) return null;
         return firstRevMap.get(title);
     }
@@ -331,6 +348,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     @Override
     public synchronized void edit(String title, String text, String summary, boolean minor,
             boolean bot, int section, Calendar basetime) throws IOException, LoginException {
+        log.debug("[MOCK] edit: {}", title);
         EditInfo edit = new EditInfo(title, text, summary, minor, bot, section, basetime);
         edits.add(edit);
         if (allowEdits) {
@@ -366,6 +384,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     @Override
     public String[] getTemplates(String title, int... ns) throws IOException {
+        log.debug("[MOCK] getTemplates: {}", title);
         if (!pageTemplatesMap.containsKey(title)) return new String[0];
         return pageTemplatesMap.get(title);
     }
@@ -380,6 +399,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     @Override
     public String[][] getPagesTemplates(String[] titles, int... ns) throws IOException {
+        log.debug("[MOCK] getPagesTemplates: {}", String.join(", ", titles));
         String[][] result = new String [titles.length][];
         for (int i = 0; i < titles.length; i++) {
             String title = titles[i];
@@ -407,6 +427,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     @Override
     public boolean exists(String title) throws IOException {
+        log.debug("[MOCK] exists: {}", title);
         if (pageExistsMap.containsKey(title)) {
             return pageExistsMap.get(title);
         }
@@ -419,6 +440,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     @Override
     public String[] whatLinksHere(String title, int... ns) throws IOException {
+        log.debug("[MOCK] whatLinksHere: {}", title);
         if (!whatLinksHereMap.containsKey(title)) return new String [0];
         return whatLinksHereMap.get(title);
     }
@@ -440,6 +462,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
      */
     @Override
     public Map<String, Object>[] getUserInfo(String... usernames) throws IOException {
+        log.debug("[MOCK] getUserInfo: {}", String.join(", ", usernames));
         Map[] info = new HashMap[usernames.length];
         for (int i = 0; i < usernames.length; i++) {
             Assert.assertTrue("User info not found for " + usernames[i],
@@ -449,7 +472,78 @@ public class MockNirvanaWiki extends NirvanaWiki {
         return info;
     }
 
+    public void mockPageHistory(String title, long startMs, long endMs, Revision [] revs) {
+        pageHistoryMap.computeIfAbsent(title, k -> new MultiKeyMap()).put(
+                new MultiKey(new Long(startMs), new Long(endMs)), revs);
+    }
+
+    @Override
+    public Revision[] getPageHistory(String title, Calendar start, Calendar end)
+            throws IOException {
+        log.debug("[MOCK] getPageHistory: {}", title);
+        Assert.assertTrue(ASSERT_MSG, pageHistoryMap.containsKey(title));
+        MultiKeyMap history = pageHistoryMap.get(title);
+        MultiKey key = new MultiKey(
+                new Long(start.getTimeInMillis()), end.getTimeInMillis());
+        if (history.containsKey(key)) {
+            return (Revision[]) history.get(key);
+        }
+        // Workaround for now() that cannot be mocked easily.
+        key = new MultiKey(
+                new Long(start.getTimeInMillis()), new Long(0));
+        if (history.containsKey(key)) {
+            return (Revision[]) history.get(key);
+        }
+        // Another workaround for now() that cannot be mocked easily.
+        key = new MultiKey(
+                new Long(0), end.getTimeInMillis());
+        if (history.containsKey(key)) {
+            return (Revision[]) history.get(key);
+        }
+        return new Revision[] {};
+    }
+
+    public void mockRevision(long revId, Revision revision) {
+        revMap.put(revId, revision);
+    }
+
+    @Override
+    public Revision getRevision(long revId) throws IOException {
+        log.debug("[MOCK] getRevision: {}", revId);
+        Assert.assertTrue(ASSERT_MSG, revMap.containsKey(revId));
+        return revMap.get(revId);
+    }
+
+    public void mockRevisionText(long revId, String text) {
+        revTextMap.put(revId, text);
+    }
+
+    /**
+     * Replacement for mocked {@link Wiki.Revision#getText()}.
+     */
+    public String getRevisionText(long revId) {
+        log.debug("[MOCK] getRevisionText: {}", revId);
+        Assert.assertTrue(ASSERT_MSG, revTextMap.containsKey(revId));
+        return revTextMap.get(revId);
+    }
+
     public void debug() {
         // Empty. Used in tests only.
+    }
+
+    public class MockRevision extends Revision {
+        public MockRevision(long revid, Calendar timestamp, String title, String summary,
+                String user, boolean minor, boolean bot, boolean rvnew, int size) {
+            super(revid, timestamp, title, summary, user, minor, bot, rvnew, size);
+        }
+
+        public void setPrevious(long previous) {
+            this.previous = previous;
+        }
+
+        @Override
+        public String getText() throws IOException {
+            return getRevisionText(getRevid());
+        }
     }
 }

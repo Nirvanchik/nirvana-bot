@@ -33,6 +33,7 @@ import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.MockCatScanTools;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki.EditInfoMinimal;
+import org.wikipedia.nirvana.wiki.MockNirvanaWiki.MockRevision;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.commons.lang3.StringUtils;
@@ -231,13 +232,34 @@ public class MockNirvanaBot extends NirvanaBot {
             }
         }
 
+        JSONArray revTextJsonList = (JSONArray) wikiJson.get("revisionText");
+        if (revTextJsonList != null) {
+            Iterator<?> it = revTextJsonList.iterator();
+            while (it.hasNext()) {
+                JSONObject revTextJson = (JSONObject) it.next();
+                wiki.mockRevisionText((Long) revTextJson.get("revid"),
+                        readMultiLineString(revTextJson, "text"));
+            }
+        }
+
         JSONArray firstRevJsonList = (JSONArray) wikiJson.get("firstRevision");
         if (firstRevJsonList != null) {
-            Iterator<?> it = firstRevJsonList.iterator();
-            while (it.hasNext()) {
-                JSONObject revisionJson = (JSONObject) it.next();
-                wiki.mockFirstRevision((String) revisionJson.get("title"),
-                        parseRevision(wiki, revisionJson));
+            for (Revision r: parseRevisionList(wiki, firstRevJsonList)) {
+                wiki.mockFirstRevision(r.getPage(), r);
+            }
+        }
+
+        JSONArray topRevJsonList = (JSONArray) wikiJson.get("topRevision");
+        if (topRevJsonList != null) {
+            for (Revision r: parseRevisionList(wiki, topRevJsonList)) {
+                wiki.mockTopRevision(r.getPage(), r);
+            }
+        }
+
+        JSONArray revJsonList = (JSONArray) wikiJson.get("revision");
+        if (revJsonList != null) {
+            for (Revision r: parseRevisionList(wiki, revJsonList)) {
+                wiki.mockRevision(r.getRevid(), r);
             }
         }
 
@@ -269,6 +291,27 @@ public class MockNirvanaBot extends NirvanaBot {
                         readStringList(whatLinksHereJson, "links"));
             }
         }
+
+        JSONArray pageHistoryJsonList = (JSONArray) wikiJson.get("pageHistory");
+        if (pageHistoryJsonList != null) {
+            Iterator<?> it = pageHistoryJsonList.iterator();
+            while (it.hasNext()) {
+                JSONObject pageHistoryItem = (JSONObject) it.next();
+                wiki.mockPageHistory((String) pageHistoryItem.get("title"),
+                        (Long) pageHistoryItem.get("start_time"),
+                        (Long) pageHistoryItem.get("end_time"),
+                        parseRevisionList(wiki, (JSONArray) pageHistoryItem.get("revisions")));
+            }
+        }
+    }
+
+    private Revision [] parseRevisionList(MockNirvanaWiki wiki, JSONArray revisionsJson) {
+        Revision [] revisions = new Revision[revisionsJson.size()];
+        Iterator<?> it = revisionsJson.iterator();
+        for (int i = 0; it.hasNext(); i++) {
+            revisions[i] = parseRevision(wiki, (JSONObject) it.next());
+        }
+        return revisions;
     }
 
     private Revision parseRevision(MockNirvanaWiki wiki, JSONObject revisionJson) {
@@ -284,7 +327,11 @@ public class MockNirvanaBot extends NirvanaBot {
         boolean bot = (Boolean) revisionJson.get("bot");
         boolean rvnew = (Boolean) revisionJson.get("rvnew");
         int size = (int)(long)(Long) revisionJson.get("size");
-        Revision r = wiki.new Revision(revid, c, title, summary, user, minor, bot, rvnew, size);
+        MockRevision r = wiki.new MockRevision(
+                revid, c, title, summary, user, minor, bot, rvnew, size);
+        if (revisionJson.containsKey("previous")) {
+            r.setPrevious((Long) revisionJson.get("previous")); 
+        }
         return r;
     }
 

@@ -1078,6 +1078,7 @@ public class NewPages implements PortalModule{
 	    	return;
 	    }
 	    
+        // TODO: WTF we put now() as an earliest date?
 	    Revision []revs = wiki.getPageHistory(portalSettingsPage, Calendar.getInstance(), rNewPages.getTimestamp());
 	    if(revs.length==0) {
 	    	return;

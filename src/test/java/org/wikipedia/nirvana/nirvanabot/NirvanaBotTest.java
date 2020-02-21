@@ -37,6 +37,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -78,6 +79,14 @@ public class NirvanaBotTest {
         TestLocalizationManager.reset();
         MockDateTools.reset();
         TestPortalConfig.reset();
+    }
+
+    protected void run(String config) throws TestError {
+        MockNirvanaBot bot =
+                new MockNirvanaBot(BasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.validateQueries();
+        bot.validateEdits();
     }
 
     // Ensure test infrastructure is not broken
@@ -562,19 +571,197 @@ public class NirvanaBotTest {
     /**
      * Test case 024.
      * Similar tests: 022, 023.
-     * Conditions:
+     *
      * PORTAL SETTINGS:
-     * 1) type = "новые статьи"
-     * 2) tryCount = 3
-     * SERVICE SETTINGS:
+     *   type = "новые статьи"
+     *   tryCount = 3
      */
     @Test
     public void retry_custom() throws TestError {
-        String config = "024_new_pages_update_retry_custom.js";
-        MockNirvanaBot bot =
-                new MockNirvanaBot(BasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
-        bot.run(new String[]{TEST_DATA_PATH + BOT_CONFIG_RETRIES});
-        bot.validateQueries();
-        bot.validateEdits();
+        run("024_new_pages_update_retry_custom.js");
+    }
+
+    /**
+     * Test case 025.
+     * Summary: header must be added at the top of the page (there was no header before update).
+     * Similar tests: .
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     *   header = === Новые статьи на тему Собаки ===
+     */
+    @Test
+    public void new_pages_add_header() throws TestError {
+        run("025_new_pages_add_header.js");
+    }
+
+    /**
+     * Test case 026.
+     * Summary: header must be added at the top of the page (there was the same header in the page
+     * before update).
+     * Similar tests: 025, 027.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     *   header = === Новые статьи на тему Собаки ===
+     */
+    @Test
+    public void new_pages_update_header() throws TestError {
+        run("026_new_pages_update_header.js");
+    }
+
+    /**
+     * Test case 027.
+     * Summary: header must be added at the top of the page
+     * Scenario:
+     *   - There was the same header in the page and in bot settings
+     *   - User edited portal page and added some whitespace before header
+     *   - Bot updates portal page and correctly leaves header (but it's ok to remove whitespace)
+     *
+     * Similar tests: 026.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     *   header = === Новые статьи на тему Собаки ===
+     */
+    @Test
+    public void new_pages_update_header_remove_whitespace() throws TestError {
+        run("027_new_pages_update_header_remove_whitespace.js");
+    }
+
+    /**
+     * Test case 028.
+     * Summary: header must be added at the top of the page
+     * Scenario:
+     *   - There was the same header in the page and in bot settings, and that header has some
+     *   whitespace at the beginning;
+     *   - User edited portal page and added some whitespace before header;
+     *   - Bot updates portal page and correctly leaves header (but it's ok to remove whitespace).
+     *
+     * Similar tests: 027, 026.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     *   header = " === Новые статьи на тему Собаки === \n"
+     */
+    // TODO: Fix this test. See NewPages#trimLeft() and friends.
+    @Ignore
+    @Test
+    public void new_pages_update_header_with_whitespace_remove_whitespace() throws TestError {
+        run("028_new_pages_update_header_with_whitespace_remove_whitespace.js");
+    }
+
+    /**
+     * Test case 029.
+     * Summary: header must be removed from the top of the page 
+     * Scenario:
+     *   - There was a header in the page (in settings and in portal page).
+     *   - User removed header in portal settings
+     *   - Bot updates portal page without header and removes old header from portal page.
+     *
+     * Similar tests: 026.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     *   header = 
+     */
+    @Test
+    public void new_pages_remove_header() throws TestError {
+        run("029_new_pages_remove_header.js");
+    }
+
+    /**
+     * Test case 030.
+     * Summary: header must be removed from the top of the page 
+     * Scenario:
+     *   - There was a header in the page (in settings and in portal page).
+     *   - User edited header in portal settings
+     *   - Bot updates portal page with a new header and removes old header from portal page.
+     *
+     * Similar tests: 029.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     *   header = === КРАСИВЫЙ ЗАГОЛОВОК ===\n
+     */
+    @Test
+    public void new_pages_update_new_header() throws TestError {
+        run("030_new_pages_update_new_header.js");
+    }
+
+    /**
+     * Test case 031.
+     * Summary: header & footer must be added at the top & bottom of the page (there was no header
+     * and footer before update).
+     *
+     * Similar tests: 025.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     *   header = {{НАЧАЛО БЛОКА}}\n
+     *   footer = \n{{КОНЕЦ БЛОКА}}
+     */
+    @Test
+    public void new_pages_add_headerfooter() throws TestError {
+        run("031_new_pages_add_headerfooter.js");
+    }
+
+    /**
+     * Test case 032.
+     * Summary: header & footer must be added at the top & bottom of the page (there was the same
+     * header & the same footer in the page before update).
+     *
+     * Similar tests: 026, 031.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     *   header = {{НАЧАЛО БЛОКА}}\n
+     *   footer = \n{{КОНЕЦ БЛОКА}}
+     */
+    @Test
+    public void new_pages_update_headerfooter() throws TestError {
+        run("032_new_pages_update_headerfooter.js");
+    }
+
+    /**
+     * Test case 033.
+     * Summary: header & footer must be removed from the top & bottom of the page 
+     * Scenario:
+     *   - There was a header & footer in the page (in settings and in portal page).
+     *   - User removed header & footer in portal settings
+     *   - Bot updates portal page without header and without footer and removes old header & footer
+     *   from portal page.
+     *
+     * Similar tests: 029, 032.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     *   header =
+     *   footer = 
+     */
+    @Test
+    public void new_pages_remove_headerfooter() throws TestError {
+        run("033_new_pages_remove_headerfooter.js");
+    }
+
+    /**
+     * Test case 034.
+     * Summary: header & footer must be updated at the top & bottom of the page 
+     * Scenario:
+     *   - There was a header & footer in the page (in settings and in portal page).
+     *   - User edited header & footer in portal settings
+     *   - Bot updates portal page with updated header and without footer and removes old header &
+     *   footer from portal page.
+     *
+     * Similar tests: 029, 032.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     *   header =
+     *   footer = 
+     */
+    @Test
+    public void new_pages_update_new_headerfooter() throws TestError {
+        run("034_new_pages_update_new_headerfooter.js");
     }
 }

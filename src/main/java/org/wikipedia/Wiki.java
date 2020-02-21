@@ -6786,7 +6786,7 @@ public class Wiki implements Serializable
         private boolean minor, bot, rvnew;
         private String summary;
         private long revid, rcid = -1;
-        private long previous = 0, next = 0;
+        protected long previous = 0, next = 0;
         private Calendar timestamp;
         private String user;
         private String title;
