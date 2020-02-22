@@ -764,4 +764,19 @@ public class NirvanaBotTest {
     public void new_pages_update_new_headerfooter() throws TestError {
         run("034_new_pages_update_new_headerfooter.js");
     }
+
+    /**
+     * Test case 035.
+     * Summary: bots template must be preserved
+     * 
+     * Similar tests: 025, 026.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     *   header = {{НАЧАЛО БЛОКА}}\n
+     */
+    @Test
+    public void new_pages_update_header_preserve_bots_template() throws TestError {
+        run("035_new_pages_update_header_preserve_bots_template.js");
+    }
 }
