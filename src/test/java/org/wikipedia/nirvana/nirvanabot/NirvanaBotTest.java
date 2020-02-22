@@ -779,4 +779,36 @@ public class NirvanaBotTest {
     public void new_pages_update_header_preserve_bots_template() throws TestError {
         run("035_new_pages_update_header_preserve_bots_template.js");
     }
+
+    /**
+     * Test case 036.
+     * Summary: header must be added at the top of the page (there was no header before update).
+     *
+     * Similar tests: 003, 025.
+     *
+     * PORTAL SETTINGS:
+     *   type = "статьи с шаблонами"
+     *   header = {{НАЧАЛО БЛОКА}}\n
+     */
+    @Test
+    public void pages_add_header() throws TestError {
+        run("036_pages_add_header.js");
+    }
+
+    /**
+     * Test case 037.
+     * Summary: header must be added at the top of the page (there was the same header in the page
+     * before update).
+     *
+     * Similar tests: 003, 026, 037.
+     *
+     * PORTAL SETTINGS:
+     *   type = "статьи с шаблонами"
+     *   header = {{НАЧАЛО БЛОКА}}\n
+     */
+    @Test
+    public void pages_update_header() throws TestError {
+        run("037_pages_update_header.js");
+    }
+
 }
