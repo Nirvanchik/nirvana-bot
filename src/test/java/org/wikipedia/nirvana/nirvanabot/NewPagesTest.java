@@ -135,7 +135,7 @@ public class NewPagesTest {
         when(wiki.getTopRevision(anyString())).thenReturn(null);
         ReportItem reportData = Mockito.mock(ReportItem.class);
         PortalParam param = this.makeTestParam();
-        NewPages newPages = new NewPages(param);
+        NewPages newPages = new NewPages(param, new SystemTime());
         //newPages.update(wiki, reportData, "comment");
     }
 }

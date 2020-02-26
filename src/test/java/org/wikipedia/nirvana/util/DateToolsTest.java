@@ -24,7 +24,6 @@
 package org.wikipedia.nirvana.util;
 
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
-import org.wikipedia.nirvana.util.DateTools;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -33,12 +32,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.time.ZoneId;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 
 /**
@@ -282,13 +280,13 @@ public class DateToolsTest {
     @Test
     public void parseTimeStampOrSimpleDate() {
         Calendar c = DateTools.parseTimeStampOrSimpleDate("2019-07-25T");
-        
+
         Assert.assertNotNull(c);
         checkDate(c, 2019, 6, 25);
         checkTime(c, 0, 0, 0);
-        
+
         c = DateTools.parseTimeStampOrSimpleDate("2019-07-25T10:05:17Z");
-        
+
         Assert.assertNotNull(c);
         checkDate(c, 2019, 6, 25);
         checkTime(c, 10, 5, 17);
@@ -303,5 +301,21 @@ public class DateToolsTest {
     public void testSingltoneUsage() {
         DateTools.init("ru");
         Assert.assertEquals("зима", DateTools.getInstance().seasonString(0));
+    }
+
+    @Test
+    public void printTimestamp() {
+        Date datetime = new Date();
+        datetime.setTime(1582751991000L);
+        Assert.assertEquals("2020-02-26T21:19:51.000 UTC", DateTools.printTimestamp(datetime));
+    }
+
+    @Test
+    public void parseWikiTimestampUTC() {
+        Calendar c = DateTools.parseWikiTimestampUTC("2019-07-25T10:05:17Z");
+
+        Assert.assertNotNull(c);
+        checkDate(c, 2019, 6, 25);
+        checkTime(c, 10, 5, 17);
     }
 }

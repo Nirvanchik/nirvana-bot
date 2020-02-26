@@ -811,4 +811,27 @@ public class NirvanaBotTest {
         run("037_pages_update_header.js");
     }
 
+    /**
+     * Test case 038.
+     * Summary: new pages week should be updated correctly including header that has a date
+     * variable. Also, we should check here update comment with correct new pages count
+     * calculation.
+     *
+     * Similar tests: 026.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи по дням"
+     *   header = {{НАЧАЛО БЛОКА}}\n
+     *
+     * Timezone: UTC 
+     * Sorry, I was lazy to convert all 61 timestamps in this test-case by adding +3 hours.
+     * I am working at UTC+3, the bot is working at UTC+1 or UTC+2. People that watch the reports
+     * work in many different timezones.
+     */
+    @Test
+    public void new_pages_week_update_header() throws TestError {
+        run("038_new_pages_week_update_header.js");
+        // TODO: Validate edit comment
+    }
+
 }

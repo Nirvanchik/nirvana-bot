@@ -274,6 +274,7 @@ public class NirvanaBot extends BasicBot{
 
     private LocalizationManager localizationManager;
     private Localizer localizer;
+    private SystemTime systemTime;
 
     /**
      * Set default try count.
@@ -638,8 +639,12 @@ public class NirvanaBot extends BasicBot{
                 reportPreambulaFile);
     }
 
+    protected SystemTime initSystemTime() {
+        return new SystemTime();
+    }
+
     protected long getTimeInMillis() {
-        return Calendar.getInstance().getTimeInMillis();
+        return systemTime.now().getTimeInMillis();
     }
 
     protected void sleep(long millis) throws InterruptedException {
@@ -649,6 +654,7 @@ public class NirvanaBot extends BasicBot{
     protected void go() throws InterruptedException, BotFatalError {
         String cacheDir = outDir + "/" + "cache";
 
+        systemTime = initSystemTime();
         long startMillis = getTimeInMillis();
         commons = createCommonsWiki();
         commons.setMaxLag(maxLag);
@@ -1337,27 +1343,31 @@ public class NirvanaBot extends BasicBot{
 		}
 
         if (isTypeNewPages(type)) {
-			data.portalModule = new NewPages(param);						
+            data.portalModule = new NewPages(param, systemTime);
 		} else if (isTypePages(type)) {
-			data.portalModule = new Pages(param);
+            data.portalModule = new Pages(param, systemTime);
         } else if (type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_CARD) ||
                 type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_CARD_OLD)) {
-			data.portalModule = new NewPagesWithImages(param, commons, new ImageFinderInCard(param.imageSearchTags));
+            data.portalModule = new NewPagesWithImages(param, systemTime, commons,
+                    new ImageFinderInCard(param.imageSearchTags));
         } else if (type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_TEXT) ||
                 type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_TEXT_OLD) ) {
-			data.portalModule = new NewPagesWithImages(param, commons, new ImageFinderInBody());
+            data.portalModule = new NewPagesWithImages(param, systemTime, commons,
+                    new ImageFinderInBody());
         } else if (type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES) ||
                 type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_OLD)) {
-			data.portalModule = new NewPagesWithImages(param, commons, new ImageFinderUniversal(param.imageSearchTags));
+            data.portalModule = new NewPagesWithImages(param, systemTime, commons,
+                    new ImageFinderUniversal(param.imageSearchTags));
         } else if (type.equals(LIST_TYPE_NEW_PAGES_7_DAYS) ||
                 type.equals(LIST_TYPE_NEW_PAGES_7_DAYS_OLD)) {
-			data.portalModule = new NewPagesWeek(param);
+            data.portalModule = new NewPagesWeek(param, systemTime);
 		} else if (isTypeDiscussedPages(type)) {
 			if (DISCUSSION_PAGES_SETTINGS == null) {
                 String err = localizer.localize(ERROR_DISCUSSED_PAGES_SETTINGS_NOT_DEFINED);
                 data.errors.add(err);
 			} else {
-				data.portalModule = new DiscussedPages(param, DISCUSSION_PAGES_SETTINGS);
+                data.portalModule = new DiscussedPages(param, systemTime,
+                        DISCUSSION_PAGES_SETTINGS);
 			}
 		} else {
             String format = localizer.localize(ERROR_INVALID_TYPE);

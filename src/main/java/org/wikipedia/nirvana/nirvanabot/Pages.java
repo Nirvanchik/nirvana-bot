@@ -39,9 +39,12 @@ import java.util.ArrayList;
  */
 public class Pages extends NewPages {
 
-	public Pages(PortalParam param) {
-		super(param);
-		
+    /**
+     * Constructs class instance.
+     */
+    public Pages(PortalParam param, SystemTime systemTime) {
+        super(param, systemTime);
+
 		if(this.archiveSettings!=null) {
 			this.archiveSettings = null;
 		}

@@ -73,13 +73,14 @@ public class NewPagesWithImages extends NewPages {
 		public void setImage(String image) { this.image = image; }
 		
 	}
-	/**
-	 * @param param
-	 * @param commons
-	 * @param imageFinder
-	 */
-	public NewPagesWithImages(PortalParam param, NirvanaWiki commons, ImageFinder imageFinder) {
-		super(param);
+
+    /**
+     * Constructs class instanse using bot params, and special for this module additional things
+     * like Commons wiki client and {@link ImageFinder} helper class.
+     */
+    public NewPagesWithImages(PortalParam param, SystemTime systemTime, NirvanaWiki commons,
+            ImageFinder imageFinder) {
+        super(param, systemTime);
 		if(this.archiveSettings!=null) {
 			this.archiveSettings = null;
 		}

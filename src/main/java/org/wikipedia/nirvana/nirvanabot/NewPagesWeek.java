@@ -1,7 +1,7 @@
 /**
  *  @(#)NewPagesWeek.java
- *  Copyright © 2011-2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
- *    
+ *  Copyright © 2011 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -31,7 +31,7 @@ import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,6 +46,9 @@ import javax.security.auth.login.LoginException;
  */
 public class NewPagesWeek extends NewPages {
 
+    // TODO: Something is broken here. It should use this HOURS value as "max_age" argument for
+    // catscan but it doesn't. Currently it uses default value (350 hours).
+    // Someone can set smaller value of "hours" parameter and break the week.
 	public static final int HOURS = 7 * 24;
 	private static final int FIRST_DAY = 0;
 	private static final int DAYS = 7;
@@ -54,26 +57,27 @@ public class NewPagesWeek extends NewPages {
     private final String PAGE_NAME_FORMAT;
 
     /**
-	 * @param param	 
-	 */
-	public NewPagesWeek(PortalParam param) {
-		super(param);
+     * Constructs class instance using bot params.
+     */
+    public NewPagesWeek(PortalParam param, SystemTime systemTime) {
+        super(param, systemTime);
 		UPDATE_FROM_OLD = false;
         PAGE_NAME_FORMAT = "%1$s/" + localizer.localize("День") + " %2$d";
 	}
 
 	public class WeekData extends Data {
-		Map<String, Data> days = new HashMap<String, Data>(DAYS);
+        Map<String, Data> days = new LinkedHashMap<String, Data>(DAYS);
 		public WeekData() {			
 		}
 	}
-	
+
 	private class WeekBuffer extends NewPagesBuffer {
 		NewPagesBuffer buffers[] = new NewPagesBuffer[DAYS];
 		Calendar dates[] = new Calendar[DAYS];
+
 		public WeekBuffer(NirvanaWiki wiki) {
 			super(wiki);
-			Calendar cStart = Calendar.getInstance();			
+            Calendar cStart = now();
 			cStart.set(Calendar.HOUR_OF_DAY, 0);
 	        cStart.set(Calendar.MINUTE, 0);
 	        cStart.set(Calendar.SECOND, 0);
@@ -86,7 +90,11 @@ public class NewPagesWeek extends NewPages {
 	        	cStart.add(Calendar.DAY_OF_MONTH, -1);	        	
 	        }
 		}
-		
+
+        protected Calendar now() {
+            return NewPagesWeek.this.now();
+        }
+
 		@Override
         protected void addNewItem(String title, boolean deleted, Revision rev) throws IOException,
                 InvalidLineFormatException {
@@ -101,7 +109,6 @@ public class NewPagesWeek extends NewPages {
 	    	            if (includedPages != null) {
 	    	            	includedPages.add(title);
 	    	            }
-	    	            log.debug("ADD new line: \t"+element);
 	            		break;
 	            	}
 	            }	            
@@ -195,16 +202,17 @@ public class NewPagesWeek extends NewPages {
             InvalidLineFormatException, ArchiveUpdateFailure {
 		boolean updated = false;
 
+        // TODO: This page may be not existing - handle this.
 		String text = getOldText(wiki);
 		log.debug("old text retrieved");
 		if (!checkAllowBots(wiki, text)) {
 			return false;
 		}
-		
+
 		headerLastUsed = header;
     	footerLastUsed = footer;
     	middleLastUsed = middle;
-    	
+
 		WeekData data = (WeekData)getData(wiki);
         reportData.willUpdateNewPages();
 		for (Entry<String,Data> entry:data.days.entrySet()) {

@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
+import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.MockCatScanTools;
@@ -52,6 +53,7 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 
@@ -62,8 +64,16 @@ import javax.annotation.Nullable;
  * @see {@link org.wikipedia.nirvana.nirvanabot.NirvanaBotTest}
  */
 public class MockNirvanaBot extends NirvanaBot {
+    /**
+     * Logger to use in early working methods (before {@link
+     * org.wikipedia.nirvana.BasicBot#initLog} which is called from
+     * {@link org.wikipedia.nirvana.BasicBot#startWithConfig}).
+     */
+    private Logger tmpLog = Logger.getLogger("MockNirvanaBot");
     WikiService mockWikiService;
     MockNirvanaWiki mainWiki;
+
+    SystemTime mockSystemTime = new SystemTime();
 
     JSONObject mainWikiJson = null;
     JSONObject commonsWikiJson = null;
@@ -149,6 +159,18 @@ public class MockNirvanaBot extends NirvanaBot {
             if (jsonResponces != null) {
                 List<String> wikiToolsResponces = parseMultilineStringArray(jsonResponces);
                 MockCatScanTools.mockResponses(wikiToolsResponces);
+            }
+
+            if (jsonObject.containsKey("system_time")) {
+                final Calendar time = readTimestamp(jsonObject.get("system_time"));
+                Assert.assertNotNull(time);
+                tmpLog.info("[MOCK] Set current time to " +
+                        DateTools.printTimestamp(time.getTime()));
+                mockSystemTime = new SystemTime() {
+                    public Calendar now() {
+                        return (Calendar) time.clone();
+                    }
+                };
             }
 
             JSONArray jsonEdits = (JSONArray) jsonObject.get("expected_edits");
@@ -314,12 +336,29 @@ public class MockNirvanaBot extends NirvanaBot {
         return revisions;
     }
 
+    private Calendar readTimestamp(Object field) {
+        if (field instanceof Long || field instanceof Integer) {
+            long timestamp = field instanceof Long ? (Long) field : (Integer) field;
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(timestamp);
+            // May be first set time zone, and then time in millis?
+            c.setTimeZone(TimeZone.getTimeZone("UTC"));
+            return c;
+        } else if (field instanceof String) {
+            Calendar c = DateTools.parseWikiTimestampUTC((String) field);
+            Assert.assertNotNull("Failed to parse timestamp string: " + (String) field, c);
+            return c;
+        } else {
+            throw new IllegalStateException(
+                    "Unexpected type of timestamp item: " + field.getClass());
+        }
+    }
+
     private Revision parseRevision(MockNirvanaWiki wiki, JSONObject revisionJson) {
         long revid = (Long) revisionJson.get("revid");
-        long timestamp = (Long) revisionJson.get("timestamp");
-        Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(timestamp);
-        c.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Object timestampField = revisionJson.get("timestamp");
+        Assert.assertNotNull("'timestamp' item must not be null", timestampField);
+        Calendar timestamp = readTimestamp(timestampField);
         String title = (String) revisionJson.get("title");
         String summary = (String) revisionJson.get("summary");
         String user = (String) revisionJson.get("user");
@@ -328,7 +367,7 @@ public class MockNirvanaBot extends NirvanaBot {
         boolean rvnew = (Boolean) revisionJson.get("rvnew");
         int size = (int)(long)(Long) revisionJson.get("size");
         MockRevision r = wiki.new MockRevision(
-                revid, c, title, summary, user, minor, bot, rvnew, size);
+                revid, timestamp, title, summary, user, minor, bot, rvnew, size);
         if (revisionJson.containsKey("previous")) {
             r.setPrevious((Long) revisionJson.get("previous")); 
         }
@@ -409,6 +448,11 @@ public class MockNirvanaBot extends NirvanaBot {
             // Ignored, is not going to come here
         }
         return manager;
+    }
+
+    @Override
+    protected SystemTime initSystemTime() {
+        return mockSystemTime;
     }
 
     @Override

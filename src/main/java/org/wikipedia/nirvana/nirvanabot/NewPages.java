@@ -80,6 +80,7 @@ import javax.security.auth.login.LoginException;
 public class NewPages implements PortalModule{
     protected static final Logger sLog;
     protected final Logger log;
+    protected final SystemTime systemTime;
     protected final Localizer localizer;
 
 	private static final int WIKI_API_BUNCH_SIZE = 10;
@@ -191,10 +192,11 @@ public class NewPages implements PortalModule{
     	//GET_LAST_REV_BY_PAGE_NAME
     }
 
-	/**
-	 *  Constructor
-	 */
-    public NewPages(PortalParam param) {
+    /**
+     *  Constructs class instance using bot params.
+     */
+    public NewPages(PortalParam param, SystemTime systemTime) {
+        this.systemTime = systemTime;
         this.localizer = Localizer.getInstance();
         BotVariables.init();
         initStatics();
@@ -289,6 +291,10 @@ public class NewPages implements PortalModule{
         initialized = false;
     }
 
+    protected Calendar now() {
+        return systemTime.now();
+    }
+
     protected String getFormatString() {
     	return formatString;
     }
@@ -341,11 +347,11 @@ public class NewPages implements PortalModule{
 		}
 		return str;
 	}
-	
+
 	protected String substParams(String item, boolean constantOnly) {
 		if (item.isEmpty()) return item;
 		String portal = getPortalName();
-		Calendar c = Calendar.getInstance();
+        Calendar c = now();
         String date = dateTools.printDateDayMonthYearGenitive(c);
         String str = item
                 .replace(BotVariables.BOT, getCurrentUser())

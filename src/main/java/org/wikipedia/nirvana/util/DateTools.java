@@ -36,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import javax.annotation.Nullable;
 
@@ -72,8 +73,13 @@ public class DateTools {
     private final String[] months;
     private final String[] seasons;
 
+    public static String ISO_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS zzz";
+    private static final TimeZone utc = TimeZone.getTimeZone("UTC");
+    private static final SimpleDateFormat isoFormatter = new SimpleDateFormat(ISO_FORMAT);
+
     static {
         sLog = LogManager.getLogger(DateTools.class.getName());
+        isoFormatter.setTimeZone(utc);
     }
 
     private static final String[] MONAT_RU = {
@@ -241,7 +247,18 @@ public class DateTools {
         symbols.setMonths(monat);
         SimpleDateFormat sdf = new SimpleDateFormat("d MMMM yyyy", symbols);
         Date date = datetime.getTime();
+        sdf.setTimeZone(datetime.getTimeZone());
         return sdf.format(date);
+    }
+
+    /**
+     * Print date/time to timestamp string in UTC timezone.
+     *
+     * @param datetime Date instance.
+     * @return timestamp (UTC timezone).
+     */
+    public static String printTimestamp(Date datetime) {
+        return isoFormatter.format(datetime).toString();
     }
 
     /**
@@ -300,6 +317,7 @@ public class DateTools {
      * @param dateStr string with date to parse.
      * @return Calendar instance or null if failed to parse.
      */
+    @Deprecated
     @Nullable
     public static Calendar parseDate(String dateStr) {        
         Calendar c = null;
@@ -331,6 +349,30 @@ public class DateTools {
             }
         }
         return c;
+    }
+
+    /**
+     * Parse timestamp string in Mediawiki standard format: ("yyyy-MM-dd'T'HH:mm:ss'Z'").
+     * It is expected that the time string has a time in UTC zone.
+     * Returned Calendar instance will have UTC zone.
+     *
+     * @param timeString time string.
+     * @return Calendar time in UTC zone.
+     */
+    @Nullable
+    public static Calendar parseWikiTimestampUTC(String timeString) {
+        TimeZone utc = TimeZone.getTimeZone("UTC");
+        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        formatter.setTimeZone(utc);
+        try {
+            Calendar c = Calendar.getInstance();
+            c.setTimeZone(utc);
+            Date date = (Date) formatter.parse(timeString);
+            c.setTime(date);
+            return c;
+        } catch (ParseException e) {
+            return null;
+        }
     }
 
     /**
