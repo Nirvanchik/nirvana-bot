@@ -12,7 +12,7 @@
 <entry key="stat-settings-template">Участник:NirvanaBot/Параметры статистики</entry>
 <entry key="update-comment">Обновление статистики</entry>
 <entry key="default-comment">Обновление статистики</entry>
-<entry key="debug-mode">yes</entry>
+<entry key="debug-mode">no</entry>
 <entry key="task-list">no</entry>
 <entry key="task-list-file">statistic_task.txt</entry>
 </properties>
