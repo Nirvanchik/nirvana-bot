@@ -107,6 +107,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
@@ -238,10 +239,10 @@ public class NirvanaBot extends BasicBot{
 	private static String DISCUSSION_PAGES_SETTINGS_WIKI = null;
 	
 	private static int DEFAULT_NAMESPACE = 0;
-	
-	private static String DEFAULT_HEADER = null;
-	private static String DEFAULT_FOOTER = null;
-	private static String DEFAULT_MIDDLE = null;
+
+    private static String DEFAULT_HEADER = "";
+    private static String DEFAULT_FOOTER = "";
+    private static String DEFAULT_MIDDLE = "";
 	private static PortalParam.Deleted DEFAULT_DELETED_FLAG = PortalParam.Deleted.DONT_TOUCH;
 	private static int DEFAULT_RENAMED_FLAG = PortalParam.RENAMED_NEW;
 	private static int DEFAULT_PARSE_COUNT = -1;
@@ -287,6 +288,8 @@ public class NirvanaBot extends BasicBot{
     }
 
     static class NewPagesData {
+        String botSettingsTemplate;
+        String portalSettingsPage;
 		ArrayList<String> errors;
         PortalParam param;
 		PortalModule portalModule;
@@ -309,17 +312,26 @@ public class NirvanaBot extends BasicBot{
         FATAL
 	};
 
-	public static String getDefaultFooter() {
-		return DEFAULT_FOOTER;
-	}
-	
-	public static String getDefaultHeader() {
-		return DEFAULT_HEADER;
-	}
-	
-	public static String getDefaultMiddle() {
-		return DEFAULT_MIDDLE;
-	}
+    /**
+     * Global bot settings.
+     * Class used to provide read access to global bot settings for other classes.
+     */
+    public static class BotGlobalSettings {
+        @Nonnull
+        public String getDefaultFooter() {
+            return DEFAULT_FOOTER;
+        }
+
+        @Nonnull
+        public String getDefaultHeader() {
+            return DEFAULT_HEADER;
+        }
+
+        @Nonnull
+        public String getDefaultMiddle() {
+            return DEFAULT_MIDDLE;
+        }
+    }
 
     private static final String VERSION = "1.19";
 
@@ -860,6 +872,8 @@ public class NirvanaBot extends BasicBot{
     					log.info("validate portal settings OK");					
     					logPortalSettings(parameters);
     					NewPagesData data = new NewPagesData();
+                        data.botSettingsTemplate = newpagesTemplate;
+                        data.portalSettingsPage = portalName;
     					if (createPortalModule(parameters, data)) {
                             tryCount = data.param.tryCount;
                             if ((enabledTypes.contains(TYPE_ALL) ||
@@ -1342,31 +1356,34 @@ public class NirvanaBot extends BasicBot{
 			return true;
 		}
 
+        PageFormatter pageFormatter = new PageFormatter(param, data.botSettingsTemplate,
+                data.portalSettingsPage, new BotGlobalSettings(), wiki, systemTime);
+
         if (isTypeNewPages(type)) {
-            data.portalModule = new NewPages(param, systemTime);
+            data.portalModule = new NewPages(param, pageFormatter, systemTime);
 		} else if (isTypePages(type)) {
-            data.portalModule = new Pages(param, systemTime);
+            data.portalModule = new Pages(param, pageFormatter, systemTime);
         } else if (type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_CARD) ||
                 type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_CARD_OLD)) {
-            data.portalModule = new NewPagesWithImages(param, systemTime, commons,
+            data.portalModule = new NewPagesWithImages(param, pageFormatter, systemTime, commons,
                     new ImageFinderInCard(param.imageSearchTags));
         } else if (type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_TEXT) ||
                 type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_TEXT_OLD) ) {
-            data.portalModule = new NewPagesWithImages(param, systemTime, commons,
+            data.portalModule = new NewPagesWithImages(param, pageFormatter, systemTime, commons,
                     new ImageFinderInBody());
         } else if (type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES) ||
                 type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_OLD)) {
-            data.portalModule = new NewPagesWithImages(param, systemTime, commons,
+            data.portalModule = new NewPagesWithImages(param, pageFormatter, systemTime, commons,
                     new ImageFinderUniversal(param.imageSearchTags));
         } else if (type.equals(LIST_TYPE_NEW_PAGES_7_DAYS) ||
                 type.equals(LIST_TYPE_NEW_PAGES_7_DAYS_OLD)) {
-            data.portalModule = new NewPagesWeek(param, systemTime);
+            data.portalModule = new NewPagesWeek(param, pageFormatter, systemTime);
 		} else if (isTypeDiscussedPages(type)) {
 			if (DISCUSSION_PAGES_SETTINGS == null) {
                 String err = localizer.localize(ERROR_DISCUSSED_PAGES_SETTINGS_NOT_DEFINED);
                 data.errors.add(err);
 			} else {
-                data.portalModule = new DiscussedPages(param, systemTime,
+                data.portalModule = new DiscussedPages(param, pageFormatter, systemTime,
                         DISCUSSION_PAGES_SETTINGS);
 			}
 		} else {

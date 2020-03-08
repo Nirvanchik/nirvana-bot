@@ -31,7 +31,8 @@ import org.wikipedia.nirvana.localization.Localizer;
  */
 public class BotVariables {
     private static boolean initialized;
-    
+
+    public static final String PLACEHOLDER_KEY = "%(";
     public static String TITLE;
     public static String TEXT_WITH_TITLE;
     public static String DATE;

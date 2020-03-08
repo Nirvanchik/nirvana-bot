@@ -163,9 +163,9 @@ public class DiscussedPages extends Pages {
      * Constructs class instance using bot params and special {@link DiscussionPagesSettings}
      * settings. 
      */
-    public DiscussedPages(PortalParam param, SystemTime systemTime,
+    public DiscussedPages(PortalParam param, PageFormatter pageFormatter, SystemTime systemTime,
             DiscussionPagesSettings settings) {
-        super(param, systemTime);
+        super(param, pageFormatter, systemTime);
 		this.prefix = param.prefix;
 		this.settings = settings;
 		getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL;

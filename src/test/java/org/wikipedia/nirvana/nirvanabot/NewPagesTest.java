@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
+import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotGlobalSettings;
 import org.wikipedia.nirvana.nirvanabot.report.ReportItem;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
@@ -135,7 +136,10 @@ public class NewPagesTest {
         when(wiki.getTopRevision(anyString())).thenReturn(null);
         ReportItem reportData = Mockito.mock(ReportItem.class);
         PortalParam param = this.makeTestParam();
-        NewPages newPages = new NewPages(param, new SystemTime());
+        SystemTime systemTime = new SystemTime();
+        PageFormatter pageFormatter = new PageFormatter(param, "User:Bot1:Settings",
+                "Portal:PortalA/New Pages", new BotGlobalSettings(), wiki, systemTime);
+        NewPages newPages = new NewPages(param, pageFormatter, systemTime);
         //newPages.update(wiki, reportData, "comment");
     }
 }

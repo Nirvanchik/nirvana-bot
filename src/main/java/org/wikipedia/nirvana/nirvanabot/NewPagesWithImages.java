@@ -78,9 +78,9 @@ public class NewPagesWithImages extends NewPages {
      * Constructs class instanse using bot params, and special for this module additional things
      * like Commons wiki client and {@link ImageFinder} helper class.
      */
-    public NewPagesWithImages(PortalParam param, SystemTime systemTime, NirvanaWiki commons,
-            ImageFinder imageFinder) {
-        super(param, systemTime);
+    public NewPagesWithImages(PortalParam param, PageFormatter pageFormatter, SystemTime systemTime,
+            NirvanaWiki commons, ImageFinder imageFinder) {
+        super(param, pageFormatter, systemTime);
 		if(this.archiveSettings!=null) {
 			this.archiveSettings = null;
 		}
@@ -205,20 +205,9 @@ public class NewPagesWithImages extends NewPages {
 		if (true/*count < maxItems /*|| archive!=null*/) { 
 			String oldText = text;
 			String[] oldItems;
-			/*if(archive!=null)*/ /*archiveItems = new ArrayList<String>();*/
+            oldText = pageFormatter.stripBotsAllowString(oldText);
+            oldText = pageFormatter.stripDecoration(oldText);
 			oldText = oldText.trim();
-		    	    
-		    if (!header.isEmpty() && oldText.startsWith(header))
-		    {
-		        oldText = oldText.substring(header.length());
-		    }
-            if (BasicBot.DEBUG_BUILD) {
-                FileTools.dump(footer, this.pageName + ".footer.txt");
-            }
-		    if (!footer.isEmpty() && oldText.endsWith(footer))
-		    {
-		        oldText = oldText.substring(0, oldText.length() - footer.length());
-		    }
 		    oldItems = oldText.split(delimeter.replace("|", "\\|"));
 		    if(delimeter.equals("\n")) log.debug("delimeter is \\n");
 		    else if(delimeter.equals("\r")) log.debug("delimeter is \\r");
@@ -254,9 +243,9 @@ public class NewPagesWithImages extends NewPages {
 		        }
 		    }
 		}
-		
+
 		Data d = new Data();
-		d.newText = header + StringUtils.join(subset.toArray(),this.delimeter) + footer;
+        d.newText = pageFormatter.formatPage(subset);
 		if(archive!=null && archiveItems!=null && archiveItems.size()>0) {
 			d.archiveText = StringUtils.join(archiveItems.toArray(),delimeter) + "\n";
 			//if(archiveSettings!=null)

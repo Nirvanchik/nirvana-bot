@@ -30,6 +30,8 @@ import org.wikipedia.nirvana.wiki.CatScanTools;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author kin
  *
@@ -49,9 +51,12 @@ public class PortalParam {
 	public int maxItems;
 	public String format;
 	public String delimeter;
-	public String header;
-	public String footer;
-	public String middle;
+    @Nonnull
+    public String header = "";
+    @Nonnull
+    public String footer = "";
+    @Nonnull
+    public String middle = "";
 	public boolean minor;
 	public boolean bot;
 	public boolean fastMode;

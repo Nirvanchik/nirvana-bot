@@ -1,7 +1,7 @@
 /**
- *  @(#)NewPages.java 14.12.2014
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
- *    
+ *  @(#)NewPages.java
+ *  Copyright © 2011 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -25,7 +25,6 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveFactory;
@@ -44,7 +43,6 @@ import org.wikipedia.nirvana.nirvanabot.report.ReportItem;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFilter;
 import org.wikipedia.nirvana.nirvanabot.templates.TemplateFinder;
 import org.wikipedia.nirvana.util.DateTools;
-import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.util.XmlTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
@@ -80,6 +78,7 @@ import javax.security.auth.login.LoginException;
 public class NewPages implements PortalModule{
     protected static final Logger sLog;
     protected final Logger log;
+    protected final PageFormatter pageFormatter;
     protected final SystemTime systemTime;
     protected final Localizer localizer;
 
@@ -123,9 +122,6 @@ public class NewPages implements PortalModule{
     protected ArchiveSettings archiveSettings;
     protected String format;
     protected String formatString;
-    protected String header;
-    protected String footer;
-    protected String middle;
     protected int maxItems;
     protected int hours;
     protected CatScanTools.Service service;
@@ -146,11 +142,7 @@ public class NewPages implements PortalModule{
 
     protected PortalParam.Deleted deletedFlag;
     protected int renamedFlag;
-    
-	protected String headerLastUsed;
-	protected String footerLastUsed;
-	protected String middleLastUsed;
-	
+
     protected Map<String,String> pageLists;
     protected Map<String,String> pageListsToIgnore;
 
@@ -195,7 +187,8 @@ public class NewPages implements PortalModule{
     /**
      *  Constructs class instance using bot params.
      */
-    public NewPages(PortalParam param, SystemTime systemTime) {
+    public NewPages(PortalParam param, PageFormatter pageFormatter, SystemTime systemTime) {
+        this.pageFormatter = pageFormatter;
         this.systemTime = systemTime;
         this.localizer = Localizer.getInstance();
         BotVariables.init();
@@ -229,15 +222,6 @@ public class NewPages implements PortalModule{
     	//this.Module = module;
     	this.delimeter = param.delimeter;
     	this.depth = param.depth;
-    	this.header = param.header;
-    	if(header==null) this.header = "";
-    	this.headerLastUsed = this.header;
-    	this.footer = param.footer;
-    	if(footer==null) this.footer = "";
-    	this.footerLastUsed = this.footer;
-    	this.middle = param.middle;
-    	if(middle==null) this.middle = "";
-    	this.middleLastUsed = this.middle;
     	this.namespace = param.ns;
     	this.minor = param.minor;
     	this.bot = param.bot;
@@ -335,53 +319,12 @@ public class NewPages implements PortalModule{
 		}
 	}
 			
-	private String getPortalName() {
-		String str = pageName;
-		int colon = str.indexOf(':');
-		if (colon>=0) {
-			str = str.substring(colon+1);
-		}
-		int slash = str.indexOf('/');
-		if (slash > 0) {
-			str = str.substring(slash);
-		}
-		return str;
-	}
-
-	protected String substParams(String item, boolean constantOnly) {
-		if (item.isEmpty()) return item;
-		String portal = getPortalName();
-        Calendar c = now();
-        String date = dateTools.printDateDayMonthYearGenitive(c);
-        String str = item
-                .replace(BotVariables.BOT, getCurrentUser())
-                .replace(BotVariables.PROJECT, portal)
-                .replace(BotVariables.PORTAL, portal)
-                .replace(BotVariables.PAGE, pageName);
-		if (archiveSettings != null) {
-    		String archive = archiveSettings.getArchiveForDate(c);
-    		if (archive != null) {
-                str = str.replace(BotVariables.ARCHIVE, archive);
-    		}
-		}
-		if (!constantOnly) {
-            str = str.replace(BotVariables.DATE, date);
-		}
-		return str;
-	}
-	
 	protected class NewPagesBuffer {
 		protected NirvanaWiki wiki;
-		protected String header;
-		protected String middle;
-		protected String footer;
 		protected List<String> subset = new ArrayList<String>();
 		List<String> includedPages = new ArrayList<String>();
 		public NewPagesBuffer(NirvanaWiki wiki) {
 			this.wiki = wiki;
-			this.header = substParams(NewPages.this.header, false);
-			this.middle = NewPages.this.middle;
-			this.footer = substParams(NewPages.this.footer, false);
 		}
 		
 		public boolean contains(String item) {
@@ -410,24 +353,11 @@ public class NewPages implements PortalModule{
 	    	}
 			return false;
 		}
-		
-		public String getNewText(String bots) {
-			String text;
-			if (middle.isEmpty()) {
-				text = bots + header + StringUtils.join(subset.toArray(), delimeter) + footer;
-			} else if (subset.size()>1) {
-				int m = (subset.size()+1)/2; // 2->1, 3->2, 4->2
-				text = bots + header + 
-						StringUtils.join(subset.subList(0, m), delimeter) + 
-						middle +
-						StringUtils.join(subset.subList(m, subset.size()), delimeter) +
-						footer;
-			} else {
-				text = bots + header + StringUtils.join(subset, delimeter) + middle + footer;
-			}
-			return text;
-		}
-		
+
+        public String getNewText() {
+            return pageFormatter.formatPage(subset);
+        }
+
 		protected void addOldItem(String item) {
 			subset.add(item);
 		}
@@ -724,58 +654,6 @@ public class NewPages implements PortalModule{
 		return list;
 	}
 	
-	protected String trimRight(String text, String right) {
-		String textTrimmed = text;
-		if (!right.isEmpty() && textTrimmed.endsWith(right)) {				
-			textTrimmed = text.substring(0, textTrimmed.length() - right.length());
-			textTrimmed = StringTools.trimRight(textTrimmed);
-		} else {
-			textTrimmed = StringTools.trimRight(textTrimmed);
-			if (!right.isEmpty() && textTrimmed.endsWith(right)) {				
-				textTrimmed = text.substring(0, textTrimmed.length() - right.length());
-				textTrimmed = StringTools.trimRight(textTrimmed);
-			}
-		} 
-		return textTrimmed;
-	}
-	
-	protected String trimLeft(String text, String left) {
-		String textTrimmed = text;
-		if (!left.isEmpty() && textTrimmed.startsWith(left))
-	    {
-			textTrimmed = text.substring(left.length());
-			textTrimmed = StringTools.trimLeft(textTrimmed);
-	    } else {
-	    	textTrimmed = StringTools.trimLeft(textTrimmed);
-	    	if (!left.isEmpty() && textTrimmed.startsWith(left))
-		    {
-	    		textTrimmed = textTrimmed.substring(left.length());
-	    		textTrimmed = StringTools.trimLeft(textTrimmed);
-		    }
-	    }
-		return textTrimmed;
-	}
-	
-	protected String trimMiddle(String text, String middle) {
-		String textTrimmed = text;
-		if(!middle.isEmpty()) {
-	    	if (textTrimmed.contains(middle)) {
-	    		textTrimmed = textTrimmed.replace(middle, delimeter);
-	    	} else if(!middle.trim().isEmpty() && textTrimmed.contains(middle.trim())) {
-	    		textTrimmed = textTrimmed.replace(middle.trim(), delimeter);
-	    	}
-	    }
-		return textTrimmed;
-	}
-	
-	protected String extractBotsAllowString(String text, String botsAllowString) {
-		if (botsAllowString != null) {
-			int pos = text.indexOf(botsAllowString);
-			text = text.substring(0, pos) + text.substring(pos+botsAllowString.length());
-		}
-		return text;
-	}
-	
 	public class PageInfo {
 		String item;
 		String title;
@@ -816,17 +694,9 @@ public class NewPages implements PortalModule{
 		String[] oldItems;
 		
 		// remove {{bots|allow=}} record
-		String botsAllowString = NirvanaWiki.getAllowBotsString(text);
-		
 		log.debug("analyzing old text -> trancate header/footer/middle");
-		oldText = extractBotsAllowString(oldText, botsAllowString);
-		oldText = trimRight(oldText, footerLastUsed);		    	    
-		oldText = trimLeft(oldText, headerLastUsed);	
-		oldText = trimMiddle(oldText, middleLastUsed);
-
-        if (BasicBot.DEBUG_BUILD) {
-            FileTools.dump(footer, this.pageName + ".footer.txt");
-        }
+        oldText = pageFormatter.stripBotsAllowString(oldText);
+        oldText = pageFormatter.stripDecoration(oldText);
 
 	    oldItems = StringUtils.splitByWholeSeparator(oldText, delimeter); // removes empty items
 	    if(delimeter.equals("\n")) log.debug("delimeter is \\n");
@@ -884,13 +754,9 @@ public class NewPages implements PortalModule{
         	}
         	d.archiveCount++;
 	    }
-	    log.debug("bots allow string: "+botsAllowString);
-		if (!botsAllowString.isEmpty()) {
-			botsAllowString = botsAllowString+"\n";
-		} 
-		d.newText = buffer.getNewText(botsAllowString);
+        d.newText = buffer.getNewText();
 	}
-	
+
 	protected NewPagesBuffer createPagesBuffer(NirvanaWiki wiki) {
 		return new NewPagesBuffer(wiki);
 	}
@@ -1007,7 +873,7 @@ public class NewPages implements PortalModule{
 			return false;
 		}
 
-		getHeaderFooterChanges(wiki, reportData.template, reportData.portal);
+        pageFormatter.getHeaderFooterChanges();
 
 		Data d = getData(wiki, text);
 
@@ -1073,62 +939,6 @@ public class NewPages implements PortalModule{
     		Thread.sleep(NirvanaBot.UPDATE_PAUSE);
     	}
 	}
-	
-	/**
-	 * @throws IOException 
-     * 
-     */
-    private void getHeaderFooterChanges(NirvanaWiki wiki, String template, String portalSettingsPage) throws IOException {
-	    Revision rNewPages = wiki.getTopRevision(pageName);
-	    if(rNewPages == null) {
-	    	return;
-	    }
-	    
-        // TODO: WTF we put now() as an earliest date?
-	    Revision []revs = wiki.getPageHistory(portalSettingsPage, Calendar.getInstance(), rNewPages.getTimestamp());
-	    if(revs.length==0) {
-	    	return;
-	    }
-	    
-	    Revision r = revs[revs.length-1].getPrevious();
-	    
-	    if(r==null) {
-	    	return;
-	    }
-	    // get last used header/footer
-	    log.info("portal params were changed after last use");
-	    
-	    String settingsText = r.getText();
-	    Map<String, String> options = new HashMap<String,String>();
-	    String userNamespace = wiki.namespaceIdentifier(Wiki.USER_NAMESPACE);
-        if (BasicBot.tryParseTemplate(template, userNamespace, settingsText, options)) {
-	    	headerLastUsed = NirvanaBot.getDefaultHeader();
-	    	footerLastUsed = NirvanaBot.getDefaultFooter();
-	    	middleLastUsed = NirvanaBot.getDefaultMiddle();
-            PortalConfig portalConfig = new PortalConfig(options);
-            if (portalConfig.hasKey(PortalConfig.KEY_HEADER)) {
-                headerLastUsed = portalConfig.getUnescaped(PortalConfig.KEY_HEADER);
-			}
-            if (portalConfig.hasKey(PortalConfig.KEY_FOOTER)) {
-                footerLastUsed = portalConfig.getUnescaped(PortalConfig.KEY_FOOTER);
-			}
-            if (portalConfig.hasKey(PortalConfig.KEY_MIDDLE)) {
-                middleLastUsed = portalConfig.getUnescaped(PortalConfig.KEY_MIDDLE);
-			}
-
-			if(headerLastUsed == null) {
-				headerLastUsed = "";
-			}
-
-			if(footerLastUsed == null) {
-				footerLastUsed = "";
-			}
-
-			if(middleLastUsed == null) {
-				middleLastUsed = "";
-			}
-	    }
-    }
 
     public void updateArchive(NirvanaWiki wiki, Data d) throws LoginException, IOException {
     	if(archiveSettings==null || archiveSettings.isSimple()) {	

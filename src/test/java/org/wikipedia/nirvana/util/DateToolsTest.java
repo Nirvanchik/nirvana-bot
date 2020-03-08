@@ -56,6 +56,7 @@ public class DateToolsTest {
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
         TestLocalizationManager.reset();
+        MockDateTools.reset();
     }
 
     @Before

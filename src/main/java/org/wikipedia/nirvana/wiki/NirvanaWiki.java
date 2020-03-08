@@ -637,13 +637,13 @@ public class NirvanaWiki extends Wiki {
      * @param text Wiki text of the page.
      * @return Allow-bots string or <code>null</code>.
      */
+    @Nullable
     public static String getAllowBotsString(String text) {
-        String nobots = "";
         Matcher m = ALLOWBOTS_RE.matcher(text);
         if (m.find()) {
-            nobots = m.group(1);
+            return m.group(1);
         }
-        return nobots;
+        return null;
     }
 
     /**

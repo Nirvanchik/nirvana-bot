@@ -35,8 +35,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.security.auth.login.LoginException;
 
@@ -59,8 +57,8 @@ public class NewPagesWeek extends NewPages {
     /**
      * Constructs class instance using bot params.
      */
-    public NewPagesWeek(PortalParam param, SystemTime systemTime) {
-        super(param, systemTime);
+    public NewPagesWeek(PortalParam param, PageFormatter pageFormatter, SystemTime systemTime) {
+        super(param, pageFormatter, systemTime);
 		UPDATE_FROM_OLD = false;
         PAGE_NAME_FORMAT = "%1$s/" + localizer.localize("День") + " %2$d";
 	}
@@ -116,28 +114,6 @@ public class NewPagesWeek extends NewPages {
 		}
 	};
 	
-	protected String makePatternString(String src) {
-		String pattern = src;
-		pattern = substParams(src, true);
-		pattern = pattern.replace("{", "\\{")
-				.replace("}", "\\}")
-				.replace("|", "\\|")
-                .replace(BotVariables.DATE, "\\d{1,2}\\s[\\p{InCyrillic}\\w]+\\s\\d{4}");
-		return pattern;
-	}
-	
-	protected String trimLeft(String text, String left) {
-		String textTrimmed = text;
-		if (!left.isEmpty()) {
-			Pattern p = Pattern.compile("^\\s*"+makePatternString(left));
-			Matcher m = p.matcher(textTrimmed);
-			if (m.find()) {
-				textTrimmed = textTrimmed.substring(m.group().length());
-			}			
-	    }
-		return textTrimmed;
-	}
-
     public Data getData(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError,
             BotFatalError, InvalidLineFormatException {
 		log.info("Processing data for [[" + this.pageName+"]]");		
@@ -209,9 +185,7 @@ public class NewPagesWeek extends NewPages {
 			return false;
 		}
 
-		headerLastUsed = header;
-    	footerLastUsed = footer;
-    	middleLastUsed = middle;
+        pageFormatter.getHeaderFooterChanges();
 
 		WeekData data = (WeekData)getData(wiki);
         reportData.willUpdateNewPages();

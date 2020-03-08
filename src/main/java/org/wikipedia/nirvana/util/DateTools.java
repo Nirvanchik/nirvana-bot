@@ -156,7 +156,7 @@ public class DateTools {
      * @param language language to localize strings.
      */
     public static void init(String language) {
-        assert sInstance == null;
+        assert sInstance == null : "DateTools is already initialized";
 
         sInstance = new DateTools(language);
     }

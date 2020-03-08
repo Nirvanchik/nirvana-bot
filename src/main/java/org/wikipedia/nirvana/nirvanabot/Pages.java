@@ -42,8 +42,8 @@ public class Pages extends NewPages {
     /**
      * Constructs class instance.
      */
-    public Pages(PortalParam param, SystemTime systemTime) {
-        super(param, systemTime);
+    public Pages(PortalParam param, PageFormatter pageFormatter, SystemTime systemTime) {
+        super(param, pageFormatter, systemTime);
 
 		if(this.archiveSettings!=null) {
 			this.archiveSettings = null;

@@ -93,6 +93,7 @@ public abstract class BasicBot {
     public static final boolean DEBUG_BUILD = false;
     public static final String DEFAULT_DUMP_DIR = "dump";
 
+    // TODO: Make it non-static.
     protected static Logger log = null;
 
     protected static Properties properties = null;
@@ -407,6 +408,10 @@ public abstract class BasicBot {
         log = LogManager.getLogger(this.getClass().getName());
 	}
 
+    public static void initLogFromTest() {
+        log = LogManager.getLogger(BasicBot.class.getName());
+    }
+
 	protected void logPortalSettings(Map<String, String> parameters) {
 		Set<Entry<String,String>> set = parameters.entrySet();
 		Iterator<Entry<String,String>> it = set.iterator();
@@ -435,6 +440,7 @@ public abstract class BasicBot {
                                            @Nullable String userNamespaceLoc,
                                            String text,
                                            Map<String, String> parameters) {
+        // TODO: Remove logging out of here as it may be not initialized
         log.debug("Bot settings parsing started for template: {}", template);
         log.debug("Text (truncated to 100): {}", StringTools.trancateTo(text, 100));
         String templateRe = getUserTemplateRe(template, userNamespaceLoc);
