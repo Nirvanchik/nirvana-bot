@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -31,6 +32,11 @@ import javax.annotation.Nullable;
  */
 public class StringTools {
     public static final String DOUBLE_QUOTE = "\"";
+
+    /**
+     * Pattern to match white space characters. 
+     */
+    public static final Pattern SPACE_RE = Pattern.compile("^\\s+$");
 
     /**
      * Trims double quotes if incoming string is quoted.
@@ -96,6 +102,14 @@ public class StringTools {
      */
     public static String trimLeft(String str) {
         return str.replaceAll("^\\s+", "");
+    }
+
+    /**
+     * Returns "true" if string contains only whitespace characters (SPACE, TAB, CR, LF). 
+     */
+    public static boolean isSpace(String str) {
+        if (str.isEmpty()) return true;
+        return SPACE_RE.matcher(str).matches();
     }
 
     /**

@@ -55,6 +55,8 @@ import javax.annotation.Nullable;
  * - replace placeholders in pages & footer content if required.
  */
 public class PageFormatter {
+    private static final int MAX_TRASH_SPACE_LENGTH = 10;
+
     protected final Logger log;
     // Main params of this class
     @Nonnull
@@ -245,19 +247,18 @@ public class PageFormatter {
         result = trimMiddle(result, middleLastUsed);
         return result;
     }
-    
+
     protected String trimRight(String text, String right) {
+        if (right.isEmpty()) return StringTools.trimRight(text);
         String textTrimmed = text;
-        if (!right.isEmpty() && textTrimmed.endsWith(right)) {                
-            textTrimmed = text.substring(0, textTrimmed.length() - right.length());
-            textTrimmed = StringTools.trimRight(textTrimmed);
-        } else {
-            textTrimmed = StringTools.trimRight(textTrimmed);
-            if (!right.isEmpty() && textTrimmed.endsWith(right)) {                
-                textTrimmed = text.substring(0, textTrimmed.length() - right.length());
+        int index = textTrimmed.lastIndexOf(right);
+        if (index >= 0 &&
+                (text.length() - index - right.length() <= MAX_TRASH_SPACE_LENGTH)) {
+            if (StringTools.isSpace(text.substring(index + right.length()))) {
+                textTrimmed = text.substring(0, index);
                 textTrimmed = StringTools.trimRight(textTrimmed);
             }
-        } 
+        }
         return textTrimmed;
     }
 
@@ -268,26 +269,24 @@ public class PageFormatter {
             Matcher m = p.matcher(textTrimmed);
             if (m.find()) {
                 textTrimmed = textTrimmed.substring(m.group().length());
-            }            
+            }
         }
         return textTrimmed;
     }
-    
+
     protected String trimLeft(String text, String left) {
+        if (left.isEmpty()) return StringTools.trimLeft(text);
         String textTrimmed = text;
-        if (!left.isEmpty() && textTrimmed.startsWith(left)) {
-            textTrimmed = text.substring(left.length());
-            textTrimmed = StringTools.trimLeft(textTrimmed);
-        } else {
-            textTrimmed = StringTools.trimLeft(textTrimmed);
-            if (!left.isEmpty() && textTrimmed.startsWith(left)) {
-                textTrimmed = textTrimmed.substring(left.length());
+        int index = textTrimmed.indexOf(left);
+        if (index >= 0 && index <= MAX_TRASH_SPACE_LENGTH) {
+            if (StringTools.isSpace(textTrimmed.substring(0, index))) {
+                textTrimmed = textTrimmed.substring(index + left.length());
                 textTrimmed = StringTools.trimLeft(textTrimmed);
             }
         }
         return textTrimmed;
     }
-    
+
     protected String trimMiddle(String text, String middle) {
         String textTrimmed = text;
         if (!middle.isEmpty()) {
@@ -299,7 +298,7 @@ public class PageFormatter {
         }
         return textTrimmed;
     }
-    
+
     protected String makePatternString(String src) {
         String pattern = src;
         pattern = substParams(src, true);

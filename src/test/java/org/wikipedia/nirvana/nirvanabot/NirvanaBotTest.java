@@ -642,10 +642,8 @@ public class NirvanaBotTest {
      *
      * PORTAL SETTINGS:
      *   type = "новые статьи"
-     *   header = " === Новые статьи на тему Собаки === \n"
+     *   header = \n === Новые статьи на тему Собаки === \n
      */
-    // TODO: Fix this test. See NewPages#trimLeft() and friends.
-    @Ignore
     @Test
     public void new_pages_update_header_with_whitespace_remove_whitespace() throws TestError {
         run("028_new_pages_update_header_with_whitespace_remove_whitespace.js");

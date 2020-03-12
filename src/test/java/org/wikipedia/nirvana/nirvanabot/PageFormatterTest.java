@@ -370,7 +370,6 @@ public class PageFormatterTest {
         Assert.assertEquals(PAGELIST_MANY, result);
     }
 
-    @Ignore("Fix me")
     @Test
     public void testStripDecoration_headerEmptySpacePageEmptySpace() {
         params.header = "\n{{HEADER}}\n";
@@ -437,7 +436,6 @@ public class PageFormatterTest {
         Assert.assertEquals(PAGELIST_MANY, result);
     }
 
-    @Ignore("Fix me")
     @Test
     public void testStripDecoration_footerEmptySpacePageEmptySpace() {
         params.footer = "\n{{FOOTER}}\n";

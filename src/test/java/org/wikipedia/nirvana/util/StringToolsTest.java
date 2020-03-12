@@ -101,4 +101,17 @@ public class StringToolsTest {
                 StringTools.addPrefixToList(list, "ho"));
     }
 
+    @Test
+    public void isSpace() {
+        Assert.assertTrue(StringTools.isSpace("\n"));
+        Assert.assertTrue(StringTools.isSpace("\r"));
+        Assert.assertTrue(StringTools.isSpace("\t"));
+        Assert.assertTrue(StringTools.isSpace(" "));
+        Assert.assertTrue(StringTools.isSpace("\r\n \t   \n"));
+        Assert.assertTrue(StringTools.isSpace(""));
+
+        Assert.assertFalse(StringTools.isSpace("\rA"));
+        Assert.assertFalse(StringTools.isSpace("   ."));
+        Assert.assertFalse(StringTools.isSpace("-"));
+    }
 }
