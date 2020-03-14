@@ -276,6 +276,7 @@ public class NirvanaBot extends BasicBot{
     private LocalizationManager localizationManager;
     private Localizer localizer;
     private SystemTime systemTime;
+    private String cacheDir;
 
     /**
      * Set default try count.
@@ -290,6 +291,7 @@ public class NirvanaBot extends BasicBot{
     static class NewPagesData {
         String botSettingsTemplate;
         String portalSettingsPage;
+        String portalSettingsText;
 		ArrayList<String> errors;
         PortalParam param;
 		PortalModule portalModule;
@@ -664,7 +666,7 @@ public class NirvanaBot extends BasicBot{
     }
 
     protected void go() throws InterruptedException, BotFatalError {
-        String cacheDir = outDir + "/" + "cache";
+        cacheDir = outDir + "/" + "cache";
 
         systemTime = initSystemTime();
         long startMillis = getTimeInMillis();
@@ -874,6 +876,7 @@ public class NirvanaBot extends BasicBot{
     					NewPagesData data = new NewPagesData();
                         data.botSettingsTemplate = newpagesTemplate;
                         data.portalSettingsPage = portalName;
+                        data.portalSettingsText = portalSettingsText;
     					if (createPortalModule(parameters, data)) {
                             tryCount = data.param.tryCount;
                             if ((enabledTypes.contains(TYPE_ALL) ||
@@ -1356,8 +1359,10 @@ public class NirvanaBot extends BasicBot{
 			return true;
 		}
 
-        PageFormatter pageFormatter = new PageFormatter(param, data.botSettingsTemplate,
-                data.portalSettingsPage, new BotGlobalSettings(), wiki, systemTime);
+        // TODO: Too many data in constructor. May be use some kind of Context class?
+        PageFormatter pageFormatter = new PageFormatter(param,
+                data.botSettingsTemplate, data.portalSettingsPage, data.portalSettingsText,
+                new BotGlobalSettings(), wiki, systemTime, cacheDir);
 
         if (isTypeNewPages(type)) {
             data.portalModule = new NewPages(param, pageFormatter, systemTime);

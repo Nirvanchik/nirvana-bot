@@ -29,6 +29,7 @@ import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotGlobalSettings;
 import org.wikipedia.nirvana.util.DateTools;
+import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
@@ -36,11 +37,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,6 +59,7 @@ import javax.annotation.Nullable;
  */
 public class PageFormatter {
     private static final int MAX_TRASH_SPACE_LENGTH = 10;
+    private static final long ROTTEN_SETTINGS_TIMEOUT = TimeUnit.DAYS.toMillis(30);
 
     protected final Logger log;
     // Main params of this class
@@ -76,21 +80,28 @@ public class PageFormatter {
     protected final ArchiveSettings archiveSettings;
     protected final String botSettingsTemplate;
     protected final String portalSettingsPage;
+    protected final String portalSettingsText;
     
     // Data sources
     protected final BotGlobalSettings globalSettings;
     protected final NirvanaWiki wiki;
     protected final SystemTime systemTime;
     protected final DateTools dateTools;
-    
+
     @Nullable
     protected String botsAllowString;
+
+    protected String cacheDir;
+    protected File cachedSettingsFile;
+    protected File pageUpdateStamp;
 
     /**
      * Constructs page formatter object.
      */
-    public PageFormatter(PortalParam params, String botSettingsTemplate, String portalSettingsPage,
-            BotGlobalSettings globalSettings, NirvanaWiki wiki, SystemTime systemTime) {
+    public PageFormatter(PortalParam params,
+            String botSettingsTemplate, String portalSettingsPage, String portalSettingsText,
+            BotGlobalSettings globalSettings, NirvanaWiki wiki, SystemTime systemTime,
+            String cacheDir) {
         this.delimeter = params.delimeter;
         this.header = params.header == null ? "" : params.header;
         this.footer = params.footer == null ? "" : params.footer;
@@ -103,14 +114,29 @@ public class PageFormatter {
         this.archiveSettings = params.archSettings;
         this.botSettingsTemplate = botSettingsTemplate;
         this.portalSettingsPage = portalSettingsPage;
+        this.portalSettingsText = portalSettingsText;
 
         this.globalSettings = globalSettings;
         this.wiki = wiki;
         this.systemTime = systemTime;
         this.dateTools = DateTools.getInstance();
-        
+        this.cacheDir = cacheDir + "/portal_settings";
+
+        this.cachedSettingsFile = new File(
+                this.cacheDir + "/" + FileTools.normalizeFileName(portalSettingsPage) + ".txt");
+        this.pageUpdateStamp = new File(
+                this.cacheDir + "/" + FileTools.normalizeFileName(pageName) + ".updated.txt");
+
         log = LogManager.getLogger(this.getClass().getName());
         substPlaceholdersIfNeed();
+        ensureCacheDirExists();
+    }
+
+    private void ensureCacheDirExists() {
+        File folder = new File(cacheDir);
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
     }
 
     /**
@@ -121,6 +147,34 @@ public class PageFormatter {
         footer = substAllParams(footer);
     }
 
+    private long now() {
+        return systemTime.now().getTimeInMillis();
+    }
+
+    /**
+     * Check if portal settings was changed after last portal page update according to cached
+     * information. This is used to minimize Mediawiki calls count ({@link
+     * Wiki#getTopRevision(String)}, {@link
+     * Wiki#getPageHistory(String, Calendar, Calendar, boolean)}) in
+     * {@link #getHeaderFooterChanges()} and speed up bot as a result.
+     * Backed by {@link #notifyNewPagesUpdated()}.
+     */
+    protected boolean portalSettingsChangedAccordingToCache() throws IOException {
+        if (cachedSettingsFile.exists() && pageUpdateStamp.exists()) {
+            if (cachedSettingsFile.lastModified() > now() - ROTTEN_SETTINGS_TIMEOUT &&
+                    cachedSettingsFile.lastModified() < pageUpdateStamp.lastModified()) {
+                String oldSettings = FileTools.readWikiFile(cachedSettingsFile);
+                if (oldSettings.trim().equals(portalSettingsText.trim())) {
+                    return false;
+                }
+            }
+        }
+        FileTools.writeFile(portalSettingsText, cachedSettingsFile);
+        // Not needed but useful for testing
+        cachedSettingsFile.setLastModified(now());
+        return true;
+    }
+
     /**
      * Prepares header/footer/middle values intended for subtraction from old page content.
      * The main point here is to refresh that values with older header/footer/middle content in the
@@ -129,6 +183,10 @@ public class PageFormatter {
      */
     public void getHeaderFooterChanges()
             throws IOException {
+        if (!portalSettingsChangedAccordingToCache()) {
+            log.info("Portal settings not changed after last update");
+            return;
+        }
         Revision revNewPages = wiki.getTopRevision(pageName);
         if (revNewPages == null) {
             // New pages page is not yet created, this is the first update.
@@ -164,6 +222,18 @@ public class PageFormatter {
             middleLastUsed = portalConfig.getUnescaped(PortalConfig.KEY_MIDDLE,
                     globalSettings.getDefaultMiddle());
         }
+    }
+
+    /**
+     * Notify about portal page update.
+     * Must be called just after real updating of portal page. Used for {@link
+     * getHeaderFooterChanges logic}.
+     */
+    public void notifyNewPagesUpdated() throws IOException {
+        if (!pageUpdateStamp.exists()) {
+            FileTools.writeFile("x", pageUpdateStamp);
+        }
+        pageUpdateStamp.setLastModified(now());
     }
 
     protected String stripBotsAllowString(String text) {

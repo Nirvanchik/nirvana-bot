@@ -26,6 +26,7 @@ package org.wikipedia.nirvana.nirvanabot;
 import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import org.wikipedia.Wiki;
@@ -36,6 +37,7 @@ import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotGlobalSettings;
 import org.wikipedia.nirvana.util.DateTools;
+import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.MockDateTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
@@ -45,9 +47,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -60,6 +65,7 @@ import java.util.List;
 public class PageFormatterTest {
     public static final String BOT_SETTINGS_TEMPLATE = "User:Bot1:Template";
     public static final String PORTAL_SETTINGS_PAGE = "Portal:A/New pages/Settings";
+    public static final String PORTAL_SETTINGS_TEXT = "{{User:Bot1:Template|param1=value1}}";
     public static final String HEADER = "{{HEADER}}\n";
     public static final String HEADER_WITH_VARIABLE =
             "{{HEADER|bot=%(бот)|project=%(проект)|page=%(страница)|archive=%(архив)}}\n";
@@ -77,10 +83,36 @@ public class PageFormatterTest {
             "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" +
             "* [[Cat]]\n* [[Cow]]\n* [[Sheep]]";
 
+    @Rule
+    public TemporaryFolder tempDir = new TemporaryFolder();
+
+    private File cacheDir;
+
     PortalParam params;
     BotGlobalSettings globalSettings;
     NirvanaWiki wiki;
-    SystemTime mockSystemTime;
+    MockSystemTime mockSystemTime = new MockSystemTime();
+
+    static class MockSystemTime extends SystemTime {
+        private Calendar time;
+
+        public void setFromTimestamp(String timestamp) {
+            time = DateTools.parseWikiTimestampUTC(timestamp);
+        }
+
+        @Override
+        public Calendar now() {
+            return (Calendar) time.clone();
+        }
+
+        public void add1Day() {
+            time.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
+        public void add1Minute() {
+            time.add(Calendar.MINUTE, 1);
+        }
+    }
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -112,13 +144,12 @@ public class PageFormatterTest {
         when(user.getUsername()).thenReturn("Bot1");
         when(wiki.getCurrentUser()).thenReturn(user);
 
-        final Calendar time = DateTools.parseWikiTimestampUTC("2020-02-20T21:00:00Z");
-        Assert.assertNotNull(time);
-        mockSystemTime = new SystemTime() {
-            public Calendar now() {
-                return (Calendar) time.clone();
-            }
-        };
+        mockSystemTime.setFromTimestamp("2020-02-20T21:00:00Z");
+
+        File outDirDefult = tempDir.newFolder("tmp");
+        FileTools.setDefaultOut(outDirDefult.getPath());
+        FileTools.setDefaultEncoding(FileTools.UTF8);
+        cacheDir = tempDir.newFolder("cache");
     }
 
     @After
@@ -160,6 +191,12 @@ public class PageFormatterTest {
         when(wiki.getTopRevision(eq("Portal:A/New pages"))).thenReturn(r);
     }
 
+    private PageFormatter create() {
+        return new PageFormatter(params,
+                BOT_SETTINGS_TEMPLATE, PORTAL_SETTINGS_PAGE, PORTAL_SETTINGS_TEXT,
+                globalSettings, wiki, mockSystemTime, cacheDir.getPath());
+    }
+
     /**
      * Test method for {@link PageFormatter#substPlaceholdersIfNeed()}.
      */
@@ -167,8 +204,7 @@ public class PageFormatterTest {
     public void testSubstPlaceholders() {
         params.header = HEADER_WITH_VARIABLE;
         params.footer = FOOTER_WITH_VARIABLE;
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         formatter.substPlaceholdersIfNeed();
         String result = formatter.formatPage(ITEMS);
         String expected = "" +
@@ -186,8 +222,7 @@ public class PageFormatterTest {
     @Test
     public void testGetHeaderFooterChanges_noPage() throws IOException {
         withHeaderFooter();
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         mockNewPagesTopRevision(false);
         formatter.getHeaderFooterChanges();
         Assert.assertEquals(HEADER, formatter.headerLastUsed);
@@ -200,8 +235,7 @@ public class PageFormatterTest {
     @Test
     public void testGetHeaderFooterChanges_noLastChangesOfSettings() throws IOException {
         withHeaderFooter();
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         mockNewPagesTopRevision(true);
         when(wiki.getPageHistory(anyString(), anyObject(), anyObject()))
                 .thenReturn(new Wiki.Revision[] {});
@@ -211,13 +245,36 @@ public class PageFormatterTest {
     }
 
     /**
+     * Test method for {@link PageFormatter#portalSettingsChangedAccordingToCache()}.
+     */
+    @Test
+    public void doNotGoToWikiWhenSettingsNotChangedAccordingToCache() throws IOException {
+        withHeaderFooter();
+        PageFormatter formatter = create();
+        mockNewPagesTopRevision(true);
+        when(wiki.getPageHistory(anyString(), anyObject(), anyObject()))
+                .thenReturn(new Wiki.Revision[] {});
+
+        formatter.getHeaderFooterChanges();
+        mockSystemTime.add1Minute();
+        formatter.notifyNewPagesUpdated();
+
+        Assert.assertEquals(HEADER, formatter.headerLastUsed);
+        Assert.assertEquals(FOOTER, formatter.footerLastUsed);
+
+        mockSystemTime.add1Day();
+        formatter.getHeaderFooterChanges();
+        Mockito.verify(wiki, times(1)).getTopRevision(anyString());
+        Mockito.verify(wiki, times(1)).getPageHistory(anyString(), anyObject(), anyObject());
+    }
+
+    /**
      * Test method for {@link PageFormatter#getHeaderFooterChanges()}.
      */
     @Test
     public void testGetHeaderFooterChanges_settingsCreatedRecently() throws IOException {
         withHeaderFooter();
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         mockNewPagesTopRevision(true);
         Wiki.Revision revSettings = Mockito.mock(Wiki.Revision.class);
         when(revSettings.getPrevious()).thenReturn(null);
@@ -234,8 +291,7 @@ public class PageFormatterTest {
     @Test
     public void testGetHeaderFooterChanges_settingsUpdated() throws IOException {
         withHeaderFooter();
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         mockNewPagesTopRevision(true);
         Wiki.Revision revSettingsNew = Mockito.mock(Wiki.Revision.class);
         Wiki.Revision revSettingsOld = Mockito.mock(Wiki.Revision.class);
@@ -259,8 +315,7 @@ public class PageFormatterTest {
      */
     @Test
     public void testStripBotsAllowString() {
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String oldText = "\n{{Bots|allow=Bot1}}\n* [[Apple]]\n* [[Potato]]";
         oldText = formatter.stripBotsAllowString(oldText);
         String expected = "\n\n* [[Apple]]\n* [[Potato]]";
@@ -276,8 +331,7 @@ public class PageFormatterTest {
      */
     @Test
     public void formatPage() {
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String result = formatter.formatPage(ITEMS);
         String expected = "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]";
         Assert.assertEquals(expected, result);
@@ -289,8 +343,7 @@ public class PageFormatterTest {
     @Test
     public void formatPageWith2Columns() {
         withMiddle();
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String result = formatter.formatPage(ITEMS_MANY);
         String expected =
                 "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" + 
@@ -305,8 +358,7 @@ public class PageFormatterTest {
     @Test
     public void formatPageWith2Columns1Item_withHeaderFooterMiddle() {
         withHeaderFooterMiddle();
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String result = formatter.formatPage(Arrays.asList(new String[] {"* [[Dog]]"}));
         String expected = "{{HEADER}}\n* [[Dog]]\n{{MIDDLE}}\n\n{{FOOTER}}";
         Assert.assertEquals(expected, result);
@@ -318,8 +370,7 @@ public class PageFormatterTest {
     @Test
     public void testStripDecoration_all() {
         withHeaderFooterMiddle();
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String text =
                 HEADER +
                 "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" +
@@ -333,8 +384,7 @@ public class PageFormatterTest {
     @Test
     public void testStripDecoration_headerFooter() {
         withHeaderFooter();
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String text =
                 HEADER +
                 "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" +
@@ -347,8 +397,7 @@ public class PageFormatterTest {
     @Test
     public void testStripDecoration_header() {
         withHeader();
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String text =
                 HEADER +
                 "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" +
@@ -360,8 +409,7 @@ public class PageFormatterTest {
     @Test
     public void testStripDecoration_headerPageEmptySpace() {
         withHeader();
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String text =
                 "\t  \n{{HEADER}}\n" +
                 "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" +
@@ -373,8 +421,7 @@ public class PageFormatterTest {
     @Test
     public void testStripDecoration_headerEmptySpacePageEmptySpace() {
         params.header = "\n{{HEADER}}\n";
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String text =
                 "\t  \n\n{{HEADER}}\n" +
                 "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" +
@@ -386,8 +433,7 @@ public class PageFormatterTest {
     @Test
     public void testStripDecoration_headerWithVariable() {
         params.header = HEADER_WITH_VARIABLE;
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String text =
                 "{{HEADER|bot=Bot1|project=A|page=Portal:A/New pages" +
                 "|archive=Portal:A/New pages/Archive}}\n" +
@@ -400,8 +446,7 @@ public class PageFormatterTest {
     @Test
     public void testStripDecoration_headerWithUpdatedVariable() {
         params.header = "{{HEADER|bot=%(бот)|project=%(проект)|date=%(дата)}}\n";
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String text =
                 "{{HEADER|bot=Bot1|project=A|date=13 ноября 2014}}\n" +
                 "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" +
@@ -413,8 +458,7 @@ public class PageFormatterTest {
     @Test
     public void testStripDecoration_footer() {
         withFooter();
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String text =
                 "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" +
                 "* [[Cat]]\n* [[Cow]]\n* [[Sheep]]\n" +
@@ -426,8 +470,7 @@ public class PageFormatterTest {
     @Test
     public void testStripDecoration_footerPageEmptySpace() {
         withFooter();
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String text =
                 "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" +
                 "* [[Cat]]\n* [[Cow]]\n* [[Sheep]]\n" +
@@ -439,8 +482,7 @@ public class PageFormatterTest {
     @Test
     public void testStripDecoration_footerEmptySpacePageEmptySpace() {
         params.footer = "\n{{FOOTER}}\n";
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String text =
                 "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" +
                 "* [[Cat]]\n* [[Cow]]\n* [[Sheep]]\n" +
@@ -452,8 +494,7 @@ public class PageFormatterTest {
     @Test
     public void testStripDecoration_footerWithVariable() {
         params.footer = FOOTER_WITH_VARIABLE;
-        PageFormatter formatter = new PageFormatter(params, BOT_SETTINGS_TEMPLATE,
-                PORTAL_SETTINGS_PAGE, globalSettings, wiki, mockSystemTime);
+        PageFormatter formatter = create();
         String text =
                 "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" +
                 "* [[Cat]]\n* [[Cow]]\n* [[Sheep]]\n" +

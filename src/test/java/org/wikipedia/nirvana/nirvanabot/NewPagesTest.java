@@ -138,7 +138,7 @@ public class NewPagesTest {
         PortalParam param = this.makeTestParam();
         SystemTime systemTime = new SystemTime();
         PageFormatter pageFormatter = new PageFormatter(param, "User:Bot1:Settings",
-                "Portal:PortalA/New Pages", new BotGlobalSettings(), wiki, systemTime);
+                "Portal:PortalA/New Pages", "", new BotGlobalSettings(), wiki, systemTime, "");
         NewPages newPages = new NewPages(param, pageFormatter, systemTime);
         //newPages.update(wiki, reportData, "comment");
     }

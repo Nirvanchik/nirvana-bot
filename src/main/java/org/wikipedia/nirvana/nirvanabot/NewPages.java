@@ -905,6 +905,7 @@ public class NewPages implements PortalModule{
                 wiki.edit(pageName, d.newText, str, this.minor, this.bot);
                 updated = true;
                 reportData.newPagesUpdated(d.newPagesCount);
+                pageFormatter.notifyNewPagesUpdated();
             } catch (Exception e) {
                 reportData.newPagesUpdateError();
                 throw e;

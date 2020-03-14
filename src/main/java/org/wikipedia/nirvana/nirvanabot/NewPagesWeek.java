@@ -209,6 +209,9 @@ public class NewPagesWeek extends NewPages {
                 throw e;
             }
 		}
+        if (updated) {
+            pageFormatter.notifyNewPagesUpdated();
+        }
         updateArchiveIfNeed(wiki, data, reportData);
 
 		return updated;

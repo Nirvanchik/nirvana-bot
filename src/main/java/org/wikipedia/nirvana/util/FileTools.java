@@ -213,6 +213,18 @@ public class FileTools {
 
     /**
      * Write string to file.
+     * Default encoding is used to convert Unicode chars in the file.
+     *
+     * @param text A String with text to save.
+     * @param file File path.
+     * @throws IOException if failed to write file.
+     */
+    public static void writeFile(String text, File file) throws IOException {
+        writeFile(text, file, UTF8);
+    }
+
+    /**
+     * Write string to file.
      *
      * @param text A String with text to save.
      * @param file File name or file path.
@@ -220,8 +232,20 @@ public class FileTools {
      * @throws IOException if failed to write file.
      */
     public static void writeFile(String text, String file, String encoding) throws IOException {
+        writeFile(text, new File(file), encoding);
+    }
+
+    /**
+     * Write string to file.
+     *
+     * @param text A String with text to save.
+     * @param file File path.
+     * @param encoding Encoding to use when saving file.
+     * @throws IOException if failed to write file.
+     */
+    public static void writeFile(String text, File file, String encoding) throws IOException {
         try (OutputStreamWriter or = new OutputStreamWriter(
-                new FileOutputStream(new File(file)), encoding)) {
+                new FileOutputStream(file), encoding)) {
             or.write(text);
         }
     }
@@ -251,6 +275,23 @@ public class FileTools {
      */
     public static String readWikiFileFromPath(String path) throws IOException {
         return readWikiFileImpl(path, sDefaultEncoding);
+    }
+
+    /**
+     * Reads wiki file - a file where a wiki page was written.
+     * Default encoding (set by {@link #setDefaultEncoding(String)}) will be used.
+     * "wiki file" means:
+     *   - file name is normalized (forbidden path symbols replaced with '_');
+     *   - line endings are replaced to universal format ('\n');
+     *   - last line ends with line ending.
+     *
+     * @param file File path (path must be normalized).
+     * @return String with wiki text.
+     * @throws FileNotFoundException if file not found.
+     * @throws IOException if failed to read file.
+     */
+    public static String readWikiFile(File file) throws IOException {
+        return readWikiFileImpl(file, sDefaultEncoding);
     }
 
     /**
@@ -292,12 +333,16 @@ public class FileTools {
 
     private static String readWikiFileImpl(String path, String encoding)
             throws FileNotFoundException, IOException {
-        File fileGood = new File(path);
-        logD("reading  file: " + fileGood.getPath());
-        logD("absolute path: " +  fileGood.getAbsolutePath());
+        return readWikiFileImpl(new File(path), encoding);
+    }
+
+    private static String readWikiFileImpl(File file, String encoding)
+            throws FileNotFoundException, IOException {
+        logD("reading  file: " + file.getPath());
+        logD("absolute path: " +  file.getAbsolutePath());
         StringBuilder text = new StringBuilder(100000);
         try (BufferedReader b = new BufferedReader(new InputStreamReader(
-                new FileInputStream(fileGood), encoding))) {
+                new FileInputStream(file), encoding))) {
             String line;
             while ((line = b.readLine()) != null) {                
                 text.append(line);
