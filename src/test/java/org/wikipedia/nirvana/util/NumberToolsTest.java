@@ -53,4 +53,12 @@ public class NumberToolsTest {
         Assert.assertEquals(2097152, NumberTools.parseFileSize("2 МБ"));
     }
 
+    @Test
+    public void formatFloat1OptionalFractionDigit() {
+        Assert.assertEquals("1", NumberTools.formatFloat1OptionalFractionDigit(1f));
+        Assert.assertEquals("1.5", NumberTools.formatFloat1OptionalFractionDigit(1.5f));
+        Assert.assertEquals("1.3", NumberTools.formatFloat1OptionalFractionDigit(1.333f));
+        Assert.assertEquals("1.4", NumberTools.formatFloat1OptionalFractionDigit(1.3999f));
+    }
+
 }

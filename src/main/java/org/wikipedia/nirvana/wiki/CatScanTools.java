@@ -26,6 +26,7 @@ package org.wikipedia.nirvana.wiki;
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.util.HttpTools;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -71,6 +72,9 @@ public class CatScanTools {
     private static boolean testMode = false;
     private static List<String> mockedResponses = null;
     private static List<String> savedQueries = null;
+    private static List<Integer> queriesStat = new ArrayList<>();
+    private static int maxRetryCount = 1;
+    private static Integer tryCount = new Integer(0);
 
     private static final String ERR_SERVICE_DOESNT_SUPPORT_FEATURE =
             "Service %s doesn't support this feature.";
@@ -817,6 +821,9 @@ public class CatScanTools {
         } catch (URISyntaxException e) {            
             throw new RuntimeException(e);
         }
+        tryCount = new Integer(1);
+        queriesStat.add(tryCount);
+ 
         if (testMode) {
             if (savedQueries == null) savedQueries = new ArrayList<>();
             savedQueries.add(query);
@@ -863,6 +870,33 @@ public class CatScanTools {
         fastMode = fast;
     }
 
+    /**
+     * Set max retry count. If max retry count is greater than 1 this enables retry mechanism which
+     * is disabled by default (max retry count is 1 by default).
+     *
+     * @param maxRetryCount max retry count (including starting try).
+     */
+    public static void setMaxRetryCount(int maxRetryCount) {
+        CatScanTools.maxRetryCount = maxRetryCount;
+        throw new NotImplementedException("Sorry, this feature is not yet ready.");
+    }
+
+    /**
+     * Reset statistics and some settings (max retry count).
+     */
+    public static void reset() {
+        maxRetryCount = 1;
+        queriesStat = new ArrayList<>();
+        tryCount = new Integer(0);
+    }
+
+    /**
+     * @return queries statistics. Each integer in list - how many tries was done to make request.
+     */
+    public static List<Integer> getQuieriesStat() {
+        return queriesStat;
+    }
+
     @VisibleForTesting
     static void mockResponces(List<String> responces) {
         testMode = true;
@@ -879,6 +913,7 @@ public class CatScanTools {
         if (savedQueries != null) savedQueries.clear();
         testMode = true;
         Service.setTestFeatures(null);
+        reset();
     }
 
     @VisibleForTesting

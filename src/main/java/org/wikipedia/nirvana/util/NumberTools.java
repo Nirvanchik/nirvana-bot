@@ -27,6 +27,8 @@ import org.wikipedia.nirvana.annotation.LocalizedByHardcode;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Locale;
+
 /**
  * Utility methods for processing numeric data.
  *
@@ -68,5 +70,24 @@ public class NumberTools {
         }
         size = Integer.parseInt(str);        
         return (size * multi);
+    }
+
+    /**
+     * Format float number to string. Only one digit in fractional part is printed after dot.
+     * Fractional part is omitted if it is 0. Examples:
+     * 1.1 -> 1.1
+     * 1.2345 -> 1.2
+     * 1.2999 -> 1.3 
+     * 1.0 -> 1
+     *
+     * @param floatNumber float number.
+     * @return float number printed to string.
+     */
+    public static String formatFloat1OptionalFractionDigit(float floatNumber) {
+        if (floatNumber % 1 == 0) {
+            return String.format(Locale.ENGLISH, "%.0f", floatNumber);
+        } else {
+            return String.format(Locale.ENGLISH, "%.1f", floatNumber);
+        }
     }
 }

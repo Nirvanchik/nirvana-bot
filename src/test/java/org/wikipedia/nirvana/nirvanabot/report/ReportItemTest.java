@@ -35,7 +35,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -86,6 +89,10 @@ public class ReportItemTest {
         return prepareAndRunItemImpl(null, false, false, false, true);
     }
 
+    private ReportItem prepareAndRunItem(List<List<Integer>> catscanStat) {
+        return prepareAndRunItemImpl(null, false, false, false, true, catscanStat);
+    }
+
     private ReportItem prepareAndRunItem(boolean finish) {
         return prepareAndRunItemImpl(null, false, false, false, finish);
     }
@@ -108,11 +115,20 @@ public class ReportItemTest {
 
     private ReportItem prepareAndRunItemImpl(BotError error, boolean getDataError,
             boolean updateNewPagesError, boolean updateArchiveError, boolean finish) {
+        return prepareAndRunItemImpl(error, getDataError,
+                updateNewPagesError, updateArchiveError, finish,
+                Arrays.asList(Arrays.asList(new Integer[] {new Integer(1)})));
+    }
+
+    private ReportItem prepareAndRunItemImpl(BotError error, boolean getDataError,
+            boolean updateNewPagesError, boolean updateArchiveError, boolean finish,
+            List<List<Integer>> catscanStat) {
         TestReportItem item = new TestReportItem("Settings Template", "Portal A");
         item.mockTime(1000L);
         item.mockTime(71000L);
         item.start();
         item.processed(1);
+        catscanStat.stream().forEach(item::reportCatscanStat);
         if (!getDataError) {
             item.willUpdateNewPages();
             if (!updateNewPagesError) {
@@ -147,11 +163,13 @@ public class ReportItemTest {
 
         String reportLine = item.toStringTxt();
 
-        Assert.assertTrue(String.format("String \"%s\" does not match expected re", reportLine),
-                Pattern.matches(
-                "Portal A\\s+1\\s+UPDATED\\s+00:01:10\\s+5\\s+Yes\\s+Yes\\(5\\)\\s+0\\s+NONE\\s*",
-                reportLine));
-        
+        String re =
+                "Portal A\\s+1\\s+1\\s+UPDATED" +
+                "\\s+00:01:10\\s+5\\s+Yes\\s+Yes\\(5\\)\\s+0\\s+NONE\\s*"; 
+
+        Assert.assertTrue(
+                String.format("String \"%s\" does not match expected re: %s", reportLine, re),
+                Pattern.matches(re, reportLine));
     }
 
     /**
@@ -164,7 +182,47 @@ public class ReportItemTest {
         String reportLine = item.toStringWiki(1);
 
         Assert.assertEquals(
-                "|-\n|1 ||align='left'| [[Portal A]] || 1 || 1 || {{Yes|UPDATED}} || 00:01:10 " +
+                "|-\n|1 ||align='left'| [[Portal A]] " +
+                "|| 1 || 1 || 1 || {{Yes|UPDATED}} || 00:01:10 " +
+                "|| 5 || {{Yes|Yes}} || {{Yes|Yes}} ( 5) || 0 || -",
+                reportLine);
+    }
+
+    /**
+     * Test method for {@link ReportItem#toStringWiki(int)}.
+     */
+    @Test
+    public void testToStringWiki_detailed() {
+        ReportItem item = prepareAndRunItem();
+
+        String reportLine = item.toStringWiki(ReportItem.V_DETAILED, 1);
+
+        Assert.assertEquals(
+                "|-\n|1 ||align='left'| [[Portal A]] " +
+                "|| 1 || 1 ||  1<small> [{T: 1, R: 1, Q: 1}]</small> " +
+                "|| {{Yes|UPDATED}} || 00:01:10 " +
+                "|| 5 || {{Yes|Yes}} || {{Yes|Yes}} ( 5) || 0 || -",
+                reportLine);
+    }
+
+    /**
+     * Test method for {@link ReportItem#toStringWiki(int)}.
+     */
+    @Test
+    public void testToStringWiki_detailedManyTries() {
+        List<List<Integer>> catscanStat = new ArrayList<>();
+        catscanStat.add(Arrays.asList(new Integer[] {2, 1, 1, 1}));
+        catscanStat.add(Arrays.asList(new Integer[] {2, 2, 1, 1}));
+        ReportItem item = prepareAndRunItem(catscanStat);
+
+        String reportLine = item.toStringWiki(ReportItem.V_DETAILED, 1);
+
+        Assert.assertEquals(
+                "|-\n|1 ||align='left'| [[Portal A]] " +
+                "|| 1 || 1 " +
+                "|| 11<small> [1 -> {T: 5, R: 4, Q: 1}, 2 -> {T: 6, R: 4, Q: 1}, " +
+                "total -> {T: 11, R: 8, Q: 1}]</small> " +
+                "|| {{Yes|UPDATED}} || 00:01:10 " +
                 "|| 5 || {{Yes|Yes}} || {{Yes|Yes}} ( 5) || 0 || -",
                 reportLine);
     }
@@ -176,7 +234,7 @@ public class ReportItemTest {
         String reportLine = item.toStringWiki(1);
 
         Assert.assertEquals(
-                "|-\n|1 ||align='left'| [[Portal A]] || 1 || 1 || {{No|ERROR}} || 00:01:10 " +
+                "|-\n|1 ||align='left'| [[Portal A]] || 1 || 1 || 1 || {{No|ERROR}} || 00:01:10 " +
                 "|| 0 || N/A || N/A || 0 || {{No|IO_ERROR}}",
                 reportLine);
     }
@@ -188,7 +246,7 @@ public class ReportItemTest {
         String reportLine = item.toStringWiki(1);
 
         Assert.assertEquals(
-                "|-\n|1 ||align='left'| [[Portal A]] || 1 || 1 || {{No|ERROR}} || 00:01:10 " +
+                "|-\n|1 ||align='left'| [[Portal A]] || 1 || 1 || 1 || {{No|ERROR}} || 00:01:10 " +
                 "|| 0 || {{No|Error}} || N/A || 0 || {{No|IO_ERROR}}",
                 reportLine);
     }
@@ -200,7 +258,7 @@ public class ReportItemTest {
         String reportLine = item.toStringWiki(1);
 
         Assert.assertEquals(
-                "|-\n|1 ||align='left'| [[Portal A]] || 1 || 1 || {{No|ERROR}} || 00:01:10 " +
+                "|-\n|1 ||align='left'| [[Portal A]] || 1 || 1 || 1 || {{No|ERROR}} || 00:01:10 " +
                 "|| 5 || {{Yes|Yes}} || {{No|Error}} || 0 || {{No|IO_ERROR}}",
                 reportLine);
     }

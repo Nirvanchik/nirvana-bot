@@ -27,15 +27,19 @@ import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.localization.LocalizedTemplate;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotError;
+import org.wikipedia.nirvana.util.NumberTools;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.EqualsExclude;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TimeZone;
 
 
@@ -46,6 +50,15 @@ import java.util.TimeZone;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY)
 @JsonIgnoreProperties({"getHeaderTXT","getHeaderWiki","getFooterTXT","getFooterWiki"})
 public class ReportItem {
+    /**
+     * Normal verbosity mode.
+     */
+    public static final int V_NORMAL = 0;
+    /**
+     * Detailed verbosity mode. Used in hard times when there's a need for more technical details
+     * in report for monitoring and improving bot stability.
+     */
+    public static final int V_DETAILED = 1;
     private static final int MAX_LEN = 90;
     @JsonIgnore
     private static LocalizedTemplate templateYes;
@@ -74,6 +87,7 @@ public class ReportItem {
     int pagesArchived = 0;
     int times;
     int tries = 0;
+    final List<List<Integer>> catscanStat = new ArrayList<>();
 
     /**
      * Update status of one update action.
@@ -146,6 +160,30 @@ public class ReportItem {
     }
 
     /**
+     * Catscan statistics numbers of one portal updatement action (called 'job' in some places).
+     */
+    private static class CatscanTryStat {
+        /**
+         * How many times catscan service was requested to get data.
+         */
+        int requests;
+        /**
+         * How many real HTTP requests to catscan was done (including retried requests).
+         */
+        int tries;
+        /**
+         * Quality - tries/request.
+         */
+        float quality;
+
+        @Override
+        public String toString() {
+            return String.format("{T: %1$d, R: %2$d, Q: %3$s}", tries, requests,
+                    NumberTools.formatFloat1OptionalFractionDigit(quality));
+        }
+    }
+
+    /**
      * Default constructor. Used for deserialization by Jackson json lib.
      */
     public ReportItem() {
@@ -154,11 +192,24 @@ public class ReportItem {
 
     /**
      * Constructs reporting item object with the given bot settings template and portal name.
+     * Verbosity level has default value.
      *
      * @param template bot settings template.
      * @param name portal page name for which this report item is created.
      */
     public ReportItem(String template, String name) {
+        this(template, name, V_NORMAL);
+    }
+
+    /**
+     * Constructs reporting item object with the given bot settings template, portal name, and
+     * verbosity level.
+     *
+     * @param template bot settings template.
+     * @param name portal page name for which this report item is created.
+     * @param verbosity Verbosity level.
+     */
+    public ReportItem(String template, String name, int verbosity) {
         this.template = template;
         this.portal = name;
         startTime = 0;
@@ -170,7 +221,6 @@ public class ReportItem {
         status = Status.NONE;
         error = BotError.NONE;
         settingsValid = true;
-        //this.equals(obj);
     }
 
     private static void initStatics() {
@@ -210,8 +260,9 @@ public class ReportItem {
      * Generates reporting table header in TXT format.
      */
     public static String getHeaderTxt() {
-        return String.format("%1$-86s %2$s %3$-9s %4$-9s %5$s  %6$s   %7$s", 
-                "portal settings page", "tries", "status", "time", "new p.", "arch.p.", "errors");
+        return String.format("%-86s %s %s %-9s %-8s %s %s   %s", 
+                "portal settings page", "tries", "catscan",
+                "status", "time", "new p.", "arch.p.", "errors");
     }
 
     /**
@@ -226,6 +277,7 @@ public class ReportItem {
                 .append(" !! ").append(localizer.localize("портал/проект"))
                 .append(" !! ").append(localizer.localize("запусков"))
                 .append(" !! ").append(localizer.localize("попыток"))
+                .append(" !! ").append(localizer.localize("catscan"))
                 .append(" !! ").append(localizer.localize("статус"))
                 .append(" !! ").append(localizer.localize("время"))
                 .append(" !! ").append(localizer.localize("новых статей"))
@@ -258,6 +310,16 @@ public class ReportItem {
      * Generates reporting result line of this portal page in TXT format.
      */
     public String toStringTxt() {
+        return toStringTxt(V_NORMAL);
+    }
+
+    /**
+     * Generates reporting result line of this portal page in TXT format.
+     *
+     * @param verbosityLevel Verbosity level (ignored). There is no support for V_DETAILED mode in
+     *     TXT reports.
+     */
+    public String toStringTxt(int verbosityLevel) {
         String line = "";
         String timeString = "N/A";
         if (timeDiff > 0) {
@@ -279,8 +341,8 @@ public class ReportItem {
         if (archived.isSuccess() || this.pagesArchived > 0) {
             archivedString = String.format("%1$s(%2$d)", archived.english, this.pagesArchived);
         }
-        line = String.format("%1$-90s %2$d %3$-9s %4$9s %5$3d %6$-3s  %7$-8s %8$2d %9$-13s", 
-                name2, tries, status, timeString,
+        line = String.format("%-90s %d %3d  %-9s %9s %3d %-3s  %-8s %2d %-13s", 
+                name2, tries, catscanStatTxt(), status, timeString,
                 this.newPagesFound, updated.english, 
                 archivedString,
                 this.errors, this.error.toString());
@@ -293,9 +355,19 @@ public class ReportItem {
     /**
      * Generates reporting result line of this portal page in Wiki format (table item).
      *
-     * @param lineNum line number.
+     * @param lineNum line number in the report table.
      */
     public String toStringWiki(int lineNum) {
+        return toStringWiki(V_NORMAL, lineNum);
+    }
+
+    /**
+     * Generates reporting result line of this portal page in Wiki format (table item).
+     *
+     * @param verbosityLevel Verbosity level.
+     * @param lineNum line number in the report table.
+     */
+    public String toStringWiki(int verbosityLevel, int lineNum) {
         initStatics();
         Localizer localizer = Localizer.getInstance();
         String line = "";
@@ -316,13 +388,85 @@ public class ReportItem {
                 status.isFailure());
         line = String.format(
                 "|-\n|%9$d ||align='left'| [[%1$s]] " +
-                "|| %10$d || %11$d || %2$s || %3$s || %4$d || %5$s " +
+                "|| %10$d || %11$d || %12$s || %2$s || %3$s || %4$d || %5$s " +
                 "|| %6$s || %7$d || %8$s", 
                 portal, statusStr, timeString, 
                 newPagesFound, upd, arch,
                 errors, errorStr,
-                lineNum, times, tries);
+                lineNum, times, tries, catscanStatWiki(verbosityLevel));
         return line;
+    }
+
+    /**
+     * Returns catscan statistics for TXT report (tries count). 
+     */
+    public int catscanStatTxt() {
+        if (catscanStat.size() == 0) {
+            return 0;
+        }
+        List<CatscanTryStat> stat = calcCatscanStat();
+        CatscanTryStat total = calcCatscanStatTotal(stat);
+        return total.tries;
+    }
+
+    /**
+     * Returns catscan statistics for Wiki report as string.
+     *
+     * @param verbosityLevel Verbosity level.
+     */
+    public String catscanStatWiki(int verbosityLevel) {
+        if (catscanStat.size() == 0) {
+            return "0";
+        }
+        List<CatscanTryStat> stat = calcCatscanStat();
+        CatscanTryStat total = calcCatscanStatTotal(stat);
+        if (verbosityLevel == V_NORMAL) {
+            return String.valueOf(total.tries);
+        } else if (verbosityLevel == V_DETAILED) {
+            StringBuilder report = new StringBuilder();
+            report.append(String.format("%1$2d", total.tries));
+            report.append("<small>");
+            report.append(" [");
+            if (stat.size() == 1) {
+                report.append(total.toString());
+            } else {
+                for (int i = 0; i < stat.size(); i++) {
+                    report.append(i + 1).append(" -> ").append(stat.get(i).toString()).append(", ");
+                }
+                report.append("total -> ").append(total.toString());
+            }
+            report.append("]");
+            report.append("</small>");
+            return report.toString();
+        } else {
+            throw new IllegalArgumentException("Unexpected 'verbosityLevel' value.");
+        }
+    }
+
+    private List<CatscanTryStat> calcCatscanStat() {
+        List<CatscanTryStat> stat = new ArrayList<>();
+        for (List<Integer> job: catscanStat) {
+            CatscanTryStat jobStat = new CatscanTryStat();
+            stat.add(jobStat);
+            jobStat.requests = job.size();
+            int tries = 0;
+            for (int request: job) {
+                tries += request;
+            }
+            jobStat.tries = tries;
+            jobStat.quality = jobStat.tries / jobStat.requests;
+        }
+        return stat;
+    }
+
+    private CatscanTryStat calcCatscanStatTotal(List<CatscanTryStat> stat) {
+        CatscanTryStat total = new CatscanTryStat();
+        for (CatscanTryStat item: stat) {
+            total.requests += item.requests;
+            total.tries += item.tries;
+        }
+        total.quality = total.tries / total.requests;
+        return total;
     }
 
     /**
@@ -349,6 +493,16 @@ public class ReportItem {
             this.times++;
         }
         tries++;
+    }
+
+    /**
+     * Save catscan statistics to the report. Can be called multiple times. The statistics will be
+     * collected and summed.
+     *
+     * @param stat Catscan statistics of one portal page updatement action.
+     */
+    public void reportCatscanStat(List<Integer> stat) {
+        catscanStat.add(stat);
     }
 
     public void willUpdateNewPages() {
@@ -456,8 +610,19 @@ public class ReportItem {
             error = right.error;
         }
         status = Status.selectBest(status, right.status);
+        catscanStat.addAll(right.catscanStat);
     }
-    
+
+    private String catscanToString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        for (List<Integer> job: this.catscanStat) {
+            sb.append("{").append(StringUtils.join(job, ", ")).append("}");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
     @Override
     public String toString() {
         StringBuilder strBuilder = new StringBuilder();
@@ -479,6 +644,8 @@ public class ReportItem {
                 .append(tries)
                 .append(", errors: ")
                 .append(errors)
+                .append(", catscan: ")
+                .append(catscanToString())
                 .append(", updated: ")
                 .append(updated)
                 .append(", archived: ")

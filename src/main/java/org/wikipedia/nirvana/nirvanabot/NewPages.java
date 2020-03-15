@@ -522,7 +522,6 @@ public class NewPages implements PortalModule{
         if (templateFilter == null) {
             fetcher = createSimpleFetcher();
         } else {
-            Service service = this.service;
             if (!service.supportsFeature(CatScanTools.ServiceFeatures.NEWPAGES_WITH_TEMPLATE)) {
                 service = Service.getDefaultServiceForFeature(
                         ServiceFeatures.NEWPAGES_WITH_TEMPLATE, this.service);
@@ -538,7 +537,6 @@ public class NewPages implements PortalModule{
 	}
 
     private PageListFetcher createSimpleFetcher() throws BotFatalError {
-        Service service = this.service;
         if (!service.supportsFeature(ServiceFeatures.NEWPAGES)) {
             service = Service.getDefaultServiceForFeature(
                     ServiceFeatures.NEWPAGES, this.service);
@@ -618,6 +616,7 @@ public class NewPages implements PortalModule{
     protected List<Revision> getNewPages(NirvanaWiki wiki) throws IOException,
             InterruptedException, ServiceError, BotFatalError {
 		PageListProcessor pageListProcessor = createPageListProcessor();
+        CatScanTools.reset();
 		log.info("Using pagelist fetcher: "+pageListProcessor);
 		if (getRevisionMethod == GetRevisionMethod.GET_REV) {
             getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
@@ -875,7 +874,12 @@ public class NewPages implements PortalModule{
 
         pageFormatter.getHeaderFooterChanges();
 
-		Data d = getData(wiki, text);
+        Data d;
+        try {
+            d = getData(wiki, text);
+        } finally {
+            reportData.reportCatscanStat(CatScanTools.getQuieriesStat());
+        }
 
 		if(text==null) {
 			log.trace("text = null");

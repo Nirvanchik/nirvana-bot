@@ -44,6 +44,7 @@ import org.mockito.MockitoAnnotations;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -205,6 +206,7 @@ public class BotReporterTest {
     private static ReportItem mockUpdatedItem(String name) {
         ReportItem item = newReportItem(name);
         item.processed(1);
+        item.reportCatscanStat(Arrays.asList(new Integer[] {1}));
         item.newPagesUpdated(5);
         item.archiveUpdated(5);
         item.updated();
@@ -216,10 +218,11 @@ public class BotReporterTest {
         list.add(item);
         return item;
     }
-    
+
     private static ReportItem mockErrorItem(String name, BotError error) {
         ReportItem item = newReportItem(name);
         item.processed(1);
+        item.reportCatscanStat(Arrays.asList(new Integer[] {1}));
         item.error(error);
         return item;
     }
@@ -412,12 +415,14 @@ public class BotReporterTest {
         item3.tries = 2;
         item3.status = Status.ERROR;
         item3.error = BotError.IO_ERROR;
+        item3.reportCatscanStat(Arrays.asList(new Integer[] {1}));
 
         final ReportItem item4 = mockUpdatedItem("Portal 4");
         item4.times = 2;
         item4.tries = 2;
         item4.status = Status.ERROR;
         item4.error = BotError.IO_ERROR;
+        item4.reportCatscanStat(Arrays.asList(new Integer[] {1}));
 
         final ReportItem item5 = mockUpdatedItem("Portal 5");
 

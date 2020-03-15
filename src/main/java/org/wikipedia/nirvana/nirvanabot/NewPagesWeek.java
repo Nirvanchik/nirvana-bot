@@ -26,6 +26,7 @@ package org.wikipedia.nirvana.nirvanabot;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.report.ReportItem;
+import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.FileNotFoundException;
@@ -186,8 +187,12 @@ public class NewPagesWeek extends NewPages {
 		}
 
         pageFormatter.getHeaderFooterChanges();
-
-		WeekData data = (WeekData)getData(wiki);
+        WeekData data;
+        try {
+            data = (WeekData)getData(wiki);
+        } finally {
+            reportData.reportCatscanStat(CatScanTools.getQuieriesStat());
+        }
         reportData.willUpdateNewPages();
 		for (Entry<String,Data> entry:data.days.entrySet()) {
 			Data d = entry.getValue();

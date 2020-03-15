@@ -1,5 +1,5 @@
-portal settings page                                                                   tries status    time      new p.  arch.p.   errors
-Portal 1                                                                                   1 UPDATED         N/A   5 Yes  Yes(5)    0 NONE         
-Portal 2                                                                                   1 PROCESSED       N/A   0 No   N/A       0 NONE         
-Portal 3                                                                                   1 ERROR           N/A   0 N/A  N/A       0 IO_ERROR     
-Portal 4                                                                                   0 SKIP            N/A   0 N/A  N/A       0 NONE         
+portal settings page                                                                   tries catscan status    time     new p. arch.p.   errors
+Portal 1                                                                                   1   1  UPDATED         N/A   5 Yes  Yes(5)    0 NONE         
+Portal 2                                                                                   1   0  PROCESSED       N/A   0 No   N/A       0 NONE         
+Portal 3                                                                                   1   1  ERROR           N/A   0 N/A  N/A       0 IO_ERROR     
+Portal 4                                                                                   0   0  SKIP            N/A   0 N/A  N/A       0 NONE         
