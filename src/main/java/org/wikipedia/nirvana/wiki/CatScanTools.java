@@ -71,6 +71,8 @@ public class CatScanTools {
 
     private static boolean testMode = false;
     private static List<String> mockedResponses = null;
+
+    private static boolean enableStat = true;
     private static List<String> savedQueries = null;
     private static List<Integer> queriesStat = new ArrayList<>();
     private static int maxRetryCount = 1;
@@ -821,8 +823,10 @@ public class CatScanTools {
         } catch (URISyntaxException e) {            
             throw new RuntimeException(e);
         }
-        tryCount = new Integer(1);
-        queriesStat.add(tryCount);
+        if (enableStat) {
+            tryCount = new Integer(1);
+            queriesStat.add(tryCount);
+        }
  
         if (testMode) {
             if (savedQueries == null) savedQueries = new ArrayList<>();
@@ -865,9 +869,12 @@ public class CatScanTools {
      * Usually, when HTTP request fails it's retried.
      * In Fast mode this retry is disabled.
      * @param fast <code>true</code> to enable Fast mode.
+     * @return Previous state of fast mode flag.
      */
-    public static void setFastMode(boolean fast) {
+    public static boolean setFastMode(boolean fast) {
+        boolean result = fastMode;
         fastMode = fast;
+        return result;
     }
 
     /**
@@ -879,6 +886,18 @@ public class CatScanTools {
     public static void setMaxRetryCount(int maxRetryCount) {
         CatScanTools.maxRetryCount = maxRetryCount;
         throw new NotImplementedException("Sorry, this feature is not yet ready.");
+    }
+
+    /**
+     * Enable or disable statistics.
+     *
+     * @param enabled If <code>true</code> statistics will be enabled, or disabled otherwise.
+     * @return Previous statistics enabled state.
+     */
+    public static boolean enableStat(boolean enabled) {
+        boolean result = enableStat;
+        enableStat = enabled;
+        return result;
     }
 
     /**

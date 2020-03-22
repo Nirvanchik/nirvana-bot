@@ -72,10 +72,11 @@ public class CatscanService extends InternetService {
 	@Override
     protected boolean checkWorking() throws InterruptedException {	    
         if (service.supportsFeature(ServiceFeatures.PAGES)) {
+            boolean fastMode = CatScanTools.setFastMode(true);
+            boolean statState = CatScanTools.enableStat(false);
 			try {
 				Date date = new Date();
 				log.debug("time: "+date.toString());
-                CatScanTools.setFastMode(true);
                 String result = CatScanTools.loadPagesForCatWithService(service, "HTML", "ru", 1,
                         0);
 	            date = new Date();
@@ -92,7 +93,8 @@ public class CatscanService extends InternetService {
             	setLastError("Exception when calling loadPagesForCatWithService(): " + e.toString());
 	            return false;
             } finally {
-                CatScanTools.setFastMode(false);
+                CatScanTools.setFastMode(fastMode);
+                CatScanTools.enableStat(statState);
             }
         } 
         if (service.supportsFeature(ServiceFeatures.NEWPAGES)) {
