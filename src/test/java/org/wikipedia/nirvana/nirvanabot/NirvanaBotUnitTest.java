@@ -281,7 +281,7 @@ public class NirvanaBotUnitTest {
         bot.initLog();
         bot.go();
 
-        verify(bot.mockReporter).reportWiki(anyString(), eq(true));
+        verify(bot.mockReporter).reportWiki(anyString(), eq(true), anyObject());
         verify(bot.mainWiki).relogin();
     }
 

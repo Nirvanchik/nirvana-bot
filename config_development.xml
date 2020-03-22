@@ -43,11 +43,12 @@
 <entry key="update-status">no</entry>
 <entry key="statistics-file">report/report_%(date)_%(launch_number).txt</entry>
 <entry key="statistics-wiki">Участник:NirvanaBot/test/Новые статьи/Отчёт</entry>
+<entry key="statistics-wiki-verbosity">verbose</entry>
 <entry key="status-wiki">Участник:NirvanaBot/test/Новые статьи/Статус</entry>
 <entry key="status-wiki-template">Участник:NirvanaBot/Новые статьи/Отображение статуса</entry>
 <!--<entry key="status-wiki-format">Участник:NirvanaBot/test/Новые статьи/Отображение статуса</entry>-->
-<entry key="statistics-format">txt</entry>
-<!--<entry key="statistics-format">txt,wiki</entry>-->
+<!--<entry key="statistics-format">txt</entry>-->
+<entry key="statistics-format">txt,wiki</entry>
 <entry key="wiki-translation-page">Участник:NirvanaBot/test/Локализация</entry>
 <entry key="custom-translation-file">translations/devel.ini</entry>
 <entry key="type">all</entry>

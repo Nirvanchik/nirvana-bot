@@ -26,6 +26,7 @@ package org.wikipedia.nirvana;
 import org.wikipedia.nirvana.annotation.LocalizedBySettings;
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.nirvanabot.BotSettingsError;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
@@ -368,7 +369,8 @@ public abstract class BasicBot {
 
     protected abstract void go() throws InterruptedException, BotFatalError;
 
-	protected boolean loadCustomProperties(Map<String,String> launch_params) {
+    protected boolean loadCustomProperties(Map<String,String> launchParams)
+            throws BotSettingsError {
 		return true;
 	}
 

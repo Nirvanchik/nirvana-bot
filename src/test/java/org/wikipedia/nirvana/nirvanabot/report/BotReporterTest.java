@@ -25,6 +25,7 @@ package org.wikipedia.nirvana.nirvanabot.report;
 
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotError;
+import org.wikipedia.nirvana.nirvanabot.report.BotReporter.Verbosity;
 import org.wikipedia.nirvana.nirvanabot.report.ReportItem.Status;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki;
@@ -97,11 +98,11 @@ public class BotReporterTest {
         }
         
         @Override
-        public String printReportWiki() {
+        public String printReportWiki(Verbosity verbosity) {
             if (mockedWikiReport != null) {
                 return mockedWikiReport;
             }
-            return super.printReportWiki();
+            return super.printReportWiki(verbosity);
         }
         
         @Override
@@ -330,7 +331,7 @@ public class BotReporterTest {
         reporter.mockErrorItem("Portal 3", BotError.IO_ERROR);
         reporter.mockSkippedItem("Portal 4");
         reporter.botFinished(true);
-        String report = reporter.printReportWiki();
+        String report = reporter.printReportWiki(Verbosity.NORMAL);
         String expected = FileTools.readWikiFileFromPath(TEST_DATA_DIR + "wiki_report.txt").trim();
         Assert.assertEquals(expected, report);
     }
@@ -444,9 +445,9 @@ public class BotReporterTest {
         reporter.botFinished(true);
         
         reporter.mockWikiReport("WIKI TEXT");
-        
-        reporter.doReportWiki("Some page");
-        
+
+        reporter.doReportWiki("Some page", Verbosity.NORMAL);
+
         mockWiki.validateEdit("Some page", "WIKI TEXT");
     }
 

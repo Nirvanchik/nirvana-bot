@@ -105,7 +105,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -204,6 +207,8 @@ public class NirvanaBot extends BasicBot{
     protected static boolean UPDATE_STATUS = false;
 	private static String REPORT_FILE_NAME = "report.txt";
     private static String REPORT_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Отчёт";
+    private BotReporter.Verbosity detailedReportWikiVerbosity = BotReporter.Verbosity.NORMAL;
+    private BotReporter.Verbosity detailedReportTxtVerbosity = BotReporter.Verbosity.NORMAL;
     private static String STATUS_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Статус";
     private static String STATUS_WIKI_TEMPLATE =
             "Участник:NirvanaBot/Новые статьи/Отображение статуса";
@@ -367,7 +372,8 @@ public class NirvanaBot extends BasicBot{
 	}
 
 	@Override
-	protected boolean loadCustomProperties(Map<String,String> launch_params) {
+    protected boolean loadCustomProperties(Map<String,String> launch_params)
+            throws BotSettingsError {
 		String str = properties.getProperty("new-pages-template");
 		newpagesTemplates = str.trim().split("\\s*,\\s*");
 		if(newpagesTemplates==null || newpagesTemplates.length==0) {
@@ -430,6 +436,10 @@ public class NirvanaBot extends BasicBot{
 		UPDATE_STATUS = properties.getProperty("update-status",UPDATE_STATUS?YES:NO).equals(YES);
 		REPORT_FILE_NAME = properties.getProperty("statistics-file",REPORT_FILE_NAME);
 		REPORT_WIKI_PAGE = properties.getProperty("statistics-wiki",REPORT_WIKI_PAGE);
+        detailedReportWikiVerbosity = propertyToEnum(properties, "statistics-wiki-verbosity",
+                detailedReportWikiVerbosity, BotReporter.Verbosity::fromString);
+        detailedReportTxtVerbosity = propertyToEnum(properties, "statistics-txt-verbosity",
+                detailedReportTxtVerbosity, BotReporter.Verbosity::fromString);
 		STATUS_WIKI_PAGE = properties.getProperty("status-wiki",STATUS_WIKI_PAGE);
 		STATUS_WIKI_TEMPLATE = properties.getProperty("status-wiki-template",STATUS_WIKI_TEMPLATE);
 		REPORT_FORMAT = properties.getProperty("statistics-format",REPORT_FORMAT);
@@ -478,6 +488,30 @@ public class NirvanaBot extends BasicBot{
 
 		return true;
 	}
+
+    /**
+     * Parse property specified by key from properties dictionary using specified enum parser.
+     * Return parsed enum value or provided default value if property not found.
+     *
+     * @param properties Properties dictionary.
+     * @param key Property name.
+     * @param defaultVal Default value for this property.
+     * @param propertyParser Parser function for this property enum.
+     * @return Property enum value.
+     * @throws BotSettingsError
+     */
+    public static <T> T propertyToEnum(Properties properties, String key, T defaultVal,
+            Function<String, T> propertyParser) throws BotSettingsError {
+        String value = properties.getProperty(key);
+        if (value == null || value.trim().isEmpty()) return defaultVal;
+        T result = propertyParser.apply(value);
+        if (result == null) {
+            throw new BotSettingsError(
+                    String.format("Cannot parse value \"%s\" for property \"%s\".",
+                    value, key));
+        }
+        return result;
+    }
 	
 	protected void onInterrupted(InterruptedException e) {
 		log.fatal("Bot execution interrupted", e);
@@ -1077,7 +1111,7 @@ public class NirvanaBot extends BasicBot{
             log.warn("Detailed report update will be skipped");
             return;
         }
-        reporter.reportWiki(REPORT_WIKI_PAGE, startNumber == 1);
+        reporter.reportWiki(REPORT_WIKI_PAGE, startNumber == 1, detailedReportWikiVerbosity);
     }
 
     private void updateStatus(BotReporter reporter) throws InterruptedException {

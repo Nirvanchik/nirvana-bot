@@ -78,6 +78,27 @@ public class BotReporter {
     static {
         log = LogManager.getLogger(BotReporter.class.getName());
     }
+
+    /**
+     * Detailed report verbosity level.
+     */
+    public enum Verbosity {
+        NORMAL,
+        VERBOSE;
+
+        /**
+         * Parse Verbosity value from String. Returns null if failed to parse.
+         */
+        public static Verbosity fromString(String str) {
+            if (str.equalsIgnoreCase("normal")) {
+                return NORMAL;
+            } else if (str.equalsIgnoreCase("verbose")) {
+                return VERBOSE;
+            } else {
+                return null;
+            }
+        }
+    }
     
     protected Calendar getCurrentTime() {
         return Calendar.getInstance();
@@ -305,7 +326,7 @@ public class BotReporter {
      * @param mainLaunch <code>true</code> if this is a main bot launch in this day (all daily
      *                   reports should be merged and reported, or just save otherwise).
      */
-    public void reportWiki(String reportPage, boolean mainLaunch) {
+    public void reportWiki(String reportPage, boolean mainLaunch, Verbosity verbosity) {
         // 1) Load old data (if any)
         String path = cacheDir + "/" + DEFAULT_CACHE_FILE;
         File file = new File(path);
@@ -331,7 +352,7 @@ public class BotReporter {
         }
         // 3) Report to wiki or save to file
         if (mainLaunch) {
-            doReportWiki(reportPage);
+            doReportWiki(reportPage, verbosity);
         } else {
             save(file);
         }
@@ -365,13 +386,15 @@ public class BotReporter {
     /**
      * Prints report to String in Wiki format.
      */
-    public String printReportWiki() {
+    public String printReportWiki(Verbosity verbosity) {
         StringBuilder sb = new StringBuilder();
         sb.append(preambula);
         sb.append(ReportItem.getHeaderWiki()).append("\n");
         int i = 0;
+        int level = ReportItem.V_NORMAL;
+        if (verbosity == Verbosity.VERBOSE) level = ReportItem.V_DETAILED;
         for (ReportItem item : reportItems) {
-            sb.append(item.toStringWiki(i));
+            sb.append(item.toStringWiki(level, i));
             sb.append("\n");
             i++;
         }
@@ -384,12 +407,12 @@ public class BotReporter {
      *
      * @param reportPage a wiki page name to write report in.
      */
-    public void doReportWiki(String reportPage) {
+    public void doReportWiki(String reportPage, Verbosity verbosity) {
         initLocalizer();
         log.info("Generating report (Wiki) . . .");
 
         try {
-            wiki.edit(reportPage, printReportWiki(),
+            wiki.edit(reportPage, printReportWiki(verbosity),
                     localizer.localize("Отчёт по работе бота за сутки"));
         } catch (LoginException | IOException e) {
             log.error("Failed to update report.", e);
