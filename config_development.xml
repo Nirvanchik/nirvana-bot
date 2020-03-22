@@ -32,7 +32,7 @@
 </entry>
 <entry key="discussion-pages-settings-wikipage">Участник:NirvanaBot/Новые статьи/Настройки обсуждаемых статей.js</entry>
 <entry key="error-notification">yes</entry>
-<entry key="debug-mode">yes</entry>
+<entry key="debug-mode">no</entry>
 <entry key="stop-after">0</entry>
 <entry key="start-from">0</entry>
 <entry key="update-pause">2000</entry>
@@ -43,7 +43,7 @@
 <entry key="update-status">no</entry>
 <entry key="statistics-file">report/report_%(date)_%(launch_number).txt</entry>
 <entry key="statistics-wiki">Участник:NirvanaBot/test/Новые статьи/Отчёт</entry>
-<entry key="statistics-wiki-verbosity">verbose</entry>
+<entry key="statistics-wiki-verbosity">verbose-hidden</entry>
 <entry key="status-wiki">Участник:NirvanaBot/test/Новые статьи/Статус</entry>
 <entry key="status-wiki-template">Участник:NirvanaBot/Новые статьи/Отображение статуса</entry>
 <!--<entry key="status-wiki-format">Участник:NirvanaBot/test/Новые статьи/Отображение статуса</entry>-->

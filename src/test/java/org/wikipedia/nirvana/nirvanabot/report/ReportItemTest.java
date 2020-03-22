@@ -189,7 +189,7 @@ public class ReportItemTest {
     }
 
     /**
-     * Test method for {@link ReportItem#toStringWiki(int)}.
+     * Test method for {@link ReportItem#toStringWiki(int, int)}.
      */
     @Test
     public void testToStringWiki_detailed() {
@@ -200,6 +200,23 @@ public class ReportItemTest {
         Assert.assertEquals(
                 "|-\n|1 ||align='left'| [[Portal A]] " +
                 "|| 1 || 1 ||  1<small> [{T: 1, R: 1, Q: 1}]</small> " +
+                "|| {{Yes|UPDATED}} || 00:01:10 " +
+                "|| 5 || {{Yes|Yes}} || {{Yes|Yes}} ( 5) || 0 || -",
+                reportLine);
+    }
+
+    /**
+     * Test method for {@link ReportItem#toStringWiki(int, int)}.
+     */
+    @Test
+    public void testToStringWiki_detailedHidden() {
+        ReportItem item = prepareAndRunItem();
+
+        String reportLine = item.toStringWiki(ReportItem.V_DETAILED_HIDDEN, 1);
+
+        Assert.assertEquals(
+                "|-\n|1 ||align='left'| [[Portal A]] " +
+                "|| 1 || 1 || {{Comment| 1| [{T: 1, R: 1, Q: 1}]}} " +
                 "|| {{Yes|UPDATED}} || 00:01:10 " +
                 "|| 5 || {{Yes|Yes}} || {{Yes|Yes}} ( 5) || 0 || -",
                 reportLine);

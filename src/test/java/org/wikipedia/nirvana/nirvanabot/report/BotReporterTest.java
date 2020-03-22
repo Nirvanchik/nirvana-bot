@@ -337,6 +337,42 @@ public class BotReporterTest {
     }
 
     @Test
+    public void testPrintReportWiki_verbose() throws IOException {
+        TestBotReporter reporter = new TestBotReporter(wiki, cacheDir.getPath(), 10, false,
+                "1.0", preambulaFile.getPath());
+        mockStartAndEndTime(reporter);
+        
+        reporter.botStarted(true);
+        reporter.mockUpdatedItem("Portal 1");
+        reporter.mockErrorItem("Portal 2", BotError.IO_ERROR);
+        reporter.botFinished(true);
+
+        String report = reporter.printReportWiki(Verbosity.VERBOSE);
+
+        String expected = FileTools.readWikiFileFromPath(
+                TEST_DATA_DIR + "wiki_report_verbose.txt").trim();
+        Assert.assertEquals(expected, report);
+    }
+
+    @Test
+    public void testPrintReportWiki_verboseHidden() throws IOException {
+        TestBotReporter reporter = new TestBotReporter(wiki, cacheDir.getPath(), 10, false,
+                "1.0", preambulaFile.getPath());
+        mockStartAndEndTime(reporter);
+        
+        reporter.botStarted(true);
+        reporter.mockUpdatedItem("Portal 1");
+        reporter.mockErrorItem("Portal 2", BotError.IO_ERROR);
+        reporter.botFinished(true);
+
+        String report = reporter.printReportWiki(Verbosity.VERBOSE_HIDDEN);
+
+        String expected = FileTools.readWikiFileFromPath(
+                TEST_DATA_DIR + "wiki_report_verbose_hidden.txt").trim();
+        Assert.assertEquals(expected, report);
+    }
+
+    @Test
     public void testPrintReportTxt() throws IOException {
         TestBotReporter reporter = new TestBotReporter(wiki, cacheDir.getPath(), 10, false,
                 "1.0", preambulaFile.getPath());

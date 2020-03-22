@@ -84,7 +84,8 @@ public class BotReporter {
      */
     public enum Verbosity {
         NORMAL,
-        VERBOSE;
+        VERBOSE,
+        VERBOSE_HIDDEN;
 
         /**
          * Parse Verbosity value from String. Returns null if failed to parse.
@@ -94,12 +95,15 @@ public class BotReporter {
                 return NORMAL;
             } else if (str.equalsIgnoreCase("verbose")) {
                 return VERBOSE;
+            } else if (str.equalsIgnoreCase("verbose-hidden") ||
+                    str.equalsIgnoreCase("verbose_hidden")) {
+                return VERBOSE_HIDDEN;
             } else {
                 return null;
             }
         }
     }
-    
+
     protected Calendar getCurrentTime() {
         return Calendar.getInstance();
     }
@@ -392,7 +396,16 @@ public class BotReporter {
         sb.append(ReportItem.getHeaderWiki()).append("\n");
         int i = 0;
         int level = ReportItem.V_NORMAL;
-        if (verbosity == Verbosity.VERBOSE) level = ReportItem.V_DETAILED;
+        switch (verbosity) {
+            case VERBOSE:
+                level = ReportItem.V_DETAILED;
+                break;
+            case VERBOSE_HIDDEN:
+                level = ReportItem.V_DETAILED_HIDDEN;
+                break;
+            default:
+                level = ReportItem.V_NORMAL;
+        }
         for (ReportItem item : reportItems) {
             sb.append(item.toStringWiki(level, i));
             sb.append("\n");

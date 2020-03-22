@@ -59,11 +59,18 @@ public class ReportItem {
      * in report for monitoring and improving bot stability.
      */
     public static final int V_DETAILED = 1;
+    /**
+     * Detailed verbosity mode. The same as {@link #V_DETAILED} but all technical details are
+     * hidden using special wiki formatting, and shown as tooltip when requested.
+     */
+    public static final int V_DETAILED_HIDDEN = 2;
     private static final int MAX_LEN = 90;
     @JsonIgnore
     private static LocalizedTemplate templateYes;
     @JsonIgnore
     private static LocalizedTemplate templateNo;
+    @JsonIgnore
+    private static LocalizedTemplate templateTooltip;
     @JsonIgnore
     private static String wordNo;
     @JsonIgnore
@@ -229,6 +236,7 @@ public class ReportItem {
             templateYes = localizer.localizeTemplate("Да");
             templateNo = localizer.localizeTemplate("Нет");
             wordNo = localizer.localize("Нет");
+            templateTooltip = localizer.localizeTemplate("Comment");
             initialized = true;
         }
     }
@@ -422,10 +430,17 @@ public class ReportItem {
         CatscanTryStat total = calcCatscanStatTotal(stat);
         if (verbosityLevel == V_NORMAL) {
             return String.valueOf(total.tries);
-        } else if (verbosityLevel == V_DETAILED) {
+        } else if (verbosityLevel == V_DETAILED || verbosityLevel == V_DETAILED_HIDDEN) {
             StringBuilder report = new StringBuilder();
+            if (verbosityLevel == V_DETAILED_HIDDEN) {
+                report.append("{{").append(templateTooltip.localizeName()).append("|");
+            }
             report.append(String.format("%1$2d", total.tries));
-            report.append("<small>");
+            if (verbosityLevel == V_DETAILED) {
+                report.append("<small>");
+            } else if (verbosityLevel == V_DETAILED_HIDDEN) {
+                report.append("|");
+            }
             report.append(" [");
             if (stat.size() == 1) {
                 report.append(total.toString());
@@ -436,7 +451,11 @@ public class ReportItem {
                 report.append("total -> ").append(total.toString());
             }
             report.append("]");
-            report.append("</small>");
+            if (verbosityLevel == V_DETAILED) {
+                report.append("</small>");
+            } else if (verbosityLevel == V_DETAILED_HIDDEN) {
+                report.append("}}");
+            }
             return report.toString();
         } else {
             throw new IllegalArgumentException("Unexpected 'verbosityLevel' value.");
