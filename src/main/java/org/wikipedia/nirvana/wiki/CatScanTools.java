@@ -26,8 +26,8 @@ package org.wikipedia.nirvana.wiki;
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.util.HttpTools;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,7 +38,13 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+// TODO: Rewrite it using classes. That enum Service is horrible.
+//   That url strings are ugly and not suitable.
+//   API methods are monstrous and not flexible.
 /**
  * HTTP helper tools that scan categories and search for pages.
  * Those tools generates list of wiki pages from any namespaces.
@@ -54,6 +60,7 @@ import java.util.List;
  * https://ru.wikipedia.org/wiki/Википедия:PetScan
  */
 public class CatScanTools {
+    public static int RETRY_COUNT_DEFAULT = 2;
     private static final Logger log;
     private static final String CAT_SEPARATOR = "\r\n";
     private static final String LABS_DOMAIN = "tools.wmflabs.org";
@@ -68,21 +75,26 @@ public class CatScanTools {
     private static final int TIMEOUT_DELAY = 10000; // 10 sec
 
     private static boolean fastMode = false;
+    private static boolean enableRetries = true;
 
     private static boolean testMode = false;
     private static List<String> mockedResponses = null;
+    private static boolean testNeverSleepingMode = false;
 
     private static boolean enableStat = true;
     private static List<String> savedQueries = null;
-    private static List<Integer> queriesStat = new ArrayList<>();
-    private static int maxRetryCount = 1;
-    private static Integer tryCount = new Integer(0);
+    private static List<MutableInt> queriesStat = new ArrayList<>();
+    private static int maxRetryCount = RETRY_COUNT_DEFAULT;
+    private static MutableInt tryCount = new MutableInt(0);
 
     private static final String ERR_SERVICE_DOESNT_SUPPORT_FEATURE =
             "Service %s doesn't support this feature.";
 
     public static final String ERR_SERVICE_FILTER_BY_NAMESPACE_DISABLED =
             "We do not support service without filtering by namespace feature. Please fix it.";
+
+    private static final Pattern HTTP_ERROR_CODE_PATTERN =
+            Pattern.compile("^Server returned HTTP response code: (\\d+).*");
 
     static {
         log = LogManager.getLogger(CatScanTools.class.getName());
@@ -815,6 +827,12 @@ public class CatScanTools {
         return url.replace("[", "%5B").replace("]", "%5D");
     }
 
+    private static void sleep(long ms) throws InterruptedException {
+        if (!testNeverSleepingMode) {
+            Thread.sleep(ms);
+        }
+    }
+
     private static String fetchQuery(Service service, String query) throws IOException,
             InterruptedException {
         URI uri = null;
@@ -823,8 +841,8 @@ public class CatScanTools {
         } catch (URISyntaxException e) {            
             throw new RuntimeException(e);
         }
+        tryCount = new MutableInt(0);
         if (enableStat) {
-            tryCount = new Integer(1);
             queriesStat.add(tryCount);
         }
  
@@ -844,36 +862,71 @@ public class CatScanTools {
             return response;
         }
 
-        String page = null;
         // query is not url-encoded and uri isn't too.
         // After calling uri.toASCIIString() we get url-encoded string,
         // but it still has forbidden characters: '[', ']'.
         // So, we replace them manually knowing that in host part we don't have them.
         String endodedUrl = fixEncodedUrl(uri.toASCIIString());
-        try {
-            page = HttpTools.fetch(endodedUrl, !fastMode, true);
-        } catch (SocketTimeoutException e) {
-            if (fastMode) {
-                throw e;
-            } else {
-                log.warn("{}, retry again ...", e.getMessage());
-                Thread.sleep(TIMEOUT_DELAY);
-                page = HttpTools.fetch(uri.toASCIIString(), true, true);
+        boolean needRetry = true;
+        IOException lastError = null;
+        while (needRetry && tryCount.getValue() <= maxRetryCount) {
+            needRetry = false;
+            tryCount.add(1);
+            if (tryCount.getValue() > 1) {
+                log.warn("{} -> retry again after sleeping {} seconds ...",
+                        lastError.getMessage(), TIMEOUT_DELAY / 1000);
+                sleep(TIMEOUT_DELAY);
+            }
+            try {
+                String page = HttpTools.fetch(endodedUrl, !fastMode, true);
+                return page;
+            } catch (SocketTimeoutException e) {
+                lastError = e;
+                if (enableRetries) {
+                    needRetry = true;
+                }
+            } catch (IOException e) {
+                lastError = e;
+                if (enableRetries) {
+                    Matcher m = HTTP_ERROR_CODE_PATTERN.matcher(e.getMessage());
+                    if (m.matches()) {
+                        String codeString = m.group(1);
+                        int httpCode = Integer.parseInt(codeString);
+                        if (httpCode == 504) {
+                            needRetry = true;
+                        }
+                    }
+                }
             }
         }
-        return page;
+        throw lastError;
     }
 
     /**
      * Enable/disable Fast mode.
-     * Usually, when HTTP request fails it's retried.
-     * In Fast mode this retry is disabled.
+     * In Fast mode timeouts are minimal.
      * @param fast <code>true</code> to enable Fast mode.
      * @return Previous state of fast mode flag.
      */
     public static boolean setFastMode(boolean fast) {
         boolean result = fastMode;
         fastMode = fast;
+        return result;
+    }
+    
+    /**
+     * Enable/disable retry system.
+     * Retry system will retry request in the next known cases:
+     * - SocketTimeoutException (slow connection, too big data, too long request processing)
+     * - HTTP 504 error (catscan failed to process data because of internal error or it was just
+     * too heavy data)
+     *
+     * @param enabled <code>true</code> to enable retry system.
+     * @return Previous state of this flag.
+     */
+    public static boolean enableRetries(boolean enabled) {
+        boolean result = enableRetries;
+        enableRetries = enabled;
         return result;
     }
 
@@ -885,7 +938,6 @@ public class CatScanTools {
      */
     public static void setMaxRetryCount(int maxRetryCount) {
         CatScanTools.maxRetryCount = maxRetryCount;
-        throw new NotImplementedException("Sorry, this feature is not yet ready.");
     }
 
     /**
@@ -904,16 +956,21 @@ public class CatScanTools {
      * Reset statistics and some settings (max retry count).
      */
     public static void reset() {
-        maxRetryCount = 1;
+        maxRetryCount = RETRY_COUNT_DEFAULT;
         queriesStat = new ArrayList<>();
-        tryCount = new Integer(0);
+        tryCount = new MutableInt(0);
     }
 
     /**
      * @return queries statistics. Each integer in list - how many tries was done to make request.
      */
     public static List<Integer> getQuieriesStat() {
-        return queriesStat;
+        return queriesStat.stream().map(MutableInt::getValue).collect(Collectors.toList());
+    }
+
+    @VisibleForTesting
+    static void testsNeverSleep() {
+        testNeverSleepingMode = true;
     }
 
     @VisibleForTesting
@@ -933,6 +990,11 @@ public class CatScanTools {
         testMode = true;
         Service.setTestFeatures(null);
         reset();
+    }
+
+    @VisibleForTesting
+    static void resetForInternalTesting() {
+        testMode = false;
     }
 
     @VisibleForTesting

@@ -23,6 +23,7 @@
 
 package org.wikipedia.nirvana.wiki;
 
+import org.wikipedia.nirvana.util.MockHttpTools;
 import org.wikipedia.nirvana.wiki.CatScanTools.EnumerationType;
 import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
@@ -32,7 +33,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -49,11 +54,14 @@ public class CatScanToolsTest {
     @Before
     public void setUp() throws Exception {
         testedService = CatScanTools.Service.PETSCAN;
+        MockCatScanTools.testsNeverSleep();
     }
 
     @After
     public void tearDown() throws Exception {
         CatScanTools.resetFromTest();
+        CatScanTools.resetForInternalTesting();
+        MockHttpTools.reset();
     }
 
     @Test
@@ -192,5 +200,130 @@ public class CatScanToolsTest {
         Assert.assertNotNull(
                 CatScanTools.Service.getDefaultServiceForFeature(ServiceFeatures.PAGES, null));
     }
+
+    private String callCatscan() throws IOException, InterruptedException {
+        return CatScanTools.loadPagesForCatListAndIgnoreWithService(Service.PETSCAN,
+                Arrays.asList(new String[] {"Dogs"}), Collections.emptyList(), "ru", 5, 0);
+    }
+
+    @Test
+    public void stat() throws IOException, InterruptedException {
+        List<Object> responces = new ArrayList<>();
+        responces.add(new String("some data"));
+        responces.add(new String("some data"));
+        responces.add(new String("some data"));
+        MockHttpTools.mockResponces(responces);
+
+        callCatscan();
+        callCatscan();
+        callCatscan();
+
+        Assert.assertEquals(Arrays.asList(new Integer[] {1, 1, 1}), CatScanTools.getQuieriesStat());
+    }
     
+    @Test
+    public void stat_somethingRetried() throws IOException, InterruptedException {
+        List<Object> responces = new ArrayList<>();
+        responces.add(new String("some data"));
+        responces.add(new SocketTimeoutException("test timeout"));
+        responces.add(new String("some data"));
+        responces.add(new String("some data"));
+        MockHttpTools.mockResponces(responces);
+
+        callCatscan();
+        callCatscan();
+        callCatscan();
+
+        Assert.assertEquals(Arrays.asList(new Integer[] {1, 2, 1}), CatScanTools.getQuieriesStat());
+    }
+
+    @Test
+    public void retryOnTimeout() throws IOException, InterruptedException {
+        List<Object> responces = new ArrayList<>();
+        responces.add(new SocketTimeoutException("test timeout"));
+        responces.add(new String("some data"));
+        MockHttpTools.mockResponces(responces);
+
+        String result = callCatscan();
+
+        Assert.assertEquals("some data", result);
+        Assert.assertEquals(2, MockHttpTools.getQueries().size());
+        // Check stats
+        Assert.assertEquals(Arrays.asList(new Integer[] {2}), CatScanTools.getQuieriesStat());
+    }
+
+    @Test
+    public void manyRetries() throws IOException, InterruptedException {
+        List<Object> responces = new ArrayList<>();
+        responces.add(new SocketTimeoutException("test timeout"));
+        responces.add(new SocketTimeoutException("test timeout"));
+        responces.add(new SocketTimeoutException("test timeout"));
+        responces.add(new String("some data"));
+        MockHttpTools.mockResponces(responces);
+        CatScanTools.setMaxRetryCount(4);
+
+        String result = callCatscan();
+
+        Assert.assertEquals("some data", result);
+        Assert.assertEquals(4, MockHttpTools.getQueries().size());
+        // Check stats
+        Assert.assertEquals(Arrays.asList(new Integer[] {4}), CatScanTools.getQuieriesStat());
+    }
+
+    @Test
+    public void retryOnHttp504() throws IOException, InterruptedException {
+        List<Object> responces = new ArrayList<>();
+        responces.add(new IOException(
+                "Server returned HTTP response code: 504 for URL: http://url"));
+        responces.add(new String("some data"));
+        MockHttpTools.mockResponces(responces);
+        CatScanTools.setMaxRetryCount(2);
+
+        String result = callCatscan();
+
+        Assert.assertEquals("some data", result);
+        Assert.assertEquals(2, MockHttpTools.getQueries().size());
+    }
+
+    @Test
+    public void doNotRetryOtherHttp() throws IOException, InterruptedException {
+        List<Object> responces = new ArrayList<>();
+        responces.add(new IOException(
+                "Server returned HTTP response code: 400 for URL: http://url"));
+        responces.add(new String("some data"));
+        MockHttpTools.mockResponces(responces);
+
+        Throwable lastException = null;
+        try {
+            callCatscan();
+        } catch (IOException e) {
+            lastException = e;
+        }
+
+        Assert.assertNotNull(lastException);
+        Assert.assertEquals(1, MockHttpTools.getQueries().size());
+    }
+
+    @Test
+    public void failAfterLastAllowedRetry() throws IOException, InterruptedException {
+        List<Object> responces = new ArrayList<>();
+        responces.add(new SocketTimeoutException("test timeout"));
+        responces.add(new SocketTimeoutException("test timeout"));
+        responces.add(new SocketTimeoutException("test timeout"));
+        responces.add(new SocketTimeoutException("test timeout"));
+        responces.add(new SocketTimeoutException("test timeout"));
+        responces.add(new String("some data"));
+        MockHttpTools.mockResponces(responces);
+
+        CatScanTools.setMaxRetryCount(3);
+        Throwable lastException = null;
+        try {
+            callCatscan();
+        } catch (SocketTimeoutException e) {
+            lastException = e;
+        }
+
+        Assert.assertNotNull(lastException);
+        Assert.assertEquals(4, MockHttpTools.getQueries().size());        
+    }
 }

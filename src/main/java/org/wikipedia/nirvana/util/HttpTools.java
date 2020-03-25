@@ -18,6 +18,8 @@
 
 package org.wikipedia.nirvana.util;
 
+import org.wikipedia.nirvana.annotation.VisibleForTesting;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +32,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Simple HttpURLConnection wrapper for GET requests.
@@ -52,6 +56,13 @@ public class HttpTools {
 
     private static final int CONNECTION_CONNECT_TIMEOUT_MSEC_SHORT = 15 * 1000;
     private static final int CONNECTION_READ_TIMEOUT_MSEC_SHORT = 60 * 1000;
+
+    private static boolean testMode = false;
+    private static List<URL> savedQueries = null;
+    // We do not check url for reason.
+    // URLS that come here from our code are too long and complicated.
+    // To simplify tests we do not use map<url, response> but plain response list.
+    private static List<Object> mockedResponses = null;
 
     static {
         log = LogManager.getLogger(HttpTools.class.getName());
@@ -101,6 +112,26 @@ public class HttpTools {
     public static String fetch(URL url, boolean longTimeout, boolean customUserAgent)
             throws IOException {
         log.debug("fetching url: {}", url);
+        if (testMode) {
+            if (savedQueries == null) savedQueries = new ArrayList<>();
+            savedQueries.add(url);
+        }
+        if (testMode && mockedResponses != null) {
+            if (mockedResponses.isEmpty()) {
+                throw new RuntimeException(
+                        "fetch() called in test mode when no mocked responces is available!");
+            }
+            Object response = mockedResponses.remove(0);
+            assert response != null; 
+            if (response instanceof String) {
+                return (String) response;
+            } else if (response instanceof IOException) {
+                throw (IOException) response;
+            } else {
+                throw new RuntimeException(
+                        "Unexpected response type: " + response.getClass().toString());
+            }
+        }
         // connect
         HttpURLConnection connection = (HttpURLConnection)url.openConnection();
         if (longTimeout) {
@@ -165,5 +196,27 @@ public class HttpTools {
     public static void download(String url, String fileName) throws IOException {
         File file = new File(fileName);
         download(url, file);
+    }
+
+    @VisibleForTesting
+    static void mockResponces(List<Object> responces) {
+        testMode = true;
+        if (mockedResponses == null) {
+            mockedResponses = new ArrayList<Object>();
+        }
+        log.debug(String.format("Adding %d responces for mocking.", responces.size()));
+        mockedResponses.addAll(responces);
+    }
+
+    @VisibleForTesting
+    static void resetFromTest() {
+        if (mockedResponses != null) mockedResponses.clear();
+        if (savedQueries != null) savedQueries.clear();
+        testMode = true;
+    }
+
+    @VisibleForTesting
+    static List<URL> getQueries() {
+        return savedQueries;
     }
 }

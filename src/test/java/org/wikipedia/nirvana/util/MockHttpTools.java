@@ -1,6 +1,6 @@
 /**
- *  @(#)MockWikiTools.java
- *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)MockHttpTools.java
+ *  Copyright © 2020 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,31 +21,26 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana.wiki;
+package org.wikipedia.nirvana.util;
 
-import org.wikipedia.nirvana.wiki.CatScanTools;
-
+import java.net.URL;
 import java.util.List;
 
 /**
- * This is just a wrapper for {@link CatScanTools} to access its package-visible methods not
- * intended for public access.
+ * Mocking accessor methods for {@link HttpTools}.
+ *
  */
-public class MockCatScanTools {
+public class MockHttpTools {
+
+    public static void mockResponces(List<Object> responces) {
+        HttpTools.mockResponces(responces);
+    }
 
     public static void reset() {
-        CatScanTools.resetFromTest();
-    }
-    
-    public static void mockResponses(List<String> responces) {
-        CatScanTools.mockResponces(responces);
+        HttpTools.resetFromTest();
     }
 
-    public static List<String> getQueries() {
-        return CatScanTools.getQueries();
-    }
-
-    public static void testsNeverSleep() {
-        CatScanTools.testsNeverSleep();
+    public static List<URL> getQueries() {
+        return HttpTools.getQueries();
     }
 }

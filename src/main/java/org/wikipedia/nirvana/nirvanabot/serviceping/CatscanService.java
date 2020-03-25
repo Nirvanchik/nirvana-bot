@@ -74,6 +74,7 @@ public class CatscanService extends InternetService {
         if (service.supportsFeature(ServiceFeatures.PAGES)) {
             boolean fastMode = CatScanTools.setFastMode(true);
             boolean statState = CatScanTools.enableStat(false);
+            boolean retriesState = CatScanTools.enableRetries(false);
 			try {
 				Date date = new Date();
 				log.debug("time: "+date.toString());
@@ -95,6 +96,7 @@ public class CatscanService extends InternetService {
             } finally {
                 CatScanTools.setFastMode(fastMode);
                 CatScanTools.enableStat(statState);
+                CatScanTools.enableRetries(retriesState);
             }
         } 
         if (service.supportsFeature(ServiceFeatures.NEWPAGES)) {
