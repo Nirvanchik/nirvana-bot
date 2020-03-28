@@ -194,6 +194,7 @@ public class NirvanaBot extends BasicBot{
 	private static int DEFAULT_MAXITEMS = 20;
 	private static int DEFAULT_HOURS = 500;
     private static final int MAX_TRY_COUNT = 100;
+    private static final int MAX_CATSCAN_TRY_COUNT = 100;
 
     private static String DEFAULT_SERVICE_NAME = CatScanTools.Service.PETSCAN.name;
 	private static String SELECTED_SERVICE_NAME = SERVICE_AUTO;
@@ -232,6 +233,12 @@ public class NirvanaBot extends BasicBot{
      * (Retry if failed). "1" means no retries.
      */
     private int globalTryCount = 2;
+
+    /**
+     * This is how many times we will try to make request to catscan to get data.
+     * (Retry if failed). "1" means no retries.
+     */
+    private int globalCatscanTryCount = 2;
 
     @Nullable
 	private static String overridenPropertiesPage = null;
@@ -482,6 +489,8 @@ public class NirvanaBot extends BasicBot{
         botTimeout = validateIntegerSetting(properties, "bot-timeout", botTimeout, false);
         servicesTimeout = validateLongSetting(properties, "services-timeout", servicesTimeout, false);
         globalTryCount = validateIntegerSetting(properties, "try-count", globalTryCount, false);
+        globalCatscanTryCount = validateIntegerSetting(properties, "catscan-try-count",
+                globalCatscanTryCount, false);
 
         wikiTranslationPage = properties.getProperty("wiki-translation-page", null);
         customTranslationFile = properties.getProperty("custom-translation-file", null);
@@ -1383,6 +1392,12 @@ public class NirvanaBot extends BasicBot{
 
         param.tryCount = parseIntegerKeyWithMaxVal(config, PortalConfig.KEY_TRY_COUNT,
                 data.errors, globalTryCount, MAX_TRY_COUNT);
+
+        param.catscanTryCount = parseIntegerKeyWithMaxVal(config,
+                PortalConfig.KEY_CATSCAN_TRY_COUNT,
+                data.errors, globalCatscanTryCount, MAX_CATSCAN_TRY_COUNT);
+
+        CatScanTools.setMaxRetryCount(param.catscanTryCount);
 
 		if (!validateParams(param,data.errors)) {
 			return false;

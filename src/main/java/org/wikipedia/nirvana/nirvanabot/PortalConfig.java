@@ -69,6 +69,7 @@ public class PortalConfig {
     public static String KEY_IMAGE_SEARCH;
     public static String KEY_FAIR_USE_IMAGE_TEMPLATES;
     public static String KEY_TRY_COUNT;
+    public static String KEY_CATSCAN_TRY_COUNT;
 
     public static String LIST_TYPE_DISCUSSED_PAGES;
     public static String LIST_TYPE_DISCUSSED_PAGES2;
@@ -161,6 +162,7 @@ public class PortalConfig {
         KEY_IMAGE_SEARCH = localizer.localize("поиск картинки");
         KEY_FAIR_USE_IMAGE_TEMPLATES = localizer.localize("шаблоны запрещенных картинок");
         KEY_TRY_COUNT = localizer.localize("попытки");
+        KEY_CATSCAN_TRY_COUNT = localizer.localize("попытки catscan");
 
         LIST_TYPE_NEW_PAGES = localizer.localize("новые статьи");
         LIST_TYPE_NEW_PAGES_7_DAYS = localizer.localize("новые статьи по дням");
