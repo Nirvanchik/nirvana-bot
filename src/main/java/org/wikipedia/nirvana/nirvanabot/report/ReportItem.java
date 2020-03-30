@@ -473,7 +473,7 @@ public class ReportItem {
                 tries += request;
             }
             jobStat.tries = tries;
-            jobStat.quality = jobStat.tries / jobStat.requests;
+            jobStat.quality = (float) jobStat.tries / jobStat.requests;
         }
         return stat;
     }
@@ -484,7 +484,7 @@ public class ReportItem {
             total.requests += item.requests;
             total.tries += item.tries;
         }
-        total.quality = total.tries / total.requests;
+        total.quality = (float) total.tries / total.requests;
         return total;
     }
 
