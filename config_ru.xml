@@ -44,4 +44,5 @@
 <entry key="bot-timeout">86400000</entry>
 <entry key="services-timeout">36000000</entry>
 <entry key="try-count">2</entry>
+<entry key="catscan-try-count">3</entry>
 </properties>

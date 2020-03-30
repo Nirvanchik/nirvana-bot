@@ -869,7 +869,7 @@ public class CatScanTools {
         String endodedUrl = fixEncodedUrl(uri.toASCIIString());
         boolean needRetry = true;
         IOException lastError = null;
-        while (needRetry && tryCount.getValue() <= maxRetryCount) {
+        while (needRetry && tryCount.getValue() < maxRetryCount) {
             needRetry = false;
             tryCount.add(1);
             if (tryCount.getValue() > 1) {
