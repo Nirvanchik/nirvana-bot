@@ -132,6 +132,13 @@ public class ImageFinderInCard extends ImageFinder {
     		if(image!=null && image.contains("|")) {
        			image = image.substring(0, image.indexOf('|'));
     		}
+            // TODO: May be rewrite this with a better fix or better RE?
+            // TODO: Cover this in tests.
+            // TODO: Add right trim.
+            // Workaround against [#73]
+            if (image != null && image.contains("}}")) {
+                image = image.substring(0, image.indexOf("}}"));
+            }
     		if (image == null || image.isEmpty() || image.contains(">") || image.contains("<")) {
     			continue;
     		}
