@@ -324,6 +324,6 @@ public class CatScanToolsTest {
         }
 
         Assert.assertNotNull(lastException);
-        Assert.assertEquals(4, MockHttpTools.getQueries().size());        
+        Assert.assertEquals(3, MockHttpTools.getQueries().size());        
     }
 }
