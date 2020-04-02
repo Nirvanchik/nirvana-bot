@@ -922,6 +922,7 @@ public class NirvanaBot extends BasicBot{
                         data.portalSettingsText = portalSettingsText;
     					if (createPortalModule(parameters, data)) {
                             tryCount = data.param.tryCount;
+                            CatScanTools.setMaxRetryCount(data.param.catscanTryCount);
                             if ((enabledTypes.contains(TYPE_ALL) ||
                                     enabledTypes.contains(data.type)) &&
                                     data.portalModule != null) {
@@ -1396,8 +1397,6 @@ public class NirvanaBot extends BasicBot{
         param.catscanTryCount = parseIntegerKeyWithMaxVal(config,
                 PortalConfig.KEY_CATSCAN_TRY_COUNT,
                 data.errors, globalCatscanTryCount, MAX_CATSCAN_TRY_COUNT);
-
-        CatScanTools.setMaxRetryCount(param.catscanTryCount);
 
 		if (!validateParams(param,data.errors)) {
 			return false;

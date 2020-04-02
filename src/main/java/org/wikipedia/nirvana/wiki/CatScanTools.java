@@ -957,6 +957,13 @@ public class CatScanTools {
      */
     public static void reset() {
         maxRetryCount = RETRY_COUNT_DEFAULT;
+        resetStat();
+    }
+
+    /**
+     * Reset statistics and some settings (max retry count).
+     */
+    public static void resetStat() {
         queriesStat = new ArrayList<>();
         tryCount = new MutableInt(0);
     }

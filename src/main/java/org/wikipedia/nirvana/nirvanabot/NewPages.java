@@ -616,7 +616,7 @@ public class NewPages implements PortalModule{
     protected List<Revision> getNewPages(NirvanaWiki wiki) throws IOException,
             InterruptedException, ServiceError, BotFatalError {
 		PageListProcessor pageListProcessor = createPageListProcessor();
-        CatScanTools.reset();
+        CatScanTools.resetStat();
 		log.info("Using pagelist fetcher: "+pageListProcessor);
 		if (getRevisionMethod == GetRevisionMethod.GET_REV) {
             getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
