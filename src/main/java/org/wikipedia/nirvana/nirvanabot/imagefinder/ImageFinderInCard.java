@@ -113,7 +113,7 @@ public class ImageFinderInCard extends ImageFinder {
                 Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.MULTILINE
                 ).matcher(article);
 		while(m.find()) {
-        	String image = m.group(DEFAULT_REGEX_IMAGE_TAG).trim();
+            String image = StringUtils.strip(m.group(DEFAULT_REGEX_IMAGE_TAG).trim());
         	log.debug("image: "+image);
 /*        	String image = findImageByRegexSimple(article,Pattern.compile(regexToFindImage));
     		// TODO(Nirvanchik): This way we can miss images. For example we found 1 image,
@@ -130,14 +130,14 @@ public class ImageFinderInCard extends ImageFinder {
     			image = findImageByRegexSimple(image, ImageFinderInBody.PATTERN_TO_FIND_IMAGE);
     		} 
     		if(image!=null && image.contains("|")) {
-       			image = image.substring(0, image.indexOf('|'));
+                image = StringUtils.strip(image.substring(0, image.indexOf('|')));
     		}
             // TODO: May be rewrite this with a better fix or better RE?
             // TODO: Cover this in tests.
             // TODO: Add right trim.
             // Workaround against [#73]
             if (image != null && image.contains("}}")) {
-                image = image.substring(0, image.indexOf("}}"));
+                image = StringUtils.strip(image.substring(0, image.indexOf("}}")));
             }
     		if (image == null || image.isEmpty() || image.contains(">") || image.contains("<")) {
     			continue;
