@@ -5099,9 +5099,9 @@ public class Wiki implements Serializable
      */
     public String[] whatLinksHere(String title, int... ns) throws IOException
     {
-        return whatLinksHere(title, false, false, ns);
+        return whatLinksHere(title, false, ns);
     }
-    
+
     /**
      *  Returns a list of all pages linking to this page within the specified
      *  namespaces. Alternatively, we can retrive a list of what redirects to a
@@ -5115,7 +5115,70 @@ public class Wiki implements Serializable
      *  @throws IOException if a network error occurs
      *  @since 0.10
      */
-    public String[] whatLinksHere(String title, boolean redirects, boolean linksViaRedirects, int... ns) throws IOException
+    public String[] whatLinksHere(String title, boolean redirects, int... ns) throws IOException
+    {
+        StringBuilder url = new StringBuilder(query);
+        url.append("list=backlinks&bllimit=max&bltitle=");
+        url.append(encode(title, true));
+        constructNamespaceString(url, "bl", ns);
+        if (redirects)
+            url.append("&blfilterredir=redirects");
+
+        // main loop
+        List<String> pages = new ArrayList<>(6667); // generally enough
+        String blcontinue = null;
+        do
+        {
+            // fetch data
+            String line;
+            if (blcontinue == null)
+                line = fetch(url.toString(), "whatLinksHere");
+            else
+                line = fetch(url.toString() + "&blcontinue=" + blcontinue, "whatLinksHere");
+            blcontinue = parseAttribute(line, "blcontinue", 0);
+
+            // xml form: <bl pageid="217224" ns="0" title="Mainpage" redirect="" />
+            for (int x = line.indexOf("<bl "); x > 0; x = line.indexOf("<bl ", ++x))
+                pages.add(parseAttribute(line, "title", x));
+        }
+        while (blcontinue != null);
+
+        int size = pages.size();
+        log(Level.INFO, "whatLinksHere", "Successfully retrieved " + (redirects ? "redirects to " : "links to ") + title + " (" + size + " items)");
+        return pages.toArray(new String[size]);
+    }
+
+    // TODO: Replace it with whatLinksHere when they bring linksViaRedirects param there.
+    /**
+     *  Returns a list of all pages linking to this page. Equivalent to
+     *  [[Special:Whatlinkshere]].
+     *
+     *  @param title the title of the page
+     *  @param ns a list of namespaces to filter by, empty = all namespaces.
+     *  @return the list of pages linking to the specified page
+     *  @throws IOException if a network error occurs
+     *  @since 0.10
+     */
+    public String[] whatLinksHereForked(String title, int... ns) throws IOException
+    {
+        return whatLinksHereForked(title, false, false, ns);
+    }
+
+    // TODO: Replace it with whatLinksHere when they bring linksViaRedirects param there.
+    /**
+     *  Returns a list of all pages linking to this page within the specified
+     *  namespaces. Alternatively, we can retrive a list of what redirects to a
+     *  page by setting <tt>redirects</tt> to true. Equivalent to
+     *  [[Special:Whatlinkshere]].
+     *
+     *  @param title the title of the page
+     *  @param ns a list of namespaces to filter by, empty = all namespaces.
+     *  @param redirects whether we should limit to redirects only
+     *  @return the list of pages linking to the specified page
+     *  @throws IOException if a network error occurs
+     *  @since 0.10
+     */
+    public String[] whatLinksHereForked(String title, boolean redirects, boolean linksViaRedirects, int... ns) throws IOException
     {
         StringBuilder url = new StringBuilder(query);
         url.append("list=backlinks&bllimit=max&bltitle=");
@@ -5124,7 +5187,7 @@ public class Wiki implements Serializable
         if (redirects)
             url.append("&blfilterredir=redirects");
         if (linksViaRedirects)
-        	url.append("&blredirect=1");
+            url.append("&blredirect=1");
 
         // main loop
         List<String> pages = new ArrayList<>(6667); // generally enough

@@ -195,7 +195,7 @@ public class CleanArchiveBot extends BasicBot {
             log.info("Analyze page {} of {}: {}", num, pages.size(), page);
             String [] redirects;
             try {
-                redirects = wiki.whatLinksHere(page, true, false, 0);
+                redirects = wiki.whatLinksHereForked(page, true, false, 0);
             } catch (IOException e) {
                 log.error("Failed to get redirects for page {}: {}", page, e);
                 throw new BotFatalError(e);
@@ -257,7 +257,7 @@ public class CleanArchiveBot extends BasicBot {
             if (task.includeRedirects) {
                 String [] redirects;
                 try {
-                    redirects = wiki.whatLinksHere(page, true, false, 0);
+                    redirects = wiki.whatLinksHereForked(page, true, false, 0);
                 } catch (IOException e) {
                     log.error("Failed to get redirects for page {}: {}", page, e);
                     throw new BotFatalError(e);
@@ -267,7 +267,7 @@ public class CleanArchiveBot extends BasicBot {
             
             String [] whatLinks;
             try {
-                whatLinks = wiki.whatLinksHere(page, false, true, namespace);
+                whatLinks = wiki.whatLinksHereForked(page, false, true, namespace);
             } catch (IOException e) {
                 log.error("Failed to get \"what links here\" pages for {}", page);
                 throw new BotFatalError(e);
@@ -320,7 +320,7 @@ public class CleanArchiveBot extends BasicBot {
             for (String page: pages) {
                 String [] redirects;
                 try {
-                    redirects = wiki.whatLinksHere(page, true, false, 0);
+                    redirects = wiki.whatLinksHereForked(page, true, false, 0);
                 } catch (IOException e) {
                     log.error("Failed to get redirects for page {}: {}", page, e);
                     throw new BotFatalError(e);
