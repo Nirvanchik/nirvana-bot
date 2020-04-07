@@ -982,7 +982,7 @@ public class Wiki implements Serializable
         else if (line.contains("result=\"Aborted\"")) 
             throw new FailedLoginException("Login failed: you need to use a bot password, see [[Special:Botpasswords]].");
         else
-            throw new AssertionError("Unreachable!");
+            throw new AssertionError("Unexpeced response of login API: " + line);
     }
 
     /**
