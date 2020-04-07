@@ -621,37 +621,6 @@ public class Wiki implements Serializable
     }
 
     /**
-     *  Detects the $wgScriptpath wiki variable and sets the bot framework up
-     *  to use it. You need not call this if you know the script path is
-     *  <tt>/w</tt>. See also [[mw:Manual:$wgScriptpath]].
-     *
-     *  @throws IOException if a network error occurs
-     *  @deprecated use getSiteInfo
-     *  @return the script path, if you have any use for it
-     *  @since 0.14
-     */
-    @Deprecated
-    public String getScriptPath() throws IOException
-    {
-        return (String)getSiteInfo().get("scriptpath");
-    }
-
-    /**
-     *  Detects whether a wiki forces upper case for the first character in a
-     *  title and sets the bot framework up to use it. Example: en.wikipedia =
-     *  true, en.wiktionary = false. Default = true. See [[mw:Manual:$wgCapitalLinks]].
-     *  @return see above
-     *  @deprecated use getSiteInfo
-     *  @throws IOException if a network error occurs
-     *  @since 0.30
-     */
-    @Deprecated
-    public boolean isUsingCapitalLinks() throws IOException
-    {
-        return (Boolean)getSiteInfo().get("usingcapitallinks");
-    }
-
-    /**
      *  Gets various properties of the wiki and sets the bot framework up to use
      *  them. Returns:
      *  <ul>
@@ -1094,20 +1063,6 @@ public class Wiki implements Serializable
     }
 
     /**
-     *  Gets the version of MediaWiki this wiki runs e.g. 1.20wmf5 (54b4fcb).
-     *  See also https://gerrit.wikimedia.org/ .
-     *  @return the version of MediaWiki used
-     *  @throws IOException if a network error occurs
-     *  @deprecated use getSiteInfo
-     *  @since 0.14
-     */
-    @Deprecated
-    public String version() throws IOException
-    {
-        return (String)getSiteInfo().get("version");
-    }
-
-    /**
      *  Renders the specified wiki markup by passing it to the MediaWiki
      *  parser through the API. (Note: this isn't implemented locally because
      *  I can't be stuffed porting Parser.php). One use of this method is to
@@ -1149,19 +1104,7 @@ public class Wiki implements Serializable
     }
 
     /**
-     *  Fetches a random page in the main namespace. Equivalent to
-     *  [[Special:Random]].
-     *  @return the title of the page
-     *  @throws IOException if a network error occurs
-     *  @since 0.13
-     */
-    public String random() throws IOException
-    {
-        return random(MAIN_NAMESPACE);
-    }
-
-    /**
-     *  Fetches a random page in the specified namespace. Equivalent to
+     *  Fetches a random page in the specified namespaces. Equivalent to
      *  [[Special:Random]].
      *
      *  @param ns namespace(s)
@@ -1193,67 +1136,6 @@ public class Wiki implements Serializable
         return parseAttribute(content, type + "token", 0);
     }
     
-    // STATIC MEMBERS
-
-    /**
-     *  Determines the intersection of two lists of pages a and b.
-     *  Such lists might be generated from the various list methods below.
-     *  Examples from the English Wikipedia:
-     *
-     *  <pre>
-     *  // find all orphaned and unwikified articles
-     *  String[] articles = Wiki.intersection(wikipedia.getCategoryMembers("All orphaned articles", Wiki.MAIN_NAMESPACE),
-     *      wikipedia.getCategoryMembers("All pages needing to be wikified", Wiki.MAIN_NAMESPACE));
-     *
-     *  // find all (notable) living people who are related to Barack Obama
-     *  String[] people = Wiki.intersection(wikipedia.getCategoryMembers("Living people", Wiki.MAIN_NAMESPACE),
-     *      wikipedia.whatLinksHere("Barack Obama", Wiki.MAIN_NAMESPACE));
-     *  </pre>
-     *
-     *  @param a a list of pages
-     *  @param b another list of pages
-     *  @return a intersect b (as String[])
-     *  @since 0.04
-     */
-    public static String[] intersection(String[] a, String[] b)
-    {
-        // @revised 0.11 to take advantage of Collection.retainAll()
-        // @revised 0.14 genericised to all page titles, not just category members
-
-        List<String> intersec = new ArrayList<>(5000); // silly workaround
-        intersec.addAll(Arrays.asList(a));
-        intersec.retainAll(Arrays.asList(b));
-        return intersec.toArray(new String[intersec.size()]);
-    }
-
-    /**
-     *  Determines the list of articles that are in a but not b, i.e. a \ b.
-     *  This is not the same as b \ a. Such lists might be generated from the
-     *  various lists below. Some examples from the English Wikipedia:
-     *
-     *  <pre>
-     *  // find all Martian crater articles that do not have an infobox
-     *  String[] articles = Wiki.relativeComplement(wikipedia.getCategoryMembers("Craters on Mars"),
-     *      wikipedia.whatTranscludesHere("Template:MarsGeo-Crater", Wiki.MAIN_NAMESPACE));
-     *
-     *  // find all images without a description that haven't been tagged "no license"
-     *  String[] images = Wiki.relativeComplement(wikipedia.getCategoryMembers("Images lacking a description"),
-     *      wikipedia.getCategoryMembers("All images with unknown copyright status"));
-     *  </pre>
-     *
-     *  @param a a list of pages
-     *  @param b another list of pages
-     *  @return a \ b
-     *  @since 0.14
-     */
-    public static String[] relativeComplement(String[] a, String[] b)
-    {
-        List<String> compl = new ArrayList<>(5000); // silly workaround
-        compl.addAll(Arrays.asList(a));
-        compl.removeAll(Arrays.asList(b));
-        return compl.toArray(new String[compl.size()]);
-    }
-
     // PAGE METHODS
 
     /**
@@ -3669,23 +3551,6 @@ public class Wiki implements Serializable
     // IMAGE METHODS
 
     /**
-     *  Fetches an image file and returns the image data in a <tt>byte[]</tt>.
-     *  Works for files originating from external repositories (e.g. Wikimedia 
-     *  Commons).
-     *
-     *  @param title the title of the image (may contain "File")
-     *  @return the image data or null if the image doesn't exist
-     *  @deprecated expects a file as additional parameter
-     *  @throws IOException if a network error occurs
-     *  @since 0.10
-     */
-    @Deprecated
-    public byte[] getImage(String title) throws IOException
-    {
-        return getImage(title, -1, -1);
-    }
-
-    /**
      *  Fetches an image and saves it in the given file. Warning: the specified
      *  file is overwritten! Works for files originating from external 
      *  repositories (e.g. Wikimedia Commons).
@@ -3701,32 +3566,6 @@ public class Wiki implements Serializable
     public boolean getImage(String title, File file) throws FileNotFoundException, IOException
     {
         return getImage(title, -1, -1, file);
-    }
-
-    /**
-     *  Fetches a thumbnail of an image file and returns the image data in a 
-     *  <tt>byte[]</tt>. Works for files originating from external repositories
-     *  (e.g. Wikimedia Commons).
-     *
-     *  @param title the title of the image (may contain "File")
-     *  @param width the width of the thumbnail (use -1 for actual width)
-     *  @param height the height of the thumbnail (use -1 for actual height)
-     *  @return the image data or null if the image doesn't exist
-     *  @throws IOException if a network error occurs
-     *  @deprecated expects a file as additional parameter
-     *  @since 0.13
-     */
-    @Deprecated
-    public byte[] getImage(String title, int width, int height) throws IOException
-    {
-        File image = File.createTempFile("wiki-java_getImage", null);
-        image.deleteOnExit();
-
-        boolean downloaded = getImage(title, width, height, image);
-        if (!downloaded)
-            return null;
-
-        return Files.readAllBytes(image.toPath());
     }
 
     /**
@@ -3948,33 +3787,7 @@ public class Wiki implements Serializable
     }
 
     /**
-     *  Gets an old image revision and returns the image data in a <tt>byte[]</tt>.
-     *  You will have to do the thumbnailing yourself.n
-     *  @param entry the upload log entry that corresponds to the image being
-     *  uploaded
-     *  @return the image data that was uploaded, as long as it exists in the
-     *  local repository (i.e. not on Commons or deleted)
-     *  @deprecated expects a file as additional parameter
-     *  @throws IOException if a network error occurs
-     *  @throws IllegalArgumentException if the entry is not in the upload log
-     *  @since 0.20
-     */
-    @Deprecated
-    public byte[] getOldImage(LogEntry entry) throws IOException
-    {
-        // @revised 0.24 BufferedImage => byte[]
-        File image = File.createTempFile("wiki-java_getOldImage", null);
-        image.deleteOnExit();
-
-        boolean downloaded = getOldImage(entry, image);
-        if (!downloaded)
-            return null;
-
-        return Files.readAllBytes(image.toPath());
-    }
-
-    /**
-     *  Gets the uploads of a user.
+     *  Gets the (non-deleted) uploads of a user.
      *  @param user the user to get uploads for
      *  @return a list of all live images the user has uploaded
      *  @throws IOException if a network error occurs

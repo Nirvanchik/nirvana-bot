@@ -22,6 +22,7 @@
  * */
 package org.wikipedia.nirvana;
 
+import org.wikipedia.ArrayUtils;
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.util.FileTools;
 
@@ -113,11 +114,11 @@ public class ListTools {
 		String lines3[] = null;
 		switch(cmd) {
 			case SUBSTRACTION:
-                lines3 = Wiki.relativeComplement(
+                lines3 = ArrayUtils.relativeComplement(
                         lines1.toArray(new String[0]), lines2.toArray(new String[0]));
 				break;
 			case INTERSECTION:
-                lines3 = Wiki.intersection(
+                lines3 = ArrayUtils.intersection(
                         lines1.toArray(new String[0]), lines2.toArray(new String[0]));
 				break;
 			case UNION:

@@ -2,7 +2,7 @@ package org.wikiutils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.wikipedia.Wiki;
+import org.wikipedia.ArrayUtils;
 
 /**
  * Contains a few generic data structure related methods.
@@ -10,7 +10,6 @@ import org.wikipedia.Wiki;
  * @author Fastily
  * 
  * @see org.wikiutils.DateUtils
- * @see org.wikiutils.GUIUtils
  * @see org.wikiutils.IOUtils
  * @see org.wikiutils.LoginUtils
  * @see org.wikiutils.ParseUtils
@@ -149,6 +148,6 @@ public class CollectionUtils
      */
     public static boolean arraysShareElement(String[] a, String[] b)
     {
-            return Wiki.intersection(a, b).length > 0;
+            return ArrayUtils.intersection(a, b).length > 0;
     }
 }

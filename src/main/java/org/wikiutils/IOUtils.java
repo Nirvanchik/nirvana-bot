@@ -20,7 +20,6 @@ import org.wikipedia.Wiki;
  * @author Fastily
  * 
  * @see org.wikiutils.CollectionUtils
- * @see org.wikiutils.DateUtils
  * @see org.wikiutils.GUIUtils
  * @see org.wikiutils.LoginUtils
  * @see org.wikiutils.ParseUtils
@@ -86,8 +85,10 @@ public class IOUtils
 	 * 
 	 * @throws FileNotFoundException If the source file could not be found
 	 * @throws IOException If we encountered some sort of read/write error
+         * @deprecated use <code>Files.copy(Paths.get(src), Paths.get(dest))</code>
+         * in the <code>java.nio.file</code> package.
 	 */
-
+        @Deprecated
 	public static void copyFile(String src, String dest) throws FileNotFoundException, IOException
 	{
 		FileInputStream in = new FileInputStream(new File(src));
@@ -155,13 +156,12 @@ public class IOUtils
 	 * @throws FileNotFoundException If <tt>localpath</tt> cannot be resolved to a pathname on the
 	 *            local system.
 	 * 
-	 * 
+	 * @deprecated replace with Wiki.getImage(title, new File(localpath))
 	 */
+        @Deprecated
 	public static void downloadFile(String title, String localpath, Wiki wiki) throws IOException, FileNotFoundException
 	{
-		FileOutputStream fos = new FileOutputStream(localpath);
-		fos.write(wiki.getImage(title));
-		fos.close();
+		wiki.getImage(title, new File(localpath));
 	}
 	
 	/**

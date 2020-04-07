@@ -3,7 +3,7 @@ package org.wikiutils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
-import org.wikipedia.Wiki;
+import org.wikipedia.ArrayUtils;
 
 /**
  * Contains some useful String related methods.
@@ -11,7 +11,6 @@ import org.wikipedia.Wiki;
  * @author Fastily
  * 
  * @see org.wikiutils.CollectionUtils
- * @see org.wikiutils.DateUtils
  * @see org.wikiutils.GUIUtils
  * @see org.wikiutils.IOUtils
  * @see org.wikiutils.LoginUtils
@@ -51,12 +50,12 @@ public class StringUtils
 	 * @param a2 The second array
 	 * 
 	 * @return True if the arrays share at least one element
-	 * 
+	 * @deprecated Duplicate of {@link CollectionUtils#arraysShareElement(java.lang.String[], java.lang.String[]) }
 	 */
-
+        @Deprecated
 	public static boolean arraysShareElement(String[] a1, String[] a2)
 	{
-		return Wiki.intersection(a1, a2).length > 0;
+		return ArrayUtils.intersection(a1, a2).length > 0;
 	}
 	
 	/**
