@@ -19,8 +19,9 @@
  */
 package org.wikipedia;
 
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import org.wikipedia.servlets.ServletUtils;
 
 /**
  *  Various parsing methods that e.g. turning Wiki.java objects into wikitext 
@@ -44,10 +45,12 @@ public class ParserUtils
      *  * [[Main Page]]
      *  * [[Wikipedia:Featured picture candidates]]
      *  * [[:File:Example.png]]
+     *  * [[Cape Town#Economy]]
      *  </pre>
      *
      *  in which case <tt>{ "Main Page", "Wikipedia:Featured picture
-     *  candidates", "File:Example.png" }</tt> is the return value.
+     *  candidates", "File:Example.png", "Cape Town#Economy" }</tt> is the 
+     *  return value. Numbered lists are allowed. Nested lists are flattened. 
      *
      *  @param list a list of pages
      *  @see #formatList
@@ -124,10 +127,8 @@ public class ParserUtils
             buffer.append("*");
             buffer.append("[[Special:Permanentlink/");
             buffer.append(rev.getRevid());
-            Calendar timestamp = rev.getTimestamp();
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             buffer.append("|");
-            buffer.append(format.format(timestamp.getTime()));
+            buffer.append(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(rev.getTimestamp()));
             buffer.append("]] ");
             
             // diff link
@@ -224,9 +225,7 @@ public class ParserUtils
             // date
             buffer.append(temp2);
             buffer.append("\">");
-            Calendar timestamp = rev.getTimestamp();
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            buffer.append(format.format(timestamp.getTime()));
+            buffer.append(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(rev.getTimestamp()));
             buffer.append("</a> ");
             
             if (rev.isNew())
@@ -305,16 +304,16 @@ public class ParserUtils
      *  @return the rendered wikitext
      *  @since 0.02
      */
-    public static String linksearchResultsToWikitext(List[] results, String domain)
+    public static String linksearchResultsToWikitext(List<String[]> results, String domain)
     {
         StringBuilder builder = new StringBuilder(100);
-        int linknumber = results[0].size();
-        for (int i = 0; i < linknumber; i++)
+        int linknumber = results.size();
+        for (String[] result : results)
         {
             builder.append("# [[");
-            builder.append((String)results[0].get(i));
+            builder.append(result[0]);
             builder.append("]] uses link [");
-            builder.append(results[1].get(i));
+            builder.append(result[1]);
             builder.append("]\n");
         }
         builder.append(linknumber);
@@ -333,32 +332,51 @@ public class ParserUtils
      *  @return the rendered HTML
      *  @since 0.02
      */
-    public static String linksearchResultsToHTML(List[] results, Wiki wiki, String domain)
+    public static String linksearchResultsToHTML(List<String[]> results, Wiki wiki, String domain)
     {
         StringBuilder buffer = new StringBuilder(1000);
         buffer.append("<p>\n<ol>\n");
-        for (int j = 0; j < results[0].size(); j++)
+        for (String[] result : results)
         {
             buffer.append("\t<li><a href=\"//");
             buffer.append(wiki.getDomain());
             buffer.append("/wiki/");
-            buffer.append((String)results[0].get(j));
+            buffer.append(result[0]);
             buffer.append("\">");
-            buffer.append((String)results[0].get(j));
+            buffer.append(result[0]);
             buffer.append("</a> uses link <a href=\"");
-            buffer.append(results[1].get(j).toString());
+            buffer.append(result[1]);
             buffer.append("\">");
-            buffer.append(results[1].get(j).toString());
+            buffer.append(result[1]);
             buffer.append("</a>\n");
         }
         buffer.append("</ol>\n<p>");
-        buffer.append(results[0].size());
+        buffer.append(results.size());
         buffer.append(" links found. (<a href=\"//");
         buffer.append(wiki.getDomain());
         buffer.append("/wiki/Special:Linksearch/*.");
         buffer.append(domain);
         buffer.append("\">Linksearch</a>)\n");
         return buffer.toString();
+    }
+    
+    /**
+     *  Creates user links in HTML of the form <samp>User (talk | contribs | 
+     *  deletedcontribs | block | block log)</samp>
+     *  @param username the username, NOT sanitized for XSS
+     *  @param wiki the wiki to build links for
+     *  @return the generated HTML
+     */
+    public static String generateUserLinks(Wiki wiki, String username)
+    {
+        String domain = wiki.getDomain();
+        String userenc = ServletUtils.sanitizeForURL(username.replace(' ', '_'));
+        return "<a href=\"//" + domain + "/wiki/User:" + userenc + "\">" + username + "</a> ("
+            +  "<a href=\"//" + domain + "/wiki/User_talk:" + userenc + "\">talk</a> | "
+            +  "<a href=\"//" + domain + "/wiki/Special:Contributions/" + userenc + "\">contribs</a> | "
+            +  "<a href=\"//" + domain + "/wiki/Special:DeletedContributions/" + userenc + "\">deleted contribs</a> | "
+            +  "<a href=\"//" + domain + "/wiki/Special:Block/" + userenc + "\">block</a> | "
+            +  "<a href=\"//" + domain + "/w/index.php?title=Special:Log&type=block&page=User:" + userenc + "\">block log</a>)";
     }
     
     /**

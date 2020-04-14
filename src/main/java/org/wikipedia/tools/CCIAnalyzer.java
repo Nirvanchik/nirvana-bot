@@ -41,7 +41,7 @@ public class CCIAnalyzer
      */
     public static void main(String[] args) throws IOException
     {
-        Wiki enWiki = new Wiki("en.wikipedia.org");
+        Wiki enWiki = Wiki.createInstance("en.wikipedia.org");
         StringBuilder cci;
         if (args.length < 1)
         {
@@ -69,8 +69,16 @@ public class CCIAnalyzer
         String deltabegin = "&lt;ins class=&quot;diffchange diffchange-inline&quot;&gt;"; // <ins class="diffchange diffchange-inline">
         String deltaend = "&lt;/ins&gt;"; // </ins>
         
+        // count number of diffs
+        int count = 0;
+        for (int i = cci.indexOf("{{dif|"); i >= 0; i = cci.indexOf("{{dif|", ++i))
+            count++;
+        
         // parse the list of diffs
+        int parsed = 0;
+        long start = System.currentTimeMillis();
         ArrayList<String> minoredits = new ArrayList<>(500);
+        boolean exception = false;
         for (int i = cci.indexOf("{{dif|"); i >= 0; i = cci.indexOf("{{dif|", ++i))
         {
             int x = cci.indexOf("}}", i);
@@ -82,7 +90,28 @@ public class CCIAnalyzer
             // Fetch diff. No plain text diffs for performance reasons, see
             // https://phabricator.wikimedia.org/T15209
             // We don't use the Wiki.java method here, this avoids an extra query.
-            String diff = fetch("https://en.wikipedia.org/w/api.php?format=xml&action=query&prop=revisions&rvdiffto=prev&revids=" + oldid);
+            String diff = "";
+            try 
+            {
+                diff = fetch("https://en.wikipedia.org/w/api.php?format=xml&action=query&prop=revisions&rvdiffto=prev&revids=" + oldid);
+                exception = false;
+            }
+            catch (IOException ex)
+            {
+                System.err.println();
+                System.out.flush();
+                ex.printStackTrace();
+                
+                // bail if two IOExceptions are thrown consecutively
+                if (exception)
+                {
+                    System.err.printf("\033[31;1mBailing due to consecutive IOExceptions!\033[0m\n");
+                    break;
+                }
+                System.err.printf("\033[31;1mSkipping oldid %s\033[0m\n", oldid);
+                exception = true;
+                continue;
+            }
             // Condense deltas to avoid problems like https://en.wikipedia.org/w/index.php?title=&diff=prev&oldid=486611734
             diff = diff.toLowerCase();
             diff = diff.replace(deltaend + " " + deltabegin, " ");
@@ -116,7 +145,15 @@ public class CCIAnalyzer
             }
             if (!major)
                 minoredits.add(edit);
+            long now = System.currentTimeMillis();
+            double percent = 100.0 * ++parsed / count;
+            int elapsed = (int)((now - start) / 1000.0);
+            int projected = elapsed * count / parsed;
+            int eta = projected - elapsed;
+            System.err.printf("\r\033[K%d of %d diffs parsed (%2.2f%%, %d:%02d remaining)", 
+                parsed, count, percent, eta / 60, eta % 60);
         }
+        System.err.println();
         
         // remove all minor edits from the CCI
         for (String minoredit : minoredits)
@@ -132,9 +169,20 @@ public class CCIAnalyzer
                 System.out.println(minoredit);
         }
         System.out.println("----------------------");
-        System.out.println(cci);
         
-        // PROTIP: $ sed -i "/.*''''''.*/d" filename.txt
+        // clean up output CCI listing
+        String[] articles = cci.toString().split("\\n");
+        StringBuilder cleaned = new StringBuilder();
+        for (String article : articles)
+        {
+            // remove articles where all diffs are trivial
+            if (article.contains("''''''") && !article.contains("{{dif|"))
+                continue;
+            // strip any left-over bold/unbold markers
+            cleaned.append(article.replaceAll("''''''", ""));
+            cleaned.append("\n");
+        }
+        System.out.println(cleaned);
     }
     
     /**

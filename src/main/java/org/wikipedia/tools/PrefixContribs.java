@@ -18,7 +18,7 @@
 package org.wikipedia.tools;
 
 import java.io.*;
-import java.util.*;
+import java.time.*;
 import javax.swing.JOptionPane;
 import org.wikipedia.*;
 
@@ -37,14 +37,13 @@ public class PrefixContribs
      */
     public static void main(String[] args) throws IOException
     {
-        Wiki enWiki = new Wiki("en.wikipedia.org");
+        Wiki enWiki = Wiki.createInstance("en.wikipedia.org");
         enWiki.setMaxLag(-1);
         String prefix = JOptionPane.showInputDialog(null, "Enter query string");
         if (prefix == null)
             System.exit(0);
-        Calendar cutoff = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-        cutoff.add(Calendar.DAY_OF_MONTH, -7);
-        Wiki.Revision[] revisions = enWiki.contribs("", prefix, cutoff, null);
+        OffsetDateTime cutoff = OffsetDateTime.now(ZoneOffset.UTC).minusDays(7);
+        Wiki.Revision[] revisions = enWiki.prefixContribs(prefix, cutoff, null);
         if (revisions.length == 0)
             System.out.println("No contributions found.");
         else

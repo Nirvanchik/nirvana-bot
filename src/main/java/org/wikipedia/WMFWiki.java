@@ -1,6 +1,6 @@
 /**
  *  @(#)WMFWiki.java 0.01 29/03/2011
- *  Copyright (C) 2011 - 2015 MER-C and contributors
+ *  Copyright (C) 2011 - 2017 MER-C and contributors
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -24,6 +24,7 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.logging.*;
+import java.util.stream.*;
 
 /**
  *  Stuff specific to Wikimedia wikis.
@@ -32,9 +33,14 @@ import java.util.logging.*;
  */
 public class WMFWiki extends Wiki
 {
+    private static String globalblacklist;
+    private String localblacklist;
+    
     /**
      *  Creates a new WMF wiki that represents the English Wikipedia.
+     *  @deprecated use WMFWiki#createInstance instead
      */
+    @Deprecated
     public WMFWiki()
     {
         super("en.wikipedia.org");
@@ -43,10 +49,24 @@ public class WMFWiki extends Wiki
     /**
      *  Creates a new WMF wiki that has the given domain name.
      *  @param domain a WMF wiki domain name e.g. en.wikipedia.org
+     *  @deprecated use WMFWiki#createInstance instead; this will be made private
      */
+    @Deprecated
     public WMFWiki(String domain)
     {
         super(domain);
+    }
+    
+    /**
+     *  Creates a new WMF wiki that has the given domain name.
+     *  @param domain a WMF wiki domain name e.g. en.wikipedia.org
+     *  @return the constructed Wiki object
+     */
+    public static WMFWiki createInstance(String domain)
+    {
+        WMFWiki wiki = new WMFWiki(domain);
+        wiki.initVars();
+        return wiki;
     }
 
     /**
@@ -57,9 +77,9 @@ public class WMFWiki extends Wiki
      */
     public static WMFWiki[] getSiteMatrix() throws IOException
     {
-        WMFWiki wiki = new WMFWiki("en.wikipedia.org");
+        WMFWiki wiki = createInstance("en.wikipedia.org");
         wiki.setMaxLag(0);
-        String line = wiki.fetch("https://en.wikipedia.org/w/api.php?format=xml&action=sitematrix", "WMFWiki.getSiteMatrix");
+        String line = wiki.fetch("https://en.wikipedia.org/w/api.php?format=xml&action=sitematrix", null, "WMFWiki.getSiteMatrix");
         ArrayList<WMFWiki> wikis = new ArrayList<WMFWiki>(1000);
 
         // form: <special url="http://wikimania2007.wikimedia.org" code="wikimania2007" fishbowl="" />
@@ -75,7 +95,7 @@ public class WMFWiki extends Wiki
             String temp = line.substring(b, c);
             if (temp.contains("closed=\"\"") || temp.contains("private=\"\"") || temp.contains("fishbowl=\"\""))
                 continue;
-            wikis.add(new WMFWiki(line.substring(a, b)));
+            wikis.add(createInstance(line.substring(a, b)));
         }
         int size = wikis.size();
         Logger temp = Logger.getLogger("wiki");
@@ -89,37 +109,62 @@ public class WMFWiki extends Wiki
      *  @param title the title of the page (must contain "File:")
      *  @return the global usage of the file, including the wiki and page the file is used on
      *  @throws IOException if a network error occurs
-     *  @throws UnsupportedOperationException if <tt>namespace(title) != FILE_NAMESPACE</tt>
+     *  @throws UnsupportedOperationException if <code>{@link Wiki#namespace(java.lang.String) 
+     *  namespace(title)} != {@link Wiki#FILE_NAMESPACE}</code>
      */
     public String[][] getGlobalUsage(String title) throws IOException
     {
-    	title = normalize(title);
     	if (namespace(title) != FILE_NAMESPACE)
             throw new UnsupportedOperationException("Cannot retrieve Globalusage for pages other than File pages!");
-    	String url = query + "prop=globalusage&gulimit=max&titles=" + URLEncoder.encode(title, "UTF-8");
-    	String next = "";
-    	ArrayList<String[]> usage = new ArrayList<>(500);
+        
+    	StringBuilder url = new StringBuilder(query);
+        url.append("prop=globalusage&titles=");
+        title = normalize(title);
+        url.append(URLEncoder.encode(title, "UTF-8"));
     	
-    	do
+        List<String[]> usage = queryAPIResult("gu", url, null, "getGlobalUsage", (line, results) ->
         {
-            if (!next.isEmpty())
-                next = "&gucontinue=" + URLEncoder.encode(next, "UTF-8");
-            String line = fetch(url+next, "getGlobalUsageCount");
-
-            // parse gucontinue if it is there
-            if (line.contains("<query-continue>"))
-                next = parseAttribute(line, "gucontinue", 0);
-            else
-                next = null;
-
             for (int i = line.indexOf("<gu"); i > 0; i = line.indexOf("<gu", ++i))
-                usage.add(new String[] {
+                results.add(new String[] {
                     parseAttribute(line, "wiki", i),
                     parseAttribute(line, "title", i)
                 });
-        }
-        while (next != null);
+        });
 
     	return usage.toArray(new String[0][0]);
+    }
+    
+    /**
+     *  Determines whether a site is on the spam blacklist, modulo Java/PHP 
+     *  regex differences (requires extension SpamBlacklist).
+     *  @param site the site to check
+     *  @throws IOException if a network error occurs
+     */
+    public boolean isSpamBlacklisted(String site) throws IOException
+    {
+        if (globalblacklist == null)
+        {
+            WMFWiki meta = createInstance("meta.wikimedia.org");
+            globalblacklist = meta.getPageText("Spam blacklist");
+        }
+        if (localblacklist == null)
+            localblacklist = getPageText("MediaWiki:Spam-blacklist");
+        
+        // yes, I know about the spam whitelist, but I primarily intend to use
+        // this to check entire domains whereas the spam whitelist tends to 
+        // contain individual pages on websites
+        
+        Stream<String> global = Arrays.stream(globalblacklist.split("\n"));
+        Stream<String> local = Arrays.stream(localblacklist.split("\n"));
+        
+        return Stream.concat(global, local).map(str ->
+        {
+            if (str.contains("#"))
+                return str.substring(0, str.indexOf("#"));
+            else 
+                return str;
+        }).map(String::trim)
+        .filter(str -> !str.isEmpty())
+        .anyMatch(str -> site.matches(str));
     }
 }
