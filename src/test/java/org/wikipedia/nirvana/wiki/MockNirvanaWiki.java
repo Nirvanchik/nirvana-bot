@@ -32,6 +32,7 @@ import org.junit.Assert;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -63,7 +64,6 @@ public class MockNirvanaWiki extends NirvanaWiki {
     private Map<Long, String> revTextMap = new HashMap<>();
 
     private LinkedList<String> fetchQueue = new LinkedList<>();
-    private LinkedList<String> postQueue = new LinkedList<>();
 
     private User user;
 
@@ -75,13 +75,13 @@ public class MockNirvanaWiki extends NirvanaWiki {
         String summary;
         boolean minor;
         boolean bot;
-        Calendar basetime;
+        OffsetDateTime basetime;
 
         /**
          * Constructs EditInfo object with all fields specified.
          */
         public EditInfo(String title, String text, String summary, boolean minor, boolean bot,
-                int section, Calendar basetime) {
+                int section, OffsetDateTime basetime) {
             super(title, text, section);
             this.summary = summary;
             this.minor = minor;
@@ -219,7 +219,8 @@ public class MockNirvanaWiki extends NirvanaWiki {
     }
 
     @Override
-    protected String fetch(String url, String caller) throws IOException {
+    protected String fetch(String url, Map<String, String> postparams, String caller)
+            throws IOException {
         log.debug("[MOCK] fetch url: {}", url);
         Assert.assertFalse("Unexpected request: " + url, fetchQueue.isEmpty());
         return fetchQueue.removeFirst();
@@ -229,24 +230,6 @@ public class MockNirvanaWiki extends NirvanaWiki {
         fetchQueue.addLast(response);
     }
     
-    public void mockPostSequential(String response) {
-        postQueue.addLast(response);
-    }
-
-    /**
-     *  Does a text-only HTTP POST.
-     *  @param url the url to post to
-     *  @param text the text to post
-     *  @param caller the caller of this method
-     */
-    @Override
-    protected String post(String url, String text, String caller) throws IOException {
-        Assert.assertNotNull(url);
-        log.debug("[MOCK] post url: {}", url);
-        Assert.assertFalse("Unexpected post request: " + url, postQueue.isEmpty());
-        return postQueue.removeFirst();
-    }
-
     @Override
     public String[] whatTranscludesHere(String title, int... ns) throws IOException {
         log.debug("[MOCK] whatTranscludesHere: {}", title);
@@ -297,7 +280,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     }
 
     @Override
-    public String namespaceIdentifier(int namespace) throws IOException {
+    public String namespaceIdentifier(int namespace) {
         log.debug("[MOCK] namespaceIdentifier: {}", namespace);
         Assert.assertTrue(namespaceIdMap.containsKey(new Long(namespace)));
         return namespaceIdMap.get(new Long(namespace));
@@ -312,7 +295,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     }
 
     @Override
-    public int namespace(String title) throws IOException {
+    public int namespace(String title) {
         log.debug("[MOCK] namespace: {}", title);
         Assert.assertTrue(ASSERT_MSG, namespaceMap.containsKey(title));
         // TODO: mock populateNamespaceCache() instead.
@@ -347,7 +330,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     @Override
     public synchronized void edit(String title, String text, String summary, boolean minor,
-            boolean bot, int section, Calendar basetime) throws IOException, LoginException {
+            boolean bot, int section, OffsetDateTime basetime) throws IOException, LoginException {
         log.debug("[MOCK] edit: {}", title);
         EditInfo edit = new EditInfo(title, text, summary, minor, bot, section, basetime);
         edits.add(edit);
@@ -532,7 +515,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     }
 
     public class MockRevision extends Revision {
-        public MockRevision(long revid, Calendar timestamp, String title, String summary,
+        public MockRevision(long revid, OffsetDateTime timestamp, String title, String summary,
                 String user, boolean minor, boolean bot, boolean rvnew, int size) {
             super(revid, timestamp, title, summary, user, minor, bot, rvnew, size);
         }

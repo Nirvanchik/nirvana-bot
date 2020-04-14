@@ -45,6 +45,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -234,9 +235,9 @@ public class WikiBoosterTest {
     @Test
     public void testRevListConstructor() throws Exception {
         ArrayList<Revision> revs = new ArrayList<>();
-        revs.add(wiki.new Revision(5, Calendar.getInstance(Locale.ENGLISH), "page1",
+        revs.add(wiki.new Revision(5, OffsetDateTime.now(), "page1",
                 "Create page1", "user 1", false, false, true, 1000));
-        revs.add(wiki.new Revision(5, Calendar.getInstance(Locale.ENGLISH), "page2",
+        revs.add(wiki.new Revision(5, OffsetDateTime.now(), "page2",
                 "Create page2", "user 2", false, false, true, 1000));
         WikiBooster booster = WikiBooster.create(wiki, revs, null);
         booster.getPageText("page1");

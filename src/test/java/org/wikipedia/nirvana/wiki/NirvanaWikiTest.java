@@ -280,8 +280,8 @@ public class NirvanaWikiTest {
         wiki.allowLogin(true);
         wiki.mockFetchSequential("logintoken=\"ABC1\"");
         wiki.mockFetchSequential("logintoken=\"ABC2\"");
-        wiki.mockPostSequential("result=\"Success\" lgusername=\"Bob\"");
-        wiki.mockPostSequential("result=\"Success\" lgusername=\"Bob\"");
+        wiki.mockFetchSequential("result=\"Success\" lgusername=\"Bob\"");
+        wiki.mockFetchSequential("result=\"Success\" lgusername=\"Bob\"");
         String [] userrights = {"god"};
         Map<String, Object> userinfo = new HashMap<>();
         userinfo.put("rights", userrights);

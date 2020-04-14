@@ -33,6 +33,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -354,9 +356,9 @@ public class NirvanaWiki extends Wiki {
     
     @Override
     public synchronized void edit(String title, String text, String summary, boolean minor,
-            boolean bot, int section, Calendar basetime) throws IOException, LoginException {
+            boolean bot, int section, OffsetDateTime basetime) throws IOException, LoginException {
         if (!this.dumpMode) {
-            super.edit(title, text, summary, minor, bot, section, null);
+            super.edit(title, text, summary, minor, bot, section, basetime);
         } else {
             String fileNew = title + ".new.txt";
             String fileOld = title + ".old.txt";
@@ -715,13 +717,18 @@ public class NirvanaWiki extends Wiki {
      * Get page history in the specified time range.
      *
      * @param title Title of the page.
-     * @param start Starting date.
-     * @param end Ending date.
+     * @param start the EARLIEST of the two dates
+     * @param end the LATEST of the two dates
      * @return Array of revisions made in this time range.
      */
     public Revision[] getPageHistory(String title, Calendar start, Calendar end)
             throws IOException {
-        return getPageHistory(title, start, end, false);
+        // TODO: Migrate to Java8 dates.
+        OffsetDateTime odtStart = OffsetDateTime.ofInstant(start.toInstant(),
+                ZoneId.systemDefault());
+        OffsetDateTime odtEnd = OffsetDateTime.ofInstant(end.toInstant(),
+                ZoneId.systemDefault());
+        return getPageHistory(title, odtStart, odtEnd, false);
     }
 
     /**
@@ -765,8 +772,10 @@ public class NirvanaWiki extends Wiki {
         if (namespace(title) < 0) {
             throw new UnsupportedOperationException("Cannot retrieve Special: or Media: pages!");
         }
-        
-        Revision [] revs = getPageHistory(title, null, date, false);
+        // TODO: Switch to Java8 dates.
+        OffsetDateTime odtEnd = OffsetDateTime.ofInstant(date.toInstant(),
+                ZoneId.systemDefault());
+        Revision [] revs = getPageHistory(title, null, odtEnd, false);
         if (revs.length == 0) {
             return null;
         }
