@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.wiki;
 
 import org.wikipedia.Wiki;
+import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.util.FileTools;
 
@@ -721,6 +722,7 @@ public class NirvanaWiki extends Wiki {
      * @param end the LATEST of the two dates
      * @return Array of revisions made in this time range.
      */
+    @Deprecated
     public Revision[] getPageHistory(String title, Calendar start, Calendar end)
             throws IOException {
         // TODO: Migrate to Java8 dates.
@@ -729,6 +731,20 @@ public class NirvanaWiki extends Wiki {
         OffsetDateTime odtEnd = OffsetDateTime.ofInstant(end.toInstant(),
                 ZoneId.systemDefault());
         return getPageHistory(title, odtStart, odtEnd, false);
+    }
+
+    /**
+     * Gets the revision history of a page between two dates.
+     * @param title a page
+     * @param start the EARLIEST of the two dates
+     * @param end the LATEST of the two dates
+     * @return the revisions of that page in that time span
+     * @throws IOException or UncheckedIOException if a network error occurs
+     * @throws UnsupportedOperationException if <var>title</var> is a Special or Media page
+     */
+    public Revision[] getPageHistory(String title, OffsetDateTime start, OffsetDateTime end)
+            throws IOException {
+        return getPageHistory(title, start, end, false);
     }
 
     /**

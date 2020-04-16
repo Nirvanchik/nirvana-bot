@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -455,7 +456,7 @@ public class CleanArchiveBot extends BasicBot {
         int namespace;
         try {
             namespace = wiki.namespace(pagePrefix);
-        } catch (IOException e) {
+        } catch (UncheckedIOException e) {
             log.error("Failed to get namespace for {}", pagePrefix);
             throw new BotFatalError(e);
         }

@@ -34,7 +34,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -461,25 +460,25 @@ public class MockNirvanaWiki extends NirvanaWiki {
     }
 
     @Override
-    public Revision[] getPageHistory(String title, Calendar start, Calendar end)
-            throws IOException {
+    public Revision[] getPageHistory(String title, OffsetDateTime start, OffsetDateTime end,
+            boolean reverse) throws IOException {
         log.debug("[MOCK] getPageHistory: {}", title);
         Assert.assertTrue(ASSERT_MSG, pageHistoryMap.containsKey(title));
         MultiKeyMap history = pageHistoryMap.get(title);
         MultiKey key = new MultiKey(
-                new Long(start.getTimeInMillis()), end.getTimeInMillis());
+                new Long(start.toInstant().toEpochMilli()), end.toInstant().toEpochMilli());
         if (history.containsKey(key)) {
             return (Revision[]) history.get(key);
         }
         // Workaround for now() that cannot be mocked easily.
         key = new MultiKey(
-                new Long(start.getTimeInMillis()), new Long(0));
+                new Long(start.toInstant().toEpochMilli()), new Long(0));
         if (history.containsKey(key)) {
             return (Revision[]) history.get(key);
         }
         // Another workaround for now() that cannot be mocked easily.
         key = new MultiKey(
-                new Long(0), end.getTimeInMillis());
+                new Long(0), end.toInstant().toEpochMilli());
         if (history.containsKey(key)) {
             return (Revision[]) history.get(key);
         }

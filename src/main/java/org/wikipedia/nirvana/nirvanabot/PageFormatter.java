@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -194,8 +195,8 @@ public class PageFormatter {
         }
 
         // TODO: WTF we put now() as an earliest date?
-        Revision []revs = wiki.getPageHistory(portalSettingsPage, Calendar.getInstance(),
-                revNewPages.getTimestamp());
+        Revision []revs = wiki.getPageHistory(portalSettingsPage, OffsetDateTime.now(),
+                revNewPages.getTimestamp(), false);
         if (revs.length == 0) {
             // No changes made in the time period after the last new pages update.
             return;

@@ -28,6 +28,7 @@ import org.wikipedia.nirvana.util.XmlTools;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.time.OffsetDateTime;
 import java.util.Calendar;
 
 @JsonIgnoreProperties({"getDateAsInt","dateAsInt","getQuarter","quarter"})
@@ -53,22 +54,16 @@ public class ArchiveItem {
 	}
 
 	public ArchiveItem(Revision r) {
-        this.article = XmlTools.removeEscape(r.getPage());
-        this.user = XmlTools.removeEscape(r.getUser());
-		Calendar c = r.getTimestamp();
-		this.year = c.get(Calendar.YEAR);
-		this.month = c.get(Calendar.MONTH);
-		this.day = c.get(Calendar.DAY_OF_MONTH);
-		this.size = r.getSize();
+        this(r, r.getSize());
 	}
 
 	public ArchiveItem(Revision r, int size) {
         this.article = XmlTools.removeEscape(r.getPage());
         this.user = XmlTools.removeEscape(r.getUser());
-		Calendar c = r.getTimestamp();
-		this.year = c.get(Calendar.YEAR);
-		this.month = c.get(Calendar.MONTH);
-		this.day = c.get(Calendar.DAY_OF_MONTH);
+        OffsetDateTime datetime = r.getTimestamp();
+        this.year = datetime.getYear();
+        this.month = datetime.getMonthValue();
+        this.day = datetime.getDayOfMonth();
 		this.size = size;
 	}
 

@@ -23,9 +23,10 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import static org.mockito.Mockito.anyObject;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -46,7 +47,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -54,6 +54,9 @@ import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -183,9 +186,9 @@ public class PageFormatterTest {
     private void mockNewPagesTopRevision(boolean exists) throws IOException {
         Wiki.Revision r = null;
         if (exists) {
-            Calendar time = Calendar.getInstance();
-            time.setTimeInMillis(1583614545000L);
-            r = wiki.new Revision(1, time, "page", "edit settings", "User1",
+            OffsetDateTime datetime = OffsetDateTime.ofInstant(
+                    Instant.ofEpochMilli(1583614545000L), ZoneId.systemDefault());
+            r = wiki.new Revision(1, datetime, "page", "edit settings", "User1",
                     false, false, false, 1000);
         }
         when(wiki.getTopRevision(eq("Portal:A/New pages"))).thenReturn(r);
@@ -237,7 +240,7 @@ public class PageFormatterTest {
         withHeaderFooter();
         PageFormatter formatter = create();
         mockNewPagesTopRevision(true);
-        when(wiki.getPageHistory(anyString(), anyObject(), anyObject()))
+        when(wiki.getPageHistory(anyString(), anyObject(), anyObject(), anyBoolean()))
                 .thenReturn(new Wiki.Revision[] {});
         formatter.getHeaderFooterChanges();
         Assert.assertEquals(HEADER, formatter.headerLastUsed);
@@ -252,7 +255,7 @@ public class PageFormatterTest {
         withHeaderFooter();
         PageFormatter formatter = create();
         mockNewPagesTopRevision(true);
-        when(wiki.getPageHistory(anyString(), anyObject(), anyObject()))
+        when(wiki.getPageHistory(anyString(), anyObject(), anyObject(), anyBoolean()))
                 .thenReturn(new Wiki.Revision[] {});
 
         formatter.getHeaderFooterChanges();
@@ -265,7 +268,8 @@ public class PageFormatterTest {
         mockSystemTime.add1Day();
         formatter.getHeaderFooterChanges();
         Mockito.verify(wiki, times(1)).getTopRevision(anyString());
-        Mockito.verify(wiki, times(1)).getPageHistory(anyString(), anyObject(), anyObject());
+        Mockito.verify(wiki, times(1)).getPageHistory(anyString(), anyObject(), anyObject(),
+                anyBoolean());
     }
 
     /**
@@ -278,7 +282,7 @@ public class PageFormatterTest {
         mockNewPagesTopRevision(true);
         Wiki.Revision revSettings = Mockito.mock(Wiki.Revision.class);
         when(revSettings.getPrevious()).thenReturn(null);
-        when(wiki.getPageHistory(anyString(), anyObject(), anyObject()))
+        when(wiki.getPageHistory(anyString(), anyObject(), anyObject(), anyBoolean()))
                 .thenReturn(new Wiki.Revision[] {revSettings});
         formatter.getHeaderFooterChanges();
         Assert.assertEquals(HEADER, formatter.headerLastUsed);
@@ -302,7 +306,7 @@ public class PageFormatterTest {
                 "}}\n";
         when(revSettingsOld.getText()).thenReturn(oldSettings);
         when(revSettingsNew.getPrevious()).thenReturn(revSettingsOld);
-        when(wiki.getPageHistory(anyString(), anyObject(), anyObject()))
+        when(wiki.getPageHistory(anyString(), anyObject(), anyObject(), anyBoolean()))
                 .thenReturn(new Wiki.Revision[] {revSettingsNew});
         when(wiki.namespaceIdentifier(eq(Wiki.USER_NAMESPACE))).thenReturn("User");
         formatter.getHeaderFooterChanges();

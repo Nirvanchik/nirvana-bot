@@ -37,6 +37,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -202,9 +205,9 @@ public class LocalizationManager {
         boolean cacheIsDirty = false;
         if (file.exists()) {
             Revision r = wiki.getTopRevision(wikiTranslationPage);
-            Calendar modified = Calendar.getInstance();
-            modified.setTimeInMillis(file.lastModified());
-            if (r.getTimestamp().after(modified)) {
+            OffsetDateTime modified = OffsetDateTime.ofInstant(
+                    Instant.ofEpochMilli(file.lastModified()), ZoneId.systemDefault());
+            if (r.getTimestamp().isAfter(modified)) {
                 cacheIsDirty = true;
             }
             if (file.lastModified() < minCacheTimestamp) {

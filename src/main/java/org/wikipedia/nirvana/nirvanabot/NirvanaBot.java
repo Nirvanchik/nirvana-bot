@@ -99,6 +99,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -768,14 +769,16 @@ public class NirvanaBot extends BasicBot{
             	log.error(e);	            
             }
         }
-		
+
         try {
+            // TODO: Why not use lazy initializer for this?
 	        userNamespace = wiki.namespaceIdentifier(Wiki.USER_NAMESPACE);
-        } catch (IOException e) {
+        } catch (UncheckedIOException e) {
+            // TODO: Throw BotFatalError() instead
 	        log.fatal("Failed to retrieve user namespace");
 	        return;
         }
-        
+
 		// this is a workaround for bad support of keep alive feature in HttpUrlConnection
 		// without it, writing of big articles (~500KB) may hang 
 		// (when reading answer from server after writing)

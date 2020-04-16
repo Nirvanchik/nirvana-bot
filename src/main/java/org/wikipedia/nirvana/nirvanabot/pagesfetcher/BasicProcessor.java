@@ -38,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -162,7 +163,12 @@ public abstract class BasicProcessor implements PageListProcessor {
 		                	continue;
 		                }
                 	}
-                	RevisionWithId page = new RevisionWithId(wiki, 0, Calendar.getInstance(), title, "", "", false, false, true, 0, id);
+                    // TODO: This code looks ugly. Rework it.
+                    // We don't know real revision information and create some fake RevisionWithId
+                    // object where only title is only known and other fields are fake and
+                    // dangerous to use because wrong and unknown.
+                    RevisionWithId page = new RevisionWithId(wiki, 0, OffsetDateTime.now(), title,
+                            "", "", false, false, true, 0, id);
                     pages.add(title);
                     log.debug("Add page to list: {}", title);
                     pageInfoList.add(page);

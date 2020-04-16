@@ -23,10 +23,10 @@
 
 package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
-import java.util.Calendar;
-
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
+
+import java.time.OffsetDateTime;
 
 /**
  * @author kin
@@ -35,20 +35,20 @@ import org.wikipedia.Wiki.Revision;
 public class RevisionWithId extends Revision {
 	private long id;
 
-	public RevisionWithId(Wiki wiki, long revid, Calendar timestamp,
+    public RevisionWithId(Wiki wiki, long revid, OffsetDateTime timestamp,
 			String title, String summary, String user, boolean minor,
 			boolean bot, boolean rvnew, int size, long id) {
 		wiki.super(revid, timestamp, title, summary, user, minor, bot, rvnew, size);
 		this.id = id;
 	}
-	
+
 	public RevisionWithId(Wiki wiki, Revision r, long id) {
 		wiki.super(r.getRevid(), r.getTimestamp(), r.getPage(), 
 				r.getSummary(), r.getUser(), r.isMinor(), r.isBot(), r.isNew(), r.getSize());
 		this.id = id;
 	}
-	
+
 	public long getId() { return this.id; }
 	public void setId(long id) { this.id = id; }
-	
+
 }

@@ -41,6 +41,7 @@ import org.apache.commons.lang3.time.StopWatch;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -147,7 +148,8 @@ public class StatisticsBot extends BasicBot {
 		String userNamespace;
         try {
 	        userNamespace = wiki.namespaceIdentifier(Wiki.USER_NAMESPACE);
-        } catch (IOException e1) {
+        } catch (UncheckedIOException e) {
+            // TODO: Throw BotFatalError?
 	        log.fatal("failed to get user namespace");
 	        return;
         }

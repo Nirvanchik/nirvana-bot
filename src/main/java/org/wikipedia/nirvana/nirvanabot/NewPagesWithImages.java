@@ -35,10 +35,14 @@ import org.wikipedia.nirvana.util.XmlTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -56,7 +60,7 @@ public class NewPagesWithImages extends NewPages {
 	public static class RevisionWithImage extends RevisionWithId {
 		String image;
 
-		public RevisionWithImage(Wiki wiki, long revid, Calendar timestamp,
+        public RevisionWithImage(Wiki wiki, long revid, OffsetDateTime timestamp,
 				String title, String summary, String user, boolean minor,
 				boolean bot, boolean rvnew, int size, long id, String image) {
 			super(wiki, revid, timestamp, title, summary, user, minor, bot, rvnew, size, id);
@@ -139,7 +143,9 @@ public class NewPagesWithImages extends NewPages {
             	log.debug("image found = "+image);
             	
             		if(page==null) {
-            			page = new RevisionWithImage(wiki, revId, Calendar.getInstance(), title, "", "",false,false, true, 0, id, image);
+                        // TODO: This looks ugly. Revision object is actually fake.
+                        page = new RevisionWithImage(wiki, revId, OffsetDateTime.now(), title, "",
+                                "", false, false, true, 0, id, image);
             		} else {
             			((RevisionWithImage)page).setImage(image);
             		}            		
@@ -168,9 +174,11 @@ public class NewPagesWithImages extends NewPages {
                 String title = XmlTools.removeEscape(page.getPage());
 		    	String time = null;
 		    	if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) 
-		    		time = page.getTimestamp().getTime().toString();
+                    // TODO: Is this needed? Is this used?
+                    throw new NotImplementedException("long date format not implemented");
 		    	else {
-		    		time = String.format("%1$tFT%1$tTZ",page.getTimestamp());
+                    time = page.getTimestamp().atZoneSameInstant(ZoneOffset.UTC)
+                            .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "Z";
 		    	}
 		    	/*
 		    	log.debug("title -> ["+title+"]");

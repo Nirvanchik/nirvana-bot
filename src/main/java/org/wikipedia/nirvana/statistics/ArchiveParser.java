@@ -37,7 +37,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.ZoneId;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -369,6 +371,7 @@ public class ArchiveParser {
 		return item;
 	}
 
+    // TODO: Migrate to Java8 dates
 	Revision tryFindAnotherRev(String article, Revision r) throws IOException {
 		Revision []revs = null;
 		//HashMap<String,Object> info = null;
@@ -377,7 +380,8 @@ public class ArchiveParser {
 			//info = m_wiki.getPageInfo(article);
 		redirect = wiki.resolveRedirect(article);
 		String realPage = (redirect==null)?article:redirect;
-		Calendar c1 = r.getTimestamp();
+        Calendar c1 = GregorianCalendar.from(
+                r.getTimestamp().atZoneSameInstant(ZoneId.systemDefault()));
 		Calendar c2 = Calendar.getInstance();
 		c2.set(c1.get(Calendar.YEAR)+2, 0, 1); // we give 2 years chance to find next rev
 		r = null;

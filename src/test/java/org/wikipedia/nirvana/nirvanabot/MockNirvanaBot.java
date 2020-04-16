@@ -48,6 +48,8 @@ import org.mockito.Mockito;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -336,6 +338,7 @@ public class MockNirvanaBot extends NirvanaBot {
         return revisions;
     }
 
+    // TODO: Migrate to Java8 dates
     private Calendar readTimestamp(Object field) {
         if (field instanceof Long || field instanceof Integer) {
             long timestamp = field instanceof Long ? (Long) field : (Integer) field;
@@ -359,6 +362,8 @@ public class MockNirvanaBot extends NirvanaBot {
         Object timestampField = revisionJson.get("timestamp");
         Assert.assertNotNull("'timestamp' item must not be null", timestampField);
         Calendar timestamp = readTimestamp(timestampField);
+        OffsetDateTime datetime = OffsetDateTime.ofInstant(timestamp.toInstant(),
+                ZoneId.systemDefault());
         String title = (String) revisionJson.get("title");
         String summary = (String) revisionJson.get("summary");
         String user = (String) revisionJson.get("user");
@@ -367,7 +372,7 @@ public class MockNirvanaBot extends NirvanaBot {
         boolean rvnew = (Boolean) revisionJson.get("rvnew");
         int size = (int)(long)(Long) revisionJson.get("size");
         MockRevision r = wiki.new MockRevision(
-                revid, timestamp, title, summary, user, minor, bot, rvnew, size);
+                revid, datetime, title, summary, user, minor, bot, rvnew, size);
         if (revisionJson.containsKey("previous")) {
             r.setPrevious((Long) revisionJson.get("previous")); 
         }

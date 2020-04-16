@@ -51,14 +51,19 @@ import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.wikipedia.nirvana.wiki.WikiBooster;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -361,15 +366,17 @@ public class NewPages implements PortalModule{
 		protected void addOldItem(String item) {
 			subset.add(item);
 		}
-		
+
 		protected String formatTimeString(Revision rev) {
-			if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) 
-	    		return rev.getTimestamp().getTime().toString();
+			if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long"))
+                // TODO: Is this needed? Is this used?
+                throw new NotImplementedException("long date format not implemented");
 	    	else {
-	    		return String.format("%1$tFT%1$tTZ",rev.getTimestamp());
+                return rev.getTimestamp().atZoneSameInstant(ZoneOffset.UTC)
+                        .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "Z";
 	    	}
 		}
-		
+
 		String formatTitleString(String title) {
 	    	String titleToInsert = title;
             if (namespace != 0) {
@@ -1004,7 +1011,8 @@ public class NewPages implements PortalModule{
     	}   		
     	return;
 	}
-		
+
+    // TODO: Migrate to Java8 dates.
 	public static Calendar getNewPagesItemDate(NirvanaWiki wiki, String item) {
 	    assert initialized;
 		Calendar c = null;
@@ -1027,7 +1035,8 @@ public class NewPages implements PortalModule{
                 sLog.warn(String.format("Article %s not found", article));
 			}
 			if(r!=null) {
-				return r.getTimestamp();
+                return GregorianCalendar.from(
+                        r.getTimestamp().atZoneSameInstant(ZoneId.systemDefault()));
 			}
 			foundBrackets = true;
 		}
@@ -1057,7 +1066,10 @@ public class NewPages implements PortalModule{
 				} catch (IOException e) {
                     sLog.warn(String.format("Page %s not found", s));
 				}
-				if(r!=null) return r.getTimestamp();
+                if (r != null) {
+                    return GregorianCalendar.from(
+                            r.getTimestamp().atZoneSameInstant(ZoneId.systemDefault()));
+                }
 			}
 		}
 		return null;

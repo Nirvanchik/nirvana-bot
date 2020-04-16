@@ -31,7 +31,9 @@ import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +76,7 @@ public class NewPagesWeek extends NewPages {
 		NewPagesBuffer buffers[] = new NewPagesBuffer[DAYS];
 		Calendar dates[] = new Calendar[DAYS];
 
+        // TODO: Migrate to Java8 dates.
 		public WeekBuffer(NirvanaWiki wiki) {
 			super(wiki);
             Calendar cStart = now();
@@ -102,7 +105,9 @@ public class NewPagesWeek extends NewPages {
 	        if (!subset.contains(element))
 	        {	            
 	            for (int i = 0; i< DAYS; i++) {
-	            	if (rev.getTimestamp().compareTo(dates[i])>=0) {
+                    Calendar revTimestamp = GregorianCalendar.from(
+                            rev.getTimestamp().atZoneSameInstant(ZoneId.systemDefault())); 
+                    if (revTimestamp.compareTo(dates[i]) >= 0) {
 	            		buffers[i].addNewItem(title, deleted, rev);
 	            		subset.add(element);
 	    	            if (includedPages != null) {

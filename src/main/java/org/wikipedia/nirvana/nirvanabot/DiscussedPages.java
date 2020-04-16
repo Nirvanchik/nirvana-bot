@@ -33,9 +33,12 @@ import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -57,10 +60,12 @@ public class DiscussedPages extends Pages {
         public DiscussedPagesBuffer(NirvanaWiki wiki) {
 	        super(wiki);	        
         }
-        
+
         @Override
         protected String formatTimeString(Revision rev) {
-            return dateTools.printDateDayMonthYearGenitive(rev.getTimestamp());
+            // TODO: Migrate it to Java8 dates
+            return dateTools.printDateDayMonthYearGenitive(GregorianCalendar.from(
+                    rev.getTimestamp().atZoneSameInstant(ZoneId.systemDefault())));
 		}
 
         @Override
@@ -121,23 +126,25 @@ public class DiscussedPages extends Pages {
         }
 
         @Override
-        public Calendar getTimestamp()
+        public OffsetDateTime getTimestamp()
         {
         	// This is for sort() only
             if (discussion != null) {
-            	return discussion.discussionDate;
+                return OffsetDateTime.ofInstant(discussion.discussionDate.toInstant(),
+                        ZoneId.systemDefault());
             } else {
             	return super.getTimestamp();
             }
         }
-		
+
         public DiscussionInfo getDiscussion() {
         	return discussion;
         }
         
 	}
-	
+
 	public static class DiscussionInfo implements Comparable<DiscussionInfo>{
+        // TODO: Use Java8 dates
 		Calendar discussionDate;
 		String discussionPage;
 		DiscussionPageTemplate template;

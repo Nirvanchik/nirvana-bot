@@ -48,6 +48,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -115,14 +119,14 @@ public class LocalizationManagerTest {
         NirvanaWiki wiki = mock(NirvanaWiki.class);
         when(wiki.getPageText(eq(WIKI_TRANSLATIONS))).thenReturn(translation);
         when(wiki.exists(eq(WIKI_TRANSLATIONS))).thenReturn(true);
-        Calendar c = Calendar.getInstance();
+        OffsetDateTime datetime =  OffsetDateTime.now();
         if (old) {
-            c.add(Calendar.DAY_OF_MONTH, -1);
+            datetime = datetime.minusDays(1);
         } else {
-            c.add(Calendar.DAY_OF_MONTH, 1);
+            datetime = datetime.plusDays(1);
         }
-        Revision r = wiki.new Revision(0, c, WIKI_TRANSLATIONS, "edit", "Bot", false, false, false,
-                0);
+        Revision r = wiki.new Revision(0, datetime, WIKI_TRANSLATIONS, "edit", "Bot", false, false,
+                false, 0);
         when(wiki.getTopRevision(eq(WIKI_TRANSLATIONS))).thenReturn(r);
         return wiki;
     }

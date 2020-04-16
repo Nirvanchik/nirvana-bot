@@ -279,8 +279,8 @@ public class NirvanaWikiTest {
         MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz");
         wiki.allowLogin(true);
         wiki.mockFetchSequential("logintoken=\"ABC1\"");
-        wiki.mockFetchSequential("logintoken=\"ABC2\"");
         wiki.mockFetchSequential("result=\"Success\" lgusername=\"Bob\"");
+        wiki.mockFetchSequential("logintoken=\"ABC2\"");
         wiki.mockFetchSequential("result=\"Success\" lgusername=\"Bob\"");
         String [] userrights = {"god"};
         Map<String, Object> userinfo = new HashMap<>();
