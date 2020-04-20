@@ -426,7 +426,7 @@ public class Wiki implements Serializable
     private ZoneId timezone = ZoneId.of("UTC");
 
     // user management
-    private final CookieManager cookies = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
+    private final CookieManager cookies;
     private User user;
     private int statuscounter = 0;
 
@@ -542,7 +542,7 @@ public class Wiki implements Serializable
         // TODO: remove this
         logger.setLevel(loglevel);
         logger.log(Level.CONFIG, "[{0}] Using Wiki.java {1}", new Object[] { domain, version });
-        CookieHandler.setDefault(cookies);
+        cookies = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
         initVars();
     }
     
@@ -7286,8 +7286,22 @@ public class Wiki implements Serializable
             tries--;
             try
             {
-                // connect
+                // Cookie handling should be handled locally instead of setting
+                // the system wide cookie manager to make sure a local state is
+                // saved per instance
+                // modified from https://stackoverflow.com/questions/16150089
+                // see https://github.com/MER-C/wiki-java/issues/157
                 URLConnection connection = makeConnection(url);
+                CookieStore store = cookies.getCookieStore();
+                List<HttpCookie> cookielist = store.getCookies();
+                if (!cookielist.isEmpty())
+                {
+                    StringJoiner sb = new StringJoiner(";");
+                    for (HttpCookie cookie : cookielist)
+                        sb.add(cookie.toString());
+                    connection.setRequestProperty("Cookie", sb.toString());
+                }
+
                 if (postparams != null)
                     connection.setDoOutput(true);
                 connection.connect();
@@ -7305,6 +7319,17 @@ public class Wiki implements Serializable
                     tries++;
                     continue;
                 }
+
+                // Parse cookies from response and store for later. Header fields
+                // are case-insensitive and MW may serve cookies split into both
+                // 'set-cookie' and 'Set-Cookie' headers (see T249680).
+                Map<String, List<String>> headerFields = connection.getHeaderFields();
+                headerFields.entrySet().stream()
+                    .filter(e -> "set-cookie".equalsIgnoreCase(e.getKey())) // key can be null
+                    .map(Map.Entry::getValue)
+                    .flatMap(List::stream)
+                    .flatMap(cookieHeader -> HttpCookie.parse(cookieHeader).stream())
+                    .forEach(cookie -> store.add(null, cookie));
 
                 // get the text
                 String line;
