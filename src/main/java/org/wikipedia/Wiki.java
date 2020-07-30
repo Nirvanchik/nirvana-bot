@@ -31,6 +31,7 @@ import java.nio.file.*;
 import java.text.Normalizer;
 import java.time.*;
 import java.time.format.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.*;
 import java.util.logging.*;
@@ -2741,12 +2742,16 @@ public class Wiki implements Serializable
         if (start != null)
         {
             url.append(reverse ? "&rvstart=" : "&rvend=");
-            url.append(start.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            url.append(start.withOffsetSameInstant(ZoneOffset.UTC)
+                    .truncatedTo(ChronoUnit.MICROS)
+                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         }
         if (end != null)
         {
             url.append(reverse ? "&rvend=" : "&rvstart=");
-            url.append(end.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            url.append(end.withOffsetSameInstant(ZoneOffset.UTC)
+                    .truncatedTo(ChronoUnit.MICROS)
+                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         }
 
         List<Revision> revisions = queryAPIResult("rv", url, null, "getPageHistory", (line, results) ->
