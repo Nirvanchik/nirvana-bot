@@ -427,7 +427,7 @@ public class Wiki implements Serializable
     private ZoneId timezone = ZoneId.of("UTC");
 
     // user management
-    private final CookieManager cookies;
+    protected final CookieManager cookies;
     private User user;
     private int statuscounter = 0;
 

@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.HttpCookie;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -851,7 +852,9 @@ public class NirvanaWiki extends Wiki {
             FailedLoginException {
         this.username = username;
         this.password = password;
-        super.login(username, password);
+        char[] tempPassword = Arrays.copyOf(password, password.length);
+        // This will erase data in tempPassword - that is why not password
+        super.login(username, tempPassword);
     }
 
     /**
@@ -861,5 +864,13 @@ public class NirvanaWiki extends Wiki {
     public synchronized void relogin() throws FailedLoginException, IOException {
         this.logout();
         this.login(this.username, this.password);
+    }
+
+    public void dumpCookies() {
+        List<HttpCookie> cookieList = cookies.getCookieStore().getCookies();
+        log.info("Show cookies for wiki: {}", this.domain);
+        for (HttpCookie coo: cookieList) {
+            log.info("cookie {} : {}", coo.getName(), coo.getValue());
+        }
     }
 }

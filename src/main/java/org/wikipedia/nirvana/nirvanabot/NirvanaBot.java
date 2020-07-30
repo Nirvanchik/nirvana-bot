@@ -936,7 +936,9 @@ public class NirvanaBot extends BasicBot{
 									if(data.portalModule.update(wiki, reportItem, COMMENT)) {
 										reporter.portalUpdated();
 										reportItem.updated();
-									} 
+                                    }
+                                    wiki.dumpCookies();
+                                    commons.dumpCookies();
                                     if (UPDATE_PAUSE > 0) sleep(UPDATE_PAUSE);
 								}        							
         					} else {
