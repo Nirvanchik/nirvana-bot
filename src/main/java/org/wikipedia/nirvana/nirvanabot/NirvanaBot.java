@@ -1034,7 +1034,32 @@ public class NirvanaBot extends BasicBot{
     				log.fatal(e.toString());
     				fatalProblem = true;
     				break;
-    				//e.printStackTrace();
+                } catch (RuntimeException e) {
+                    log.error(e.toString());
+                    if (tryNumber < tryCount) {
+                        if (e.getMessage().equals("Unexpected Dislogin")) {
+                            try {
+                                log.info("Dislogin detected. RETRY AGAIN after relogin...");
+                                wiki.relogin();
+                                retry = true;
+                            } catch (FailedLoginException | IOException e1) {
+                                log.fatal(e.toString());
+                                reporter.portalError();
+                                reportItem.error();
+                                mayBeSomeServiceProblem = true;
+                                serviceManager.getMainWikiService().setNeedsRelogin(true);
+                                log.error("OOOOPS!!!", e);  // print stack trace
+                            }
+                        } else {
+                            log.info("RETRY AGAIN");
+                            retry = true;    
+                        }
+                    } else {
+                        reporter.portalError();
+                        reportItem.error();
+                        //e.printStackTrace();
+                        log.error("OOOOPS!!!", e); // print stack trace
+                    }
     			} catch (Exception e) {
     				log.error(e.toString()); 
                     if (tryNumber < tryCount) {

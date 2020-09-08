@@ -857,6 +857,13 @@ public class NirvanaWiki extends Wiki {
         super.login(username, tempPassword);
     }
 
+    @Override
+    public synchronized void logout() {
+        this.username = null;
+        this.password = null;
+        super.logout();
+    }
+
     /**
      * Relogin (log out and immediately log in).
      * Call it when there was no interaction with Wiki for too long.
@@ -864,6 +871,17 @@ public class NirvanaWiki extends Wiki {
     public synchronized void relogin() throws FailedLoginException, IOException {
         this.logout();
         this.login(this.username, this.password);
+    }
+
+    @Override
+    public String getToken(String type) throws IOException {
+        String token = super.getToken(type);
+        if (username != null && type.equals("csrf")) {
+            if (token.isEmpty() || token.equals("+\\")) {
+                throw new RuntimeException("Unexpected Dislogin");
+            }
+        }
+        return token;
     }
 
     public void dumpCookies() {
