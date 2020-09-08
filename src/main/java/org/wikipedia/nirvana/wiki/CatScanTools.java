@@ -72,6 +72,7 @@ public class CatScanTools {
     private static final String PETSCAN_DOMAIN = "petscan.wmflabs.org";
     private static final String PETSCAN_PATH = "/";
     public static final String HTTP = "http";
+    public static final String HTTPS = "https";
     private static final int TIMEOUT_DELAY = 10000; // 10 sec
 
     private static boolean fastMode = false;
@@ -837,7 +838,7 @@ public class CatScanTools {
             InterruptedException {
         URI uri = null;
         try {
-            uri = new URI(HTTP, service.domain, service.path, query, null);
+            uri = new URI(HTTPS, service.domain, service.path, query, null);
         } catch (URISyntaxException e) {            
             throw new RuntimeException(e);
         }
