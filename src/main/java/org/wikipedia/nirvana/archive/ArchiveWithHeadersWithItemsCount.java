@@ -77,6 +77,9 @@ public class ArchiveWithHeadersWithItemsCount extends ArchiveWithHeaders {
 	}
 
     private List<HeaderFormatItem> parsePattern(String headerFormat) {
+        if (headerFormat == null) {
+            return null;
+        }
 		ArrayList<HeaderFormatItem> pattern = new ArrayList<HeaderFormatItem>();
 		int first = 0;
 		//int index = 0;
