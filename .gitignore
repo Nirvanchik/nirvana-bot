@@ -29,3 +29,4 @@
 
 # Some test code that I don't want to commit
 /src/main/java/org/wikipedia/nirvana/test/*
+/build/
