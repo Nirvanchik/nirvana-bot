@@ -64,6 +64,8 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     private LinkedList<String> fetchQueue = new LinkedList<>();
 
+    private String token;
+
     private User user;
 
     private List<EditInfo> edits = new ArrayList<>();
@@ -507,6 +509,15 @@ public class MockNirvanaWiki extends NirvanaWiki {
         log.debug("[MOCK] getRevisionText: {}", revId);
         Assert.assertTrue(ASSERT_MSG, revTextMap.containsKey(revId));
         return revTextMap.get(revId);
+    }
+
+    public void mockToken(String token) {
+        this.token = token;
+    }
+
+    @Override
+    public String getToken(String type) throws IOException {
+        return token;
     }
 
     public void debug() {

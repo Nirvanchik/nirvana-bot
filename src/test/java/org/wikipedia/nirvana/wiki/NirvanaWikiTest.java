@@ -33,6 +33,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -278,9 +279,9 @@ public class NirvanaWikiTest {
     public void loginAndRelogin() throws Exception {
         MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz");
         wiki.allowLogin(true);
-        wiki.mockFetchSequential("logintoken=\"ABC1\"");
+        wiki.mockToken("ABC1");
         wiki.mockFetchSequential("result=\"Success\" lgusername=\"Bob\"");
-        wiki.mockFetchSequential("logintoken=\"ABC2\"");
+        wiki.mockToken("ABC2");
         wiki.mockFetchSequential("result=\"Success\" lgusername=\"Bob\"");
         String [] userrights = {"god"};
         Map<String, Object> userinfo = new HashMap<>();
@@ -296,6 +297,38 @@ public class NirvanaWikiTest {
         Assert.assertEquals(user1.getUsername(), "Bob");
 
         Assert.assertTrue(user1 != user2);
+    }
+
+    @Ignore("Requires to mock getPageInfo()")
+    @Test
+    public void doNotEditWhenDislogin() throws Exception {
+        MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz");
+        wiki.allowLogin(true);
+        wiki.allowEdits(true);
+        wiki.mockToken("ABC1");
+        wiki.mockFetchSequential("result=\"Success\" lgusername=\"Bob\"");
+
+        String [] userrights = {"god"};
+        Map<String, Object> userinfo = new HashMap<>();
+        userinfo.put("rights", userrights);
+        wiki.mockUserInfo("Bob", userinfo);
+
+        wiki.login("Bob", "12345");
+        User user1 = wiki.getCurrentUser();
+        Assert.assertEquals(user1.getUsername(), "Bob");
+        
+        wiki.mockToken("+\\");
+
+        try {
+            wiki.edit("Some Page", "empty", "fake edit for test");
+        } catch (RuntimeException e) {
+            if (e.getMessage().equals("Unexpected Dislogin")) {
+                return;
+            }
+            throw e;
+        }
+        
+        Assert.fail("edit wat not prevented after dislogin");
     }
 
     @Test

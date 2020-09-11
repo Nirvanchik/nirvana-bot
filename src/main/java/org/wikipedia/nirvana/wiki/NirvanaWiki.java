@@ -79,6 +79,7 @@ public class NirvanaWiki extends Wiki {
     private String dumpFolder = null;
     protected boolean logDomain = false;
 
+    private boolean loggedIn = false;
     private String username;
     private char[] password;
     
@@ -855,13 +856,13 @@ public class NirvanaWiki extends Wiki {
         char[] tempPassword = Arrays.copyOf(password, password.length);
         // This will erase data in tempPassword - that is why not password
         super.login(username, tempPassword);
+        loggedIn = true;
     }
 
     @Override
     public synchronized void logout() {
-        this.username = null;
-        this.password = null;
         super.logout();
+        this.loggedIn = false;
     }
 
     /**
@@ -876,7 +877,7 @@ public class NirvanaWiki extends Wiki {
     @Override
     public String getToken(String type) throws IOException {
         String token = super.getToken(type);
-        if (username != null && type.equals("csrf")) {
+        if (loggedIn && type.equals("csrf")) {
             if (token.isEmpty() || token.equals("+\\")) {
                 throw new RuntimeException("Unexpected Dislogin");
             }
@@ -884,6 +885,9 @@ public class NirvanaWiki extends Wiki {
         return token;
     }
 
+    /**
+     * Print cookies to log. Used for critical problems (dislogin) debug.
+     */
     public void dumpCookies() {
         List<HttpCookie> cookieList = cookies.getCookieStore().getCookies();
         log.info("Show cookies for wiki: {}", this.domain);
