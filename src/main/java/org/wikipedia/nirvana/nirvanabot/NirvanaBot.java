@@ -205,8 +205,8 @@ public class NirvanaBot extends BasicBot{
     private static String COMMENT = "обновление";
 
     // TODO: WTF is it static?
-    protected static boolean GENERATE_REPORT = false;
-    protected static boolean UPDATE_STATUS = false;
+    protected boolean enableReport = false;
+    protected boolean enableStatus = false;
 	private static String REPORT_FILE_NAME = "report.txt";
     private static String REPORT_WIKI_PAGE = "Участник:NirvanaBot/Новые статьи/Отчёт";
     private BotReporter.Verbosity detailedReportWikiVerbosity = BotReporter.Verbosity.NORMAL;
@@ -439,9 +439,9 @@ public class NirvanaBot extends BasicBot{
 				// ignore
 			}
 		}
-		
-		GENERATE_REPORT = properties.getProperty("statistics",GENERATE_REPORT?YES:NO).equals(YES);
-		UPDATE_STATUS = properties.getProperty("update-status",UPDATE_STATUS?YES:NO).equals(YES);
+
+        enableReport = properties.getProperty("statistics", enableReport? YES: NO).equals(YES);
+        enableStatus = properties.getProperty("update-status", enableStatus? YES: NO).equals(YES);
 		REPORT_FILE_NAME = properties.getProperty("statistics-file",REPORT_FILE_NAME);
 		REPORT_WIKI_PAGE = properties.getProperty("statistics-wiki",REPORT_WIKI_PAGE);
         detailedReportWikiVerbosity = propertyToEnum(properties, "statistics-wiki-verbosity",
@@ -762,7 +762,7 @@ public class NirvanaBot extends BasicBot{
 
         initLocalizedStrings();
 
-        if (UPDATE_STATUS) {
+        if (enableStatus) {
         	try {
 	            reporter.updateStartStatus(STATUS_WIKI_PAGE, STATUS_WIKI_TEMPLATE);
             } catch (LoginException | IOException e) {
@@ -1138,7 +1138,7 @@ public class NirvanaBot extends BasicBot{
     }
 
     private void updateDetailedReport(BotReporter reporter) throws InterruptedException {
-        if (!GENERATE_REPORT) {
+        if (!enableReport) {
             return;
         }
         if (StringUtils.containsIgnoreCase(REPORT_FORMAT, "txt")) {                    
@@ -1155,7 +1155,7 @@ public class NirvanaBot extends BasicBot{
     }
 
     private void updateStatus(BotReporter reporter) throws InterruptedException {
-        if (!UPDATE_STATUS) {
+        if (!enableStatus) {
             return;
         }
         if (!ensureWikiIsOk()) {

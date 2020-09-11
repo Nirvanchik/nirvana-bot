@@ -207,11 +207,11 @@ public class NirvanaBotUnitTest {
         }
 
         public void enableStatusReport() {
-            UPDATE_STATUS = true;
+            enableStatus = true;
         }
 
         public void enableDetailedWikiReport() {
-            GENERATE_REPORT = true;
+            enableReport = true;
             REPORT_FORMAT = "wiki";
         }
     }
