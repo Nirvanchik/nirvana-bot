@@ -446,9 +446,9 @@ public class ReportItem {
                 report.append(total.toString());
             } else {
                 for (int i = 0; i < stat.size(); i++) {
-                    report.append(i + 1).append(" -> ").append(stat.get(i).toString()).append(", ");
+                    report.append(i + 1).append(" → ").append(stat.get(i).toString()).append(", ");
                 }
-                report.append("total -> ").append(total.toString());
+                report.append("total → ").append(total.toString());
             }
             report.append("]");
             if (verbosityLevel == V_DETAILED) {

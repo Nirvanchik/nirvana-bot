@@ -31,7 +31,7 @@
 <entry key="statistics">yes</entry>
 <entry key="statistics-file">report/report.NirvanaBot.ru_%(date)_%(launch_number).txt</entry>
 <entry key="statistics-format">txt,wiki</entry>
-<entry key="statistics-wiki-verbosity">verbose</entry>
+<entry key="statistics-wiki-verbosity">verbose-hidden</entry>
 <entry key="update-status">yes</entry>
 <entry key="statistics-wiki">Участник:NirvanaBot/Новые статьи/Отчёт</entry>
 <entry key="status-wiki">Участник:NirvanaBot/Новые статьи/Статус</entry>

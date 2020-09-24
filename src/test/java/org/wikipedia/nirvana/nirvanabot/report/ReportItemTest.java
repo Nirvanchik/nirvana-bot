@@ -237,8 +237,8 @@ public class ReportItemTest {
         Assert.assertEquals(
                 "|-\n|1 ||align='left'| [[Portal A]] " +
                 "|| 1 || 1 " +
-                "|| 11<small> [1 -> {T: 5, R: 4, Q: 1.3}, 2 -> {T: 6, R: 4, Q: 1.5}, " +
-                "total -> {T: 11, R: 8, Q: 1.4}]</small> " +
+                "|| 11<small> [1 → {T: 5, R: 4, Q: 1.3}, 2 → {T: 6, R: 4, Q: 1.5}, " +
+                "total → {T: 11, R: 8, Q: 1.4}]</small> " +
                 "|| {{Yes|UPDATED}} || 00:01:10 " +
                 "|| 5 || {{Yes|Yes}} || {{Yes|Yes}} ( 5) || 0 || -",
                 reportLine);
