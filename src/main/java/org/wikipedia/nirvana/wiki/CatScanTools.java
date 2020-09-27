@@ -250,7 +250,7 @@ public class CatScanTools {
         PETSCAN("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
                 1, 3, 1, -1, 2,
                 NamespaceFormat.CANONICAL_STRING,
-                true, false, false, 17856,  // 2 year = 24*31*12*2 = 8928*2;
+                true, false, false, 87600,  // 10 years = 24*365*10 = 8760*10;
                 ServiceFeatures.PETSCAN_FEATURES,
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1" +
                     "&sortby=title&format=tsv&doit=",
