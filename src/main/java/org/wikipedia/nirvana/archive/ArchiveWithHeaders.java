@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -563,26 +564,26 @@ public class ArchiveWithHeaders extends Archive{
 		}
 	}
 
+    @Nullable
     Section findFirstSectionByName(String name) {
-        Section section = null;
         for (int i = 0; i < parts.size(); i++) {
-            section = parts.get(i);
+            Section section = parts.get(i);
             if (name.equals(section.getHeader())) {
-                break;
+                return section;
             }
         }
-        return section;
+        return null;
     }
 
+    @Nullable
     Section findLastSectionByName(String name) {
-        Section section = null;
         for (int i = parts.size() - 1; i >= 0; i--) {
-            section = parts.get(i);
+            Section section = parts.get(i);
             if (name.equals(section.getHeader())) {
-                break;
+                return section;
             }
         }
-        return section;
+        return null;
     }
 
     public void addWithHeaderAndSuperHeader(String item, String header, String superHeader) {

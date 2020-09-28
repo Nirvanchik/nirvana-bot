@@ -10,7 +10,7 @@
 <entry key="wiki-lang">ru</entry>
 <entry key="wiki-java-loglevel">OFF</entry>
 <entry key="wiki-maxlag">5</entry>
-<entry key="update-comment">обработка архива (заголовки, нумерация, сортировка)</entry>
+<entry key="update-comment">Обработка архива (заголовки, нумерация, сортировка, удаление дубликатов)</entry>
 <entry key="default-comment">обновление</entry>
 <entry key="debug-mode">yes</entry>
 <entry key="task-list-file">archive_task.txt</entry>

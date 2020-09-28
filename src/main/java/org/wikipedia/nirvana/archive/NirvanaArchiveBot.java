@@ -26,8 +26,10 @@ import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.nirvanabot.BotVariables;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.nirvanabot.PortalConfig;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.TextUtils;
@@ -84,7 +86,11 @@ public class NirvanaArchiveBot extends BasicBot{
         // ~6) подвал
 
         Localizer.init(Localizer.NO_LOCALIZATION);
-		String task = FileTools.readFileSilently(TASK_LIST_FILE);
+        PortalConfig.initStatics();
+        BotVariables.init();
+        DateTools.init(LANGUAGE);
+
+        String task = FileTools.readFileSilently(TASK_LIST_FILE);
 
 		if(task==null)
 			return;

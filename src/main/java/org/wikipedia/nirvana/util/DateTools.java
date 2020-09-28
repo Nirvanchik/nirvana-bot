@@ -156,7 +156,9 @@ public class DateTools {
      * @param language language to localize strings.
      */
     public static void init(String language) {
-        assert sInstance == null : "DateTools is already initialized";
+        if (sInstance != null) {
+            throw new IllegalArgumentException("DateTools is already initialized");
+        }
 
         sInstance = new DateTools(language);
     }
@@ -171,7 +173,9 @@ public class DateTools {
      * Before using it you must initialize it with {@link #init(String)} method. 
      */
     public static DateTools getInstance() {
-        assert sInstance != null : "Looks like DateTools is not initialized yet.";
+        if (sInstance == null)  {
+            throw new IllegalStateException("Looks like DateTools is not initialized yet.");
+        }
 
         return sInstance;
     }
