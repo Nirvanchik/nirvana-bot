@@ -57,7 +57,7 @@ task createStatisticsBotRunApp(type: CreateStartScripts) {
 }
 
 task createArchiveBotRunApp(type: CreateStartScripts) {
-    mainClassName = 'org.wikipedia.nirvana.archive.NirvanaArchiveBot'
+    mainClassName = 'org.wikipedia.nirvana.fixarchive.FixArchiveBot'
     classpath = startScripts.classpath
     outputDir = startScripts.outputDir
     applicationName = 'archive-bot'

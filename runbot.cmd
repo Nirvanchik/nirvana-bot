@@ -11,8 +11,8 @@ if "%BOT_APP%" == "nirvana-bot" (
 if "%BOT_APP%" == "statistics-bot" (
     set MAIN_CLASS=org.wikipedia.nirvana.statistics.StatisticsBot
 )
-if "%BOT_APP%" == "archive-bot" (
-    set MAIN_CLASS=org.wikipedia.nirvana.archive.NirvanaArchiveBot
+if "%BOT_APP%" == "fix-archive-bot" (
+    set MAIN_CLASS=org.wikipedia.nirvana.fixarchive.FixArchiveBot
 )
 if "%BOT_APP%" == "clean-archive-bot" (
     set MAIN_CLASS=org.wikipedia.nirvana.cleanarchive.CleanArchiveBot

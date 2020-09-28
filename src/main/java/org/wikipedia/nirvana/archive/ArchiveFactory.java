@@ -51,6 +51,8 @@ public class ArchiveFactory {
 	public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki, String name, String delimeter) throws IOException {
 		return createArchive(archiveSettings,wiki,name,delimeter,false);
 	}
+
+    // TODO: Make another constructor instead of "empty" flag
 	public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki, String name, String delimeter, boolean empty) throws IOException {
 		Archive archive = null;
 		log.debug("creating archive: "+name);
