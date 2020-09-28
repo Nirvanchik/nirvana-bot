@@ -729,7 +729,9 @@ public class NirvanaBot extends BasicBot{
                     try {
                         log.warn("Relogin after downtime of {} seconds", downtime / 1000);
                         serviceManager.getMainWikiService().relogin();
+                        log.warn("Relogin was successful");
                     } catch (FailedLoginException | IOException e) {
+                        log.error("Failed to relogin. Stopping bot run.", e);
                         throw new BotFatalError(e);
                     }
                 }
