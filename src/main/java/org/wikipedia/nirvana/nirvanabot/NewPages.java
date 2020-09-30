@@ -48,6 +48,7 @@ import org.wikipedia.nirvana.util.XmlTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
+import org.wikipedia.nirvana.wiki.NamespaceUtils;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.wikipedia.nirvana.wiki.WikiBooster;
 
@@ -94,13 +95,6 @@ public class NewPages implements PortalModule{
     private static String COMMENT_DELETED;
     private static String SUMMARY_NEW_PAGES;
     private static String NEW_PAGES_LISTS_CATEGORY;
-    private static String CATEGORY_NAMESPACE;
-    private static String CATEGORY_NAMESPACE_EN = "Category:";
-    private static String USER_NAMESPACE;
-    private static String USER_NAMESPACE_EN = "User:";
-    private static String USER_TALK_NAMESPACE;
-    private static String USER_TALK_NAMESPACE_EN = "User_talk:";
-    private static String USER_TALK_NAMESPACE2;
 
     private static LocalizedTemplate templateNewPageItem;
     private static LocalizedTemplate templateNewPageItem2;
@@ -248,10 +242,6 @@ public class NewPages implements PortalModule{
         SUMMARY_NEW_PAGES = "+%d " + localizer.localize("новых");
         NEW_PAGES_LISTS_CATEGORY =
                 localizer.localize("Категория:Википедия:Списки новых статей по темам");
-        CATEGORY_NAMESPACE = localizer.localize("Категория:");
-        USER_NAMESPACE = localizer.localize("Участник:");
-        USER_TALK_NAMESPACE = localizer.localize("Обсуждение участника:");
-        USER_TALK_NAMESPACE2 = USER_TALK_NAMESPACE.replace(" ", "_");
 
         templateNewPageItem = localizer.localizeTemplate("Новая статья");
         templateNewPageItem2 = localizer.localizeTemplate("Новая статья2");
@@ -1075,23 +1065,6 @@ public class NewPages implements PortalModule{
 		return null;
 	}
 
-	public static boolean userNamespace(String article) {
-        assert initialized;
-        assert article != null;
-
-        return (article.startsWith(USER_NAMESPACE) ||
-                article.startsWith(USER_TALK_NAMESPACE) ||
-                article.startsWith(USER_TALK_NAMESPACE2) ||
-                article.startsWith(USER_NAMESPACE_EN) ||
-                article.startsWith(USER_TALK_NAMESPACE_EN));
-	}
-
-	public static boolean categoryNamespace(String article) {
-        assert initialized;
-        return (article.startsWith(CATEGORY_NAMESPACE) ||
-                article.startsWith(CATEGORY_NAMESPACE_EN) );
-	}
-
     // TODO протестировать эту функцию на другие пространства имён!!!
 	public static String getNewPagesItemArticle(String item) {
 		Pattern p = Pattern.compile(PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
@@ -1103,8 +1076,9 @@ public class NewPages implements PortalModule{
             if (article.contains(NEW_PAGES_LISTS_CATEGORY)) {
 				continue;			
 			}
-			if(!userNamespace(article))
+            if (!NamespaceUtils.userNamespace(article)) {
 				return article;
+            }
 		}
 		p = Pattern.compile(PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM);
 		m = p.matcher(item);
@@ -1119,8 +1093,9 @@ public class NewPages implements PortalModule{
 			for(int i=1;i<items.length;i++) {
 				String s = items[i].trim();
 				String article = s;
-				if(!userNamespace(article))
+                if (!NamespaceUtils.userNamespace(article)) {
 					return article;
+                }
 			}			
 		}
 		return null;

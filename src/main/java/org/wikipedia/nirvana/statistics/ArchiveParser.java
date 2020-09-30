@@ -29,6 +29,7 @@ import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.wiki.NamespaceUtils;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
@@ -304,10 +305,9 @@ public class ArchiveParser {
 			String article = m.group("article");
 			if(article.contains("Категория:Википедия:Списки новых статей по темам")) 				
 				continue;	
-            // TODO: Move this out of NewPages!
-            NewPages.initStatics();
-			if(	NewPages.userNamespace(article) || NewPages.categoryNamespace(article))
-				continue;
+            if (NamespaceUtils.userNamespace(article) || NamespaceUtils.categoryNamespace(article)) {
+                continue;
+            }
 			item = getArchiveItemFromTitle(article, getSize);
 			if (item != null )
 				return item;
@@ -327,7 +327,7 @@ public class ArchiveParser {
 					c = DateTools.parseDate(s);
 					if(c!=null) continue;
 				}
-				if(article==null && !NewPages.userNamespace(s)) {
+                if (article == null && !NamespaceUtils.userNamespace(s)) {
 					article = s;
 					continue;
 				} else if(user==null) {
