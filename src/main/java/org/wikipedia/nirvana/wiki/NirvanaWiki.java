@@ -24,7 +24,6 @@
 package org.wikipedia.nirvana.wiki;
 
 import org.wikipedia.Wiki;
-import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.util.FileTools;
 
@@ -32,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpCookie;
 import java.time.OffsetDateTime;
@@ -365,12 +363,7 @@ public class NirvanaWiki extends Wiki {
         } else {
             String fileNew = title + ".new.txt";
             String fileOld = title + ".old.txt";
-            String old = null;
-            try {
-                old = this.getPageText(title);
-            } catch (FileNotFoundException e) {
-                old = "";
-            }
+            String old = this.getPageText(title);
             if (old == null) {
                 old = "";
             }
@@ -415,12 +408,7 @@ public class NirvanaWiki extends Wiki {
      */
     public boolean editIfChanged(String title, String text, String summary, boolean minor,
             boolean bot) throws IOException, LoginException {
-        String old = "";
-        try {
-            old = this.getPageText(title);
-        } catch (FileNotFoundException e) {
-            // ignore. all job is done not here :)
-        }
+        String old = this.getPageText(title);
         if (old == null) {
             old = "";
         }
@@ -502,12 +490,7 @@ public class NirvanaWiki extends Wiki {
         if (stuff.isEmpty()) return;
         StringBuilder text = new StringBuilder(100000);
         text.append(stuff);
-        String oldText = null;
-        try {
-            oldText = getPageText(title);
-        } catch (FileNotFoundException e) {
-            // Ignore
-        }
+        String oldText = getPageText(title);
         if (oldText != null) {
             text.append(oldText);
         } else {
@@ -552,12 +535,7 @@ public class NirvanaWiki extends Wiki {
             boolean bot) throws IOException, LoginException {
         if (stuff.isEmpty()) return;
         StringBuilder text = new StringBuilder(100000);
-        String oldText = null;
-        try {
-            oldText = getPageText(title);
-        } catch (FileNotFoundException e) {
-            // Ignore
-        }
+        String oldText = getPageText(title);
         if (oldText != null) {
             text.append(oldText);
         } else {
@@ -813,12 +791,7 @@ public class NirvanaWiki extends Wiki {
      */
     public void addTopicToDiscussionPage(String page, String message, boolean addSignature,
             boolean noDuplicate, String summary) throws IOException, LoginException {
-        String discussion = null;
-        try {
-            discussion = getPageText(page);
-        } catch (FileNotFoundException e) {
-            // ignore
-        }
+        String discussion = getPageText(page);
         if (noDuplicate && discussion != null && discussion.contains(message)) {
             log.info("Message already exists at {}", page);
             return;

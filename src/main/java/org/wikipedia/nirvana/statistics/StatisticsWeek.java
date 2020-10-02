@@ -24,7 +24,7 @@ package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -44,22 +44,22 @@ public class StatisticsWeek extends Statistics {
 		
 	/**
 	 * @param type
-	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
+     * @throws IOException 
 	 */
     public StatisticsWeek(NirvanaWiki wiki, String cacheDir, String type, int year)
-            throws FileNotFoundException, BadAttributeValueExpException {
+            throws BadAttributeValueExpException, IOException {
         super(wiki, cacheDir, type);
 		this.year = year;
 	}
 	
 	/**
 	 * @param type
-	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
+     * @throws IOException 
 	 */
     public StatisticsWeek(NirvanaWiki wiki, String cacheDir, String type)
-            throws FileNotFoundException, BadAttributeValueExpException {
+            throws BadAttributeValueExpException, IOException {
         super(wiki, cacheDir, type);
 		this.year = 0;
 	}

@@ -22,7 +22,10 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
-import java.io.FileNotFoundException;
+import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -30,9 +33,6 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import javax.management.BadAttributeValueExpException;
-
-import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
-import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 /**
  * @author kin
@@ -43,11 +43,11 @@ public class StatisticsYear extends Statistics {
 	int startYear = 2008;
 	/**
 	 * @param type
-	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
+     * @throws IOException 
 	 */
     public StatisticsYear(NirvanaWiki wiki, String cacheDir, String type)
-            throws FileNotFoundException, BadAttributeValueExpException {
+            throws BadAttributeValueExpException, IOException {
         super(wiki, cacheDir, type);
 		startYear = 2008;
 	}
@@ -68,8 +68,7 @@ public class StatisticsYear extends Statistics {
 			}					
 		}
 	}
-	
-	
+
 	public void put(ArchiveDatabase2 db) throws IllegalStateException {
 		Calendar c = Calendar.getInstance();
 		// 1) find out period of the first week

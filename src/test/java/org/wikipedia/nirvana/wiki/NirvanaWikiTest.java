@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -479,7 +479,7 @@ public class NirvanaWikiTest {
         wiki.resetEdits();
     }
 
-    @Test (expected = FileNotFoundException.class)
+    @Test (expected = IOException.class)
     public void prepend_pageDoesNotExist() throws Exception {
         MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz");
         wiki.mockPageText("Bob", null);
@@ -511,7 +511,7 @@ public class NirvanaWikiTest {
         wiki.validateEdit("Bob", "I like cats.\nI like dogs.");
     }
 
-    @Test (expected = FileNotFoundException.class)
+    @Test (expected = IOException.class)
     public void append_pageDoesNotExist() throws Exception {
         MockNirvanaWiki wiki = new MockNirvanaWiki("test.xyz");
         wiki.mockPageText("Bob", null);

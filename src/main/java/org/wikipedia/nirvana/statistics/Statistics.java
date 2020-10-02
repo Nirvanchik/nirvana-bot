@@ -22,6 +22,7 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
+import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.TextUtils;
@@ -30,7 +31,7 @@ import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -151,9 +152,9 @@ public class Statistics {
 	public void createTotal() {
 		total = new TotalItem();
 	}
-	
-    Statistics(NirvanaWiki wiki, String cacheDir, String type) throws FileNotFoundException,
-            BadAttributeValueExpException {
+
+    Statistics(NirvanaWiki wiki, String cacheDir, String type)
+            throws BadAttributeValueExpException, IOException {
 		this.wiki = wiki;
 		this.type = type;
         log = LogManager.getLogger(this.getClass().getName());
@@ -173,16 +174,12 @@ public class Statistics {
 		}
 	}
 
-    private void init() throws FileNotFoundException, BadAttributeValueExpException {
+    private void init() throws BadAttributeValueExpException, IOException {
 		items = new ArrayList<StatItem>(100);
 		totalUserStat = new HashMap<String,Integer>(200);
 		createTotal();
 		String ini = iniFolder+"\\"+type+".ini";
-		String file = FileTools.readFileSilently(ini);
-		if(file==null) {
-			log.error("file "+ini +" not found");
-			throw new FileNotFoundException(ini);
-		}
+        String file = FileTools.readFile(ini);
 		Map<String, String> options = new HashMap<String, String>();
         if (!TextUtils.textOptionsToMap(file, options)) {
 			log.error("incorrect settings for statistics");
@@ -205,8 +202,9 @@ public class Statistics {
 		footer = footer.replace("\\n", "\n");
 		if(totalTemplate!=null) totalTemplate = totalTemplate.replace("\\n", "\n");
 	}
-	public void put(ArchiveDatabase2 db) {}
-	
+
+    public void put(ArchiveDatabase2 db) throws BotFatalError {}
+
 	protected void calcTotal() {
 		if(this.items.isEmpty()) {
 			return;

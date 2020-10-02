@@ -279,12 +279,7 @@ public class NewPages implements PortalModule{
     }
 
     public String getOldText(Wiki wiki) throws IOException {
-        String text = null;
-        try {
-            text = wiki.getPageText(this.pageName);
-		} catch (java.io.FileNotFoundException e) {
-			return "";
-		}
+        String text = wiki.getPageText(this.pageName);
         if (text == null) {
             text = "";
         }

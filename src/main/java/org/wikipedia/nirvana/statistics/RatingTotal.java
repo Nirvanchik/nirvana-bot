@@ -22,16 +22,17 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
-import java.io.FileNotFoundException;
+import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Map;
 
 import javax.management.BadAttributeValueExpException;
-
-import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
-import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 /**
  * @author kin
@@ -83,11 +84,11 @@ public class RatingTotal extends Rating {
 
 	/**
 	 * @param type
-	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
+     * @throws IOException 
 	 */
     public RatingTotal(NirvanaWiki wiki, String cacheDir, String type)
-            throws FileNotFoundException, BadAttributeValueExpException {
+            throws BadAttributeValueExpException, IOException {
         super(wiki, cacheDir, type);
 		startYear = DEFAULT_START_YEAR;
 		endYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -106,8 +107,8 @@ public class RatingTotal extends Rating {
 			}					
 		}
 	}
-	
-	public void put(ArchiveDatabase2 db) throws IllegalStateException {
+
+    public void put(ArchiveDatabase2 db) throws BotFatalError {
 		if (!this.filterBySize) {
     		Statistics totalReporter = StatisticsFabric.getReporterWithUserData(this);
     		Map<Integer,Statistics> reporterByYear = new HashMap<Integer,Statistics>(5);

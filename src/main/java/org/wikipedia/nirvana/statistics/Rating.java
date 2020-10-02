@@ -22,6 +22,7 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
+import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.NumberTools;
@@ -33,7 +34,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
@@ -69,22 +69,22 @@ public class Rating extends Statistics {
 
 	/**
 	 * @param type
-	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
+     * @throws IOException 
 	 */
-    public Rating(NirvanaWiki wiki, String cacheDir, String type) throws FileNotFoundException,
-			BadAttributeValueExpException {
+    public Rating(NirvanaWiki wiki, String cacheDir, String type)
+            throws BadAttributeValueExpException, IOException {
         super(wiki, cacheDir, type);
 		year = 0;
 	}
 	
 	/**
 	 * @param type
-	 * @throws FileNotFoundException
 	 * @throws BadAttributeValueExpException
+     * @throws IOException 
 	 */
     public Rating(NirvanaWiki wiki, String cacheDir, String type, int year)
-            throws FileNotFoundException, BadAttributeValueExpException {
+            throws BadAttributeValueExpException, IOException {
         super(wiki, cacheDir, type);
 		this.year = year;		
 	}
@@ -111,7 +111,8 @@ public class Rating extends Statistics {
 			}
 		}
 	}
-	public void put(ArchiveDatabase2 db) throws IllegalStateException {
+
+    public void put(ArchiveDatabase2 db) throws BotFatalError {
 		Statistics reporter = null;
 		if (!this.filterBySize) {
 			if(year==0) reporter = StatisticsFabric.getReporterWithUserData(this);
@@ -157,7 +158,7 @@ public class Rating extends Statistics {
 		
 	}
 
-	protected void analyze() {
+    protected void analyze() throws BotFatalError {
         // Заполняем таблицу items (список строк отчёта)
 		for (Map.Entry<String,Integer> entry:totalUserStat.entrySet()) {
 			StatItem stat = new StatItem();
@@ -229,21 +230,18 @@ public class Rating extends Statistics {
 		if (this.itemTemplate.contains("%(прогресс)")) calcProgress();
 	}
 
-
-	protected boolean removeDuplicates() {
+    protected boolean removeDuplicates() throws BotFatalError {
 		boolean duplicates = false;
 		int n = items.size();
 		for(int i=0;i<n;i++) {
 			StatItem item = items.get(i);
-			String redir = null;
-			try {
-				redir = wiki.resolveRedirect("User:"+item.user);
-			} catch (FileNotFoundException e) {
-				// ignore error
-			} catch (IOException e) {
-				// TODO how to handle this without declaring excepion?
-				//e.printStackTrace();
-			}
+            String userPage = "User:" + item.user;
+            String redir;
+            try {
+                redir = wiki.resolveRedirect(userPage);
+            } catch (IOException e) {
+                throw new BotFatalError("Failed to resolve redirect for: " + userPage, e);
+            }
 			if(redir!=null) {
 				redir = redir.substring(redir.indexOf(":")+1);
 				for(int j=0;j<n;j++) {

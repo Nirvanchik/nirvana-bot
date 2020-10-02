@@ -23,14 +23,13 @@
 
 package org.wikipedia.nirvana.archive;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 import org.wikipedia.nirvana.nirvanabot.BotVariables;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
 
 /**
  * @author kin
@@ -59,11 +58,7 @@ public class ArchiveFactory {
 		if(archiveSettings.removeDuplicates) {
 			String lines[] = new String[0];
 			if(!empty) {
-				try{
-					lines = wiki.getPageLinesArray(name);
-				} catch(FileNotFoundException e) {
-					//log.info("archive "+arname+" is empty");
-				}
+                lines = wiki.getPageLinesArray(name);
 			}
 			archive = new ArchiveUnique(wiki,lines,archiveSettings.addToTop,delimeter);
 		} else if(archiveSettings.withoutHeaders()) {
@@ -71,11 +66,7 @@ public class ArchiveFactory {
 				if(archiveSettings.sorted) {
 					String lines[] = new String[0];
 					if(!empty) {
-						try{
-							lines = wiki.getPageLinesArray(name);
-						} catch(FileNotFoundException e) {
-							//log.info("archive "+arname+" is empty");
-						}
+                        lines = wiki.getPageLinesArray(name);
 					}
 					archive = new ArchiveSimpleSorted(wiki,lines,archiveSettings.addToTop,delimeter);
 				}
@@ -84,11 +75,7 @@ public class ArchiveFactory {
 			} else {
 				String text = "";
 				if(!empty) {
-					try{
-						text = wiki.getPageText(name);
-					} catch(FileNotFoundException e) {
-                        // Ignore
-					}
+                    text = wiki.getPageText(name);
                     if (text == null) {
                         text = "";
                     }
@@ -98,11 +85,7 @@ public class ArchiveFactory {
 		} else {
 			String lines[] = new String[0];
 			if(!empty) {
-				try{
-					lines = wiki.getPageLinesArray(name);
-				} catch(FileNotFoundException e) {
-					//log.info("archive "+arname+" is empty");
-				}
+                lines = wiki.getPageLinesArray(name);
 			}
             if (archiveSettings.headerFormat.contains(BotVariables.COUNT) ||
                     (archiveSettings.superHeaderFormat != null &&

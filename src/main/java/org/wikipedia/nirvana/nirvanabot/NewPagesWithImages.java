@@ -30,21 +30,19 @@ import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinder;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
+import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.OptionsUtils;
 import org.wikipedia.nirvana.util.XmlTools;
-import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -108,16 +106,11 @@ public class NewPagesWithImages extends NewPages {
 		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
 
 		for(Revision r: pageInfoListNotFiltered) {
-            String article = null;
 			long revId = r.getRevid();
 			long id = ((RevisionWithId)r).getId();
 			String title = r.getPage();
 			Revision page = null;
-            try {
-            	article = wiki.getPageText(r.getPage());
-            } catch(java.io.FileNotFoundException e) {
-                // Ignore
-            }
+            String article = wiki.getPageText(r.getPage());
             if (article == null) {
                 // Page was created and renamed or deleted after that
                 log.warn("Page {} does not exist.", r.getPage()); 
@@ -125,12 +118,11 @@ public class NewPagesWithImages extends NewPages {
             }
             if (wiki.isRedirect(article)) {            
                 page = new RevisionWithImage(wiki, wiki.getFirstRevision(title, true), id, null);
-            	//log.debug("REDIRECT to: "+page.getPage());
-            	try {
-                	article = wiki.getPageText(page.getPage());
-                } catch(java.io.FileNotFoundException e) {
-                	log.warn(e.toString()+" "+page.getPage()); // page was created and renamed or deleted after that
-                	continue;
+                article = wiki.getPageText(page.getPage());
+                if (article == null) {
+                    // page was created and renamed or deleted after that
+                    log.warn("Page {} does not exist. ", page.getPage());
+                    continue;
                 }
                 if (BasicBot.DEBUG_BUILD) {
                     FileTools.dump(article, page.getPage());
@@ -278,12 +270,8 @@ public class NewPagesWithImages extends NewPages {
 	 * @throws IOException 
      */
     private boolean checkImageFree(NirvanaWiki wiki, String image) throws IOException {
-    	String text = null;
-    	try {
-	        text = wiki.getPageText(wiki.namespaceIdentifier(NirvanaWiki.FILE_NAMESPACE)+":"+image);
-    	} catch (FileNotFoundException e) {
-            // Ignore
-        }
+        String text = wiki.getPageText(
+                wiki.namespaceIdentifier(NirvanaWiki.FILE_NAMESPACE) + ":" + image);
         if (text == null) {
             log.info("Failed to get text for image (probably it's on commons): {}", image);
             // Most likely this image comes from Commons and is free to use therefore

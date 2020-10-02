@@ -29,7 +29,6 @@ import org.wikipedia.nirvana.nirvanabot.report.ReportItem;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.ZoneId;
 import java.util.Calendar;
@@ -139,12 +138,7 @@ public class NewPagesWeek extends NewPages {
 			String pageName = String.format(PAGE_NAME_FORMAT, this.pageName, dayNum);
 			Data d = new Data();
 			NewPagesBuffer dayBuf = buffer.buffers[day];
-			String text = "";
-			try {
-				text = wiki.getPageText(pageName);
-			} catch (FileNotFoundException e) {
-				// ignore
-			}
+            String text = wiki.getPageText(pageName);
             if (text == null) {
                 text = "";
             }

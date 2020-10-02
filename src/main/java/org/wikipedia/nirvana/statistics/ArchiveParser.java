@@ -202,12 +202,7 @@ public class ArchiveParser {
 		log.info("scanning archive [["+archive+"]]");
 		//int startFrom = 0;
 		String lines[] = null;
-		String text = null;
-		try {
-            text = wiki.getPageText(archive);
-        } catch (FileNotFoundException e) {
-            // Ignored.
-        }
+        String text = wiki.getPageText(archive);
         if (text == null) {
             log.warn("Archive {} not found (skiped)", archive);
             return;

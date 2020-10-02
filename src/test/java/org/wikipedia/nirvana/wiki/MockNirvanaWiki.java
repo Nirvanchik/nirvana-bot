@@ -250,8 +250,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
         }
         String text = pageTextMap.get(title);
         if (text == null) {
-            // Page does not exist.
-            throw new FileNotFoundException(title);
+            return null;
         }
         // TODO(KIN): Do we really need this?
         // TODO: Remove it. Use null for that.

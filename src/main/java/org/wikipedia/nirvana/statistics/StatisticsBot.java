@@ -509,11 +509,7 @@ public class StatisticsBot extends BasicBot {
 	public boolean editIfChanged(String title, String text, String summary, boolean minor) throws IOException, LoginException
     {
     	String old = null;
-    	try {
-    		old = wiki.getPageText(title);
-    	} catch(FileNotFoundException e) {
-    		// ignore. all job is done not here :)
-    	}
+        old = wiki.getPageText(title);
     	if(old==null || old.length()!=text.length() || !old.equals(text)) { // to compare lengths is faster than comparing 5k chars
     		log.info("updating "+title+" : "+summary);
             wiki.edit(title, text, summary, minor, true, -2, null);
