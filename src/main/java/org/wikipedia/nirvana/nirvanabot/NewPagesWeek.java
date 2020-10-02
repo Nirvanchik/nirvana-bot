@@ -97,17 +97,17 @@ public class NewPagesWeek extends NewPages {
         }
 
 		@Override
-        protected void addNewItem(String title, boolean deleted, Revision rev) throws IOException,
+        protected void addNewItem(String title, Revision rev) throws IOException,
                 InvalidLineFormatException {
-			String element = formatItemString(title, deleted, rev);
-	    	
+            String element = formatItemString(title, false, rev);
+
 	        if (!subset.contains(element))
 	        {	            
 	            for (int i = 0; i< DAYS; i++) {
                     Calendar revTimestamp = GregorianCalendar.from(
                             rev.getTimestamp().atZoneSameInstant(ZoneId.systemDefault())); 
                     if (revTimestamp.compareTo(dates[i]) >= 0) {
-	            		buffers[i].addNewItem(title, deleted, rev);
+                        buffers[i].addNewItem(title, rev);
 	            		subset.add(element);
 	    	            if (includedPages != null) {
 	    	            	includedPages.add(title);

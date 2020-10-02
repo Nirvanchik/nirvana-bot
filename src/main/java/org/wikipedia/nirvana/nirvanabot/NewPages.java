@@ -395,10 +395,10 @@ public class NewPages implements PortalModule{
 	    	return element;
 		}
 
-        protected void addNewItem(String title, boolean deleted, Revision rev) throws IOException,
+        protected void addNewItem(String title, Revision rev) throws IOException,
                 InvalidLineFormatException {
-			String element = formatItemString(title, deleted, rev);    	
-	    	
+            String element = formatItemString(title, false, rev);
+
 	        if (!subset.contains(element))
 	        {
 	            subset.add(element);
@@ -468,27 +468,22 @@ public class NewPages implements PortalModule{
                 String title_old = XmlTools.removeEscape(pageInfo.getPage());
                 String title_new = XmlTools.removeEscape(page.getPage());
 		    	log.debug("check page, title old: "+title_old+", title new: "+title_new);
-                final boolean deleted = false;
-                if (service.hasDeleted) {
-                    throw new IllegalStateException(
-                            "We don't handle deleted pages. Please fix it.");
-                }
 
 		    	boolean renamed = !title_new.equals(title_old);
 
 		    	if(renamed) {
 			    	if((renamedFlag & PortalParam.RENAMED_NEW) != 0 ) {
-			    		addNewItem(title_new,deleted,page);
+                        addNewItem(title_new, page);
 			    	} 
 			    	if((renamedFlag & PortalParam.RENAMED_OLD) != 0) {
-			    		addNewItem(title_old,deleted,page);
+                        addNewItem(title_old, page);
 			    	} else {
 			    		if (includedPages != null) {
 			    			includedPages.add(title_old);
 			    		}
 			    	}		    	
 		    	} else {
-		    		addNewItem(title_new,deleted,page);
+                    addNewItem(title_new, page);
 		    	}
                 return true;
 		    }

@@ -64,10 +64,6 @@ public class CatScanTools {
     private static final Logger log;
     private static final String CAT_SEPARATOR = "\r\n";
     private static final String LABS_DOMAIN = "tools.wmflabs.org";
-    private static final String CATSCAN2_DOMAIN = LABS_DOMAIN;
-    private static final String CATSCAN3_DOMAIN = LABS_DOMAIN;
-    private static final String CATSCAN2_PATH = "/catscan2/catscan2.php";
-    private static final String CATSCAN3_PATH = "/catscan3/catscan2.php";
     private static final String PETSCANOLD_DOMAIN = "petscan1.wmflabs.org";
     private static final String PETSCAN_DOMAIN = "petscan.wmflabs.org";
     private static final String PETSCAN_PATH = "/";
@@ -130,15 +126,6 @@ public class CatScanTools {
          * The same as {@link #PAGES_WITH_TEMPLATE} but for new pages.
          */
         public static final int NEWPAGES_WITH_TEMPLATE = 0b10000;
-        @Deprecated
-        public static final int CATSCAN2_FEATURES =
-                PAGES | NEWPAGES | FAST_MODE | PAGES_WITH_TEMPLATE;
-        @Deprecated
-        /**
-         * Features of {@link CatScanTools.Service#CATSCAN3}.
-         */
-        public static final int CATSCAN3_FEATURES =
-                PAGES | NEWPAGES | FAST_MODE | PAGES_WITH_TEMPLATE;
         /**
          * Features of {@link CatScanTools.Service#PETSCAN_OLD, CatScanTools.Service#PETSCAN}.
          */
@@ -178,54 +165,10 @@ public class CatScanTools {
      * CatScan service instances with preconfigured parameters.
      */
     public enum Service {
-        @Deprecated
-        CATSCAN2("catscan2", CATSCAN2_DOMAIN, CATSCAN2_PATH,
-                2, 2, 0, -1, 1,
-                NamespaceFormat.UNKNOWN,
-                true, false, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
-                ServiceFeatures.CATSCAN2_FEATURES,
-                "language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv" +
-                    "&doit=submit",
-                "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%5$d]=1&comb[union]=1" +
-                    "&sortby=title&format=tsv&doit=submit",
-                "language=%1$s&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1&sortby=title" +
-                    "&format=tsv&doit=submit",
-                "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&ns[%7$d]=1" +
-                    "&comb[union]=1&sortby=title&format=tsv&doit=submit",
-                "language=%1$s&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=1" +
-                    "&sortby=title&format=tsv&doit=submit",
-                "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1" +
-                    "&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=1",
-                null,
-                null,
-                "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\S+$",
-                true),
-        @Deprecated
-        CATSCAN3("catscan3", CATSCAN3_DOMAIN, CATSCAN3_PATH,
-                2, 2, 0, -1, 1,
-                NamespaceFormat.UNKNOWN,
-                true, true, false, 8928,  // 8760 = 1 year = 24*31*12 = 8928;
-                ServiceFeatures.CATSCAN3_FEATURES,
-                "language=%1$s&depth=%2$d&categories=%3$s&ns[%4$d]=1&sortby=title&format=tsv" +
-                    "&doit=submit",
-                "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%5$d]=1&comb[union]=1" +
-                    "&sortby=title&format=tsv&doit=submit",
-                "language=%1$s&depth=%2$d&categories=%3$s&%4$s=%5$s&ns[%6$d]=1&sortby=title" +
-                    "&format=tsv&doit=submit",
-                "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&%5$s=%6$s&ns[%7$d]=1" +
-                    "&comb[union]=1&sortby=title&format=tsv&doit=submit",
-                "language=%1$s&depth=%2$d&categories=%3$s&ns[%5$d]=1&max_age=%4$d&only_new=1" +
-                    "&sortby=title&format=tsv&doit=submit",
-                "language=%1$s&depth=%2$d&categories=%3$s&negcats=%4$s&ns[%6$d]=1&comb[union]=1" +
-                    "&max_age=%5$d&only_new=1&sortby=title&format=tsv&doit=1",
-                null,
-                null,
-                "^\\S+\\s+\\d+\\s+\\d+\\s+\\d+\\s+\\S+\\s+\\d+\\s+\\S+$",
-                true),
         PETSCAN_OLD("petscan1", PETSCANOLD_DOMAIN, PETSCAN_PATH,
-                1, 3, 1, -1, 2,
+                1, 3, 1, 2,
                 NamespaceFormat.NAME_STRING,
-                true, true, false, 17856,  // 2 year = 24*31*12*2 = 8928*2;
+                true, true, 17856,  // 2 year = 24*31*12*2 = 8928*2;
                 ServiceFeatures.PETSCAN_FEATURES,
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1" +
                     "&sortby=title&format=tsv&doit=",
@@ -248,9 +191,9 @@ public class CatScanTools {
                 "^\\d+\\s+\\S+\\s+\\d+\\s+(\\S+\\s+)?\\d+\\s+\\d+\\s*$",
                 false),
         PETSCAN("petscan", PETSCAN_DOMAIN, PETSCAN_PATH,
-                1, 3, 1, -1, 2,
+                1, 3, 1, 2,
                 NamespaceFormat.CANONICAL_STRING,
-                true, false, false, 87600,  // 10 years = 24*365*10 = 8760*10;
+                true, false, 87600,  // 10 years = 24*365*10 = 8760*10;
                 ServiceFeatures.PETSCAN_FEATURES,
                 "language=%1$s&project=wikipedia&depth=%2$d&categories=%3$s&ns[%4$d]=1" +
                     "&sortby=title&format=tsv&doit=",
@@ -278,8 +221,6 @@ public class CatScanTools {
         public final int skipLines;
         public final int nsPos;
         public final int titlePos;
-        @Deprecated
-        public final int revidPos;
         public final int idPos;
         /**
          * Namespace format of the namespace identifier returned by the service.
@@ -297,12 +238,6 @@ public class CatScanTools {
          */
         public final boolean hasSuffix;
 
-        @Deprecated
-        /**
-         * If service response contains pages that are already deleted.
-         * Currently is false for all services.
-         */
-        public final boolean hasDeleted;
         public final int maxHours;
         public final int features;
         public final String getPagesFormat;
@@ -319,9 +254,9 @@ public class CatScanTools {
         private static Integer testFeatures = null;
 
         Service(String name, String domain, String path, 
-                int skipLines, int namespacePos, int titlePos, int revidPos, int idPos,
+                int skipLines, int namespacePos, int titlePos, int idPos,
                 NamespaceFormat namespaceFormat,
-                boolean filteredByNamespace, boolean hasSuffix, boolean hasDeleted, int maxHours, 
+                boolean filteredByNamespace, boolean hasSuffix, int maxHours, 
                 int features,
                 String getPagesFormat,
                 String getPagesFormatFast,
@@ -339,12 +274,10 @@ public class CatScanTools {
             this.skipLines = skipLines;
             this.nsPos = namespacePos;
             this.titlePos = titlePos;
-            this.revidPos = revidPos;
             this.idPos = idPos;
             this.namespaceFormat = namespaceFormat;
             this.filteredByNamespace = filteredByNamespace;
             this.hasSuffix = hasSuffix;
-            this.hasDeleted = hasDeleted;
             this.maxHours = maxHours;
             this.features = features;
             this.getPagesFormat = getPagesFormat;
