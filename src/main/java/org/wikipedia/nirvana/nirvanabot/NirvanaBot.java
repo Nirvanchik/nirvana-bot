@@ -255,7 +255,6 @@ public class NirvanaBot extends BasicBot{
 
     private static String DEFAULT_HEADER = "";
     private static String DEFAULT_FOOTER = "";
-    private static String DEFAULT_MIDDLE = "";
 	private static PortalParam.Deleted DEFAULT_DELETED_FLAG = PortalParam.Deleted.DONT_TOUCH;
 	private static int DEFAULT_RENAMED_FLAG = PortalParam.RENAMED_NEW;
 	private static int DEFAULT_PARSE_COUNT = -1;
@@ -340,11 +339,6 @@ public class NirvanaBot extends BasicBot{
         @Nonnull
         public String getDefaultHeader() {
             return DEFAULT_HEADER;
-        }
-
-        @Nonnull
-        public String getDefaultMiddle() {
-            return DEFAULT_MIDDLE;
         }
     }
 
@@ -606,7 +600,6 @@ public class NirvanaBot extends BasicBot{
 
         DEFAULT_HEADER = config.getUnescaped(PortalConfig.KEY_HEADER, DEFAULT_HEADER);
         DEFAULT_FOOTER = config.getUnescaped(PortalConfig.KEY_FOOTER, DEFAULT_FOOTER);
-        DEFAULT_MIDDLE = config.getUnescaped(PortalConfig.KEY_MIDDLE, DEFAULT_MIDDLE);
 
         listTypeDefault = config.get(PortalConfig.KEY_TYPE, listTypeDefault).toLowerCase();
 
@@ -1337,7 +1330,6 @@ public class NirvanaBot extends BasicBot{
 
         param.header = config.getUnescaped(PortalConfig.KEY_HEADER, DEFAULT_HEADER);
         param.footer = config.getUnescaped(PortalConfig.KEY_FOOTER, DEFAULT_FOOTER);
-        param.middle = config.getUnescaped(PortalConfig.KEY_MIDDLE, DEFAULT_MIDDLE);
 
         if (config.hasKey(PortalConfig.KEY_TEMPLATES)) {
             String option = config.get(PortalConfig.KEY_TEMPLATES);

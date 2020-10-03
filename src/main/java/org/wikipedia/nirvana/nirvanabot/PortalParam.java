@@ -55,8 +55,6 @@ public class PortalParam {
     public String header = "";
     @Nonnull
     public String footer = "";
-    @Nonnull
-    public String middle = "";
 	public boolean minor;
 	public boolean bot;
 	public boolean fastMode;

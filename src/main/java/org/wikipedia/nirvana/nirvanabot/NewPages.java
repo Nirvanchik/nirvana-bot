@@ -680,7 +680,7 @@ public class NewPages implements PortalModule{
 		String[] oldItems;
 		
 		// remove {{bots|allow=}} record
-		log.debug("analyzing old text -> trancate header/footer/middle");
+		log.debug("analyzing old text -> trancate header/footer");
         oldText = pageFormatter.stripBotsAllowString(oldText);
         oldText = pageFormatter.stripDecoration(oldText);
 

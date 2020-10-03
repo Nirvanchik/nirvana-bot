@@ -39,7 +39,6 @@ import java.util.Map;
 public class PortalConfig {
     public static String KEY_HEADER;
     public static String KEY_FOOTER;
-    public static String KEY_MIDDLE;
     public static String KEY_TYPE;
     public static String KEY_CATEGORY;
     public static String KEY_CATEGORIES;
@@ -132,7 +131,6 @@ public class PortalConfig {
         Localizer localizer = Localizer.getInstance();
         KEY_HEADER = localizer.localize("шапка");
         KEY_FOOTER = localizer.localize("подвал");
-        KEY_MIDDLE = localizer.localize("середина");
         KEY_TYPE = localizer.localize("тип");
         KEY_CATEGORY = localizer.localize("категория");
         KEY_CATEGORIES = localizer.localize("категории");

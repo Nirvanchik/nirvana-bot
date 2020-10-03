@@ -70,11 +70,8 @@ public class PageFormatter {
     protected String header;
     @Nonnull
     protected String footer;
-    @Nonnull
-    protected String middle;
     protected String headerLastUsed;
     protected String footerLastUsed;
-    protected String middleLastUsed;
     
     // Params required for SUBST
     protected final String pageName;
@@ -106,10 +103,8 @@ public class PageFormatter {
         this.delimeter = params.delimeter;
         this.header = params.header == null ? "" : params.header;
         this.footer = params.footer == null ? "" : params.footer;
-        this.middle = params.middle;
         headerLastUsed = this.header;
         footerLastUsed = this.footer;
-        middleLastUsed = this.middle;
 
         this.pageName = params.page;
         this.archiveSettings = params.archSettings;
@@ -141,7 +136,7 @@ public class PageFormatter {
     }
 
     /**
-     * Replaces placeholders in the header/footer/middle with real values.
+     * Replaces placeholders in the header/footer with real values.
      */
     public void substPlaceholdersIfNeed() {
         header = substAllParams(header);
@@ -177,8 +172,8 @@ public class PageFormatter {
     }
 
     /**
-     * Prepares header/footer/middle values intended for subtraction from old page content.
-     * The main point here is to refresh that values with older header/footer/middle content in the
+     * Prepares header/footer values intended for subtraction from old page content.
+     * The main point here is to refresh that values with older header/footer content in the
      * case when user have changed them in portal settings after the last time when the portal page
      * was updated.
      */
@@ -220,8 +215,6 @@ public class PageFormatter {
                     globalSettings.getDefaultHeader());
             footerLastUsed = portalConfig.getUnescaped(PortalConfig.KEY_FOOTER,
                     globalSettings.getDefaultFooter());
-            middleLastUsed = portalConfig.getUnescaped(PortalConfig.KEY_MIDDLE,
-                    globalSettings.getDefaultMiddle());
         }
     }
 
@@ -248,21 +241,11 @@ public class PageFormatter {
     }
 
     /**
-     * Format resulting page, joining items with separator and adding header, footer, middle and
+     * Format resulting page, joining items with separator and adding header, footer and
      * bots allow string.
      */
     public String formatPage(List<String> items) {
-        if (middle.isEmpty()) {
-            return formatPage(StringUtils.join(items.toArray(), delimeter));
-        } else if (items.size() > 1) {
-            int m = (items.size() + 1) / 2; // 2->1, 3->2, 4->2
-            return formatPageWith2Columns(
-                    StringUtils.join(items.subList(0, m), delimeter),
-                    StringUtils.join(items.subList(m, items.size()), delimeter));
-        } else {
-            return formatPageWithContentBeforeMiddle(
-                    StringUtils.join(items, delimeter));
-        }
+        return formatPage(StringUtils.join(items.toArray(), delimeter));
     }
 
     /**
@@ -278,33 +261,7 @@ public class PageFormatter {
     }
 
     /**
-     * Format resulting page, adding header, footer, middle and bots allow string.
-     * Used for pages split into 2 columns.
-     */
-    public String formatPageWith2Columns(String content1, String content2) {
-        StringBuilder result = new StringBuilder();
-        if (botsAllowString != null) {
-            result.append(botsAllowString).append("\n");
-        }
-        result.append(header).append(content1).append(middle).append(content2).append(footer);
-        return result.toString();
-    }
-
-    /**
-     * Format resulting page, adding header, footer, middle and bots allow string.
-     * Used for pages split into 2 columns but having content for only one column.
-     */
-    public String formatPageWithContentBeforeMiddle(String content) {
-        StringBuilder result = new StringBuilder();
-        if (botsAllowString != null) {
-            result.append(botsAllowString).append("\n");
-        }
-        result.append(header).append(content).append(middle).append(footer);
-        return result.toString();
-    }
-
-    /**
-     * Strips header, footer, middle from page content.
+     * Strips header, footer from page content.
      */
     public String stripDecoration(String text) {
         String result = text;
@@ -315,7 +272,6 @@ public class PageFormatter {
         } else {
             result = trimLeft(result, substConstantParams(headerLastUsed));
         }
-        result = trimMiddle(result, middleLastUsed);
         return result;
     }
 
@@ -353,18 +309,6 @@ public class PageFormatter {
             if (StringTools.isSpace(textTrimmed.substring(0, index))) {
                 textTrimmed = textTrimmed.substring(index + left.length());
                 textTrimmed = StringTools.trimLeft(textTrimmed);
-            }
-        }
-        return textTrimmed;
-    }
-
-    protected String trimMiddle(String text, String middle) {
-        String textTrimmed = text;
-        if (!middle.isEmpty()) {
-            if (textTrimmed.contains(middle)) {
-                textTrimmed = textTrimmed.replace(middle, delimeter);
-            } else if (!middle.trim().isEmpty() && textTrimmed.contains(middle.trim())) {
-                textTrimmed = textTrimmed.replace(middle.trim(), delimeter);
             }
         }
         return textTrimmed;

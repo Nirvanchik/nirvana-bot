@@ -168,19 +168,9 @@ public class PageFormatterTest {
         params.footer = FOOTER;
     }
 
-    void withMiddle() {
-        params.middle = "\n{{MIDDLE}}\n";
-    }
-
     void withHeaderFooter() {
         withHeader();
         withFooter();
-    }
-
-    void withHeaderFooterMiddle() {
-        withHeader();
-        withFooter();
-        withMiddle();
     }
 
     private void mockNewPagesTopRevision(boolean exists) throws IOException {
@@ -342,43 +332,15 @@ public class PageFormatterTest {
     }
 
     /**
-     * Test method for {@link PageFormatter#formatPage(java.util.List)}.
-     */
-    @Test
-    public void formatPageWith2Columns() {
-        withMiddle();
-        PageFormatter formatter = create();
-        String result = formatter.formatPage(ITEMS_MANY);
-        String expected =
-                "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" + 
-                "{{MIDDLE}}\n" + 
-                "* [[Cat]]\n* [[Cow]]\n* [[Sheep]]";
-        Assert.assertEquals(expected, result);
-    }
-
-    /**
-     * Test method for {@link PageFormatter#formatPage(java.util.List)}.
-     */
-    @Test
-    public void formatPageWith2Columns1Item_withHeaderFooterMiddle() {
-        withHeaderFooterMiddle();
-        PageFormatter formatter = create();
-        String result = formatter.formatPage(Arrays.asList(new String[] {"* [[Dog]]"}));
-        String expected = "{{HEADER}}\n* [[Dog]]\n{{MIDDLE}}\n\n{{FOOTER}}";
-        Assert.assertEquals(expected, result);
-    }
-
-    /**
      * Test method for {@link PageFormatter#stripDecoration(java.lang.String)}.
      */
     @Test
     public void testStripDecoration_all() {
-        withHeaderFooterMiddle();
+        withHeaderFooter();
         PageFormatter formatter = create();
         String text =
                 HEADER +
                 "* [[Elephant]]\n* [[Lion]]\n* [[Buffalo]]\n* [[Dog]]\n" +
-                "{{MIDDLE}}\n" +
                 "* [[Cat]]\n* [[Cow]]\n* [[Sheep]]\n" +
                 "{{FOOTER}}";
         String result = formatter.stripDecoration(text);
