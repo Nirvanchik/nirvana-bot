@@ -92,21 +92,11 @@ public class NewPages implements PortalModule{
 	public static final String PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE = "\\[\\[(?<article>[^\\]|]+)(|[^\\]]+)?\\]\\]";
 	public static final String PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM = "\\{\\{(?<template>.+)\\}\\}";
 
-    private static String COMMENT_DELETED;
     private static String SUMMARY_NEW_PAGES;
     private static String NEW_PAGES_LISTS_CATEGORY;
 
     private static LocalizedTemplate templateNewPageItem;
     private static LocalizedTemplate templateNewPageItem2;
-
-    private static Pattern deletedNewPageItemRegex;
-    private static Pattern newPageItemRegex;
-    private static Pattern newPageItemSimpleRegex;
-    private static String deletedPageMarkerParam;
-    private static String deletedPageParamPostfix;
-
-    private static String pageDeletedString;
-    private static String pageDeletedSimpleMarker;
 
     private static boolean initialized; 
 
@@ -139,7 +129,6 @@ public class NewPages implements PortalModule{
      */
     protected int dangerousEditThreshold = 1;
 
-    protected PortalParam.Deleted deletedFlag;
     protected int renamedFlag;
 
     protected Map<String,String> pageLists;
@@ -211,12 +200,6 @@ public class NewPages implements PortalModule{
         if (supportAuthor) {
             formatString = formatString.replace(BotVariables.AUTHOR, "%2$s");
         }
-    	/*
-    	TODO(Nirvanchik): I don't understand what is this for?
-    	if(param.deletedFlag==PortalParam.Deleted.MARK) {
-            this.formatString = formatString.replace("%(удалено)", "%4$s");
-    	}
-    	*/
     	this.hours = param.hours;
     	//this.Module = module;
     	this.delimeter = param.delimeter;
@@ -224,7 +207,6 @@ public class NewPages implements PortalModule{
     	this.namespace = param.ns;
     	this.minor = param.minor;
     	this.bot = param.bot;
-    	this.deletedFlag = param.deletedFlag;
     	this.renamedFlag = param.renamedFlag;
     	this.service = param.service;
     	this.fastMode = param.fastMode;
@@ -245,23 +227,6 @@ public class NewPages implements PortalModule{
 
         templateNewPageItem = localizer.localizeTemplate("Новая статья");
         templateNewPageItem2 = localizer.localizeTemplate("Новая статья2");
-
-        deletedPageMarkerParam = templateNewPageItem.localizeParam("уд");
-        deletedNewPageItemRegex = Pattern.compile(".*\\{\\{(" + 
-                templateNewPageItem.localizeName() + "|" + templateNewPageItem2.localizeName() +
-                ")\\|.+\\|.+\\|.+\\|" + deletedPageMarkerParam + "\\}\\}.*");
-        deletedPageParamPostfix = "|" + deletedPageMarkerParam + "}}";
-
-        newPageItemRegex = Pattern.compile(".*\\{\\{(" +
-                templateNewPageItem.localizeName() + "|" + templateNewPageItem2.localizeName() +
-                ")\\|[^\\}\\|]+\\|[^\\}\\|]+\\|[^\\}]+\\}\\}.*");
-
-        pageDeletedString = localizer.localize("Статья удалена");
-        pageDeletedSimpleMarker = "'''" + pageDeletedString + "'''"; 
-        COMMENT_DELETED = "<span style=\"color:#966963\"> — " + pageDeletedSimpleMarker +
-                "</span>";
-
-        newPageItemSimpleRegex = Pattern.compile(".*\\[\\[(.+)\\]\\].*");
 
         initialized = true;
     }
@@ -382,17 +347,10 @@ public class NewPages implements PortalModule{
 
         String formatItemString(String title, boolean deleted, Revision rev)
                 throws InvalidLineFormatException {
-			String element;
 			String user = rev.getUser();
 			String time = formatTimeString(rev);	    	
 	    	String titleToInsert = formatTitleString(title);
-
-            element = String.format(formatString, titleToInsert, XmlTools.removeEscape(user),
-                    time);
-	    	if(deletedFlag==PortalParam.Deleted.MARK && deleted) {
-	    		element = markDeleted(element);
-	    	}
-	    	return element;
+            return String.format(formatString, titleToInsert, XmlTools.removeEscape(user), time);
 		}
 
         protected void addNewItem(String title, Revision rev) throws IOException,
@@ -647,9 +605,7 @@ public class NewPages implements PortalModule{
 		public PageInfo(String item) {
 			this.item = item;
 			this.exists = true;
-			if (deletedFlag==PortalParam.Deleted.REMOVE || deletedFlag==PortalParam.Deleted.MARK) {
-				extractTitle();
-			}
+            extractTitle();
 		}
 		private void extractTitle() {
 			title = getNewPagesItemArticle(item);
@@ -707,19 +663,14 @@ public class NewPages implements PortalModule{
 		    	}
 		    	bunch.add(new PageInfo(item));		    	
 	    	}	    	
-	    	if (this.deletedFlag==PortalParam.Deleted.REMOVE || this.deletedFlag==PortalParam.Deleted.MARK) {
-	    		checkDeleted(wiki, bunch);    			
-    		}
+            checkDeleted(wiki, bunch);
 	    	int j = 0;
 	    	for (; j < bunch.size() && buffer.size() < maxItems; j++) {
 				String item = bunch.get(j).item;
-				if (this.deletedFlag == PortalParam.Deleted.REMOVE && !bunch.get(j).exists) {
+                if (!bunch.get(j).exists) {
             		log.debug("REMOVE old line: \t"+item);
             		d.deletedCount++;
-            	} else {
-    				if (this.deletedFlag == PortalParam.Deleted.MARK ){
-    					item = bunch.get(j).exists? unmarkDeleted(item):markDeleted(item);
-    				}  
+                } else { 
     				log.debug("ADD old line: \t"+item);
     				buffer.addOldItem(item);
         		}
@@ -888,7 +839,7 @@ public class NewPages implements PortalModule{
 		    if(UPDATE_ARCHIVE && archive!=null && d.archiveCount>0) {
                 str = str + ", -" + d.archiveCount + " " + localizer.localize("в архив");
 		    }
-		    if(this.deletedFlag == PortalParam.Deleted.REMOVE && d.deletedCount>0) {
+            if (d.deletedCount > 0) {
                 str = str + ", -" + d.deletedCount + " " + localizer.localize("удаленных");
 		    }
             try {
@@ -1089,50 +1040,6 @@ public class NewPages implements PortalModule{
 			}			
 		}
 		return null;
-	}
-
-	public static String unmarkDeleted(String item) {
-        assert initialized;
-		String str = item;
-		int pos = str.indexOf(COMMENT_DELETED);
-		if(pos>=0) {
-            String end = "";
-            if ((pos + COMMENT_DELETED.length()) < str.length()) {
-                end = str.substring(pos + COMMENT_DELETED.length());
-            }
-            str = str.substring(0, pos) + end;
-			return str;
-		}
-        if (deletedNewPageItemRegex.matcher(item).matches()) {
-            pos = str.indexOf(deletedPageParamPostfix);
-			if(pos>=0) {
-				str = str.substring(0,pos)+str.substring(pos+3);
-			}
-		}
-		return str;
-	}
-
-	public static String markDeleted(String item) {
-        assert initialized;
-		String str = item;
-        if (str.contains(pageDeletedSimpleMarker) ||
-                str.contains(deletedPageParamPostfix)) {
-			return str;
-        }
-        if (newPageItemSimpleRegex.matcher(item).matches()) {
-			str = str + COMMENT_DELETED;
-            return str;
-        } else if (newPageItemRegex.matcher(item).matches()) {
-            String toAdd = deletedPageMarkerParam;
-			int pos = str.indexOf("}}");
-            if (str.charAt(pos - 1) != '|') {
-                toAdd = "|" + toAdd;
-            }
-            str = str.substring(0, pos) + toAdd + str.substring(pos);
-		} else {
-            sLog.error("Cannot mark this item with \"deleted\" tag: " + item);
-		}
-		return str;
 	}
 
 	public static String pageTitleNormalToEscaped(String str) {

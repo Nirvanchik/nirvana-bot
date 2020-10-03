@@ -58,7 +58,6 @@ public class PortalParam {
 	public boolean minor;
 	public boolean bot;
 	public boolean fastMode;
-	Deleted deletedFlag;
 	public int renamedFlag;
 	public String imageSearchTags;
 	public String fairUseImageTemplates;
@@ -73,12 +72,6 @@ public class PortalParam {
 	public List<List<String>> categoryGroups;
 	public List<List<String>> categoryToIgnoreGroups;
 	
-	public enum Deleted{
-		DONT_TOUCH,
-		REMOVE,
-		MARK
-	}
-	
 	public static final int RENAMED_OLD = 1;
 	public static final int RENAMED_NEW = 2;
 	
@@ -86,7 +79,6 @@ public class PortalParam {
 		lang = "ru";
 		minor = true;
 		bot = true;
-		deletedFlag = Deleted.DONT_TOUCH;
 		imageSearchTags = null;
 		fairUseImageTemplates = null;
 		updatesPerDay = 1;
@@ -94,6 +86,5 @@ public class PortalParam {
         categories = new ArrayList<String>();
         categoriesToIgnore = new ArrayList<String>();
         usersToIgnore = new ArrayList<String>();
-        deletedFlag = Deleted.REMOVE;
 	}
 }

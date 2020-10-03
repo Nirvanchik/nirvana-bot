@@ -255,7 +255,6 @@ public class NirvanaBot extends BasicBot{
 
     private static String DEFAULT_HEADER = "";
     private static String DEFAULT_FOOTER = "";
-	private static PortalParam.Deleted DEFAULT_DELETED_FLAG = PortalParam.Deleted.DONT_TOUCH;
 	private static int DEFAULT_RENAMED_FLAG = PortalParam.RENAMED_NEW;
 	private static int DEFAULT_PARSE_COUNT = -1;
 	
@@ -603,11 +602,6 @@ public class NirvanaBot extends BasicBot{
 
         listTypeDefault = config.get(PortalConfig.KEY_TYPE, listTypeDefault).toLowerCase();
 
-        if (config.hasKey(PortalConfig.KEY_DELETED_PAGES)) {
-            DEFAULT_DELETED_FLAG = parseDeleted(config.get(PortalConfig.KEY_DELETED_PAGES),
-                    DEFAULT_DELETED_FLAG, null);
-		}
-
         if (config.hasKey(PortalConfig.KEY_RENAMED_PAGES)) {
             DEFAULT_RENAMED_FLAG = parseRenamed(config.get(PortalConfig.KEY_RENAMED_PAGES),
                     DEFAULT_RENAMED_FLAG, null);
@@ -640,26 +634,6 @@ public class NirvanaBot extends BasicBot{
 			}
 		}
         return true;
-	}
-
-	protected static PortalParam.Deleted parseDeleted(String value, PortalParam.Deleted defaultValue,ArrayList<String> errors) {
-        Localizer localizer = Localizer.getInstance();
-		PortalParam.Deleted flag = defaultValue;
-		if (value.equalsIgnoreCase(STR_DELETE)) {
-			flag = PortalParam.Deleted.REMOVE;
-		} else if (value.equalsIgnoreCase(STR_MARK)) {
-			flag = PortalParam.Deleted.MARK;
-		} else if (value.equalsIgnoreCase(STR_LEAVE)) {
-			flag = PortalParam.Deleted.DONT_TOUCH;
-		} else {
-            log.warn(String.format(ERROR_INVALID_PARAMETER_EN, PortalConfig.KEY_DELETED_PAGES,
-                    value));
-            if (errors != null) {
-                String format = localizer.localize(ERROR_INVALID_PARAMETER);
-                errors.add(String.format(format, PortalConfig.KEY_DELETED_PAGES, value));
-			}
-		}
-		return flag;
 	}
 	
 	private boolean checkPortalInTaskList(List<String> tasks, String portal) {
@@ -1391,12 +1365,6 @@ public class NirvanaBot extends BasicBot{
         }
         param.maxItems = parseIntegerKeyWithMaxVal(config, PortalConfig.KEY_MAX_ITEMS, data.errors,
                 defaultMaxItems, MAX_MAXITEMS);
-
-		param.deletedFlag = DEFAULT_DELETED_FLAG;
-        if (config.hasKey(PortalConfig.KEY_DELETED_PAGES)) {
-            param.deletedFlag = parseDeleted(config.get(PortalConfig.KEY_DELETED_PAGES),
-                    param.deletedFlag, data.errors);
-		}
 
 		param.renamedFlag = DEFAULT_RENAMED_FLAG;
         if (config.hasKey(PortalConfig.KEY_RENAMED_PAGES)) {

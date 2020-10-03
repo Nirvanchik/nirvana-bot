@@ -34,7 +34,6 @@ import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -65,62 +64,7 @@ public class NewPagesTest {
         TestLocalizationManager.reset();
         NewPages.resetFromTests();
     }
-
-    @Test
-    public void markDeleted_marksAnonimous() {
-        NewPages.initStatics();
-        String item = "* {{Новая статья|Спилантес|05 июня 2008|195.39.211.231}}";
-        String expected = "* {{Новая статья|Спилантес|05 июня 2008|195.39.211.231|уд}}";
-        String result = NewPages.markDeleted(item);
-        Assert.assertEquals(expected, result);
-    }
-
-    @Test
-    public void markDeleted_marksNormal() {
-        NewPages.initStatics();
-        String item = "* {{Новая статья|Антохлор|29 декабря 2008|Alekseeva Anna}}";
-        String expected = "* {{Новая статья|Антохлор|29 декабря 2008|Alekseeva Anna|уд}}";
-        String result = NewPages.markDeleted(item);
-        Assert.assertEquals(expected, result);
-    }
-
-    @Test
-    public void markDeleted_marksNormalWithPipe() {
-        NewPages.initStatics();
-        String item = "* {{Новая статья|Антохлор|29 декабря 2008|Alekseeva Anna|}}";
-        String expected = "* {{Новая статья|Антохлор|29 декабря 2008|Alekseeva Anna|уд}}";
-        String result = NewPages.markDeleted(item);
-        Assert.assertEquals(expected, result);
-    }
-    
-    @Test
-    public void markDeleted_marksSimple() {
-        NewPages.initStatics();
-        String item = "* [[Антохлор]]";
-        String expected = 
-                "* [[Антохлор]]<span style=\"color:#966963\"> — '''Статья удалена'''</span>";
-        String result = NewPages.markDeleted(item);
-        Assert.assertEquals(expected, result);
-    }
-    
-    @Test
-    public void unmarkDeleted_unmarksNormal() {
-        NewPages.initStatics();
-        String item = "* {{Новая статья|Антохлор|29 декабря 2008|Alekseeva Anna|уд}}";
-        String expected = "* {{Новая статья|Антохлор|29 декабря 2008|Alekseeva Anna}}";
-        String result = NewPages.unmarkDeleted(item);
-        Assert.assertEquals(expected, result);
-    }
-    
-    @Test
-    public void unmarkDeleted_unmarksSimple() {
-        NewPages.initStatics();
-        String item = "* [[Антохлор]]<span style=\"color:#966963\"> — '''Статья удалена'''</span>";
-        String expected = "* [[Антохлор]]";
-        String result = NewPages.unmarkDeleted(item);
-        Assert.assertEquals(expected, result);
-    }
-
+   
     private PortalParam makeTestParam() {
         PortalParam param = new PortalParam();
         return param;

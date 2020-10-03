@@ -28,6 +28,7 @@ import org.wikipedia.Wiki;
 import org.apache.commons.collections.keyvalue.MultiKey;
 import org.apache.commons.collections.map.MultiKeyMap;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 
 import java.io.FileNotFoundException;
@@ -415,6 +416,16 @@ public class MockNirvanaWiki extends NirvanaWiki {
             return pageExistsMap.get(title);
         }
         return false;
+    }
+
+    @Override
+    public boolean[] exists(String[] titles) throws IOException {
+        log.debug("[MOCK] exists: {}", StringUtils.join(titles, ", "));
+        boolean [] ret = new boolean[titles.length];
+        for (int i = 0; i < titles.length; i++) {
+            ret[i] = pageExistsMap.getOrDefault(titles[i], false);
+        }
+        return ret;
     }
 
     public void mockExists(String title, boolean exists) {
