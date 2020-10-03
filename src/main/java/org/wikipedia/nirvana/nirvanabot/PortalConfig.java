@@ -44,7 +44,6 @@ public class PortalConfig {
     public static String KEY_CATEGORIES;
     public static String KEY_PAGE;
     public static String KEY_IGNORE;
-    public static String KEY_IGNORE_AUTHORS;
     public static String KEY_SERVICE;
     public static String KEY_DEFAULT_SERVICE;
     public static String KEY_ARCHIVE;
@@ -134,7 +133,6 @@ public class PortalConfig {
         KEY_CATEGORIES = localizer.localize("категории");
         KEY_PAGE = localizer.localize("страница");
         KEY_IGNORE = localizer.localize("игнорировать");
-        KEY_IGNORE_AUTHORS = localizer.localize("игнорировать авторов");
         KEY_SERVICE = localizer.localize("сервис");
         KEY_DEFAULT_SERVICE = localizer.localize("сервис по умолчанию");
         KEY_ARCHIVE = localizer.localize("архив");

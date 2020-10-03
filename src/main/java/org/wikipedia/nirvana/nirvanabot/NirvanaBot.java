@@ -1214,8 +1214,6 @@ public class NirvanaBot extends BasicBot{
         param.categoryToIgnoreGroups = multiOptionToArray(options, PortalConfig.KEY_IGNORE, 1,
                 PortalParam.MAX_CAT_GROUPS);
 
-        param.usersToIgnore = optionToList(options, PortalConfig.KEY_IGNORE_AUTHORS, false);
-
         param.page = config.get(PortalConfig.KEY_PAGE, "");
 
 		param.service = serviceManager.getActiveService();

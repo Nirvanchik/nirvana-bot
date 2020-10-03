@@ -40,7 +40,6 @@ public class PortalParam {
 	public String lang;
 	public List<String> categories; 
 	public List<String> categoriesToIgnore;
-	public List<String> usersToIgnore;
 	public String page;
     public CatScanTools.Service service;
 	public String archive;
@@ -83,6 +82,5 @@ public class PortalParam {
         delimeter = "\n";
         categories = new ArrayList<String>();
         categoriesToIgnore = new ArrayList<String>();
-        usersToIgnore = new ArrayList<String>();
 	}
 }

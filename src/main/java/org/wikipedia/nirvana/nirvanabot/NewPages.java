@@ -105,7 +105,6 @@ public class NewPages implements PortalModule{
 	protected List<String> categoriesToIgnore;
 	protected List<List<String>> categoryGroups;
 	protected List<List<String>> categoryToIgnoreGroups;
-	protected Set<String> usersToIgnore;
 	protected String pageName;
     protected String archive;
     protected ArchiveSettings archiveSettings;
@@ -185,7 +184,6 @@ public class NewPages implements PortalModule{
     	this.categoriesToIgnore = param.categoriesToIgnore;
     	categoryGroups = param.categoryGroups;
     	categoryToIgnoreGroups = param.categoryToIgnoreGroups;
-    	this.usersToIgnore = new HashSet<String>(param.usersToIgnore);
     	this.pageName = param.page;
     	this.archive = param.archive;
    		this.archiveSettings = param.archSettings;
@@ -390,22 +388,10 @@ public class NewPages implements PortalModule{
 		    		page = wiki.getTopRevision(pageInfo.getPage());
 		    		break;
 		    	case GET_FIRST_REV_IF_NEED:
-		    		if(usersToIgnore.size()==0) {
-		    			page = pageInfo;
-		    		} else {		    			
-		    			page = wiki.getFirstRevision(pageInfo.getPage());
-		    		}
+                    page = pageInfo;
 		    		break;
 		    	case GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL:
-		    		if(usersToIgnore.size()==0) {
-		    			page = pageInfo;
-		    		} else {
-		    			// TODO (Nirvanchik): here we may lost an important information
-		    			Revision r = wiki.getFirstRevision(pageInfo.getPage());
-		    			if (r != null) {
-		    				pageInfo.setUser(r.getUser());
-		    			}
-		    		}
+                    page = pageInfo;
 		    		break;
 		    	default:
 		    		throw new Error("not supported mode");
@@ -419,22 +405,19 @@ public class NewPages implements PortalModule{
                 return false;
             }
 
-            if (!usersToIgnore.contains(XmlTools.removeEscape(page.getUser()))) {
-                String titleOld = XmlTools.removeEscape(pageInfo.getPage());
-                String titleNew = XmlTools.removeEscape(page.getPage());
-                log.debug("Check page, title old: {}, title new: {}", titleOld, titleNew);
+            String titleOld = XmlTools.removeEscape(pageInfo.getPage());
+            String titleNew = XmlTools.removeEscape(page.getPage());
+            log.debug("Check page, title old: {}, title new: {}", titleOld, titleNew);
 
-                if (!titleNew.equals(titleOld)) {
-                    addNewItem(titleNew, page);
-                    if (includedPages != null) {
-                        includedPages.add(titleOld);
-                    }
-                } else {
-                    addNewItem(titleNew, page);
+            if (!titleNew.equals(titleOld)) {
+                addNewItem(titleNew, page);
+                if (includedPages != null) {
+                    includedPages.add(titleOld);
                 }
-                return true;
-		    }
-            return false;
+            } else {
+                addNewItem(titleNew, page);
+            }
+            return true;
 		}	
 	}
 

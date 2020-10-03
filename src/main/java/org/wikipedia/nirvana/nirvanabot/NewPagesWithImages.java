@@ -162,7 +162,7 @@ public class NewPagesWithImages extends NewPages {
                         page.getId(), page.getImage()); 
 			}
 
-            if (page != null && !usersToIgnore.contains(XmlTools.removeEscape(page.getUser()))) {		    	
+            if (page != null) {		    	
                 String title = XmlTools.removeEscape(page.getPage());
 		    	String time = null;
 		    	if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) 
