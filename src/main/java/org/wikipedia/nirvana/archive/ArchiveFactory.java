@@ -87,20 +87,12 @@ public class ArchiveFactory {
 			if(!empty) {
                 lines = wiki.getPageLinesArray(name);
 			}
-            if (archiveSettings.headerFormat.contains(BotVariables.COUNT) ||
-                    (archiveSettings.superHeaderFormat != null &&
-                    archiveSettings.superHeaderFormat.contains(BotVariables.COUNT))) {
 
-                archive = new ArchiveWithHeadersWithItemsCount(lines, archiveSettings.parseCount,
-                        archiveSettings.addToTop,delimeter, archiveSettings.enumeration,
-                        archiveSettings.headerFormat, archiveSettings.superHeaderFormat);
-			} else {
+            archive = new ArchiveWithHeaders(lines, archiveSettings.parseCount,
+                    archiveSettings.addToTop, delimeter, archiveSettings.enumeration,
+                    archiveSettings.headerFormat, archiveSettings.superHeaderFormat);
 
-                archive = new ArchiveWithHeaders(lines, archiveSettings.parseCount,
-                        archiveSettings.addToTop, delimeter, archiveSettings.enumeration,
-                        archiveSettings.headerFormat, archiveSettings.superHeaderFormat);
-			}
-			((ArchiveWithHeaders)archive).initLatestItemHeaderHeader(wiki,archiveSettings);
+            ((ArchiveWithHeaders) archive).initLatestItemHeaderHeader(wiki, archiveSettings);
 		}
 		return archive;
 	}
