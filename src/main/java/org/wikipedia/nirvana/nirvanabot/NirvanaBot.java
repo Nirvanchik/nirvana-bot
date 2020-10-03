@@ -255,7 +255,6 @@ public class NirvanaBot extends BasicBot{
 
     private static String DEFAULT_HEADER = "";
     private static String DEFAULT_FOOTER = "";
-	private static int DEFAULT_RENAMED_FLAG = PortalParam.RENAMED_NEW;
 	private static int DEFAULT_PARSE_COUNT = -1;
 	
 	private static int DEFAULT_UPDATES_PER_DAY = 1;
@@ -601,11 +600,6 @@ public class NirvanaBot extends BasicBot{
         DEFAULT_FOOTER = config.getUnescaped(PortalConfig.KEY_FOOTER, DEFAULT_FOOTER);
 
         listTypeDefault = config.get(PortalConfig.KEY_TYPE, listTypeDefault).toLowerCase();
-
-        if (config.hasKey(PortalConfig.KEY_RENAMED_PAGES)) {
-            DEFAULT_RENAMED_FLAG = parseRenamed(config.get(PortalConfig.KEY_RENAMED_PAGES),
-                    DEFAULT_RENAMED_FLAG, null);
-		}
 
         PICTURE_SEARCH_TAGS = config.get(PortalConfig.KEY_IMAGE_SEARCH, PICTURE_SEARCH_TAGS);
 
@@ -1366,12 +1360,6 @@ public class NirvanaBot extends BasicBot{
         param.maxItems = parseIntegerKeyWithMaxVal(config, PortalConfig.KEY_MAX_ITEMS, data.errors,
                 defaultMaxItems, MAX_MAXITEMS);
 
-		param.renamedFlag = DEFAULT_RENAMED_FLAG;
-        if (config.hasKey(PortalConfig.KEY_RENAMED_PAGES)) {
-            param.renamedFlag = parseRenamed(config.get(PortalConfig.KEY_RENAMED_PAGES),
-                    param.renamedFlag,data.errors);
-		}
-
         param.updatesPerDay = parseIntegerKeyWithMaxVal(config, PortalConfig.KEY_UPDATES_PER_DAY,
                 data.errors, DEFAULT_UPDATES_PER_DAY, MAX_UPDATES_PER_DAY);
 
@@ -1538,30 +1526,6 @@ public class NirvanaBot extends BasicBot{
 			}
 		}
 		return true;
-	}
-	
-	private int parseRenamed(String string, int defaultValue,
-			ArrayList<String> errors) {
-		int flag = 0;
-		String items[];
-		items = string.split(",");
-		for(String item:items) {
-			String str = item.trim();
-            if (str.equals(STR_OLD_TITLE)) {
-				flag = flag|PortalParam.RENAMED_OLD;
-            } else if (str.equals(STR_NEW_TITLE)) {
-				flag = flag|PortalParam.RENAMED_NEW;
-            }
-		}
-		if(flag==0) {
-			flag = defaultValue;
-            if (errors != null) {
-                String format = localizer.localize(ERROR_INVALID_PARAMETER);
-                errors.add(String.format(format, PortalConfig.KEY_RENAMED_PAGES));
-            }
-		}		
-		
-		return flag;
 	}
 
     private ArrayList<String> parseArchiveHeaders(ArchiveSettings archiveSettings,

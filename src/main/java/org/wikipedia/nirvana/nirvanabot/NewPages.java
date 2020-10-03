@@ -129,8 +129,6 @@ public class NewPages implements PortalModule{
      */
     protected int dangerousEditThreshold = 1;
 
-    protected int renamedFlag;
-
     protected Map<String,String> pageLists;
     protected Map<String,String> pageListsToIgnore;
 
@@ -207,7 +205,6 @@ public class NewPages implements PortalModule{
     	this.namespace = param.ns;
     	this.minor = param.minor;
     	this.bot = param.bot;
-    	this.renamedFlag = param.renamedFlag;
     	this.service = param.service;
     	this.fastMode = param.fastMode;
         this.templateFilter = param.templateFilter;
@@ -423,26 +420,18 @@ public class NewPages implements PortalModule{
             }
 
             if (!usersToIgnore.contains(XmlTools.removeEscape(page.getUser()))) {
-                String title_old = XmlTools.removeEscape(pageInfo.getPage());
-                String title_new = XmlTools.removeEscape(page.getPage());
-		    	log.debug("check page, title old: "+title_old+", title new: "+title_new);
+                String titleOld = XmlTools.removeEscape(pageInfo.getPage());
+                String titleNew = XmlTools.removeEscape(page.getPage());
+                log.debug("Check page, title old: {}, title new: {}", titleOld, titleNew);
 
-		    	boolean renamed = !title_new.equals(title_old);
-
-		    	if(renamed) {
-			    	if((renamedFlag & PortalParam.RENAMED_NEW) != 0 ) {
-                        addNewItem(title_new, page);
-			    	} 
-			    	if((renamedFlag & PortalParam.RENAMED_OLD) != 0) {
-                        addNewItem(title_old, page);
-			    	} else {
-			    		if (includedPages != null) {
-			    			includedPages.add(title_old);
-			    		}
-			    	}		    	
-		    	} else {
-                    addNewItem(title_new, page);
-		    	}
+                if (!titleNew.equals(titleOld)) {
+                    addNewItem(titleNew, page);
+                    if (includedPages != null) {
+                        includedPages.add(titleOld);
+                    }
+                } else {
+                    addNewItem(titleNew, page);
+                }
                 return true;
 		    }
             return false;

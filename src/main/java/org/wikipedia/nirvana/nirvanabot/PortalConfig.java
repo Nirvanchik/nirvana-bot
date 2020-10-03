@@ -62,7 +62,6 @@ public class PortalConfig {
     public static String KEY_DEPTH;
     public static String KEY_HOURS;
     public static String KEY_MAX_ITEMS;
-    public static String KEY_RENAMED_PAGES;
     public static String KEY_SEPARATOR;
     public static String KEY_IMAGE_SEARCH;
     public static String KEY_FAIR_USE_IMAGE_TEMPLATES;
@@ -153,7 +152,6 @@ public class PortalConfig {
         KEY_DEPTH = localizer.localize("глубина");
         KEY_HOURS = localizer.localize("часов");
         KEY_MAX_ITEMS = localizer.localize("элементов");
-        KEY_RENAMED_PAGES = localizer.localize("переименованные статьи");
         KEY_SEPARATOR = localizer.localize("разделитель");
         KEY_IMAGE_SEARCH = localizer.localize("поиск картинки");
         KEY_FAIR_USE_IMAGE_TEMPLATES = localizer.localize("шаблоны запрещенных картинок");

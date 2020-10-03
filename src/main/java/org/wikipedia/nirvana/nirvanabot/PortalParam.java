@@ -58,7 +58,6 @@ public class PortalParam {
 	public boolean minor;
 	public boolean bot;
 	public boolean fastMode;
-	public int renamedFlag;
 	public String imageSearchTags;
 	public String fairUseImageTemplates;
 	public int updatesPerDay;
@@ -72,7 +71,6 @@ public class PortalParam {
 	public List<List<String>> categoryGroups;
 	public List<List<String>> categoryToIgnoreGroups;
 	
-	public static final int RENAMED_OLD = 1;
 	public static final int RENAMED_NEW = 2;
 	
 	public PortalParam() {
