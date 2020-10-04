@@ -832,4 +832,29 @@ public class NirvanaBotTest {
         // TODO: Validate edit comment
     }
 
+    /**
+     * Test case 039.
+     * Summary: bot must remove renamed pages with older title from page list.
+     * Similar tests: .
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_process_old_handle_renamed() throws TestError {
+        run("039_new_pages_process_old_handle_renamed.js");
+    }
+
+    /**
+     * Test case 040.
+     * Summary: bot must remove deleted pages from page list.
+     * Similar tests: 039.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_process_old_remove_deleted() throws TestError {
+        run("040_new_pages_process_old_remove_deleted.js");
+    }
 }

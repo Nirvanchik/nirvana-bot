@@ -78,7 +78,40 @@ import java.util.regex.Pattern;
 import javax.security.auth.login.LoginException;
 
 /**
- * @author kin
+ * What info we can know about page:
+ * Info extracted from service and from Wikipedia
+ * 1) current page name // used for showing in result
+ * 2) page name when page was created // used to remove duplications
+ * 3) page name when page at the moment was moved to current namespace
+ *    // used for removing duplications
+ * 4) the date of page creation // used for sorting and showing in result
+ * 5) the date of moving this page to current namespace // used for sorting and showing in result
+ * 6) page rev id // used for sorting by creation date,
+ *    // bad if you want to consider pages moved from other namespaces
+ * 7) page author // used to show in result
+ * 
+ * What info can be retrieved from "catscan" service without additional
+ * requests?
+ * 1) current page name
+ * 2) page rev id
+ *
+ * What info can be shown in result?
+ * 1) current page name
+ * 2) author (optional)
+ * 3) creation date (optional)
+ *
+ * How many new pages should extract the bot?
+ * It should be enough to generate full page list.
+ * 
+ * If bot extracts not enough pages it should leave some of the old pages.
+ * Leaving old pages should enable a lot of logic:
+ * 1) pages with the title existing in new extracted list should be removed
+ * 2) pages that were renamed should be removed if newer name already presents
+ *    // check first revisiton -> getFirstRevision()
+ * 3) deleted pages should be removed
+ *    // check if page exists -> exists()
+ * 4) pages order should be preserved after adding new items even if they are mixed
+ * 
  *
  */
 public class NewPages implements PortalModule{
@@ -348,6 +381,8 @@ public class NewPages implements PortalModule{
             return String.format(formatString, titleToInsert, XmlTools.removeEscape(user), time);
 		}
 
+        // why 'title' item? because 'rev' can has old title if page was renamed
+        // author, date are OK from this 'rev'
         protected void addNewItem(String title, Revision rev) throws IOException,
                 InvalidLineFormatException {
             String element = formatItemString(title, false, rev);
@@ -381,15 +416,19 @@ public class NewPages implements PortalModule{
 		    	case GET_FIRST_REV:
 		    		page = wiki.getFirstRevision(pageInfo.getPage());
 		    		break;
+                // Is this needed?
 		    	case GET_REV:
 		    		page = wiki.getRevision(pageInfo.getRevid());
 		    		break;
+                // Is this needed?
 		    	case GET_TOP_REV:
 		    		page = wiki.getTopRevision(pageInfo.getPage());
 		    		break;
+                // Is this needed?
 		    	case GET_FIRST_REV_IF_NEED:
                     page = pageInfo;
 		    		break;
+                // Is this needed?
 		    	case GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL:
                     page = pageInfo;
 		    		break;
@@ -405,8 +444,8 @@ public class NewPages implements PortalModule{
                 return false;
             }
 
-            String titleOld = XmlTools.removeEscape(pageInfo.getPage());
-            String titleNew = XmlTools.removeEscape(page.getPage());
+            String titleNew = XmlTools.removeEscape(pageInfo.getPage());
+            String titleOld = XmlTools.removeEscape(page.getPage());
             log.debug("Check page, title old: {}, title new: {}", titleOld, titleNew);
 
             if (!titleNew.equals(titleOld)) {

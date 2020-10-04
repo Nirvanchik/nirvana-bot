@@ -535,9 +535,13 @@ public class MockNirvanaWiki extends NirvanaWiki {
     }
 
     public class MockRevision extends Revision {
-        public MockRevision(long revid, OffsetDateTime timestamp, String title, String summary,
+        public final String currentTitle;
+
+        public MockRevision(long revid, OffsetDateTime timestamp, String title,
+                String currentTitle, String summary,
                 String user, boolean minor, boolean bot, boolean rvnew, int size) {
             super(revid, timestamp, title, summary, user, minor, bot, rvnew, size);
+            this.currentTitle = currentTitle;
         }
 
         public void setPrevious(long previous) {

@@ -83,12 +83,28 @@ public class MockNirvanaBot extends NirvanaBot {
     List<EditInfoMinimal> expectedEdits = null;
     List<ExpectedQuery> expectedQueries = null;
 
+    /**
+     * Wrapper for any exceptions coming from some tests code, mocks.
+     *
+     */
     public static class TestError extends Exception {
         private static final long serialVersionUID = 1L;
-        public final Exception original;
 
-        public TestError(Exception error) {
-            original = error;
+        public TestError(String message) {
+            super(message);
+        }
+
+        public TestError(Throwable cause) {
+            super(cause);
+        }
+
+        public TestError(String message, Throwable cause) {
+            super(message, cause);
+        }
+
+        public TestError(String message, Throwable cause, boolean enableSuppression,
+                boolean writableStackTrace) {
+            super(message, cause, enableSuppression, writableStackTrace);
         }
     }
 
@@ -142,7 +158,7 @@ public class MockNirvanaBot extends NirvanaBot {
             try {
                 initializeFromTestConfig(testConfigPath);
             } catch (IOException | ParseException e) {
-                e.printStackTrace();
+                tmpLog.severe(e.getMessage());
                 throw new TestError(e);
             }
         }
@@ -268,8 +284,11 @@ public class MockNirvanaBot extends NirvanaBot {
 
         JSONArray firstRevJsonList = (JSONArray) wikiJson.get("firstRevision");
         if (firstRevJsonList != null) {
-            for (Revision r: parseRevisionList(wiki, firstRevJsonList)) {
+            for (MockRevision r: parseRevisionList(wiki, firstRevJsonList)) {
                 wiki.mockFirstRevision(r.getPage(), r);
+                if (!r.getPage().equals(r.currentTitle)) {
+                    wiki.mockFirstRevision(r.currentTitle, r);
+                }
             }
         }
 
@@ -329,8 +348,8 @@ public class MockNirvanaBot extends NirvanaBot {
         }
     }
 
-    private Revision [] parseRevisionList(MockNirvanaWiki wiki, JSONArray revisionsJson) {
-        Revision [] revisions = new Revision[revisionsJson.size()];
+    private MockRevision [] parseRevisionList(MockNirvanaWiki wiki, JSONArray revisionsJson) {
+        MockRevision [] revisions = new MockRevision[revisionsJson.size()];
         Iterator<?> it = revisionsJson.iterator();
         for (int i = 0; it.hasNext(); i++) {
             revisions[i] = parseRevision(wiki, (JSONObject) it.next());
@@ -357,7 +376,8 @@ public class MockNirvanaBot extends NirvanaBot {
         }
     }
 
-    private Revision parseRevision(MockNirvanaWiki wiki, JSONObject revisionJson) {
+    @SuppressWarnings("unchecked")  // Json parsing
+    private MockRevision parseRevision(MockNirvanaWiki wiki, JSONObject revisionJson) {
         long revid = (Long) revisionJson.get("revid");
         Object timestampField = revisionJson.get("timestamp");
         Assert.assertNotNull("'timestamp' item must not be null", timestampField);
@@ -371,8 +391,9 @@ public class MockNirvanaBot extends NirvanaBot {
         boolean bot = (Boolean) revisionJson.get("bot");
         boolean rvnew = (Boolean) revisionJson.get("rvnew");
         int size = (int)(long)(Long) revisionJson.get("size");
+        String currentTitle = (String) revisionJson.getOrDefault("current_title", title);
         MockRevision r = wiki.new MockRevision(
-                revid, datetime, title, summary, user, minor, bot, rvnew, size);
+                revid, datetime, title, currentTitle, summary, user, minor, bot, rvnew, size);
         if (revisionJson.containsKey("previous")) {
             r.setPrevious((Long) revisionJson.get("previous")); 
         }
