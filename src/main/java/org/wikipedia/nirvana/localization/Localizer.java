@@ -24,6 +24,10 @@
 package org.wikipedia.nirvana.localization;
 
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
+import org.wikipedia.nirvana.nirvanabot.NewPages;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +40,12 @@ import java.util.Map;
  * Must be initialized with any of the provided initializing methods. 
  */
 public class Localizer {
+    private final Logger log;
+
+    public Localizer() {
+        log = LogManager.getLogger(Localizer.class);
+    }
+
     /**
      * Use this with {@link #init(Localizer)} method if you want to disable localization.
      */
@@ -145,6 +155,7 @@ public class Localizer {
     }
 
     void addTranslations(Map<String, String> translations) {
+        log.debug("Add localizations for keys: {}", translations.keySet());
         this.translations.putAll(translations);
     }
 
@@ -207,6 +218,7 @@ public class Localizer {
             String localizedWord = translations.get(word);
             if (localizedWord != null) return localizedWord;
         } else {
+            log.info("Localization key not found in predefined set: \"{}\". Add it", word);
             translations.put(word, null);
         }
         return defaultWord;

@@ -125,7 +125,7 @@ public class NewPages implements PortalModule{
 	public static final String PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE = "\\[\\[(?<article>[^\\]|]+)(|[^\\]]+)?\\]\\]";
 	public static final String PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM = "\\{\\{(?<template>.+)\\}\\}";
 
-    private static String SUMMARY_NEW_PAGES;
+    private static String summaryNewPages;
     private static String NEW_PAGES_LISTS_CATEGORY;
 
     private static LocalizedTemplate templateNewPageItem;
@@ -249,7 +249,7 @@ public class NewPages implements PortalModule{
     public static void initStatics() {
         if (initialized) return;
         Localizer localizer = Localizer.getInstance();
-        SUMMARY_NEW_PAGES = "+%d " + localizer.localize("новых");
+        summaryNewPages = "+%d " + localizer.localize("новых");
         NEW_PAGES_LISTS_CATEGORY =
                 localizer.localize("Категория:Википедия:Списки новых статей по темам");
 
@@ -846,7 +846,7 @@ public class NewPages implements PortalModule{
 				!d.newText.isEmpty() && 
 				!(d.newText.equals(text) || d.newText.equals(text.trim())))
 		{
-            String str = String.format(localizer.localize(SUMMARY_NEW_PAGES), d.newPagesCount);
+            String str = String.format(summaryNewPages, d.newPagesCount);
 		    if(UPDATE_ARCHIVE && archive!=null && d.archiveCount>0) {
                 str = str + ", -" + d.archiveCount + " " + localizer.localize("в архив");
 		    }
