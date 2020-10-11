@@ -622,19 +622,27 @@ public class NewPages implements PortalModule{
 			title = getNewPagesItemArticle(item);
 			if (title != null) title = pageTitleEscapedToNormal(title);
 		}
+
+        public String fullTitle() {
+            if (!namespaceIdentifier.isEmpty() && title != null && !title.contains(":")) {
+                    return namespaceIdentifier + ":" + title;
+            }
+            return title;
+        }
 	}
 	
 	private void checkDeleted(NirvanaWiki wiki, List<PageInfo> pages) throws IOException {
 		ArrayList<String> titles = new ArrayList<String>();
 		boolean pagesExist[];// = new boolean[bunch.size()];
 		for (int j = 0; j < pages.size(); j++) {
-			if (pages.get(j).title != null) {
-				titles.add(pages.get(j).title);
-			}
+            String fullTitle = pages.get(j).fullTitle(); 
+            if (fullTitle != null) {
+                titles.add(fullTitle);
+            }
 		}
 		pagesExist = wiki.exists(titles.toArray(new String[0]));
 		for (int j = 0, k = 0; j < pages.size(); j++) {
-			if (pages.get(j).title != null) {
+            if (pages.get(j).fullTitle() != null) {
 				pages.get(j).exists = pagesExist[k];
 				k++;
 			}	

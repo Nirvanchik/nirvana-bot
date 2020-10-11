@@ -857,4 +857,17 @@ public class NirvanaBotTest {
     public void new_pages_process_old_remove_deleted() throws TestError {
         run("040_new_pages_process_old_remove_deleted.js");
     }
+
+    /**
+     * Test case 041.
+     * Summary: bot must remove deleted category pages and not delete existing category pages.
+     * Similar tests: 039, 040.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_process_old_category_namespace() throws TestError {
+        run("041_new_pages_process_old_category_namespace.js");
+    }
 }
