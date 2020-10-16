@@ -37,17 +37,6 @@ NOTICE text
 *.java text
 # Next files hava CRLF line endings in git (not normalized).
 # TODO: Convert line endings here to LF
-src/main/java/org/wikipedia/nirvana/archive/Archive.java -text
-src/main/java/org/wikipedia/nirvana/archive/ArchiveFactory.java -text
-src/main/java/org/wikipedia/nirvana/archive/ArchiveSettings.java -text
-src/main/java/org/wikipedia/nirvana/archive/ArchiveSimple.java -text
-src/main/java/org/wikipedia/nirvana/archive/ArchiveSimpleSorted.java -text
-src/main/java/org/wikipedia/nirvana/archive/ArchiveTools.java -text
-src/main/java/org/wikipedia/nirvana/archive/ArchiveUnique.java -text
-src/main/java/org/wikipedia/nirvana/archive/ArchiveWithEnumeration.java -text
-src/main/java/org/wikipedia/nirvana/archive/ArchiveWithHeaders.java -text
-src/main/java/org/wikipedia/nirvana/archive/ArchiveWithHeadersWithItemsCount.java -text
-src/main/java/org/wikipedia/nirvana/archive/NirvanaArchiveBot.java -text
 src/main/java/org/wikipedia/nirvana/cleanarchive/CleanArchiveBot.java
 src/main/java/org/wikipedia/nirvana/ListTools.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/DiscussedPages.java -text
