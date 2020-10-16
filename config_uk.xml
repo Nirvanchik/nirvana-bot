@@ -24,6 +24,10 @@ Delete = Вікіпедія:Статті-кандидати на вилучен�
 <entry key="statistics">yes</entry>
 <entry key="statistics-file">report/report.NirvanaBot.uk-%(date).txt</entry>
 <entry key="statistics-format">txt</entry>
+<entry key="statistics-wiki-verbosity">verbose-hidden</entry>
+<entry key="update-status">yes</entry>
+<entry key="status-wiki">Користувач:NirvanaBot/Статус</entry>
+<entry key="status-wiki-template">Користувач:NirvanaBot/Нові статті/Шаблон статус бота</entry>
 <entry key="start-from">0</entry>
 <entry key="default-service">petscan</entry>
 <entry key="service">auto</entry>
@@ -33,5 +37,4 @@ Delete = Вікіпедія:Статті-кандидати на вилучен�
 <entry key="services-timeout">3600000</entry>
 <entry key="try-count">2</entry>
 <entry key="wiki-translation-page">Користувач:NirvanaBot/Локалізація</entry>
-
 </properties>
