@@ -38,58 +38,58 @@ import org.wikipedia.nirvana.wiki.NirvanaWiki;
  *
  */
 public class ArchiveWithEnumeration extends ArchiveSimple {
-	String oldText;
-	/**
-	 * @param addToTop
-	 * @param delimeter
-	 */
-	public ArchiveWithEnumeration(String text, boolean addToTop, String delimeter) {
-		super(addToTop, delimeter);
-		log.debug("ArchiveWithEnumeration created");
-		this.enumeration = Enumeration.HTML_GLOBAL;
-		oldText = trimEnumerationAndWhiteSpace(text);
-	}
-	public ArchiveWithEnumeration(String lines[], boolean addToTop, String delimeter) {
-		super(addToTop, delimeter);
-		this.enumeration = Enumeration.HTML_GLOBAL;
-		int i = 0;
-		while(i<lines.length && lines[i].isEmpty()) i++;
-		if(lines[i].compareToIgnoreCase(OL)==0) i++;
-		int j = lines.length-1;
-		while(j>=0 && lines[j].isEmpty()) j--;
-		if(lines[j].compareToIgnoreCase(OL_END)==0) j--;
-		oldText = StringUtils.join(lines,delimeter,i,j+1);
-	}
+    String oldText;
+    /**
+     * @param addToTop
+     * @param delimeter
+     */
+    public ArchiveWithEnumeration(String text, boolean addToTop, String delimeter) {
+        super(addToTop, delimeter);
+        log.debug("ArchiveWithEnumeration created");
+        this.enumeration = Enumeration.HTML_GLOBAL;
+        oldText = trimEnumerationAndWhiteSpace(text);
+    }
+    public ArchiveWithEnumeration(String lines[], boolean addToTop, String delimeter) {
+        super(addToTop, delimeter);
+        this.enumeration = Enumeration.HTML_GLOBAL;
+        int i = 0;
+        while(i<lines.length && lines[i].isEmpty()) i++;
+        if(lines[i].compareToIgnoreCase(OL)==0) i++;
+        int j = lines.length-1;
+        while(j>=0 && lines[j].isEmpty()) j--;
+        if(lines[j].compareToIgnoreCase(OL_END)==0) j--;
+        oldText = StringUtils.join(lines,delimeter,i,j+1);
+    }
 
     @Override
     public void add(String item, Calendar c) {
-		String str = item;
-		if(str.startsWith("*") || str.startsWith("#")) {
-			str = "<li>"+str.substring(1);
-		} else {
-			str = "<li> " + str;
-		}
+        String str = item;
+        if(str.startsWith("*") || str.startsWith("#")) {
+            str = "<li>"+str.substring(1);
+        } else {
+            str = "<li> " + str;
+        }
         super.add(str, c);
-	}
+    }
 
-	public String toString() {
-		if(addToTop) {
-			if(oldText.isEmpty()) 
-				return OL+delimeter+StringUtils.join(items, delimeter)+delimeter+OL_END;
-			else
-				return OL+delimeter+StringUtils.join(items, delimeter)+delimeter+oldText+delimeter+OL_END;
-		}
-		else {
-			if(oldText.isEmpty())
-				return OL+delimeter+StringUtils.join(items, delimeter)+delimeter+OL_END;
-			else
-				return OL+delimeter+oldText+delimeter+StringUtils.join(items, delimeter)+delimeter+OL_END;
-		}
-	}
-	
-	public void update(NirvanaWiki wiki,String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
-		wiki.edit(archiveName, toString(), 
+    public String toString() {
+        if(addToTop) {
+            if(oldText.isEmpty()) 
+                return OL+delimeter+StringUtils.join(items, delimeter)+delimeter+OL_END;
+            else
+                return OL+delimeter+StringUtils.join(items, delimeter)+delimeter+oldText+delimeter+OL_END;
+        }
+        else {
+            if(oldText.isEmpty())
+                return OL+delimeter+StringUtils.join(items, delimeter)+delimeter+OL_END;
+            else
+                return OL+delimeter+oldText+delimeter+StringUtils.join(items, delimeter)+delimeter+OL_END;
+        }
+    }
+    
+    public void update(NirvanaWiki wiki,String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
+        wiki.edit(archiveName, toString(), 
                 "+" + newItemsCount() + " статей", minor, bot);
-	}
+    }
 
 }

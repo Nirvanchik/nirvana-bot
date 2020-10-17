@@ -34,39 +34,39 @@ import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.apache.commons.lang3.StringUtils;
 
 public class ArchiveSimple extends Archive {
-	protected ArrayList<String> items;
-	public String toString() {
-		if(addToTop)
+    protected ArrayList<String> items;
+    public String toString() {
+        if(addToTop)
             // Для склейки нужен перенос строки
             return StringUtils.join(items, delimeter) + delimeter;
-		else
+        else
             // Для склейки нужно отсутствие переноса
             return StringUtils.join(items, delimeter);
-	}
-	
-	public ArchiveSimple(boolean addToTop, String delimeter) {
-		log.debug("ArchiveSimple created");
-		this.addToTop = addToTop;
-		this.delimeter = delimeter;
-		items = new ArrayList<String>();
-	}
+    }
+    
+    public ArchiveSimple(boolean addToTop, String delimeter) {
+        log.debug("ArchiveSimple created");
+        this.addToTop = addToTop;
+        this.delimeter = delimeter;
+        items = new ArrayList<String>();
+    }
 
     @Override
     public void add(String item, Calendar c) {
-		this.newLines++;
-		if(this.addToTop) {
-			items.add(0, item);
-		} else {
-			items.add(item);
-		}
-	}
-	public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
-		if(addToTop) {
-			wiki.prependOrCreate(archiveName, toString(), 
+        this.newLines++;
+        if(this.addToTop) {
+            items.add(0, item);
+        } else {
+            items.add(item);
+        }
+    }
+    public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
+        if(addToTop) {
+            wiki.prependOrCreate(archiveName, toString(), 
                     "+" + newItemsCount() + " статей", minor, bot);
-		} else {
-			wiki.appendOrCreate(archiveName, toString(), 
+        } else {
+            wiki.appendOrCreate(archiveName, toString(), 
                     "+" + newItemsCount() + " статей", minor, bot);
-		}
-	}
+        }
+    }
 }

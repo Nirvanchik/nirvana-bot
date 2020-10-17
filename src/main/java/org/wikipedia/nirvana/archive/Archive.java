@@ -42,20 +42,20 @@ import org.apache.logging.log4j.Logger;
 public abstract class Archive {
     protected final Logger log;
 
-	protected boolean addToTop = true;
-	//private String latestItemHeader = null;
-	protected int newLines = 0;
-	protected String delimeter = "\n";
-	//protected boolean hasOL = false;
-	//protected boolean globalEnumeration = false;
-	//protected String archiveName = "";
-	protected Enumeration enumeration = Enumeration.NONE;
-	public static final String OL = "<ol>";
-	public static final String OL_END = "</ol>";
+    protected boolean addToTop = true;
+    //private String latestItemHeader = null;
+    protected int newLines = 0;
+    protected String delimeter = "\n";
+    //protected boolean hasOL = false;
+    //protected boolean globalEnumeration = false;
+    //protected String archiveName = "";
+    protected Enumeration enumeration = Enumeration.NONE;
+    public static final String OL = "<ol>";
+    public static final String OL_END = "</ol>";
 
-	public String toString() {
-		return "";
-	}
+    public String toString() {
+        return "";
+    }
 
     /**
      * Adds list item to this archive according to this archive rules (settings).
@@ -64,27 +64,27 @@ public abstract class Archive {
      * @param c list item date, or null if it's not possible to find out the date.
      */
     public abstract void add(String item, Calendar c);
-	
-	public int newItemsCount() { return newLines; }
+    
+    public int newItemsCount() { return newLines; }
 
     public Archive() {
         log = LogManager.getLogger(Archive.class.getName());
     }
 
-	public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
-		
-	}
-	
-	public static String trimEnumerationAndWhiteSpace(String text) {
-		String oldText = text.trim();
-		if(oldText.startsWith(OL)) {
-			oldText = oldText.substring(OL.length());		
-		}
-		if(oldText.endsWith(OL_END)) {
-			oldText = oldText.substring(0,oldText.length()-OL_END.length());
-		}
-		oldText = oldText.trim();
-		return oldText;
-	}
+    public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
+        
+    }
+    
+    public static String trimEnumerationAndWhiteSpace(String text) {
+        String oldText = text.trim();
+        if(oldText.startsWith(OL)) {
+            oldText = oldText.substring(OL.length());        
+        }
+        if(oldText.endsWith(OL_END)) {
+            oldText = oldText.substring(0,oldText.length()-OL_END.length());
+        }
+        oldText = oldText.trim();
+        return oldText;
+    }
 
 }

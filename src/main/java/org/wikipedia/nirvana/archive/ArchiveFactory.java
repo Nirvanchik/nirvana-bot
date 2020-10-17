@@ -23,7 +23,6 @@
 
 package org.wikipedia.nirvana.archive;
 
-import org.wikipedia.nirvana.nirvanabot.BotVariables;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
@@ -43,57 +42,57 @@ public class ArchiveFactory {
         log = LogManager.getLogger(ArchiveFactory.class.getName());
     }
 
-	/**
-	 * @throws IOException 
-	 * 
-	 */
-	public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki, String name, String delimeter) throws IOException {
-		return createArchive(archiveSettings,wiki,name,delimeter,false);
-	}
+    /**
+     * @throws IOException 
+     * 
+     */
+    public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki, String name, String delimeter) throws IOException {
+        return createArchive(archiveSettings,wiki,name,delimeter,false);
+    }
 
     // TODO: Make another constructor instead of "empty" flag
-	public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki, String name, String delimeter, boolean empty) throws IOException {
-		Archive archive = null;
-		log.debug("creating archive: "+name);
-		if(archiveSettings.removeDuplicates) {
-			String lines[] = new String[0];
-			if(!empty) {
+    public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki, String name, String delimeter, boolean empty) throws IOException {
+        Archive archive = null;
+        log.debug("creating archive: "+name);
+        if(archiveSettings.removeDuplicates) {
+            String lines[] = new String[0];
+            if(!empty) {
                 lines = wiki.getPageLinesArray(name);
-			}
-			archive = new ArchiveUnique(wiki,lines,archiveSettings.addToTop,delimeter);
-		} else if(archiveSettings.withoutHeaders()) {
-			if(!archiveSettings.hasHtmlEnumeration()) {
-				if(archiveSettings.sorted) {
-					String lines[] = new String[0];
-					if(!empty) {
+            }
+            archive = new ArchiveUnique(wiki,lines,archiveSettings.addToTop,delimeter);
+        } else if(archiveSettings.withoutHeaders()) {
+            if(!archiveSettings.hasHtmlEnumeration()) {
+                if(archiveSettings.sorted) {
+                    String lines[] = new String[0];
+                    if(!empty) {
                         lines = wiki.getPageLinesArray(name);
-					}
-					archive = new ArchiveSimpleSorted(wiki,lines,archiveSettings.addToTop,delimeter);
-				}
-				else	
-					archive = new ArchiveSimple(archiveSettings.addToTop,delimeter);
-			} else {
-				String text = "";
-				if(!empty) {
+                    }
+                    archive = new ArchiveSimpleSorted(wiki,lines,archiveSettings.addToTop,delimeter);
+                }
+                else    
+                    archive = new ArchiveSimple(archiveSettings.addToTop,delimeter);
+            } else {
+                String text = "";
+                if(!empty) {
                     text = wiki.getPageText(name);
                     if (text == null) {
                         text = "";
                     }
-				}
-				archive = new ArchiveWithEnumeration(text,archiveSettings.addToTop,delimeter);
-			}			
-		} else {
-			String lines[] = new String[0];
-			if(!empty) {
+                }
+                archive = new ArchiveWithEnumeration(text,archiveSettings.addToTop,delimeter);
+            }            
+        } else {
+            String lines[] = new String[0];
+            if(!empty) {
                 lines = wiki.getPageLinesArray(name);
-			}
+            }
 
             archive = new ArchiveWithHeaders(lines, archiveSettings.parseCount,
                     archiveSettings.addToTop, delimeter, archiveSettings.enumeration,
                     archiveSettings.headerFormat, archiveSettings.superHeaderFormat);
 
             ((ArchiveWithHeaders) archive).initLatestItemHeaderHeader(wiki, archiveSettings);
-		}
-		return archive;
-	}
+        }
+        return archive;
+    }
 }
