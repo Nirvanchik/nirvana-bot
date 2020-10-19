@@ -1,6 +1,6 @@
 /**
- *  @(#)ArchiveFactory.java 02/07/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)ArchiveFactory.java
+ *  Copyright © 2020 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,8 +31,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 
 /**
- * @author kin
- *
+ * Creates required instance of {@link Archive} subclass.
+ * Depending on settings {@link ArchiveSettings} it will select the most suitable variant of
+ * Archive container.
  */
 public class ArchiveFactory {
 
@@ -43,47 +44,67 @@ public class ArchiveFactory {
     }
 
     /**
-     * @throws IOException 
+     * Creates a new Archive. This archive container will be empty.
      * 
      */
-    public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki, String name, String delimeter) throws IOException {
-        return createArchive(archiveSettings,wiki,name,delimeter,false);
+    public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki,
+            String name, String delimeter) throws IOException {
+        return createArchive(archiveSettings, wiki, name, delimeter, false);
     }
 
+    // TODO: This is too difficult. Split this factory to 2 methods or 2 factory classes.
     // TODO: Make another constructor instead of "empty" flag
-    public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki, String name, String delimeter, boolean empty) throws IOException {
+    /**
+     * Creates a new or existing Archive. This archive container will be empty or filled with
+     * an old archived items from Wiki text depending on the provided flags.
+     * 
+     * @param archiveSettings Instance of {@link ArchiveSettings}. Archive settings.
+     * @param wiki Instance of {@link NirvanaWiki} class. Will be used to get old archive page.
+     * @param name Wiki page of this archive
+     * @param delimeter A string that separates archive items (usually "\n").
+     * @param empty if <code>true</code> the archive container will be filled with items from
+     *     Wiki page.
+     * @return instance of archive containter.
+     */
+    public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki,
+            String name, String delimeter, boolean empty) throws IOException {
         Archive archive = null;
-        log.debug("creating archive: "+name);
-        if(archiveSettings.removeDuplicates) {
-            String lines[] = new String[0];
-            if(!empty) {
+        log.debug("Creating archive: {}", name);
+        if (archiveSettings.removeDuplicates) {
+            String [] lines = new String[0];
+            if (!empty) {
                 lines = wiki.getPageLinesArray(name);
             }
+            // It is allways empty : "lines" ignored
             archive = new ArchiveUnique(wiki,lines,archiveSettings.addToTop,delimeter);
-        } else if(archiveSettings.withoutHeaders()) {
-            if(!archiveSettings.hasHtmlEnumeration()) {
-                if(archiveSettings.sorted) {
-                    String lines[] = new String[0];
-                    if(!empty) {
+        } else if (archiveSettings.withoutHeaders()) {
+            if (!archiveSettings.hasHtmlEnumeration()) {
+                if (archiveSettings.sorted) {
+                    String [] lines = new String[0];
+                    if (!empty) {
                         lines = wiki.getPageLinesArray(name);
                     }
-                    archive = new ArchiveSimpleSorted(wiki,lines,archiveSettings.addToTop,delimeter);
+                    // It is allways non-emplty, it's filled with items
+                    archive = new ArchiveSimpleSorted(wiki, lines, archiveSettings.addToTop,
+                            delimeter);
+                } else {    
+                    // It is allways empty
+                    archive = new ArchiveSimple(archiveSettings.addToTop, delimeter);
                 }
-                else    
-                    archive = new ArchiveSimple(archiveSettings.addToTop,delimeter);
             } else {
                 String text = "";
-                if(!empty) {
+                if (!empty) {
                     text = wiki.getPageText(name);
                     if (text == null) {
                         text = "";
                     }
                 }
-                archive = new ArchiveWithEnumeration(text,archiveSettings.addToTop,delimeter);
+                // It is allways empty
+                archive = new ArchiveWithEnumeration(text, archiveSettings.addToTop, delimeter);
             }            
         } else {
-            String lines[] = new String[0];
-            if(!empty) {
+            String [] lines = new String[0];
+            if (!empty) {
                 lines = wiki.getPageLinesArray(name);
             }
 
