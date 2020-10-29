@@ -1,6 +1,6 @@
 /**
- *  @(#)ArchiveSimpleSorted.java 0.01 20/10/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)ArchiveSimpleSorted.java
+ *   Copyright © 2020 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,8 +19,14 @@
 /**
  * WARNING: This file may contain Russian characters.
  * This file is encoded with UTF-8.
- * */
+ **/
+
 package org.wikipedia.nirvana.archive;
+
+import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -29,77 +35,89 @@ import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.wikipedia.nirvana.nirvanabot.NewPages;
-import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 
 /**
- * @author kin
+ * Archive which is created in order to sort existing archive items by creation date.
  *
  */
 public class ArchiveSimpleSorted extends ArchiveSimple {
     NirvanaWiki wiki;
     SortedMap<Calendar,String> itemsSorted;
 
+    // TODO: Do not do this in constructor!
     /**
-     * 
+     * Constructor.
+     *
+     * @param wiki NirvanaWiki instance. Required to call getFirstRevision() in order to find page
+     *     creation date if it is not available in new page item.
+     * @param lines contents of existing wiki archive (new page items).
+     * @param addToTop flag where to add new page items. <code>true</code> to add at top, 
+     *     <code>false</code> to add at bottom.
+     * @param delimeter separator character or string inserted between new page items.
      */
-    public ArchiveSimpleSorted(NirvanaWiki wiki, String lines[], boolean addToTop, String delimeter) {
+    public ArchiveSimpleSorted(NirvanaWiki wiki, String [] lines, boolean addToTop,
+            String delimeter) {
         super(addToTop, delimeter);
         this.wiki = wiki;
-        Comparator<Calendar> compA = new Comparator<Calendar>(){
+        Comparator<Calendar> compA = new Comparator<Calendar>() {
             @Override
-            public int compare(Calendar a, Calendar b) {                
-                return a.compareTo(b);
+            public int compare(Calendar left, Calendar right) {                
+                return left.compareTo(right);
             }
         };
-        Comparator<Calendar> compB = new Comparator<Calendar>(){
+        Comparator<Calendar> compB = new Comparator<Calendar>() {
             @Override
-            public int compare(Calendar a, Calendar b) {                
-                return b.compareTo(a);
+            public int compare(Calendar left, Calendar right) {                
+                return right.compareTo(left);
             }
         };
-        if(addToTop)
+        if (addToTop) {
             itemsSorted = new TreeMap<Calendar, String>(compB); // descending
-        else
+        } else {
             itemsSorted = new TreeMap<Calendar, String>(compA); // ascending
-        for(String line:lines) {
+        }
+        for (String line:lines) {
             Calendar c = NewPages.getNewPagesItemDate(wiki, line);
             add(line, c);
         }
     }
 
+    // TODO: This code is very strange and unclear
     @Override
-    public void add(String item, Calendar c) {
-        if(c==null) {
-            super.add(item, c);
+    public void add(String item, @Nullable Calendar creationDate) {
+        if (creationDate == null) {
+            super.add(item, creationDate);
         } else {
-            this.itemsSorted.put(c, item);
+            this.itemsSorted.put(creationDate, item);
         }
     }
 
+    // TODO: This code is very strange and unclear
+    /**
+     *  Prints all archive contents to string.
+     */
+    @Override
     public String toString() {
         Iterator<Calendar> it = itemsSorted.keySet().iterator();
         StringBuffer sb = new StringBuffer(10000);        
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             sb.append(itemsSorted.get(it.next()));
             sb.append(delimeter);
         }
-        if(addToTop) {
+        if (addToTop) {
             sb.append(StringUtils.join(items, delimeter));
             return sb.toString();
         } else {
-            return StringUtils.join(items, delimeter)+delimeter+sb.toString();
+            return StringUtils.join(items, delimeter) + delimeter + sb.toString();
         }        
     }
     
-    public void update(NirvanaWiki wiki,String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
-        throw new java.lang.UnsupportedOperationException("update is not supported, use toString() instead");
+    @Override
+    public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot)
+            throws LoginException, IOException {
+        throw new UnsupportedOperationException("update is not supported, use toString() instead");
     }
-
-
 }
