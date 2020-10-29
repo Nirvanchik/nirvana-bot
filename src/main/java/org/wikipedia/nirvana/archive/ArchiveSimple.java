@@ -1,6 +1,6 @@
 /**
- *  @(#)ArchiveSimple.java 02/07/2012
- *  Copyright © 2011 - 2012 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)ArchiveSimple.java
+ *  Copyright © 2020 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,27 +23,43 @@
 
 package org.wikipedia.nirvana.archive;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-
-import javax.security.auth.login.LoginException;
-
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+
+import javax.annotation.Nullable;
+import javax.security.auth.login.LoginException;
+
+/**
+ * Usual archive page that keeps new page items as simple list.
+ */
 public class ArchiveSimple extends Archive {
     protected ArrayList<String> items;
+
+    /**
+     * Returns archive contents printed to string.
+     */
     public String toString() {
-        if(addToTop)
+        if (addToTop) {
             // Для склейки нужен перенос строки
             return StringUtils.join(items, delimeter) + delimeter;
-        else
+        } else {
             // Для склейки нужно отсутствие переноса
             return StringUtils.join(items, delimeter);
+        }
     }
-    
+
+    /**
+     * Default constructor.
+     *
+     * @param addToTop flag where to add new page items. <code>true</code> to add at top, 
+     *     <code>false</code> to add at bottom.
+     * @param delimeter separator character or string inserted between new page items.
+     */
     public ArchiveSimple(boolean addToTop, String delimeter) {
         log.debug("ArchiveSimple created");
         this.addToTop = addToTop;
@@ -51,17 +67,21 @@ public class ArchiveSimple extends Archive {
         items = new ArrayList<String>();
     }
 
+    // TODO: date is not required here. Add method to add page without date.
     @Override
-    public void add(String item, Calendar c) {
+    public void add(String item, @Nullable Calendar creationDate) {
         this.newLines++;
-        if(this.addToTop) {
+        if (this.addToTop) {
             items.add(0, item);
         } else {
             items.add(item);
         }
     }
-    public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
-        if(addToTop) {
+
+    @Override
+    public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot)
+            throws LoginException, IOException {
+        if (addToTop) {
             wiki.prependOrCreate(archiveName, toString(), 
                     "+" + newItemsCount() + " статей", minor, bot);
         } else {
