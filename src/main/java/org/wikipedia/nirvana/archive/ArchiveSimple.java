@@ -41,8 +41,9 @@ public class ArchiveSimple extends Archive {
     protected ArrayList<String> items;
 
     /**
-     * Returns archive contents printed to string.
+     *  Prints all archive contents to string.
      */
+    @Override
     public String toString() {
         if (addToTop) {
             // Для склейки нужен перенос строки
