@@ -1,6 +1,6 @@
 /**
- *  @(#)ArchiveTools.java 11.10.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)ArchiveTools.java
+ *  Copyright © 2020 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ import org.wikipedia.nirvana.util.FileTools;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -38,23 +39,27 @@ import java.util.logging.Logger;
 import javax.security.auth.login.FailedLoginException;
 
 /**
- * @author kin
+ * Utility to sort a list of wiki page titles according to creation date (ascending or descending).
  *
  */
 public class ArchiveTools {
     public static final int PAGE_COUNT_PER_REQUEST = 20;
     private static Wiki wiki;
     private static final Logger log = Logger.getLogger("ArchiveTools");
+    
     /**
-     * 
+     * Public constructor (not used).
      */
     public ArchiveTools() {
-        // TODO Auto-generated constructor stub
     }
     
-    public static class Page{
+    /**
+     * Data class to keep wiki page title and its id.
+     */
+    public static class Page {
         String name;
         long id;
+
         public Page(String name, long id) {
             this.name = name;
             this.id = id;
@@ -62,16 +67,18 @@ public class ArchiveTools {
     }
 
     /**
-     * @param args
+     * Entry point of tool. 
      */
-    public static void main(String[] args) {
+    @SuppressWarnings("rawtypes")
+    public static void main(String [] args) {
         if (args.length == 0) return;
         boolean asc = false;
         ArrayList<String> files = new ArrayList<String>();
         for (String arg:args) {
-            if(arg.startsWith("-")) {
-                if (arg.equals("-asc"))
+            if (arg.startsWith("-")) {
+                if (arg.equals("-asc")) {
                     asc = true;
+                }
             } else {
                 files.add(arg);
             }
@@ -83,7 +90,7 @@ public class ArchiveTools {
         }
         String in = files.get(0);
         
-        log.log(Level.INFO, "processing file: "+in);
+        log.log(Level.INFO, "processing file: " + in);
         String out = "out.txt";
         List<String> pages;
         try {
@@ -95,63 +102,59 @@ public class ArchiveTools {
             log.severe("Failed to read file: " + args[0]);
             return;
         }
-        wiki = new Wiki( "ru.wikipedia.org" );
+        wiki = Wiki.createInstance("ru.wikipedia.org");
         wiki.setMaxLag( 15 );
-        //print( "db lag (seconds): " + wiki.getCurrentDatabaseLag() );
-
-        // wiki.setThrottle( 5000 );
         // TODO: Remove it out of here.
-        char pw[] = {'y','e','g','h','s','q','1'};
+        char [] pw = {'y','e','g','h','s','q','1'};
         try {
+            // TODO: login is not needed for this tool.
             wiki.login( "NirvanaBot", pw );
         } catch (FailedLoginException e) {
-            log.log(Level.SEVERE, ""+e);
+            log.log(Level.SEVERE, e.getMessage());
             return;
         } catch (IOException e) {
-            log.log(Level.SEVERE, ""+e);
+            log.log(Level.SEVERE, e.getMessage());
             return;
         }
 
         int i = 0;
-        Map results[];
         //Page pagesWithInfo[] = new Page[pages.length];
         ArrayList<Page> pagesWithInfo = new ArrayList<Page>(100000);
         while (i < pages.size()) {
             log.info("processing line: " + i + " of " + pages.size());
+            // TODO: Remove this batches code. Wiki now uses POST and can handle large requests.
             int len = PAGE_COUNT_PER_REQUEST;
             if (i + len > pages.size()) {
                 len = pages.size() - i;
             }
             List<String> part = pages.subList(i, i + len);
+            Map [] results;
             try {
-                results = wiki.getPageInfo(pages.toArray(new String[0]));
+                results = wiki.getPageInfo(part.toArray(new String[0]));
             } catch (IOException e) {
-                log.log(Level.SEVERE, ""+e);
+                log.log(Level.SEVERE, String.format("Failed to get page info of %d pages: %s",
+                        part.size(), e.getMessage()));
                 wiki.logout();
                 return;
             }
-            for (Map info:results) {
-                long pageId = (Long)info.get("pageid");
+            for (Map info: results) {
+                long pageId = (Long) info.get("pageid");
                 String pageName = (String) info.get("displaytitle");
-                //if (pageId>0) {
                 pagesWithInfo.add(new Page(pageName,pageId));
-                //}
             }
-            i+=len;
+            i += len;
         }
         wiki.logout();
-        java.util.Collections.sort(pagesWithInfo, new Comparator<Page>() {
+        Collections.sort(pagesWithInfo, new Comparator<Page>() {
 
             @Override
             public int compare(Page p1, Page p2) {
-                return (int)(sort_order_ascending?p1.id - p2.id:p2.id - p1.id);
+                return (int)(sort_order_ascending ? p1.id - p2.id : p2.id - p1.id);
             }
         });
         String text;
-        //Arrays.sort(pagesWithInfo, fromIndex, toIndex, c)
-        //StringBuffer buf = new StringBuffer();
         StringBuilder bld = new StringBuilder();
-        for(Page p:pagesWithInfo) {
+        for (Page p: pagesWithInfo) {
             bld.append(p.name);
             bld.append("\r\n");
         }
@@ -159,10 +162,10 @@ public class ArchiveTools {
         try {
             FileTools.writeFile(text, out, FileTools.UTF8);
         } catch (IOException e) {
-            log.log(Level.SEVERE, ""+e);            
+            log.log(Level.SEVERE,
+                    String.format("Failed to save file \"%s\" : %s ", out, e.getMessage()));
             return;
         }        
         
     }
-
 }
