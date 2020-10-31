@@ -71,7 +71,11 @@ public class ArchiveTools {
      */
     @SuppressWarnings("rawtypes")
     public static void main(String [] args) {
-        if (args.length == 0) return;
+        if (args.length == 0) {
+            log.info("Please provide some arguments (file list from which to read pages, "
+                    + "'-asc' argument to sort ascending)");
+            return;
+        }
         boolean asc = false;
         ArrayList<String> files = new ArrayList<String>();
         for (String arg:args) {
@@ -104,18 +108,6 @@ public class ArchiveTools {
         }
         wiki = Wiki.createInstance("ru.wikipedia.org");
         wiki.setMaxLag( 15 );
-        // TODO: Remove it out of here.
-        char [] pw = {'y','e','g','h','s','q','1'};
-        try {
-            // TODO: login is not needed for this tool.
-            wiki.login( "NirvanaBot", pw );
-        } catch (FailedLoginException e) {
-            log.log(Level.SEVERE, e.getMessage());
-            return;
-        } catch (IOException e) {
-            log.log(Level.SEVERE, e.getMessage());
-            return;
-        }
 
         int i = 0;
         //Page pagesWithInfo[] = new Page[pages.length];
@@ -134,7 +126,6 @@ public class ArchiveTools {
             } catch (IOException e) {
                 log.log(Level.SEVERE, String.format("Failed to get page info of %d pages: %s",
                         part.size(), e.getMessage()));
-                wiki.logout();
                 return;
             }
             for (Map info: results) {
