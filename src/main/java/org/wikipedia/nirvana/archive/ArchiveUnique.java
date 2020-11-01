@@ -1,6 +1,6 @@
 /**
- *  @(#)ArchiveUnique.java 13.07.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)ArchiveUnique.java
+ *  Copyright © 2020 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,9 @@
 
 package org.wikipedia.nirvana.archive;
 
+import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collections;
@@ -30,121 +33,70 @@ import java.util.HashMap;
 
 import javax.security.auth.login.LoginException;
 
-import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.nirvanabot.NewPages;
-import org.wikipedia.nirvana.wiki.NirvanaWiki;
-
 /**
- * @author kin
+ * Archive which is used to remove duplicated items from existing archive page.
  *
  */
 public class ArchiveUnique extends ArchiveSimple {
     NirvanaWiki wiki;
 
-    //protected ArrayList<String> items;
     protected HashMap<String,Integer> uniqueItemIndexes;
-    protected HashMap<String,Revision> uniqueItemRevisions;
-    
+
+    @Override
     public String toString() {
-        while(items.remove(null));
-        if(addToTop) {
+        while (items.remove(null));
+        if (addToTop) {
             Collections.reverse(items);
             return super.toString();
+        } else {
+            return super.toString();  // Для склейки нужно отсутствие переноса.
         }
-        else
-            return super.toString();  // Для склейки нужно отсутствие переноса. 
     }
-    
-    public ArchiveUnique(NirvanaWiki wiki, String lines[], boolean addToTop, String delimeter) {
+
+    /**
+     * Constructs archive object using existing archive items, wiki, and some settings.
+     *
+     * @param wiki NirvanaWiki instance. Required to call getFirstRevision() in order to find page
+     *     creation date if it is not available in new page item.
+     * @param lines contents of existing wiki archive (new page items).
+     * @param addToTop flag where to add new page items. <code>true</code> to add at top, 
+     *     <code>false</code> to add at bottom.
+     * @param delimeter separator character or string inserted between new page items.
+     */
+    public ArchiveUnique(NirvanaWiki wiki, String [] lines, boolean addToTop, String delimeter) {
         super(addToTop, delimeter);
         log.debug("ArchiveUnique created");
         this.wiki = wiki;
-        //this.addToTop = addToTop;
-        //this.delimeter = delimeter;
-        //items = new ArrayList<String>();
         uniqueItemIndexes = new HashMap<String,Integer>();
-        uniqueItemRevisions = new HashMap<String,Revision>();
     }
 
     @Override
-    public void add(String item, Calendar c) {
-        //this.newLines++;
+    public void add(String item, Calendar creationDate) {
         String title = NewPages.getNewPagesItemArticle(item);
-        //boolean skip = false;
-        if(title!=null) {
+        if (title != null) {
             String origTitle = null;
             try {
                 origTitle = wiki.resolveRedirect(title);
-            } catch (IOException e) {                
-                //e.printStackTrace();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to resolve redirect", e);
             }
-            if(origTitle!=null)
+            if (origTitle != null) {
                 title = origTitle;
-            if(this.uniqueItemIndexes.containsKey(title)) {
-                /*int index = uniqueItemIndexes.get(title);
-                String oldItem = items.get(index);
-                if(oldItem.length()<item.length()) {
-                    items.set(index, item);
-                }*/
+            }
+            if (this.uniqueItemIndexes.containsKey(title)) {
                 // skip
             } else {                
                 items.add(item);
-                uniqueItemIndexes.put(title, items.size()-1);
+                uniqueItemIndexes.put(title, items.size() - 1);
             }
         } else {
             items.add(item);
         }
     }
-    /*
-    public void add(String item) {
-        //this.newLines++;
-        String title = NewPages.getNewPagesItemArticle(item);
-        //boolean skip = false;
-        if(title!=null) {
-            String origTitle = null;
-            Revision r = null;
-            try {
-                r = wiki.getFirstRevision(title, true);
-            } catch (IOException e) {                
-                //e.printStackTrace();
-            }
-            if(r==null) {
-                items.add(item);
-            } else {
-                origTitle = r.getPage();
-                if(!origTitle.equals(title))
-                    title = origTitle;
-                
-                if(this.uniqueItemIndexes.containsKey(title)) {
-                    int index = uniqueItemIndexes.get(title);
-                    //String oldItem = items.get(index);
-                    Revision oldRev = this.uniqueItemRevisions.get(title);
-                    if(oldRev==null || oldRev.getTimestamp().after(r.getTimestamp())) {
-                        items.set(index, null);
-                        items.add(item);
-                        uniqueItemIndexes.put(title, items.size()-1);
-                        uniqueItemRevisions.put(title, r);
-                    }
-                    
-                } else {                
-                    items.add(item);
-                    uniqueItemIndexes.put(title, items.size()-1);
-                    uniqueItemRevisions.put(title, r);
-                }
-            }
-        } else {
-            items.add(item);
-        }
-    }*/
-    
-    public void update(NirvanaWiki wiki,String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
-        throw new java.lang.UnsupportedOperationException("update is not supported, use toString() instead");
-    }
-    /**
-     * 
-     */
-    
-    
-    
 
+    @Override
+    public void update(NirvanaWiki wiki,String archiveName, boolean minor, boolean bot)
+            throws LoginException, IOException {
+        throw new UnsupportedOperationException("update is not supported, use toString() instead");
+    }
 }
