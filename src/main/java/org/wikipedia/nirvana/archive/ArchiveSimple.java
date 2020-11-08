@@ -83,11 +83,9 @@ public class ArchiveSimple extends Archive {
     public void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot)
             throws LoginException, IOException {
         if (addToTop) {
-            wiki.prependOrCreate(archiveName, toString(), 
-                    "+" + newItemsCount() + " статей", minor, bot);
+            wiki.prependOrCreate(archiveName, toString(), updateSummary(), minor, bot);
         } else {
-            wiki.appendOrCreate(archiveName, toString(), 
-                    "+" + newItemsCount() + " статей", minor, bot);
+            wiki.appendOrCreate(archiveName, toString(), updateSummary(), minor, bot);
         }
     }
 }

@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.archive;
 
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
@@ -93,6 +94,14 @@ public abstract class Archive {
      */
     public abstract void update(NirvanaWiki wiki, String archiveName, boolean minor, boolean bot)
             throws LoginException, IOException;
+
+    /**
+     * @return summary string used when updating archive wiki page.
+     */
+    protected String updateSummary() {
+        Localizer localizer = Localizer.getInstance();
+        return "+" + newItemsCount() + " " + localizer.localize("статей");
+    }
 
     // TODO: Move it to utils
     /**

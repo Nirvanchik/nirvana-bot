@@ -1,6 +1,6 @@
 /**
- *  @(#)ArchiveWithEnumeration.java 02/07/2012
- *  Copyright © 2012 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)ArchiveWithEnumeration.java
+ *  Copyright © 2020 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,25 +23,31 @@
 
 package org.wikipedia.nirvana.archive;
 
-import java.io.IOException;
-import java.util.Calendar;
-
-import javax.security.auth.login.LoginException;
-
-import org.apache.commons.lang3.StringUtils;
-
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.util.Calendar;
+
+import javax.annotation.Nullable;
+import javax.security.auth.login.LoginException;
+
 /**
- * @author kin
+ * Extended version of simple archive that has additional enumeration with html code.
  *
  */
 public class ArchiveWithEnumeration extends ArchiveSimple {
     String oldText;
+
     /**
-     * @param addToTop
-     * @param delimeter
+     * Constructs archive class using specified archive text and archive settings.
+     *
+     * @param text text with archived new page items.
+     * @param addToTop flag where to add new page items. <code>true</code> to add at top, 
+     *     <code>false</code> to add at bottom.
+     * @param delimeter separator character or string inserted between new page items.
      */
     public ArchiveWithEnumeration(String text, boolean addToTop, String delimeter) {
         super(addToTop, delimeter);
@@ -49,47 +55,61 @@ public class ArchiveWithEnumeration extends ArchiveSimple {
         this.enumeration = Enumeration.HTML_GLOBAL;
         oldText = trimEnumerationAndWhiteSpace(text);
     }
-    public ArchiveWithEnumeration(String lines[], boolean addToTop, String delimeter) {
+
+    /**
+     * Constructs archive class using specified archive lines and archive settings.
+     *
+     * @param lines contents of existing wiki archive (new page items).
+     * @param addToTop flag where to add new page items. <code>true</code> to add at top, 
+     *     <code>false</code> to add at bottom.
+     * @param delimeter separator character or string inserted between new page items.
+     */
+    public ArchiveWithEnumeration(String [] lines, boolean addToTop, String delimeter) {
         super(addToTop, delimeter);
         this.enumeration = Enumeration.HTML_GLOBAL;
         int i = 0;
-        while(i<lines.length && lines[i].isEmpty()) i++;
-        if(lines[i].compareToIgnoreCase(OL)==0) i++;
-        int j = lines.length-1;
-        while(j>=0 && lines[j].isEmpty()) j--;
-        if(lines[j].compareToIgnoreCase(OL_END)==0) j--;
-        oldText = StringUtils.join(lines,delimeter,i,j+1);
+        while (i < lines.length && lines[i].isEmpty()) i++;
+        if (lines[i].compareToIgnoreCase(OL) == 0) i++;
+        int j = lines.length - 1;
+        while (j >= 0 && lines[j].isEmpty()) j--;
+        if (lines[j].compareToIgnoreCase(OL_END) == 0) j--;
+        oldText = StringUtils.join(lines, delimeter, i, j + 1);
     }
 
     @Override
-    public void add(String item, Calendar c) {
+    public void add(String item, @Nullable Calendar creationDate) {
         String str = item;
-        if(str.startsWith("*") || str.startsWith("#")) {
-            str = "<li>"+str.substring(1);
+        if (str.startsWith("*") || str.startsWith("#")) {
+            str = "<li>" + str.substring(1);
         } else {
             str = "<li> " + str;
         }
-        super.add(str, c);
+        super.add(str, creationDate);
     }
 
+    // TODO: Use StringBuilder
+    @Override
     public String toString() {
-        if(addToTop) {
-            if(oldText.isEmpty()) 
-                return OL+delimeter+StringUtils.join(items, delimeter)+delimeter+OL_END;
-            else
-                return OL+delimeter+StringUtils.join(items, delimeter)+delimeter+oldText+delimeter+OL_END;
+        if (addToTop) {
+            if (oldText.isEmpty()) {
+                return OL + delimeter + StringUtils.join(items, delimeter) + delimeter + OL_END;
+            } else {
+                return OL + delimeter + StringUtils.join(items, delimeter) + delimeter + oldText +
+                        delimeter + OL_END;
+            }
+        } else {
+            if (oldText.isEmpty()) {
+                return OL + delimeter + StringUtils.join(items, delimeter) + delimeter + OL_END;
+            } else {
+                return OL + delimeter + oldText + delimeter + StringUtils.join(items, delimeter) +
+                        delimeter + OL_END;
+            }
         }
-        else {
-            if(oldText.isEmpty())
-                return OL+delimeter+StringUtils.join(items, delimeter)+delimeter+OL_END;
-            else
-                return OL+delimeter+oldText+delimeter+StringUtils.join(items, delimeter)+delimeter+OL_END;
-        }
-    }
-    
-    public void update(NirvanaWiki wiki,String archiveName, boolean minor, boolean bot) throws LoginException, IOException {
-        wiki.edit(archiveName, toString(), 
-                "+" + newItemsCount() + " статей", minor, bot);
     }
 
+    @Override
+    public void update(NirvanaWiki wiki,String archiveName, boolean minor, boolean bot)
+            throws LoginException, IOException {
+        wiki.edit(archiveName, toString(), updateSummary(), minor, bot);
+    }
 }
