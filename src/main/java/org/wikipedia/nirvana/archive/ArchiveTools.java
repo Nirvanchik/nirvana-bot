@@ -25,18 +25,17 @@ package org.wikipedia.nirvana.archive;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.wiki.WikiFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.security.auth.login.FailedLoginException;
+import java.util.stream.Collectors;
 
 /**
  * Utility to sort a list of wiki page titles according to creation date (ascending or descending).
@@ -46,12 +45,6 @@ public class ArchiveTools {
     public static final int PAGE_COUNT_PER_REQUEST = 20;
     private static Wiki wiki;
     private static final Logger log = Logger.getLogger("ArchiveTools");
-    
-    /**
-     * Public constructor (not used).
-     */
-    public ArchiveTools() {
-    }
     
     /**
      * Data class to keep wiki page title and its id.
@@ -65,12 +58,48 @@ public class ArchiveTools {
             this.id = id;
         }
     }
+    
+    @SuppressWarnings("rawtypes")
+    static List<String> sortPageListByCreationDate(List<String> pages, Wiki wiki, boolean asc) {
+        int i = 0;
+        ArrayList<Page> pagesWithInfo = new ArrayList<Page>(100000);
+        while (i < pages.size()) {
+            log.info("processing line: " + i + " of " + pages.size());
+            // TODO: Remove this batches code. Wiki now uses POST and can handle large requests.
+            int len = PAGE_COUNT_PER_REQUEST;
+            if (i + len > pages.size()) {
+                len = pages.size() - i;
+            }
+            List<String> part = pages.subList(i, i + len);
+            Map [] results;
+            try {
+                results = wiki.getPageInfo(part.toArray(new String[0]));
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to get page info", e);
+            }
+            for (Map info: results) {
+                long pageId = (Long) info.get("pageid");
+                String pageName = (String) info.get("displaytitle");
+                pagesWithInfo.add(new Page(pageName,pageId));
+            }
+            i += len;
+        }
+        return pagesWithInfo.stream()
+                .sorted(new Comparator<Page>() {
+
+                    @Override
+                    public int compare(Page p1, Page p2) {
+                        return (int)(asc ? p1.id - p2.id : p2.id - p1.id);
+                    }
+                })
+                .map(info -> info.name)
+                .collect(Collectors.toList());
+    }
 
     /**
-     * Entry point of tool. 
+     * Main method of tool. 
      */
-    @SuppressWarnings("rawtypes")
-    public static void main(String [] args) {
+    static void mainImpl(WikiFactory wikiFactory, String [] args) {
         if (args.length == 0) {
             log.info("Please provide some arguments (file list from which to read pages, "
                     + "'-asc' argument to sort ascending)");
@@ -87,76 +116,54 @@ public class ArchiveTools {
                 files.add(arg);
             }
         }
-        final boolean sort_order_ascending = asc;
-        if (files.size() == 0) {
-            log.log(Level.SEVERE, "Please provide file name to read");
+        if (files.size() < 2) {
+            log.severe("Please provide input and output file name");
             return;
         }
-        String in = files.get(0);
-        
-        log.log(Level.INFO, "processing file: " + in);
-        String out = "out.txt";
+        if (files.size() > 2) {
+            log.warning("Ignore args: " + files.subList(2, files.size()).toString());
+        }
+        String inFile = files.get(0);
+        String outFile = files.get(1);
+
+        log.log(Level.INFO, "processing file: " + inFile);
         List<String> pages;
         try {
-            pages = FileTools.readFileToList(args[0], FileTools.UTF8, true);
+            pages = FileTools.readFileToList(inFile, FileTools.UTF8, true);
         } catch (FileNotFoundException e1) {
-            log.severe("File not found: " + args[0]);
+            log.severe("File not found: " + inFile);
             return;
         } catch (IOException e1) {
-            log.severe("Failed to read file: " + args[0]);
+            log.severe("Failed to read file: " + inFile);
             return;
         }
-        wiki = Wiki.createInstance("ru.wikipedia.org");
+        wiki = wikiFactory.createInstance("ru.wikipedia.org");
         wiki.setMaxLag( 15 );
+        try {
+            pages = sortPageListByCreationDate(pages, wiki, asc);
 
-        int i = 0;
-        //Page pagesWithInfo[] = new Page[pages.length];
-        ArrayList<Page> pagesWithInfo = new ArrayList<Page>(100000);
-        while (i < pages.size()) {
-            log.info("processing line: " + i + " of " + pages.size());
-            // TODO: Remove this batches code. Wiki now uses POST and can handle large requests.
-            int len = PAGE_COUNT_PER_REQUEST;
-            if (i + len > pages.size()) {
-                len = pages.size() - i;
+            StringBuilder bld = new StringBuilder();
+            for (String p: pages) {
+                bld.append(p);
+                bld.append(System.lineSeparator());
             }
-            List<String> part = pages.subList(i, i + len);
-            Map [] results;
+            String text = bld.toString();
             try {
-                results = wiki.getPageInfo(part.toArray(new String[0]));
+                FileTools.writeFile(text, outFile, FileTools.UTF8);
             } catch (IOException e) {
-                log.log(Level.SEVERE, String.format("Failed to get page info of %d pages: %s",
-                        part.size(), e.getMessage()));
+                log.severe(String.format("Failed to save file \"%s\" : %s ", outFile,
+                        e.getMessage()));
                 return;
             }
-            for (Map info: results) {
-                long pageId = (Long) info.get("pageid");
-                String pageName = (String) info.get("displaytitle");
-                pagesWithInfo.add(new Page(pageName,pageId));
-            }
-            i += len;
+        } finally {
+            wiki.logout();
         }
-        wiki.logout();
-        Collections.sort(pagesWithInfo, new Comparator<Page>() {
+    }
 
-            @Override
-            public int compare(Page p1, Page p2) {
-                return (int)(sort_order_ascending ? p1.id - p2.id : p2.id - p1.id);
-            }
-        });
-        String text;
-        StringBuilder bld = new StringBuilder();
-        for (Page p: pagesWithInfo) {
-            bld.append(p.name);
-            bld.append("\r\n");
-        }
-        text = bld.toString();
-        try {
-            FileTools.writeFile(text, out, FileTools.UTF8);
-        } catch (IOException e) {
-            log.log(Level.SEVERE,
-                    String.format("Failed to save file \"%s\" : %s ", out, e.getMessage()));
-            return;
-        }        
-        
+    /**
+     * Entry point of tool. 
+     */
+    public static void main(String [] args) {
+        mainImpl(WikiFactory.ORIGINAL, args);
     }
 }

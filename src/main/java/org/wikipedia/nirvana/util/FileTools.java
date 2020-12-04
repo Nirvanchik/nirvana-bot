@@ -381,7 +381,7 @@ public class FileTools {
     /**
      * Reads file contents to string.
      * Never raises exception.
-     * Returns default value if failes to read file.
+     * Returns default value if fails to read file.
      *
      * @param fileName File name (or file path).
      * @param defaultVal Default value.
@@ -390,8 +390,9 @@ public class FileTools {
      */
     public static String readFileSilently(String fileName, String defaultVal, String encoding) {
         String text = defaultVal;
+        File file = new File(fileName);
         try {
-            text = readFile(fileName, encoding);            
+            text = readFile(file, encoding);
         } catch (IOException e) {
             logE("Failed to read file: " + fileName);
             logE(e);
@@ -411,20 +412,32 @@ public class FileTools {
      */
     public static String readFile(String fileName)
             throws FileNotFoundException, IOException {
-        return readFile(fileName, sDefaultEncoding);
+        File file = new File(fileName);
+        return readFile(file, sDefaultEncoding);
+    }
+
+    /**
+     * Reads file to string.
+     * Default encoding will be used to convert file to Unicode String.
+     *
+     * @param file File instance.
+     * @return String with file contents parsed to Unicode.
+     */
+    public static String readFile(File file)
+            throws FileNotFoundException, IOException {
+        return readFile(file, sDefaultEncoding);
     }
 
     /**
      * Reads file to string.
      *
-     * @param fileName File name (or file path).
+     * @param file File instance.
      * @param encoding Encoding to use. We advise to use {@link FileTools#UTF8}.
      * @return String with file contents parsed to Unicode using specified encoding.
      */
-    public static String readFile(String fileName, String encoding)
+    public static String readFile(File file, String encoding)
             throws FileNotFoundException, IOException {
         String text = null;
-        File file = new File(fileName);        
         StringBuilder sb = new StringBuilder(10000);
         try (InputStreamReader reader = new InputStreamReader(
                 new FileInputStream(file), encoding)) {
@@ -440,7 +453,7 @@ public class FileTools {
         }
         return text;
     }
-    
+
     /**
      * Reads file contents to list of strings.
      * It will use default encoding and will remove all empty lines.

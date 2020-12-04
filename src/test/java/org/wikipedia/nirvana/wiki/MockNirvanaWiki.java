@@ -62,6 +62,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     private Map<String, MultiKeyMap> pageHistoryMap = new HashMap<>();
     private Map<Long, Revision> revMap = new HashMap<>();
     private Map<Long, String> revTextMap = new HashMap<>();
+    private Map<String, Map> pageInfoMap = new HashMap<>();
 
     private LinkedList<String> fetchQueue = new LinkedList<>();
 
@@ -510,6 +511,23 @@ public class MockNirvanaWiki extends NirvanaWiki {
 
     public void mockRevisionText(long revId, String text) {
         revTextMap.put(revId, text);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public void mockPageInfo(String page, Map pageInfo) {
+        pageInfoMap.put(page, pageInfo);
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Map[] getPageInfo(String[] pages) throws IOException {
+        log.debug("[MOCK] getPageInfo: {}", (Object) pages);
+        Map [] pageInfo = new Map[pages.length];
+        for (int i = 0; i < pages.length; i++) {
+            Assert.assertTrue(ASSERT_MSG, pageInfoMap.containsKey(pages[i]));
+            pageInfo[i] = pageInfoMap.get(pages[i]);
+        }
+        return pageInfo;
     }
 
     /**
