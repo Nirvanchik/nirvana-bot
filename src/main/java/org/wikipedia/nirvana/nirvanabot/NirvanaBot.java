@@ -1584,9 +1584,11 @@ public class NirvanaBot extends BasicBot{
         } else if (itemsVector.contains(STR_BELOW)) {
 			archiveSettings.addToTop = false;
 		}
+        // TODO: This is not related to this bot logic. Remove it out of here.
         if (itemsVector.contains(STR_TOSORT)||itemsVector.contains(STR_SORT)) {
 			archiveSettings.sorted = true;
 		}
+        // TODO: This is not related to this bot logic. Remove it out of here.
         if (itemsVector.contains(STR_REMOVE_DUPLICATES)) {
 			archiveSettings.removeDuplicates = true;
 		}

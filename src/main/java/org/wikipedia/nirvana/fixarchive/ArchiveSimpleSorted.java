@@ -21,8 +21,9 @@
  * This file is encoded with UTF-8.
  **/
 
-package org.wikipedia.nirvana.archive;
+package org.wikipedia.nirvana.fixarchive;
 
+import org.wikipedia.nirvana.archive.ArchiveSimple;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 

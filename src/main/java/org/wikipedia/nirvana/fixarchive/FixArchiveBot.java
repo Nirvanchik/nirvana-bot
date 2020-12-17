@@ -25,7 +25,6 @@ package org.wikipedia.nirvana.fixarchive;
 
 import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.archive.Archive;
-import org.wikipedia.nirvana.archive.ArchiveFactory;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.localization.Localizer;
@@ -242,8 +241,8 @@ public class FixArchiveBot extends BasicBot {
 
         Archive thisArchive;
         try {
-            thisArchive = ArchiveFactory.createArchive(archiveSettings, wiki, archive, delimeter,
-                    true);
+            thisArchive = FixArchiveFactory.createArchive(archiveSettings, wiki, archive,
+                    delimeter);
         } catch (IOException e) {
             throw new BotFatalError(String.format("IOException when creating archive %s", archive),
                     e);

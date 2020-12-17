@@ -197,11 +197,19 @@ public class ArchiveSettings {
         return (headerFormat == null);
     }
 
+    /**
+     * @return <code>true</code> if archive has headers.
+     */
+    public boolean hasHeaders() {
+        return (headerFormat != null);
+    }
+
     // TODO: This method is unclear.
     /**
      * @return <code>true</code> if archive is simple (single-page, no headers, no html enumeration.
      */
     public boolean isSimple() {
+        // TODO: Why addToTop == false is not simple ?
         return ((addToTop == true) && isSingle() && withoutHeaders() && !hasHtmlEnumeration()); 
     }
 

@@ -68,29 +68,11 @@ public class ArchiveFactory {
      */
     public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki,
             String name, String delimeter, boolean empty) throws IOException {
-        Archive archive = null;
         log.debug("Creating archive: {}", name);
-        if (archiveSettings.removeDuplicates) {
-            String [] lines = new String[0];
-            if (!empty) {
-                lines = wiki.getPageLinesArray(name);
-            }
-            // It is allways empty : "lines" ignored
-            archive = new ArchiveUnique(wiki,lines,archiveSettings.addToTop,delimeter);
-        } else if (archiveSettings.withoutHeaders()) {
+        if (!archiveSettings.hasHeaders()) {
             if (!archiveSettings.hasHtmlEnumeration()) {
-                if (archiveSettings.sorted) {
-                    String [] lines = new String[0];
-                    if (!empty) {
-                        lines = wiki.getPageLinesArray(name);
-                    }
-                    // It is allways non-emplty, it's filled with items
-                    archive = new ArchiveSimpleSorted(wiki, lines, archiveSettings.addToTop,
-                            delimeter);
-                } else {    
-                    // It is allways empty
-                    archive = new ArchiveSimple(archiveSettings.addToTop, delimeter);
-                }
+                // It is allways empty
+                return new ArchiveSimple(archiveSettings.addToTop, delimeter);
             } else {
                 String text = "";
                 if (!empty) {
@@ -100,7 +82,7 @@ public class ArchiveFactory {
                     }
                 }
                 // It is allways empty
-                archive = new ArchiveWithEnumeration(text, archiveSettings.addToTop, delimeter);
+                return new ArchiveWithEnumeration(text, archiveSettings.addToTop, delimeter);
             }            
         } else {
             String [] lines = new String[0];
@@ -108,12 +90,12 @@ public class ArchiveFactory {
                 lines = wiki.getPageLinesArray(name);
             }
 
-            archive = new ArchiveWithHeaders(lines, archiveSettings.parseCount,
+            ArchiveWithHeaders archive = new ArchiveWithHeaders(lines, archiveSettings.parseCount,
                     archiveSettings.addToTop, delimeter, archiveSettings.enumeration,
                     archiveSettings.headerFormat, archiveSettings.superHeaderFormat);
 
-            ((ArchiveWithHeaders) archive).initLatestItemHeaderHeader(wiki, archiveSettings);
+            archive.initLatestItemHeaderHeader(wiki, archiveSettings);
+            return archive;
         }
-        return archive;
     }
 }
