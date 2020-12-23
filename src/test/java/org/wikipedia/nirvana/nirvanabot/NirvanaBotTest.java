@@ -56,9 +56,12 @@ public class NirvanaBotTest {
     public static final String BOT_CONFIG_RETRIES = "bot_config_ru_with_retries.xml";
     public static final String BOT_CONFIG_RU_WITH_DISUSSION_TEMPLATES =
             "bot_config_ru_discussion_templates.xml";
+    public static final String BOT_CONFIG_RU_TESTARCH = "bot_config_ru_testarch.xml";
     public static final String BOT_CONFIG_BE = "bot_config_be.xml";
     public static final String BOT_CONFIG_DEFAULT_PATH = TEST_DATA_PATH + BOT_CONFIG_DEFAULT;
     public static final String BOT_CONFIG_BE_PATH = TEST_DATA_PATH + BOT_CONFIG_BE;
+    public static final String BOT_CONFIG_RU_TESTARCH_PATH =
+            TEST_DATA_PATH + BOT_CONFIG_RU_TESTARCH;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -82,9 +85,13 @@ public class NirvanaBotTest {
     }
 
     protected void run(String config) throws TestError {
+        run(config, BOT_CONFIG_DEFAULT_PATH);
+    }
+
+    protected void run(String config, String botConfig) throws TestError {
         MockNirvanaBot bot =
                 new MockNirvanaBot(BasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
-        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
+        bot.run(new String[]{botConfig});
         bot.validateQueries();
         bot.validateEdits();
     }
@@ -870,4 +877,304 @@ public class NirvanaBotTest {
     public void new_pages_process_old_category_namespace() throws TestError {
         run("041_new_pages_process_old_category_namespace.js");
     }
+
+    /**
+     * Test case 042.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: .
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update() throws TestError {
+        run("042_new_pages_archive_update.js");
+    }
+
+    /**
+     * Test case 043.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     *     User specified in settings that archive should be updated at bottom and it must follow
+     *     this.
+     * Similar tests: 42.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_bottom() throws TestError {
+        run("043_new_pages_archive_update_bottom.js");
+    }
+
+    /**
+     * Test case 044.
+     * Summary: when bot updates new pages it must also update archive page with removed items. If
+     *     archive does not exist it must create it.
+     * Similar tests: 42.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_create() throws TestError {
+        run("044_new_pages_archive_create.js");
+    }
+
+    /**
+     * Test case 045.
+     * Summary: when bot updates new pages it must also update archive page with removed items. User
+     *     specified requirement to add html enumeration, so we must do that.
+     * Similar tests: 042.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_html_enumeration() throws TestError {
+        run("045_new_pages_archive_update_html_enumeration.js");
+    }
+
+    /**
+     * Test case 046.
+     * Summary: when bot updates new pages it must also update archive page with removed items. If
+     *     archive does not exist it must create it.
+     * Similar tests: 42, 44, 45.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_create_html_enumeration() throws TestError {
+        run("046_new_pages_archive_create_html_enumeration.js");
+    }
+
+    /**
+     * Test case 047.
+     * Summary: when bot updates new pages it must also update archive page with removed items. User
+     *     added requirement to add html enumeration, so we must do that. Old items in archive are
+     *     not HTML-enumerated, so bot must convert them - add html enumeration for older items.
+     * Similar tests: 042, 045.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Ignore ("It's broken. Please fix it.")
+    @Test
+    public void new_pages_archive_update_html_enumeration_convert_old() throws TestError {
+        run("047_new_pages_archive_update_html_enumeration_convert_old.js");
+    }
+
+    /**
+     * Test case 048.
+     * Summary: when bot updates new pages it must also update archive page with removed items. User
+     *     specified requirement to add html enumeration, so we must do that. User specified in
+     *     settings that archive should be updated at bottom and it must follow this too.
+     * Similar tests: 042, 045.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_bottom_html_enumeration() throws TestError {
+        run("048_new_pages_archive_update_bottom_html_enumeration.js");
+    }
+
+    /**
+     * Test case 049.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 042.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_headers() throws TestError {
+        run("049_new_pages_archive_update_with_headers.js");
+    }
+
+    /**
+     * Test case 050.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 042, 049.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_headers_no_header() throws TestError {
+        run("050_new_pages_archive_update_with_headers_no_header.js");
+    }
+
+    /**
+     * Test case 051.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 042, 049.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_headers_next_header() throws TestError {
+        run("051_new_pages_archive_update_with_headers_next_header.js");
+    }
+
+    /**
+     * Test case 052.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 042.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_many_pages() throws TestError {
+        run("052_new_pages_archive_update_many_pages.js");
+    }
+
+    /**
+     * Test case 053.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 043, 049.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_headers_bottom() throws TestError {
+        run("053_new_pages_archive_update_with_headers_bottom.js");
+    }
+
+    /**
+     * Test case 054.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 043, 049, 053.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_headers_bottom_no_header() throws TestError {
+        run("054_new_pages_archive_update_with_headers_bottom_no_header.js");
+    }
+
+    /**
+     * Test case 055.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 042, 049, 051.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_headers_bottom_next_header() throws TestError {
+        run("055_new_pages_archive_update_with_headers_bottom_next_header.js");
+    }
+
+    /**
+     * Test case 056.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers() throws TestError {
+        run("056_new_pages_archive_update_with_2headers.js");
+    }
+
+    /**
+     * Test case 057.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 050, 056.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_no_header() throws TestError {
+        run("057_new_pages_archive_update_with_2headers_no_header.js");
+    }
+
+    /**
+     * Test case 058.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 053, 056.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_bottom() throws TestError {
+        run("058_new_pages_archive_update_with_2headers_bottom.js");
+    }
+
+    /**
+     * Test case 059.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 054, 056, 058.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_bottom_no_header() throws TestError {
+        run("059_new_pages_archive_update_with_2headers_bottom_no_header.js");
+    }
+
+    /**
+     * Test case 060.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 055, 056, 058.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_bottom_next_header() throws TestError {
+        run("060_new_pages_archive_update_with_2headers_bottom_next_header.js");
+    }
+
+    /**
+     * Test case 061.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 056.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_next_header() throws TestError {
+        run("061_new_pages_archive_update_with_2headers_next_header.js");
+    }
+
+    
+    /**
+     * Test case 062.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 056.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_fastload() throws TestError {
+        run("062_new_pages_archive_update_with_2headers_fastload.js",
+                BOT_CONFIG_RU_TESTARCH_PATH);
+    }
+
+    /**
+     * Test case 062.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 056.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_fastload_bottom() throws TestError {
+        run("063_new_pages_archive_update_with_2headers_fastload_bottom.js",
+                BOT_CONFIG_RU_TESTARCH_PATH);
+    }
+
 }

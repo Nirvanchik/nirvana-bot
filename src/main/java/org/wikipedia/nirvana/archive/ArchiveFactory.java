@@ -62,8 +62,9 @@ public class ArchiveFactory {
      * @param wiki Instance of {@link NirvanaWiki} class. Will be used to get old archive page.
      * @param name Wiki page of this archive
      * @param delimeter A string that separates archive items (usually "\n").
-     * @param empty if <code>true</code> the archive container will be filled with items from
-     *     Wiki page.
+     * @param empty if <code>true</code> the archive container will empty when created. If
+     *     <code>false</code> the archive container will be filled with parsed items from old
+     *     archive page.
      * @return instance of archive containter.
      */
     public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki,
@@ -85,12 +86,12 @@ public class ArchiveFactory {
                 return new ArchiveWithEnumeration(text, archiveSettings.addToTop, delimeter);
             }            
         } else {
-            String [] lines = new String[0];
+            String oldText = "";
             if (!empty) {
-                lines = wiki.getPageLinesArray(name);
+                oldText = wiki.getPageText(name);
             }
 
-            ArchiveWithHeaders archive = new ArchiveWithHeaders(lines, archiveSettings.parseCount,
+            ArchiveWithHeaders archive = new ArchiveWithHeaders(oldText, archiveSettings.parseCount,
                     archiveSettings.addToTop, delimeter, archiveSettings.enumeration,
                     archiveSettings.headerFormat, archiveSettings.superHeaderFormat);
 

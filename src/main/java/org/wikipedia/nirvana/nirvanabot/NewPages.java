@@ -66,14 +66,13 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.security.auth.login.LoginException;
 
@@ -903,7 +902,13 @@ public class NewPages implements PortalModule{
 	}
 
     public void updateArchive(NirvanaWiki wiki, Data d) throws LoginException, IOException {
+        // Archive can be:
+        // 1-page and simple
+        // many-paged and simple
+        // 1-page and headered
+        // many-paged and headered
     	if(archiveSettings==null || archiveSettings.isSimple()) {	
+            // TODO: ArchiveSimple class already has this code. Why keep it duplicated here?
     		log.debug("archive has simple format");
     		log.info("Updating "+archive);
             String summary = "+" + d.archiveCount + " " + localizer.localize("статей");
@@ -932,6 +937,8 @@ public class NewPages implements PortalModule{
     	for(int i = d.archiveItems.size()-1;i>=0;i--) {
     		String item = d.archiveItems.get(i);
     		log.debug("archiving item: "+item);
+            // TODO: Date is not needed for simple kinds of archives which can be used here.
+            //     this slows down archive updating.
     		Calendar c = getNewPagesItemDate(wiki,item);
     		if(c==null) {
                 defaultArchive.add(item, null);
@@ -949,14 +956,13 @@ public class NewPages implements PortalModule{
     		}
             thisArchive.add(item, c);
     	}    	
-    	
-    	Iterator<Entry<String, Archive>> it = hmap.entrySet().iterator();
-    	while(it.hasNext()) {
-    		Entry<String, Archive> ar = it.next();
-    		Archive thisArchive = ar.getValue();
+
+        List<String> archiveNames = hmap.keySet().stream().sorted().collect(Collectors.toList());
+        for (String archiveName: archiveNames) {
+            Archive thisArchive = hmap.get(archiveName);
     		if (thisArchive.newItemsCount()>0) {
-    			log.info("Updating "+ar.getKey());
-    			thisArchive.update(wiki,ar.getKey(), minor, bot);
+                log.info("Updating {}", archiveName);
+                thisArchive.update(wiki, archiveName, minor, bot);
     		}
     	}   		
     	return;

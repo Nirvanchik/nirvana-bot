@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.wiki;
 
 import org.wikipedia.Wiki;
+import org.wikipedia.Wiki.Revision;
 
 import org.apache.commons.collections.keyvalue.MultiKey;
 import org.apache.commons.collections.map.MultiKeyMap;
@@ -324,9 +325,22 @@ public class MockNirvanaWiki extends NirvanaWiki {
     }
 
     @Override
+    public Revision getFirstRevision(String title, boolean resolveRedirect) throws IOException {
+        log.debug("[MOCK] getFirstRevision: '{}' resolve redirects: {}", title, resolveRedirect);
+        if (!firstRevMap.containsKey(title)) {
+            log.warn("[MOCK] getFirstRevision: '{}' -> NO DATA for this title! Return null", title);
+            return null;
+        }
+        return firstRevMap.get(title);
+    }
+
+    @Override
     public Revision getFirstRevision(String title) throws IOException {
         log.debug("[MOCK] getFirstRevision: {}", title);
-        if (!firstRevMap.containsKey(title)) return null;
+        if (!firstRevMap.containsKey(title)) {
+            log.warn("[MOCK] getFirstRevision: '{}' -> NO DATA for this title! Return null", title);
+            return null;
+        }
         return firstRevMap.get(title);
     }
 

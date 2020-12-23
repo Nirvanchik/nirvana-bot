@@ -23,49 +23,26 @@
 
 package org.wikipedia.nirvana;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
+
 /**
- * @author kin
+ * Dummy tests used during development.
  *
  */
 public class DummyTest {
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-	}
-
-	@Test
-	public void test() {
-		//fail("Not yet implemented");
-	}
+    @Test
+    public void test() throws IOException {
+        /*
+        Wiki wiki = Wiki.createInstance("ru.wikipedia.org");
+        Revision r = wiki.getFirstRevision("Рим");
+        OffsetDateTime dt = r.getTimestamp();
+        Calendar c = GregorianCalendar.from(
+                r.getTimestamp().atZoneSameInstant(ZoneId.systemDefault()));
+        System.out.println(String.format("%s", c));
+        */
+    }
 
 }

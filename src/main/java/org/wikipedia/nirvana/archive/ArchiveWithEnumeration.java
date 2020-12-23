@@ -56,26 +56,6 @@ public class ArchiveWithEnumeration extends ArchiveSimple {
         oldText = trimEnumerationAndWhiteSpace(text);
     }
 
-    /**
-     * Constructs archive class using specified archive lines and archive settings.
-     *
-     * @param lines contents of existing wiki archive (new page items).
-     * @param addToTop flag where to add new page items. <code>true</code> to add at top, 
-     *     <code>false</code> to add at bottom.
-     * @param delimeter separator character or string inserted between new page items.
-     */
-    public ArchiveWithEnumeration(String [] lines, boolean addToTop, String delimeter) {
-        super(addToTop, delimeter);
-        this.enumeration = Enumeration.HTML_GLOBAL;
-        int i = 0;
-        while (i < lines.length && lines[i].isEmpty()) i++;
-        if (lines[i].compareToIgnoreCase(OL) == 0) i++;
-        int j = lines.length - 1;
-        while (j >= 0 && lines[j].isEmpty()) j--;
-        if (lines[j].compareToIgnoreCase(OL_END) == 0) j--;
-        oldText = StringUtils.join(lines, delimeter, i, j + 1);
-    }
-
     @Override
     public void add(String item, @Nullable Calendar creationDate) {
         String str = item;

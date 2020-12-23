@@ -72,6 +72,7 @@ public class ArchiveWithHeaders extends Archive {
      * of this section.
      */
     private String latestItemHeaderHeader = null;
+    private String latestItemHeader = null;
 
     /**
      * Format string to generate header.
@@ -454,17 +455,7 @@ public class ArchiveWithHeaders extends Archive {
     }
 
     void parseTop(String text) {
-        String [] oldItems;
-        oldItems = StringUtils.split(text.trim(), delimeter, numberOfItemsToParse);
-        int first = 0;
-        int last;        
-        if (oldItems.length == numberOfItemsToParse) {
-            archivePartialText = oldItems[oldItems.length - 1];
-            last = oldItems.length - 2;
-        } else {
-            last = oldItems.length - 1;
-        }
-        parseTopLines(oldItems, first, last);
+        parseTop(text.split("\n"));
     }
 
     void parseTopLines(String[] oldItems, int first, int last) {    
@@ -525,18 +516,7 @@ public class ArchiveWithHeaders extends Archive {
     }
 
     void parseBottom(String text) {
-        String [] oldItems;
-        oldItems = StringTools.splitBottom(text.trim(), delimeter, numberOfItemsToParse);
-        int first;
-        int last;
-        last = oldItems.length - 1;        
-        if (oldItems.length > numberOfItemsToParse) {
-            archivePartialText = oldItems[0];
-            first = 1; 
-        } else {
-            first = 0;
-        }
-        parseBottomLines(oldItems, first, last);
+        parseBottom(text.split("\n"));
     }
 
     void parseBottomLines(String [] oldItems, int first, int last) {
@@ -606,7 +586,7 @@ public class ArchiveWithHeaders extends Archive {
      */
     public ArchiveWithHeaders(String text, int parseCount, boolean addToTop, String delimeter,
             Enumeration enumeration, String headerFormat, String superHeaderFormat) {
-        log.debug("ArchiveWithHeaders created, enumeration: {}  top: {}", enumeration, addToTop);
+        log.debug("ArchiveWithHeaders created, enumeration: {} top: {}", enumeration, addToTop);
         this.addToTop = addToTop;
         this.delimeter = delimeter;
         archivePartialText = "";    
@@ -629,66 +609,6 @@ public class ArchiveWithHeaders extends Archive {
             parseTop(oldText);
         } else {
             parseBottom(oldText);
-        }        
-    }
-
-    // TODO: Delete it?
-    /**
-     * Old constructor that was used by ArchiveWithHeadersWithItemsCount which is removed.
-     */
-    public ArchiveWithHeaders(int parseCount, boolean addToTop, String delimeter,
-            Enumeration enumeration, String headerFormat, String superHeaderFormat) {
-        log.debug("ArchiveWithHeaders created, enumeration: {}  top: {}", enumeration, addToTop);
-        this.addToTop = addToTop;
-        this.delimeter = delimeter;
-        archivePartialText = "";    
-        this.enumeration = enumeration;
-        this.headerFormat = headerFormat;
-        this.superHeaderFormat = superHeaderFormat;
-        if (parseCount >= 0) {
-            this.numberOfItemsToParse = parseCount;
-        }
-        parts = new ArrayList<Section>();        
-    }
-
-    /**
-     * Constructs ArchiveWithHeaders object with the specified archive text splitted to lines and
-     * required archive options.
-     * 
-     * @param lines contents of existing wiki archive (new page items).
-     * @param parseCount  how many old items to parse. If 0 all old items will be parsed.
-     * @param addToTop flag where to add new page items. <code>true</code> to add at top, 
-     *     <code>false</code> to add at bottom.
-     * @param delimeter separator character or string inserted between new page items.
-     * @param enumeration enumeration type used for this archive.
-     * @param headerFormat format string to generated header
-     * @param superHeaderFormat format string to generated top-level header
-     */
-    public ArchiveWithHeaders(String [] lines, int parseCount, boolean addToTop, String delimeter,
-            Enumeration enumeration, String headerFormat, String superHeaderFormat) {
-        log.debug("ArchiveWithHeaders created, enumeration: {} top: {}", enumeration, addToTop);
-        this.addToTop = addToTop;
-        this.delimeter = delimeter;
-        archivePartialText = "";    
-        this.enumeration = enumeration;
-        this.headerFormat = headerFormat;
-        this.superHeaderFormat = superHeaderFormat;
-        if (parseCount >= 0) {
-            this.numberOfItemsToParse = parseCount;
-        }
-        parts = new ArrayList<Section>();
-        
-        init(lines);
-    }
-
-    /**
-     * Initialize archive with old archived items from wiki page (splitted to lines).
-     */
-    public void init(String [] lines) {
-        if (addToTop) {
-            parseTop(lines);
-        } else {
-            parseBottom(lines);
         }        
     }
 
@@ -819,9 +739,17 @@ public class ArchiveWithHeaders extends Archive {
                 parts.add(hhIndex, part);
                 part.addItemToBegin(item);
             } else {
-                part = createSection(enumeration, headerStripped, header, false);
-                parts.add(findLastSectionInSuperSection(hhIndex) + 1, part);
-                part.addItemToEnd(item);    
+                if (parts.size() != 0 && parts.get(0).trancated
+                        && parts.get(0).getHeader() == null
+                        && latestItemHeader != null
+                        && latestItemHeader.compareTo(header) == 0
+                        && hhIndex == 0) {
+                    parts.get(0).addItemToEnd(item);
+                } else {
+                    part = createSection(enumeration, headerStripped, header, false);
+                    parts.add(findLastSectionInSuperSection(hhIndex) + 1, part);
+                    part.addItemToEnd(item);
+                }
             }
         } else {
             part = parts.get(headerIndex);
@@ -842,6 +770,7 @@ public class ArchiveWithHeaders extends Archive {
      */
     void initLatestItemHeaderHeader(NirvanaWiki wiki, ArchiveSettings archiveSettings) {
         latestItemHeaderHeader = null;
+        latestItemHeader = null;
         if (!addToTop) {
             if (this.parts.size() > 0) {
                 Section items = parts.get(0);
@@ -850,6 +779,7 @@ public class ArchiveWithHeaders extends Archive {
                         Calendar c = NewPages.getNewPagesItemDate(wiki, items.getItem(i));
                         if (c != null) {
                             latestItemHeaderHeader = archiveSettings.getSuperHeaderForDate(c);
+                            latestItemHeader = archiveSettings.getHeaderForDate(c);
                             log.debug("latestItemHeaderHeader : {} for date: {}",
                                     latestItemHeaderHeader, c);
                             return;

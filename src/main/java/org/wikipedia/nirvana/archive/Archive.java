@@ -48,6 +48,8 @@ public abstract class Archive {
 
     protected boolean addToTop = true;
     protected int newLines = 0;
+    // TODO: Remove it.
+    //     Archive with delimenter other than "\n" looks ugly and also hard to support.
     protected String delimeter = "\n";
     protected Enumeration enumeration = Enumeration.NONE;
     public static final String OL = "<ol>";
