@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
+// TODO: Make it instantiated class. Change static methods to instance methods.
 /**
  * Creates required instance of {@link Archive} subclass.
  * Depending on settings {@link ArchiveSettings} it will select the most suitable variant of

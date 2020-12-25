@@ -101,6 +101,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1562,47 +1563,47 @@ public class NirvanaBot extends BasicBot{
         return errors;
     }
 
-	public static ArrayList<String> parseArchiveSettings(ArchiveSettings archiveSettings,
-			String settings) {
+    public static ArrayList<String> parseArchiveSettings(ArchiveSettings archiveSettings,
+            String settings) {
         Localizer localizer = Localizer.getInstance();
-		ArrayList<String> errors = new ArrayList<String>();
-		String items[];
-		items = settings.split(",");
-		ArrayList<String> itemsVector = new ArrayList<String>(items.length);
-		for(String item:items) {
-			itemsVector.add(item.trim());
-		}		
-        if (itemsVector.contains(STR_ABOVE) && itemsVector.contains(STR_BELOW)) {
+        List<String> items = OptionsUtils.optionToList(settings);
+        return parseArchiveSettings(archiveSettings, items, localizer);
+    }
+
+    /**
+     * Parse archive settings specified in the list of Strings.
+     *
+     * @param archiveSettings archive settings that should be initialized.
+     * @param items list of strings to read.
+     * @param localizer localizer used to translate settings names.
+     * @return
+     */
+    public static ArrayList<String> parseArchiveSettings(ArchiveSettings archiveSettings,
+            List<String> items, Localizer localizer) {
+        ArrayList<String> errors = new ArrayList<String>();
+        if (items.contains(STR_ABOVE) && items.contains(STR_BELOW)) {
             String format = localizer.localize(ERROR_PARAMETER_HAS_MULTIPLE_VALUES);
             String param = String.format("%1$s (%2$s/%3$s)", PortalConfig.KEY_ARCHIVE_PARAMS,
                     STR_ABOVE, STR_BELOW);
             errors.add(String.format(format, param));
-        } else if (itemsVector.contains(STR_ABOVE)) {
+        } else if (items.contains(STR_ABOVE)) {
 			archiveSettings.addToTop = true;
-        } else if (itemsVector.contains(STR_BELOW)) {
+        } else if (items.contains(STR_BELOW)) {
 			archiveSettings.addToTop = false;
 		}
-        // TODO: This is not related to this bot logic. Remove it out of here.
-        if (itemsVector.contains(STR_TOSORT)||itemsVector.contains(STR_SORT)) {
-			archiveSettings.sorted = true;
-		}
-        // TODO: This is not related to this bot logic. Remove it out of here.
-        if (itemsVector.contains(STR_REMOVE_DUPLICATES)) {
-			archiveSettings.removeDuplicates = true;
-		}
 		int cnt = 0;
-        if (itemsVector.contains(STR_ENUMERATE_WITH_HASH) ||
-                itemsVector.contains(STR_ENUMERATE_WITH_HASH2)) {
+        if (items.contains(STR_ENUMERATE_WITH_HASH) ||
+                items.contains(STR_ENUMERATE_WITH_HASH2)) {
 			cnt++;
 			archiveSettings.enumeration = Enumeration.HASH;
 		}
-        if (itemsVector.contains(STR_ENUMERATE_WITH_HTML) ||
-                itemsVector.contains(STR_ENUMERATE_WITH_HTML2)) {
+        if (items.contains(STR_ENUMERATE_WITH_HTML) ||
+                items.contains(STR_ENUMERATE_WITH_HTML2)) {
 			cnt++;
 			archiveSettings.enumeration = Enumeration.HTML;
 		}
-        if (itemsVector.contains(STR_ENUMERATE_WITH_HTML_GLOBAL) ||
-                itemsVector.contains(STR_ENUMERATE_WITH_HTML_GLOBAL2)) {
+        if (items.contains(STR_ENUMERATE_WITH_HTML_GLOBAL) ||
+                items.contains(STR_ENUMERATE_WITH_HTML_GLOBAL2)) {
 			cnt++;
 			archiveSettings.enumeration = Enumeration.HTML_GLOBAL;
 		}

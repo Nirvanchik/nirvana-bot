@@ -23,8 +23,13 @@
 
 package org.wikipedia.nirvana.fixarchive;
 
+import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_REMOVE_DUPLICATES;
+import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_SORT;
+import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_TOSORT;
+
 import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.archive.Archive;
+import org.wikipedia.nirvana.archive.ArchiveProcessingSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.archive.EnumerationUtils;
@@ -36,6 +41,7 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 import org.wikipedia.nirvana.nirvanabot.PortalConfig;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.OptionsUtils;
 import org.wikipedia.nirvana.util.TextUtils;
 
 import java.io.FileNotFoundException;
@@ -43,6 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -110,7 +117,7 @@ public class FixArchiveBot extends BasicBot {
                     + "All lines must have '=' symbol with the format: 'key=value'.");
         }
 
-        ArchiveSettings archiveSettings = new ArchiveSettings();
+        ArchiveProcessingSettings archiveSettings = new ArchiveProcessingSettings();
         String archive = null;
         String key = "архив";
         if (options.containsKey(key) && !options.get(key).isEmpty()) {
@@ -155,8 +162,7 @@ public class FixArchiveBot extends BasicBot {
 
         key = "параметры архива";
         if (options.containsKey(key) && !options.get(key).isEmpty()) {
-            ArrayList<String> errors = NirvanaBot.parseArchiveSettings(archiveSettings,
-                    options.get(key));
+            ArrayList<String> errors = parseArchiveSettings(archiveSettings, options.get(key));
             if (errors.size() > 0) {
                 errors.forEach(error -> log.error(error));
                 throw new BotFatalError("Invalid settings of archive parameters. See error log.");
@@ -194,8 +200,8 @@ public class FixArchiveBot extends BasicBot {
 
     }
 
-    private void updateAllArchives(String archive, ArchiveSettings archiveSettings, boolean bot,
-            boolean minor) throws BotFatalError {
+    private void updateAllArchives(String archive, ArchiveProcessingSettings archiveSettings,
+            boolean bot, boolean minor) throws BotFatalError {
         DateTools dateTools = DateTools.getInstance();
         if (archiveSettings.archivePeriod == Period.NONE) {
             updateArchive(archive, archiveSettings, bot, minor);
@@ -224,8 +230,8 @@ public class FixArchiveBot extends BasicBot {
         }
     }
 
-    private void updateArchive(String archive, ArchiveSettings archiveSettings, boolean bot,
-            boolean minor) throws BotFatalError {
+    private void updateArchive(String archive, ArchiveProcessingSettings archiveSettings,
+            boolean bot, boolean minor) throws BotFatalError {
         log.info("Updating archive: {}", archive);
         String [] lines = null;
         try {
@@ -286,5 +292,24 @@ public class FixArchiveBot extends BasicBot {
         taskFile = properties.getProperty("task-file", taskFile);
         log.info("Task file: {}", taskFile);
         return true;
+    }
+
+    static ArrayList<String> parseArchiveSettings(ArchiveProcessingSettings archiveSettings,
+            String settings) {
+        Localizer localizer = Localizer.getInstance();
+        List<String> items = OptionsUtils.optionToList(settings);
+        return parseArchiveSettings(archiveSettings, items, localizer);
+    }
+
+    static ArrayList<String> parseArchiveSettings(ArchiveProcessingSettings archiveSettings,
+            List<String> items, Localizer localizer) {
+
+        if (items.contains(STR_TOSORT) || items.contains(STR_SORT)) {
+            archiveSettings.sorted = true;
+        }
+        if (items.contains(STR_REMOVE_DUPLICATES)) {
+            archiveSettings.removeDuplicates = true;
+        }
+        return NirvanaBot.parseArchiveSettings(archiveSettings, items, localizer);
     }
 }

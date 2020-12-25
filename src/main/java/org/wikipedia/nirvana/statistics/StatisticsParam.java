@@ -22,16 +22,16 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
-import java.util.List;
+import org.wikipedia.nirvana.archive.ArchiveProcessingSettings;
 
-import org.wikipedia.nirvana.archive.ArchiveSettings;
+import java.util.List;
 
 /**
  * @author kin
  *
  */
 public class StatisticsParam {
-	public ArchiveSettings archiveSettings;
+    public ArchiveProcessingSettings archiveSettings;
 	public String archive;
 	public List<String> reportTypes;
 	public boolean sort;

@@ -25,7 +25,7 @@ package org.wikipedia.nirvana.fixarchive;
 
 import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveFactory;
-import org.wikipedia.nirvana.archive.ArchiveSettings;
+import org.wikipedia.nirvana.archive.ArchiveProcessingSettings;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;
@@ -39,12 +39,12 @@ public class FixArchiveFactory extends ArchiveFactory {
     /**
      * Creates a new Archive. This archive container will be empty.
      * 
-     * @param archiveSettings Instance of {@link ArchiveSettings}. Archive settings.
+     * @param archiveSettings Instance of {@link ArchiveProcessingSettings}. Archive settings.
      * @param wiki Instance of {@link NirvanaWiki} class. Will be used to get old archive page.
      * @param name Wiki page of this archive
      * @return instance of archive containter.
      */
-    public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki,
+    public static Archive createArchive(ArchiveProcessingSettings archiveSettings, NirvanaWiki wiki,
             String name) throws IOException {
         Archive archive = null;
         log.debug("Creating archive: {}", name);

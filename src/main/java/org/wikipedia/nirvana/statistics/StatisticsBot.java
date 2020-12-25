@@ -27,15 +27,16 @@ import static org.wikipedia.nirvana.util.OptionsUtils.validateIntegerSetting;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.BasicBot;
+import org.wikipedia.nirvana.archive.ArchiveProcessingSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
-import org.wikipedia.nirvana.util.OptionsUtils;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.NumberTools;
+import org.wikipedia.nirvana.util.OptionsUtils;
 
 import org.apache.commons.lang3.time.StopWatch;
 
@@ -125,8 +126,9 @@ public class StatisticsBot extends BasicBot {
 		USE_CACHE_ONLY = properties.getProperty("use-cache-only",USE_CACHE_ONLY?YES:NO).equals(YES);
 		log.info("use cache only: "+(USE_CACHE_ONLY?YES:NO));
 		
-		ArchiveSettings.setDefaultStartYear(
-				validateIntegerSetting(properties,"archive-start-year", ArchiveSettings.getDefaultStartYear(), false));
+        ArchiveProcessingSettings.setDefaultStartYear(
+                validateIntegerSetting(properties, "archive-start-year",
+                        ArchiveProcessingSettings.getDefaultStartYear(), false));
 		
 		RatingTotal.setDefaultStartYear(
 				validateIntegerSetting(properties,"rating-total-start-year", RatingTotal.getDefaultStartYear(), false));
@@ -374,7 +376,7 @@ public class StatisticsBot extends BasicBot {
 	}
 
 	private boolean readPortalSettings(Map<String, String> options, StatisticsParam params) {
-		params.archiveSettings = new ArchiveSettings();
+        params.archiveSettings = new ArchiveProcessingSettings();
 		params.archive = null;
         String key = "архив";
 		if (options.containsKey(key) && !options.get(key).isEmpty())
@@ -402,8 +404,7 @@ public class StatisticsBot extends BasicBot {
 
         key = "параметры архива";
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
-			NirvanaBot.parseArchiveSettings(params.archiveSettings,options.get(key));
-			//archiveSettings.headerFormat = options.get(key); 
+            parseArchiveSettings(params.archiveSettings, options.get(key));
 		}
 		
 		params.reportTypes = null;
@@ -532,5 +533,12 @@ public class StatisticsBot extends BasicBot {
 		}
 		return suboptions;
 	}
-	
+
+    static ArrayList<String> parseArchiveSettings(ArchiveProcessingSettings archiveSettings,
+            String settings) {
+        Localizer localizer = Localizer.getInstance();
+        List<String> items = OptionsUtils.optionToList(settings);
+        return NirvanaBot.parseArchiveSettings(archiveSettings, items, localizer);
+    }
+
 }

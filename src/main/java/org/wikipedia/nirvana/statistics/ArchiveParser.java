@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.archive.ArchiveProcessingSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
@@ -52,7 +53,7 @@ public class ArchiveParser {
 	private boolean DEBUG = false;
     protected final Logger log;
 
-	private ArchiveSettings archiveSettings;
+    private ArchiveProcessingSettings archiveSettings;
 	private ArchiveDatabase2 db;
 	NirvanaWiki wiki;
     private final String cacheDir;
@@ -60,8 +61,8 @@ public class ArchiveParser {
 	/**
 	 * Constructor
 	 */
-    public ArchiveParser(ArchiveSettings archiveSettings, ArchiveDatabase2 db, NirvanaWiki wiki,
-            String cacheDir) {
+    public ArchiveParser(ArchiveProcessingSettings archiveSettings, ArchiveDatabase2 db,
+            NirvanaWiki wiki, String cacheDir) {
         log = LogManager.getLogger(this.getClass().getName());
 		this.archiveSettings = archiveSettings;
 		this.db = db;

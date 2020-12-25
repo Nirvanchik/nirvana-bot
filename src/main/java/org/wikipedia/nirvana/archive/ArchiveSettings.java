@@ -29,12 +29,10 @@ import java.util.Calendar;
 
 import javax.annotation.Nullable;
 
-// TODO: split it to updated archive settings and settings for archive processing bots.
 /**
  * Collects archive settings.
  */
 public class ArchiveSettings {
-    private static int START_YEAR_DEFAULT = 2003;
     /**
      * Title of a wiki page that contains a list of archived new pages items. Can have placeholders.
      * For placeholders list see {@link ArchiveSettings.Period}.
@@ -70,16 +68,7 @@ public class ArchiveSettings {
      * Enumeration type selected to enumerate new page items in archive.
      */
     public Enumeration enumeration;
-    /**
-     * Flag for processing existing archive. If <code>true</code> archive should be sorted according
-     * to new page creation dage and 'addToTop' parameter.
-     */
-    public boolean sorted;
-    /**
-     * Flag for processing existing archive. If <code>true</code> the code should search duplicated
-     * items and remove them.
-     */
-    public boolean removeDuplicates;
+    // This is a global setting, remove it out of here.
     /**
      * How many items to parse when parsing old content of archive from wiki page.
      * Actual for archives with headers where bot must parse content in order to add new items to
@@ -88,40 +77,6 @@ public class ArchiveSettings {
      * This value tells how many lines to parse instead of full parsing.
      */
     public int parseCount;
-    /**
-     * Starting year of Wiki Project new pages archive.
-     * Used by StatisticsBot and FixArchiveBot.
-     */
-    public int startYear;
-    /**
-     * Second starting year of Wiki Project new pages archive.
-     * Used when the first archive page has multiple years merged.
-     * The next year after them will be set by this parameter.
-     * Used by StatisticsBot and FixArchiveBot.
-     */
-    public int startYear2;
-    /**
-     * First archive wiki page.
-     * Used to mark a year by year archive page which does not match "archive" parameter.
-     * Usually this is a wiki page with multiple years merged into one.
-     * Used by StatisticsBot and FixArchiveBot.
-     */
-    @Nullable
-    public String firstArchive;
-
-    /**
-     * Sets starting year of this archive.
-     */
-    public static void setDefaultStartYear(int year) {
-        START_YEAR_DEFAULT = year;
-    }
-
-    /**
-     * @return starting year of this archive.
-     */
-    public static int getDefaultStartYear() {
-        return START_YEAR_DEFAULT;
-    }
 
     /**
      * A methods to enumarate items in archive.
@@ -181,12 +136,7 @@ public class ArchiveSettings {
         headerFormat = null;
         superHeaderFormat = null;
         enumeration = Enumeration.NONE;
-        sorted = false;
-        removeDuplicates = false;
         parseCount = ArchiveWithHeaders.HOW_MANY_ITEMS_TO_PARSE_DEFAULT; 
-        startYear = START_YEAR_DEFAULT;
-        startYear2 = -1;
-        firstArchive = null;
     }
 
     /**

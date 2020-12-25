@@ -28,8 +28,6 @@ import static org.wikipedia.nirvana.archive.EnumerationUtils.OL_END;
 
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.IOException;
 import java.util.Calendar;
 
