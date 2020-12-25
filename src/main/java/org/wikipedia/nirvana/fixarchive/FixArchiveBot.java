@@ -242,8 +242,7 @@ public class FixArchiveBot extends BasicBot {
 
         Archive thisArchive;
         try {
-            thisArchive = FixArchiveFactory.createArchive(archiveSettings, wiki, archive,
-                    delimeter);
+            thisArchive = FixArchiveFactory.createArchive(archiveSettings, wiki, archive);
         } catch (IOException e) {
             throw new BotFatalError(String.format("IOException when creating archive %s", archive),
                     e);

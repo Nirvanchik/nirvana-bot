@@ -47,10 +47,10 @@ public class ArchiveSimple extends Archive {
     public String toString() {
         if (addToTop) {
             // Для склейки нужен перенос строки
-            return StringUtils.join(items, delimeter) + delimeter;
+            return StringUtils.join(items, "\n") + "\n";
         } else {
             // Для склейки нужно отсутствие переноса
-            return StringUtils.join(items, delimeter);
+            return StringUtils.join(items, "\n");
         }
     }
 
@@ -59,16 +59,13 @@ public class ArchiveSimple extends Archive {
      *
      * @param addToTop flag where to add new page items. <code>true</code> to add at top, 
      *     <code>false</code> to add at bottom.
-     * @param delimeter separator character or string inserted between new page items.
      */
-    public ArchiveSimple(boolean addToTop, String delimeter) {
+    public ArchiveSimple(boolean addToTop) {
         log.debug("ArchiveSimple created");
         this.addToTop = addToTop;
-        this.delimeter = delimeter;
         items = new ArrayList<String>();
     }
 
-    // TODO: date is not required here. Add method to add page without date.
     @Override
     public void add(String item, @Nullable Calendar creationDate) {
         if (this.addToTop) {
@@ -91,5 +88,10 @@ public class ArchiveSimple extends Archive {
         } else {
             wiki.appendOrCreate(archiveName, toString(), updateSummary(), minor, bot);
         }
+    }
+
+    @Override
+    public void read(NirvanaWiki wiki, String archivePage) throws IOException {
+        // Do nothing. Old text is not required for this archive type.        
     }
 }

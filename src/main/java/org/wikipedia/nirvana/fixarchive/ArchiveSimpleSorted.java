@@ -57,11 +57,9 @@ public class ArchiveSimpleSorted extends ArchiveSimple {
      * @param lines contents of existing wiki archive (new page items).
      * @param addToTop flag where to add new page items. <code>true</code> to add at top, 
      *     <code>false</code> to add at bottom.
-     * @param delimeter separator character or string inserted between new page items.
      */
-    public ArchiveSimpleSorted(NirvanaWiki wiki, String [] lines, boolean addToTop,
-            String delimeter) {
-        super(addToTop, delimeter);
+    public ArchiveSimpleSorted(NirvanaWiki wiki, String [] lines, boolean addToTop) {
+        super(addToTop);
         this.wiki = wiki;
         Comparator<Calendar> compA = new Comparator<Calendar>() {
             @Override
@@ -106,13 +104,13 @@ public class ArchiveSimpleSorted extends ArchiveSimple {
         StringBuffer sb = new StringBuffer(10000);        
         while (it.hasNext()) {
             sb.append(itemsSorted.get(it.next()));
-            sb.append(delimeter);
+            sb.append("\n");
         }
         if (addToTop) {
-            sb.append(StringUtils.join(items, delimeter));
+            sb.append(StringUtils.join(items, "\n"));
             return sb.toString();
         } else {
-            return StringUtils.join(items, delimeter) + delimeter + sb.toString();
+            return StringUtils.join(items, "\n") + "\n" + sb.toString();
         }        
     }
     

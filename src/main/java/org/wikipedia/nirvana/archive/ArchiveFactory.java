@@ -44,59 +44,42 @@ public class ArchiveFactory {
     }
 
     /**
-     * Creates a new Archive. This archive container will be empty.
-     * 
+     * Creates archive container and fill it with an archived items from existring Wiki page.
+     *
+     * @param archiveSettings Instance of {@link ArchiveSettings}. Archive settings.
+     * @param wiki Instance of {@link NirvanaWiki} class. Will be used to get old archive page.
+     * @param name Wiki page name of this archive
+     * @return instance of archive containter.
      */
-    public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki,
-            String name, String delimeter) throws IOException {
-        return createArchive(archiveSettings, wiki, name, delimeter, false);
+    public static Archive createArchiveAndRead(ArchiveSettings archiveSettings, NirvanaWiki wiki,
+            String name) throws IOException {
+        Archive archive = createArchive(archiveSettings, wiki, name);
+        archive.read(wiki, name);
+        return archive;
     }
 
-    // TODO: This is too difficult. Split this factory to 2 methods or 2 factory classes.
-    // TODO: Make another constructor instead of "empty" flag
     /**
-     * Creates a new or existing Archive. This archive container will be empty or filled with
-     * an old archived items from Wiki text depending on the provided flags.
+     * Creates empty Archive.
      * 
      * @param archiveSettings Instance of {@link ArchiveSettings}. Archive settings.
      * @param wiki Instance of {@link NirvanaWiki} class. Will be used to get old archive page.
      * @param name Wiki page of this archive
-     * @param delimeter A string that separates archive items (usually "\n").
-     * @param empty if <code>true</code> the archive container will empty when created. If
-     *     <code>false</code> the archive container will be filled with parsed items from old
-     *     archive page.
      * @return instance of archive containter.
      */
     public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki,
-            String name, String delimeter, boolean empty) throws IOException {
+            String name) throws IOException {
         log.debug("Creating archive: {}", name);
         if (!archiveSettings.hasHeaders()) {
             if (!archiveSettings.hasHtmlEnumeration()) {
-                // It is allways empty
-                return new ArchiveSimple(archiveSettings.addToTop, delimeter);
+                return new ArchiveSimple(archiveSettings.addToTop);
             } else {
-                String text = "";
-                if (!empty) {
-                    text = wiki.getPageText(name);
-                    if (text == null) {
-                        text = "";
-                    }
-                }
-                // It is allways empty
-                return new ArchiveWithEnumeration(text, archiveSettings.addToTop, delimeter);
-            }            
-        } else {
-            String oldText = "";
-            if (!empty) {
-                oldText = wiki.getPageText(name);
+                return new ArchiveWithEnumeration(archiveSettings.addToTop);
             }
-
-            ArchiveWithHeaders archive = new ArchiveWithHeaders(oldText, archiveSettings.parseCount,
-                    archiveSettings.addToTop, delimeter, archiveSettings.enumeration,
+        } else {
+            return new ArchiveWithHeaders(archiveSettings.parseCount,
+                    archiveSettings.addToTop, archiveSettings.enumeration,
                     archiveSettings.headerFormat, archiveSettings.superHeaderFormat);
 
-            archive.initLatestItemHeaderHeader(wiki, archiveSettings);
-            return archive;
         }
     }
 }

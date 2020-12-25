@@ -42,17 +42,16 @@ public class FixArchiveFactory extends ArchiveFactory {
      * @param archiveSettings Instance of {@link ArchiveSettings}. Archive settings.
      * @param wiki Instance of {@link NirvanaWiki} class. Will be used to get old archive page.
      * @param name Wiki page of this archive
-     * @param delimeter A string that separates archive items (usually "\n").
      * @return instance of archive containter.
      */
     public static Archive createArchive(ArchiveSettings archiveSettings, NirvanaWiki wiki,
-            String name, String delimeter) throws IOException {
+            String name) throws IOException {
         Archive archive = null;
         log.debug("Creating archive: {}", name);
         
         if (archiveSettings.removeDuplicates) {
             String [] lines = new String[0];
-            archive = new ArchiveUnique(wiki, lines, archiveSettings.addToTop, delimeter);
+            archive = new ArchiveUnique(wiki, lines, archiveSettings.addToTop);
         } else if (archiveSettings.sorted) {
             if (archiveSettings.hasHeaders()) {
                 throw new IllegalArgumentException("Sort command is not supported for archives "
@@ -63,10 +62,9 @@ public class FixArchiveFactory extends ArchiveFactory {
                         + "with html enumeration");
             }
             String [] lines = new String[0];
-            archive = new ArchiveSimpleSorted(wiki, lines, archiveSettings.addToTop,
-                    delimeter);
+            archive = new ArchiveSimpleSorted(wiki, lines, archiveSettings.addToTop);
         } else {
-            archive = ArchiveFactory.createArchive(archiveSettings, wiki, name, delimeter, true);
+            archive = ArchiveFactory.createArchive(archiveSettings, wiki, name);
         }
         return archive;
     }

@@ -42,19 +42,25 @@ import javax.security.auth.login.LoginException;
  */
 public class ArchiveWithEnumeration extends ArchiveSimple {
 
-    String oldText;
+    String oldText = "";
 
     /**
      * Constructs archive class using specified archive text and archive settings.
      *
-     * @param text text with archived new page items.
      * @param addToTop flag where to add new page items. <code>true</code> to add at top, 
      *     <code>false</code> to add at bottom.
-     * @param delimeter separator character or string inserted between new page items.
      */
-    public ArchiveWithEnumeration(String text, boolean addToTop, String delimeter) {
-        super(addToTop, delimeter);
+    public ArchiveWithEnumeration(boolean addToTop) {
+        super(addToTop);
         log.debug("ArchiveWithEnumeration created");
+    }
+
+    @Override
+    public void read(NirvanaWiki wiki, String archivePage) throws IOException {
+        String text = wiki.getPageText(archivePage);
+        if (text == null) {
+            text = "";
+        }
         oldText = EnumerationUtils.trimEnumerationAndWhitespace(text);
     }
 
@@ -72,20 +78,14 @@ public class ArchiveWithEnumeration extends ArchiveSimple {
     // TODO: Use StringBuilder
     @Override
     public String toString() {
+        String old = oldText;
+        if (!old.isEmpty()) {
+            old += "\n";
+        }
         if (addToTop) {
-            if (oldText.isEmpty()) {
-                return OL + delimeter + StringUtils.join(items, delimeter) + delimeter + OL_END;
-            } else {
-                return OL + delimeter + StringUtils.join(items, delimeter) + delimeter + oldText +
-                        delimeter + OL_END;
-            }
+            return OL + "\n" + StringUtils.join(items, "\n") + "\n" + old + OL_END;
         } else {
-            if (oldText.isEmpty()) {
-                return OL + delimeter + StringUtils.join(items, delimeter) + delimeter + OL_END;
-            } else {
-                return OL + delimeter + oldText + delimeter + StringUtils.join(items, delimeter) +
-                        delimeter + OL_END;
-            }
+            return OL + "\n" + old + StringUtils.join(items, "\n") + "\n" + OL_END;
         }
     }
 

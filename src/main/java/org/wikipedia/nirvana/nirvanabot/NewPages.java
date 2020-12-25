@@ -900,7 +900,8 @@ public class NewPages implements PortalModule{
     	} else {
     		defaultArhiveName = archiveSettings.getArchiveForDate(Calendar.getInstance());
     	}
-    	defaultArchive = ArchiveFactory.createArchive(archiveSettings, wiki, defaultArhiveName, delimeter);
+        defaultArchive = ArchiveFactory.createArchiveAndRead(archiveSettings, wiki,
+                defaultArhiveName);
     	
 		HashMap<String,Archive> hmap = null;
 		hmap = 	new HashMap<String,Archive>(3);
@@ -920,8 +921,8 @@ public class NewPages implements PortalModule{
                 String arname = archiveSettings.getArchiveForDate(itemDate);
                 targetArchive = hmap.get(arname);
                 if (targetArchive == null) {
-                    targetArchive = ArchiveFactory.createArchive(archiveSettings, wiki, arname,
-                            delimeter);
+                    targetArchive = ArchiveFactory.createArchiveAndRead(archiveSettings, wiki,
+                            arname);
                     hmap.put(arname, targetArchive);
     			}
     		}

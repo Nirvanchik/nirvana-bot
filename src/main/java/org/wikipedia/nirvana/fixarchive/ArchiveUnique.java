@@ -62,10 +62,9 @@ public class ArchiveUnique extends ArchiveSimple {
      * @param lines contents of existing wiki archive (new page items).
      * @param addToTop flag where to add new page items. <code>true</code> to add at top, 
      *     <code>false</code> to add at bottom.
-     * @param delimeter separator character or string inserted between new page items.
      */
-    public ArchiveUnique(NirvanaWiki wiki, String [] lines, boolean addToTop, String delimeter) {
-        super(addToTop, delimeter);
+    public ArchiveUnique(NirvanaWiki wiki, String [] lines, boolean addToTop) {
+        super(addToTop);
         log.debug("ArchiveUnique created");
         this.wiki = wiki;
         uniqueItemIndexes = new HashMap<String,Integer>();

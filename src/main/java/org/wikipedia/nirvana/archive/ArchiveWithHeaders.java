@@ -240,15 +240,15 @@ public class ArchiveWithHeaders extends Archive {
             StringBuffer buf = new StringBuffer();
             if (!this.superHeaderText.isEmpty()) {
                 buf.append(superHeaderText);
-                buf.append(delimeter);
+                buf.append("\n");
             }
             if (!this.headerText.isEmpty()) {
                 buf.append(headerText);
-                buf.append(delimeter);
+                buf.append("\n");
             }
             if (enumeration == Enumeration.HTML && (!trancated || hasOL)) {
                 buf.append(OL);
-                buf.append(delimeter);
+                buf.append("\n");
             }
             // TODO: Merge this code with enumItem()?
             // TODO: May be do this convertion separately and globally after parsing?
@@ -268,14 +268,14 @@ public class ArchiveWithHeaders extends Archive {
                     }
                 }
             }
-            String str = StringUtils.join(items, delimeter);
+            String str = StringUtils.join(items, "\n");
             if (!str.isEmpty()) {
                 buf.append(str);
-                buf.append(delimeter);
+                buf.append("\n");
             }
             if (enumeration == Enumeration.HTML && (!trancated || hasOL)) {
                 buf.append(OL_END);
-                buf.append(delimeter);
+                buf.append("\n");
             }
             return buf.toString();
         }
@@ -380,26 +380,6 @@ public class ArchiveWithHeaders extends Archive {
             return this.items.get(index);
         }
 
-        // TODO: Fix this IndexOutOfBoundsException
-        /**
-         * Returns first item in section. 
-         *
-         * @throw IndexOutOfBoundsException if section has no items.
-         */
-        public String getFirst() {
-            return this.items.get(0);
-        }
-        
-        // TODO: Fix this IndexOutOfBoundsException
-        /**
-         * Returns the last item in section. 
-         *
-         * @throw IndexOutOfBoundsException if section has no items.
-         */
-        public String getLast() {
-            return this.items.get(items.size() - 1);
-        }
-
         /**
          * @return items count in this section loaded by bot. It may not count all items when bot
          *         reads section partially.
@@ -414,7 +394,7 @@ public class ArchiveWithHeaders extends Archive {
         StringBuilder buf = new StringBuilder();
         if (this.enumeration == Enumeration.HTML_GLOBAL) {
             buf.append(OL);
-            buf.append(delimeter);
+            buf.append("\n");
         }
         if (!addToTop) {
             buf.append(this.archivePartialText);
@@ -426,8 +406,8 @@ public class ArchiveWithHeaders extends Archive {
         
         if (addToTop && !archivePartialText.isEmpty()) {
             buf.append(this.archivePartialText);            
-            if (!archivePartialText.endsWith(delimeter)) { 
-                buf.append(delimeter);
+            if (!archivePartialText.endsWith("\n")) { 
+                buf.append("\n");
             }
         }
         
@@ -454,7 +434,7 @@ public class ArchiveWithHeaders extends Archive {
         int first = 0;
         int last = (j - i) > numberOfItemsToParse ? numberOfItemsToParse - 1 : j;
         if (last < j) {
-            archivePartialText = StringUtils.join(lines, delimeter, last + 1, j + 1);
+            archivePartialText = StringUtils.join(lines, "\n", last + 1, j + 1);
         }
         parseTopLines(lines, first, last);
     }
@@ -515,7 +495,7 @@ public class ArchiveWithHeaders extends Archive {
         last = j;
         first = (j - i) > numberOfItemsToParse ? j + 1 - numberOfItemsToParse : 0;
         if (first > 0) {
-            archivePartialText = StringUtils.join(lines, delimeter, 0, first) + delimeter;
+            archivePartialText = StringUtils.join(lines, "\n", 0, first) + "\n";
         }
         parseBottomLines(lines, first, last);
     }
@@ -580,20 +560,17 @@ public class ArchiveWithHeaders extends Archive {
      * Constructs ArchiveWithHeaders object with the specified archive text and required archive
      * options.
      * 
-     * @param text contents of existing wiki archive (new page items).
      * @param parseCount how many old items to parse. If 0 all old items will be parsed.
      * @param addToTop flag where to add new page items. <code>true</code> to add at top, 
      *     <code>false</code> to add at bottom.
-     * @param delimeter separator character or string inserted between new page items.
      * @param enumeration enumeration type used for this archive.
      * @param headerFormat format string to generated header
      * @param superHeaderFormat format string to generated top-level header
      */
-    public ArchiveWithHeaders(String text, int parseCount, boolean addToTop, String delimeter,
+    public ArchiveWithHeaders(int parseCount, boolean addToTop,
             Enumeration enumeration, String headerFormat, String superHeaderFormat) {
         log.debug("ArchiveWithHeaders created, enumeration: {} top: {}", enumeration, addToTop);
         this.addToTop = addToTop;
-        this.delimeter = delimeter;
         archivePartialText = "";    
         this.enumeration = enumeration;        
         this.headerFormat = headerFormat;
@@ -602,19 +579,21 @@ public class ArchiveWithHeaders extends Archive {
         if (parseCount >= 0) {
             numberOfItemsToParse = parseCount;
         }        
-        init(text);
     }
 
-    /**
-     * Initialize archive with a string that has archived items from wiki page.
-     */
-    public void init(String text) {
+    @Override
+    public void read(NirvanaWiki wiki, String archivePage) throws IOException {
+        String text = wiki.getPageText(archivePage);
+        if (text == null) {
+            text = "";
+        }
         String oldText = EnumerationUtils.trimEnumerationAndWhitespace(text);
         if (addToTop) {
             parseTop(oldText);
         } else {
             parseBottom(oldText);
-        }        
+        }
+        initHeadersOfBrokenSection(wiki);
     }
 
     @Override
@@ -769,14 +748,7 @@ public class ArchiveWithHeaders extends Archive {
         }
     }
 
-    /**
-     * Initialise super header of the latest old item in the archive. Must be called befor using
-     * this archive for archiving (calling {@link #add(String, Calendar)} method).
-     *
-     * @param wiki NirvanaWiki instance.
-     * @param archiveSettings archive settings.
-     */
-    void initLatestItemHeaderHeader(NirvanaWiki wiki, ArchiveSettings archiveSettings) {
+    private void initHeadersOfBrokenSection(NirvanaWiki wiki) {
         latestItemHeaderHeader = null;
         latestItemHeader = null;
         if (!addToTop) {
@@ -786,8 +758,9 @@ public class ArchiveWithHeaders extends Archive {
                     for (int i = items.getSize() - 1; i >= 0; i--) {
                         Calendar c = NewPages.getNewPagesItemDate(wiki, items.getItem(i));
                         if (c != null) {
-                            latestItemHeaderHeader = archiveSettings.getSuperHeaderForDate(c);
-                            latestItemHeader = archiveSettings.getHeaderForDate(c);
+                            latestItemHeaderHeader =
+                                    ArchiveSettings.getHeaderForDate(c, superHeaderFormat);
+                            latestItemHeader = ArchiveSettings.getHeaderForDate(c, headerFormat);
                             log.debug("latestItemHeaderHeader : {} for date: {}",
                                     latestItemHeaderHeader, c);
                             return;

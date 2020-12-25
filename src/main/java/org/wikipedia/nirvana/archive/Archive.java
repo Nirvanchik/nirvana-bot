@@ -36,7 +36,6 @@ import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 
 
-// TODO: Add another base class for archives. Split updatable and fixer archives.
 /**
  * Abstract class for archive pages of different types.
  * One Archive class represents one Wiki page with an archived list of new pages. 
@@ -46,9 +45,6 @@ public abstract class Archive {
     protected final Logger log;
 
     protected boolean addToTop = true;
-    // TODO: Remove it.
-    //     Archive with delimenter other than "\n" looks ugly and also hard to support.
-    protected String delimeter = "\n";
 
     /**
      * Prints all archive contents to string.
@@ -64,6 +60,13 @@ public abstract class Archive {
      * @param creationDate new page creation date (if available).
      */
     public abstract void add(String item, @Nullable Calendar creationDate);
+
+    /**
+     * Reads old archive text (if required).
+     * @param wiki NirvanaWiki instance.
+     * @param archivePage Wiki page name of the archive.
+     */
+    public abstract void read(NirvanaWiki wiki, String archivePage) throws IOException;
 
     /**
      * @return How many items were added to this archive.
