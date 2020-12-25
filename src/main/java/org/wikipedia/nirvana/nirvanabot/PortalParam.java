@@ -42,8 +42,7 @@ public class PortalParam {
 	public List<String> categoriesToIgnore;
 	public String page;
     public CatScanTools.Service service;
-	public String archive;
-	public ArchiveSettings archSettings;
+    public ArchiveSettings archSettings = new ArchiveSettings();
 	public int ns;
 	public int depth;
 	public int hours;

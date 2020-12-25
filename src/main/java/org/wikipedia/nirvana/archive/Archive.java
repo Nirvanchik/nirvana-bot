@@ -23,7 +23,6 @@
 
 package org.wikipedia.nirvana.archive;
 
-import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
@@ -47,13 +46,9 @@ public abstract class Archive {
     protected final Logger log;
 
     protected boolean addToTop = true;
-    protected int newLines = 0;
     // TODO: Remove it.
     //     Archive with delimenter other than "\n" looks ugly and also hard to support.
     protected String delimeter = "\n";
-    protected Enumeration enumeration = Enumeration.NONE;
-    public static final String OL = "<ol>";
-    public static final String OL_END = "</ol>";
 
     /**
      * Prints all archive contents to string.
@@ -73,9 +68,7 @@ public abstract class Archive {
     /**
      * @return How many items were added to this archive.
      */
-    public int newItemsCount() {
-        return newLines;
-    }
+    public abstract int newItemsCount();
 
     /**
      * Default constructor.
@@ -103,25 +96,6 @@ public abstract class Archive {
     protected String updateSummary() {
         Localizer localizer = Localizer.getInstance();
         return "+" + newItemsCount() + " " + localizer.localize("статей");
-    }
-
-    // TODO: Move it to utils
-    /**
-     * Removes html enumeration tags from text (if text starts/ends with them).
-     *
-     * @param text text to process
-     * @return updated text (with enumerations tags stripped).
-     */
-    public static String trimEnumerationAndWhiteSpace(String text) {
-        String oldText = text.trim();
-        if (oldText.startsWith(OL)) {
-            oldText = oldText.substring(OL.length());        
-        }
-        if (oldText.endsWith(OL_END)) {
-            oldText = oldText.substring(0,oldText.length() - OL_END.length());
-        }
-        oldText = oldText.trim();
-        return oldText;
     }
 
 }

@@ -27,6 +27,8 @@ import org.wikipedia.nirvana.util.DateTools;
 
 import java.util.Calendar;
 
+import javax.annotation.Nullable;
+
 // TODO: split it to updated archive settings and settings for archive processing bots.
 /**
  * Collects archive settings.
@@ -37,15 +39,18 @@ public class ArchiveSettings {
      * Title of a wiki page that contains a list of archived new pages items. Can have placeholders.
      * For placeholders list see {@link ArchiveSettings.Period}.
      */
+    @Nullable
     public String archive;
     /**
      * Archive header format if archive has headers of 1 level.
      * Archive header format of the second level if archive has headers of 2 levels.
      */
+    @Nullable
     public String headerFormat;
     /**
      * Archive top-level header format if archive has headers of 2 levels.
      */
+    @Nullable
     public String superHeaderFormat;
     /**
      * If <code>true</code> new items should be added at the top. If <code>false</code> new items
@@ -101,6 +106,7 @@ public class ArchiveSettings {
      * Usually this is a wiki page with multiple years merged into one.
      * Used by StatisticsBot and FixArchiveBot.
      */
+    @Nullable
     public String firstArchive;
 
     /**
@@ -184,12 +190,28 @@ public class ArchiveSettings {
     }
 
     /**
+     * Return <code>true</code> if new page list is with archive, it requires to update archive
+     * according its settings.
+     */
+    public boolean withArchive() {
+        return archive != null;
+    }
+
+    /**
      * @return <code>true</code> if archive is saved on a single-page (not split into many pages).
      */
     public boolean isSingle() {
         return (archivePeriod == Period.NONE);
     }
-    
+
+    /**
+     * @return <code>true</code> if archive is split into many pages and each page is updated only
+     *     a limited time range.
+     */
+    public boolean isSplitByPeriod() {
+        return (archivePeriod != Period.NONE);
+    }
+
     /**
      * @return <code>true</code> if archive has no headers.
      */
@@ -204,13 +226,12 @@ public class ArchiveSettings {
         return (headerFormat != null);
     }
 
-    // TODO: This method is unclear.
     /**
-     * @return <code>true</code> if archive is simple (single-page, no headers, no html enumeration.
+     * @return <code>true</code> if archive requires item creation date to correctly add it to
+     *     archive (select right section).
      */
-    public boolean isSimple() {
-        // TODO: Why addToTop == false is not simple ?
-        return ((addToTop == true) && isSingle() && withoutHeaders() && !hasHtmlEnumeration()); 
+    public boolean needItemDate() {
+        return hasHeaders();
     }
 
     /**

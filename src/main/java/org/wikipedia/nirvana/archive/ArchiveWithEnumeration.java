@@ -23,7 +23,9 @@
 
 package org.wikipedia.nirvana.archive;
 
-import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import static org.wikipedia.nirvana.archive.EnumerationUtils.OL;
+import static org.wikipedia.nirvana.archive.EnumerationUtils.OL_END;
+
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +41,7 @@ import javax.security.auth.login.LoginException;
  *
  */
 public class ArchiveWithEnumeration extends ArchiveSimple {
+
     String oldText;
 
     /**
@@ -52,8 +55,7 @@ public class ArchiveWithEnumeration extends ArchiveSimple {
     public ArchiveWithEnumeration(String text, boolean addToTop, String delimeter) {
         super(addToTop, delimeter);
         log.debug("ArchiveWithEnumeration created");
-        this.enumeration = Enumeration.HTML_GLOBAL;
-        oldText = trimEnumerationAndWhiteSpace(text);
+        oldText = EnumerationUtils.trimEnumerationAndWhitespace(text);
     }
 
     @Override

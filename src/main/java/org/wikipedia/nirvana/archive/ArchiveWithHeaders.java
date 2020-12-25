@@ -23,6 +23,9 @@
 
 package org.wikipedia.nirvana.archive;
 
+import static org.wikipedia.nirvana.archive.EnumerationUtils.OL;
+import static org.wikipedia.nirvana.archive.EnumerationUtils.OL_END;
+
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
 import org.wikipedia.nirvana.util.StringTools;
@@ -53,7 +56,10 @@ import javax.security.auth.login.LoginException;
  *
  */
 public class ArchiveWithHeaders extends Archive {
-    public static int HOW_MANY_ITEMS_TO_PARSE_DEFAULT = 100;    
+    public static int HOW_MANY_ITEMS_TO_PARSE_DEFAULT = 100;
+
+    private final Enumeration enumeration;
+    private int newLines = 0;
 
     /**
      * Old text of the archive (partial) which was not parsed for better performance.
@@ -302,7 +308,6 @@ public class ArchiveWithHeaders extends Archive {
             return str;
         }
 
-        // TODO: Why is it public?
         void addOldItemToEnd(String item) {            
             items.add(item);
         }
@@ -604,7 +609,7 @@ public class ArchiveWithHeaders extends Archive {
      * Initialize archive with a string that has archived items from wiki page.
      */
     public void init(String text) {
-        String oldText = trimEnumerationAndWhiteSpace(text);
+        String oldText = EnumerationUtils.trimEnumerationAndWhitespace(text);
         if (addToTop) {
             parseTop(oldText);
         } else {
@@ -614,6 +619,7 @@ public class ArchiveWithHeaders extends Archive {
 
     @Override
     public void add(String item, @Nullable Calendar creationDate) {
+        newLines++;
         if (creationDate == null) {
             addNoDate(item);
         } else {
@@ -627,13 +633,17 @@ public class ArchiveWithHeaders extends Archive {
         }
     }
 
+    @Override
+    public int newItemsCount() {
+        return newLines;
+    }
+
     /**
      * Add archived item without date.
      *
      * @param item archived item text.
      */
     protected void addNoDate(String item) {
-        newLines++;
         if (parts.isEmpty()) {
             Section section = createSection(enumeration, false);
             section.addItemToBegin(item);
@@ -648,7 +658,6 @@ public class ArchiveWithHeaders extends Archive {
     }
 
     private void addWithHeader(String item, String header) {
-        newLines++;
         Section part = null;
         String headerName = StringUtils.strip(header, "=").trim();
         if (addToTop) {
@@ -691,7 +700,6 @@ public class ArchiveWithHeaders extends Archive {
     }
 
     private void addWithHeaderAndSuperHeader(String item, String header, String superHeader) {
-        newLines++;
         String superHeaderName = StringUtils.strip(superHeader, "=").trim();
         String headerStripped = StringUtils.strip(header, "=").trim();
         Section part = null;

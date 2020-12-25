@@ -1239,13 +1239,10 @@ public class NirvanaBot extends BasicBot{
 			}
 		}
 
-		param.archSettings = new ArchiveSettings();
 		param.archSettings.parseCount = DEFAULT_PARSE_COUNT;
 
-		param.archive = null;
         if (config.hasKey(PortalConfig.KEY_ARCHIVE)) {
-            param.archive = config.get(PortalConfig.KEY_ARCHIVE);
-            parseArchiveName(param.archSettings, param.archive);
+            parseArchiveName(param.archSettings, config.get(PortalConfig.KEY_ARCHIVE));
 		}
 
         if (config.hasKey(PortalConfig.KEY_ARCHIVE_HEADER_FORMAT) ||

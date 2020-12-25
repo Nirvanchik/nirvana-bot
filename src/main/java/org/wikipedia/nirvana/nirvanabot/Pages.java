@@ -45,8 +45,9 @@ public class Pages extends NewPages {
     public Pages(PortalParam param, PageFormatter pageFormatter, SystemTime systemTime) {
         super(param, pageFormatter, systemTime);
 
-		if(this.archiveSettings!=null) {
-			this.archiveSettings = null;
+        if (this.archiveSettings.archive != null) {
+            // TODO: Handle this in the apropriate place. This class should not care about it.
+            this.archiveSettings.archive = null;
 		}
 		//GET_FIRST_REV = true;
 		getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED;

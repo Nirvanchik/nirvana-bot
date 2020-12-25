@@ -27,6 +27,7 @@ import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.archive.EnumerationUtils;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.BotVariables;
@@ -266,8 +267,8 @@ public class FixArchiveBot extends BasicBot {
             String item = lines[i];            
             if (!item.isEmpty() &&
                     archiveSettings.removeDuplicates ||
-                    (    item.compareToIgnoreCase(Archive.OL) != 0 &&
-                         item.compareToIgnoreCase(Archive.OL_END) != 0 &&
+                    (    item.compareToIgnoreCase(EnumerationUtils.OL) != 0 &&
+                         item.compareToIgnoreCase(EnumerationUtils.OL_END) != 0 &&
                          !p.matcher(item).matches())    ) {
                 Calendar c = NewPages.getNewPagesItemDate(wiki, item);
                 thisArchive.add(item, c);

@@ -30,7 +30,6 @@ import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveFactory;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
-import org.wikipedia.nirvana.localization.LocalizedTemplate;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;
@@ -66,14 +65,13 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.security.auth.login.LoginException;
 
 /**
@@ -127,9 +125,6 @@ public class NewPages implements PortalModule{
     private static String summaryNewPages;
     private static String NEW_PAGES_LISTS_CATEGORY;
 
-    private static LocalizedTemplate templateNewPageItem;
-    private static LocalizedTemplate templateNewPageItem2;
-
     private static boolean initialized; 
 
 	protected String language;
@@ -138,8 +133,8 @@ public class NewPages implements PortalModule{
 	protected List<List<String>> categoryGroups;
 	protected List<List<String>> categoryToIgnoreGroups;
 	protected String pageName;
-    protected String archive;
-    protected ArchiveSettings archiveSettings;
+    @Nonnull
+    protected final ArchiveSettings archiveSettings;
     protected String format;
     protected String formatString;
     protected int maxItems;
@@ -217,7 +212,6 @@ public class NewPages implements PortalModule{
     	categoryGroups = param.categoryGroups;
     	categoryToIgnoreGroups = param.categoryToIgnoreGroups;
     	this.pageName = param.page;
-    	this.archive = param.archive;
    		this.archiveSettings = param.archSettings;
     	this.maxItems = param.maxItems;
     	this.format = param.format;
@@ -252,9 +246,6 @@ public class NewPages implements PortalModule{
         NEW_PAGES_LISTS_CATEGORY =
                 localizer.localize("Категория:Википедия:Списки новых статей по темам");
 
-        templateNewPageItem = localizer.localizeTemplate("Новая статья");
-        templateNewPageItem2 = localizer.localizeTemplate("Новая статья2");
-
         initialized = true;
     }
 
@@ -287,12 +278,12 @@ public class NewPages implements PortalModule{
 		int deletedCount = 0;
 		int oldCount = 0;
 		public Data() {
-			if (archive != null) {
+            if (archiveSettings.withArchive()) {
 				archiveItems = new ArrayList<String>();
 			}
 		}
 		public void makeArchiveText() {
-			if(archive!=null && archiveItems!=null && archiveItems.size()>0) {
+            if (archiveSettings.withArchive() && archiveItems != null && archiveItems.size() > 0) {
 				if(archiveSettings.enumeration==Enumeration.HASH) {
 					enumerateWithHash(archiveItems);
 				}
@@ -704,7 +695,7 @@ public class NewPages implements PortalModule{
 	    		continue;
 	    	}
 	    	log.debug("ARCHIVE old line:"+item);
-        	if(UPDATE_ARCHIVE && archive!=null) {		        		
+            if (UPDATE_ARCHIVE && archiveSettings.withArchive()) {
         		d.archiveItems.add(item);
         	}
         	d.archiveCount++;
@@ -854,7 +845,7 @@ public class NewPages implements PortalModule{
 				!(d.newText.equals(text) || d.newText.equals(text.trim())))
 		{
             String str = String.format(summaryNewPages, d.newPagesCount);
-		    if(UPDATE_ARCHIVE && archive!=null && d.archiveCount>0) {
+            if (UPDATE_ARCHIVE && archiveSettings.withArchive() && d.archiveCount > 0) {
                 str = str + ", -" + d.archiveCount + " " + localizer.localize("в архив");
 		    }
             if (d.deletedCount > 0) {
@@ -877,7 +868,7 @@ public class NewPages implements PortalModule{
 
     protected void updateArchiveIfNeed(NirvanaWiki wiki, Data updateResults,
             ReportItem reportData) throws InterruptedException, ArchiveUpdateFailure {
-        if (!UPDATE_ARCHIVE || archive == null) {
+        if (!UPDATE_ARCHIVE || !archiveSettings.withArchive()) {
             return;
         }
         reportData.willUpdateArchive();
@@ -902,24 +893,6 @@ public class NewPages implements PortalModule{
 	}
 
     public void updateArchive(NirvanaWiki wiki, Data d) throws LoginException, IOException {
-        // Archive can be:
-        // 1-page and simple
-        // many-paged and simple
-        // 1-page and headered
-        // many-paged and headered
-    	if(archiveSettings==null || archiveSettings.isSimple()) {	
-            // TODO: ArchiveSimple class already has this code. Why keep it duplicated here?
-    		log.debug("archive has simple format");
-    		log.info("Updating "+archive);
-            String summary = "+" + d.archiveCount + " " + localizer.localize("статей");
-            wiki.prependOrCreate(archive, d.archiveText, summary, this.minor, this.bot);
-	    	return;
-    	}
-    	
-    	// we need here a map of archives - Archive objects 
-
-    	log.debug("archive has difficult format");
-    	
     	Archive defaultArchive = null;
     	String defaultArhiveName = null;
     	if(archiveSettings.isSingle()) {
@@ -936,25 +909,23 @@ public class NewPages implements PortalModule{
     	
     	for(int i = d.archiveItems.size()-1;i>=0;i--) {
     		String item = d.archiveItems.get(i);
-    		log.debug("archiving item: "+item);
-            // TODO: Date is not needed for simple kinds of archives which can be used here.
-            //     this slows down archive updating.
-    		Calendar c = getNewPagesItemDate(wiki,item);
-    		if(c==null) {
-                defaultArchive.add(item, null);
-    			continue;
-    		} 
-    		// 1) get archive object for this item
-    		Archive thisArchive = defaultArchive;
-    		if(!archiveSettings.isSingle()) {
-    			String arname = archiveSettings.getArchiveForDate(c);
-    			thisArchive = hmap.get(arname);
-    			if(thisArchive == null) {
-    				thisArchive = ArchiveFactory.createArchive(archiveSettings, wiki, arname, delimeter);    				
-    				hmap.put(arname, thisArchive);
+            log.debug("Archiving item: {}", item);
+            Archive targetArchive = defaultArchive;
+            Calendar itemDate = null;
+            if (archiveSettings.needItemDate() || archiveSettings.isSplitByPeriod()) {
+                // TODO: Make new page item class with a lazy date detection
+                itemDate = getNewPagesItemDate(wiki, item);
+            }
+            if (archiveSettings.isSplitByPeriod() && itemDate != null) {
+                String arname = archiveSettings.getArchiveForDate(itemDate);
+                targetArchive = hmap.get(arname);
+                if (targetArchive == null) {
+                    targetArchive = ArchiveFactory.createArchive(archiveSettings, wiki, arname,
+                            delimeter);
+                    hmap.put(arname, targetArchive);
     			}
     		}
-            thisArchive.add(item, c);
+            targetArchive.add(item, itemDate);
     	}    	
 
         List<String> archiveNames = hmap.keySet().stream().sorted().collect(Collectors.toList());

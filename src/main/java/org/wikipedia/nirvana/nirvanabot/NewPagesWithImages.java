@@ -83,8 +83,9 @@ public class NewPagesWithImages extends NewPages {
     public NewPagesWithImages(PortalParam param, PageFormatter pageFormatter, SystemTime systemTime,
             NirvanaWiki commons, ImageFinder imageFinder) {
         super(param, pageFormatter, systemTime);
-		if(this.archiveSettings!=null) {
-			this.archiveSettings = null;
+        if (this.archiveSettings.archive != null) {
+            // TODO: Handle this in the apropriate place please. 
+            this.archiveSettings.archive = null;
 		}
         this.formatString = formatString.replace(BotVariables.FILE_NAME, "%4$s");
 		this.imageFinder = imageFinder;
@@ -196,7 +197,8 @@ public class NewPagesWithImages extends NewPages {
 		        }
 		    }
 		}
-		
+
+        // TODO: Is this needed?
 		ArrayList<String> archiveItems = new ArrayList<String>();
 		int oldCount = 0;
 		int archiveCount = 0;
@@ -236,7 +238,7 @@ public class NewPagesWithImages extends NewPages {
 		        	}
 		        } else {
 		        	log.debug("ARCHIVE old line: \t"+oldItems[i]);
-		        	if(archive!=null) {		        		
+                    if (archiveSettings.withArchive()) {
 		        		archiveItems.add(oldItems[i]);
 		        	}
 		        	archiveCount++;
@@ -246,7 +248,7 @@ public class NewPagesWithImages extends NewPages {
 
 		Data d = new Data();
         d.newText = pageFormatter.formatPage(subset);
-		if(archive!=null && archiveItems!=null && archiveItems.size()>0) {
+        if (archiveSettings.withArchive() && archiveItems != null && archiveItems.size() > 0) {
 			d.archiveText = StringUtils.join(archiveItems.toArray(),delimeter) + "\n";
 			//if(archiveSettings!=null)
 				d.archiveItems = archiveItems;

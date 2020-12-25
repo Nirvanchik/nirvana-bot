@@ -71,12 +71,16 @@ public class ArchiveSimple extends Archive {
     // TODO: date is not required here. Add method to add page without date.
     @Override
     public void add(String item, @Nullable Calendar creationDate) {
-        this.newLines++;
         if (this.addToTop) {
             items.add(0, item);
         } else {
             items.add(item);
         }
+    }
+
+    @Override
+    public int newItemsCount() {
+        return items.size();
     }
 
     @Override
