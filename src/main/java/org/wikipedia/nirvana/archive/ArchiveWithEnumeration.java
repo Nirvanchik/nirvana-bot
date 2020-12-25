@@ -75,18 +75,25 @@ public class ArchiveWithEnumeration extends ArchiveSimple {
         super.add(str, creationDate);
     }
 
-    // TODO: Use StringBuilder
     @Override
     public String toString() {
         String old = oldText;
         if (!old.isEmpty()) {
             old += "\n";
         }
-        if (addToTop) {
-            return OL + "\n" + StringUtils.join(items, "\n") + "\n" + old + OL_END;
-        } else {
-            return OL + "\n" + old + StringUtils.join(items, "\n") + "\n" + OL_END;
+        StringBuilder buf = new StringBuilder();
+        buf.append(OL).append("\n");
+        if (!addToTop) {
+            buf.append(old);
         }
+        for (String item: items) {
+            buf.append(item).append("\n");
+        }
+        if (addToTop) {
+            buf.append(old);
+        }
+        buf.append(OL_END);
+        return buf.toString();
     }
 
     @Override

@@ -268,10 +268,8 @@ public class ArchiveWithHeaders extends Archive {
                     }
                 }
             }
-            String str = StringUtils.join(items, "\n");
-            if (!str.isEmpty()) {
-                buf.append(str);
-                buf.append("\n");
+            for (String item: items) {
+                buf.append(item).append("\n");
             }
             if (enumeration == Enumeration.HTML && (!trancated || hasOL)) {
                 buf.append(OL_END);
