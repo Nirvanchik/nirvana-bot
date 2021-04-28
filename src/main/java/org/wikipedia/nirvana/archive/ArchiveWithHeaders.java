@@ -263,17 +263,26 @@ public class ArchiveWithHeaders extends Archive {
             // TODO: May be do this convertion separately and globally after parsing?
             // Convert usual enumeration symbols (#,*) in the old items if this section is old
             // and enum
-            if (!trancated && !this.hasOL && !this.hasOLEnd && this.old &&
-                    (enumeration == Enumeration.HTML || enumeration == Enumeration.HTML_GLOBAL)) {
-                for (int i = 0; i < items.size(); i++) {
-                    String item = items.get(i);
-                    if (!item.startsWith("<li>")) {
-                        if (item.startsWith("#") || item.startsWith("*")) {
-                            item = "<li>" + item.substring(1);
-                        } else {
-                            item = "<li> " + item;
+            if (!trancated && !this.hasOL && !this.hasOLEnd && this.old) {
+                if (enumeration == Enumeration.HTML || enumeration == Enumeration.HTML_GLOBAL) {
+                    for (int i = 0; i < items.size(); i++) {
+                        String item = items.get(i);
+                        if (!item.startsWith("<li>")) {
+                            if (item.startsWith("#") || item.startsWith("*")) {
+                                item = "<li>" + item.substring(1);
+                            } else {
+                                item = "<li> " + item;
+                            }
+                            items.set(i, item);
                         }
-                        items.set(i, item);
+                    }
+                } else if (enumeration == Enumeration.HASH) {
+                    for (int i = 0; i < items.size(); i++) {
+                        String item = items.get(i);
+                        if (item.startsWith("*")) {
+                            item = "#" + item.substring(1);
+                            items.set(i, item);
+                        }
                     }
                 }
             }

@@ -1356,4 +1356,29 @@ public class NirvanaBotTest {
         run("076_new_pages_archive_update_with_2headers_bottom_skipped_header.js");
     }
 
+    /**
+     * Test case 077.
+     * Summary: .
+     * Similar tests: 064.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_hash_enum_add() throws TestError {
+        run("077_new_pages_archive_update_with_2headers_hash_enum_add.js");
+    }
+
+    /**
+     * Test case 078.
+     * Summary: .
+     * Similar tests: 064, 077.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_hash_enum_update() throws TestError {
+        run("078_new_pages_archive_update_with_2headers_hash_enum_update.js");
+    }
 }
