@@ -50,6 +50,13 @@ import javax.security.auth.login.LoginException;
 // be: [E, B, C, D, F] where E is newer that B, C, D. So, E will be archived and create section E'.
 // Then B, C, D will be archived and the bot will think that whey are newer than last section (E')
 // but they are not.
+// TODO: Algorithm is bad 2.
+// If archive was multiheader and changed to singleheader it will work strangely.
+// TODO: Algorithm is bad 3. It's too difficult and tricky.
+// Don't break sections randomly if HTML enumeration is used.
+// Find section border and take full section. Get rid of "trancated" and "hasOl" "hasOlEnd" flags.
+// Header-to-multiheader may be not working good too.
+// TODO: May be separate out enumeration logic to some delegate class or to another extending class.
 /**
  * Archive page that has headers.
  * Currently supports one or two levels of headers.
@@ -126,6 +133,7 @@ public class ArchiveWithHeaders extends Archive {
         protected String superHeaderText;
         private ArrayList<String> items;
         private boolean hasOL = false;
+        private boolean hasOLEnd = false;
         // The only porpose of this flag - for toString() method, for archive with custom HTML
         // enumeration, for the case when new pages settings switches classic '*'/'#' enumeration
         // to HTML enumeration for archive and old archive still has '*'/'#' enumerated items that
@@ -135,8 +143,9 @@ public class ArchiveWithHeaders extends Archive {
         // HTML enumerated and current settings require HTML enumeration, read and parse all archive
         // and add HTML enumeration everywhere.
         /**
-         * True means that archive was not fully parsed. Some part of the archive was skipped
-         * and some section can be not fully parsed (trancated). Used by HTML-enumeration logic.
+         * True means that this section was not fully parsed and HTML OL section was broken.
+         * Some part of the archive was skipped and some section can be not fully parsed
+         * (trancated). Used by HTML-enumeration logic.
          * Old section which was trancated and which was not HTML-enumerated cannot be
          * HTML-enumerated.
          */
@@ -254,8 +263,8 @@ public class ArchiveWithHeaders extends Archive {
             // TODO: May be do this convertion separately and globally after parsing?
             // Convert usual enumeration symbols (#,*) in the old items if this section is old
             // and enum
-            if (!trancated && !this.hasOL && this.old && (enumeration == Enumeration.HTML ||
-                    enumeration == Enumeration.HTML_GLOBAL)) {
+            if (!trancated && !this.hasOL && !this.hasOLEnd && this.old &&
+                    (enumeration == Enumeration.HTML || enumeration == Enumeration.HTML_GLOBAL)) {
                 for (int i = 0; i < items.size(); i++) {
                     String item = items.get(i);
                     if (!item.startsWith("<li>")) {
@@ -271,7 +280,7 @@ public class ArchiveWithHeaders extends Archive {
             for (String item: items) {
                 buf.append(item).append("\n");
             }
-            if (enumeration == Enumeration.HTML && (!trancated || hasOL)) {
+            if (enumeration == Enumeration.HTML && (!trancated || hasOLEnd)) {
                 buf.append(OL_END);
                 buf.append("\n");
             }
@@ -288,7 +297,7 @@ public class ArchiveWithHeaders extends Archive {
             String str = item;
             if (enumeration == Enumeration.HTML_GLOBAL ||
                     (enumeration == Enumeration.HTML && 
-                        (this.hasOL || !this.trancated))) {
+                        (this.hasOL || this.hasOLEnd || !this.trancated))) {
                 if (item.startsWith("#") || item.startsWith("*")) {
                     str = "<li>" + item.substring(1);
                 } else {
@@ -322,6 +331,9 @@ public class ArchiveWithHeaders extends Archive {
             items.add(0, enumItem(item));
         }
 
+        // TODO: This algorithm is corrupt. If empty sections appear one by one,
+        //   with only header and nothing more it can promote normal header to superheader
+        //   and break all.
         /**
          * Sets header or top-level header for this section.
          * Should be used when parsing old archive items.
@@ -411,23 +423,31 @@ public class ArchiveWithHeaders extends Archive {
         
         if (this.enumeration == Enumeration.HTML_GLOBAL) {            
             buf.append(OL_END);
+            buf.append("\n");
         }
         
         return buf.toString();
     }
-    
+
     void parseTop(String[] lines) {
+        int olTrancateCount = 0;
         int i = 0;
         while (i < lines.length && lines[i].isEmpty()) i++;
-        if (i < lines.length && lines[i].compareToIgnoreCase(OL) == 0) i++;
-        else if (i < lines.length && lines[i].startsWith(OL)) {
+        if (i < lines.length && lines[i].compareToIgnoreCase(OL) == 0) {
+            i++;
+            olTrancateCount++;
+        } else if (i < lines.length && lines[i].startsWith(OL)) {
             lines[i] = lines[i].substring(OL.length());
+            olTrancateCount++;
         }
         int j = lines.length - 1;
         while (j >= 0 && lines[j].isEmpty()) j--;
-        if (j >= 0 && lines[j].compareToIgnoreCase(OL_END) == 0) j--;
-        else if (j >= 0 && lines[j].endsWith(OL_END)) {
+        if (j >= 0 && lines[j].compareToIgnoreCase(OL_END) == 0 && olTrancateCount > 0)  {
+            j--;
+            olTrancateCount--;
+        } else if (j >= 0 && lines[j].endsWith(OL_END) && olTrancateCount > 0) {
             lines[j] = lines[j].substring(0, lines[j].length() - OL.length());
+            olTrancateCount--;
         }
         int first = 0;
         int last = (j - i) > numberOfItemsToParse ? numberOfItemsToParse - 1 : j;
@@ -473,6 +493,7 @@ public class ArchiveWithHeaders extends Archive {
                     part.hasOL = true;
                 } else if (item.compareToIgnoreCase("</ol>") == 0) {
                     part.trancated = false;
+                    part.hasOLEnd = true;
                 } else {
                     part.addOldItemToEnd(item);
                 }
@@ -483,11 +504,17 @@ public class ArchiveWithHeaders extends Archive {
     void parseBottom(String[] lines) {    
         int i = 0;
         while (i < lines.length && lines[i].isEmpty()) i++;
-        if (i < lines.length && lines[i].compareToIgnoreCase(OL) == 0) i++;
+        if (enumeration == Enumeration.HTML_GLOBAL && i < lines.length &&
+                lines[i].compareToIgnoreCase(OL) == 0) {
+            i++;
+        }
         int j = lines.length - 1;
         while (j >= 0 && lines[j].isEmpty()) j--;
-        if (j >= 0 && lines[j].compareToIgnoreCase(OL_END) == 0) j--;
-        
+        if (enumeration == Enumeration.HTML_GLOBAL && j >= 0 &&
+                lines[j].compareToIgnoreCase(OL_END) == 0) {
+            j--;
+        }
+
         int first;
         int last;
         last = j;
@@ -504,43 +531,46 @@ public class ArchiveWithHeaders extends Archive {
 
     void parseBottomLines(String [] oldItems, int first, int last) {
         
-        Pattern p = Pattern.compile("^==(=?)(\\s*)(?<headername>[^=]+)(\\s*)(=?)==$");
+        Pattern headerPattern = Pattern.compile("^==(=?)(\\s*)(?<headername>[^=]+)(\\s*)(=?)==$");
         Section part = null;
         boolean wasHeader = false;
         boolean trancated = !this.archivePartialText.isEmpty();
         for (int i = last; i >= first; i--) {
             String item = oldItems[i];
             if (item.isEmpty()) continue;
-            Matcher m = p.matcher(item);
+            Matcher headerMatcher = headerPattern.matcher(item);
             if (part == null) {
                 part = createSection(enumeration,true);
                 part.trancated = trancated;
                 parts.add(0,part);
             }
-            if (m.matches()) {    
+            if (headerMatcher.matches()) {    
                 wasHeader = true;
                 part.trancated = false;
                 if (part.getHeader() == null) {
-                    part.pushHeader(m.group("headername").trim(),item);
+                    part.pushHeader(headerMatcher.group("headername").trim(),item);
                 } else if (part.getHeader() != null && part.getSuperHeader() == null &&
                         (StringTools.countPaddedCharsAtLeft(part.getHeaderText(), '=') >
                                   StringTools.countPaddedCharsAtLeft(item, '='))) {
-                    part.pushSuperHeader(m.group("headername").trim(),item);
+                    part.pushSuperHeader(headerMatcher.group("headername").trim(),item);
                 } else {
-                    part = createSection(enumeration,m.group("headername").trim(),item,true);
+                    // Empty section case
+                    part = createSection(enumeration, headerMatcher.group("headername").trim(),
+                            item, true);
                     part.trancated = trancated;
                     parts.add(0,part);
                 } 
             } else {
                 if (item.equalsIgnoreCase(OL)) {
                     part.trancated = false;
+                    part.hasOL = true;
                 } else if (item.equalsIgnoreCase(OL_END)) {
                     if (wasHeader) {
                         part = createSection(enumeration,true);
                         part.trancated = trancated;
                         parts.add(0,part);
                     }
-                    part.hasOL = true;
+                    part.hasOLEnd = true;
                 } else {
                     if (wasHeader) {
                         part = createSection(enumeration,true);
@@ -769,6 +799,7 @@ public class ArchiveWithHeaders extends Archive {
         }
     }
 
+    // TODO: Linear search is slow
     private int findSuperHeader(String hh) {
         int index = -1;
         Section part = null;

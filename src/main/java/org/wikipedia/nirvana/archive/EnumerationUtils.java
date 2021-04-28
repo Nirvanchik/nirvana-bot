@@ -39,11 +39,14 @@ public class EnumerationUtils {
      */
     public static String trimEnumerationAndWhitespace(String text) {
         String oldText = text.trim();
+        int olTrancateCount = 0;
         if (oldText.startsWith(OL)) {
-            oldText = oldText.substring(OL.length());        
+            oldText = oldText.substring(OL.length());
+            olTrancateCount++;
         }
-        if (oldText.endsWith(OL_END)) {
+        if (oldText.endsWith(OL_END) && olTrancateCount > 0) {
             oldText = oldText.substring(0, oldText.length() - OL_END.length());
+            olTrancateCount--;
         }
         oldText = oldText.trim();
         return oldText;

@@ -16,6 +16,7 @@
 					"|категория = Собаки",
 					"|страница = Проект:Project 1/Новые статьи",
 					"|архив = Проект:Project 1/Новые статьи/Архив",
+					"|параметры архива = снизу",
 					"|формат заголовка в архиве = == %(год) ==",
 					"|формат подзаголовка в архиве = === %(месяц) ===",
 					"|элементов = 6",
@@ -36,7 +37,9 @@
                 "text": [
 				"== 2020 ==",
 				"=== январь ===",
-				"* [[Старая собака]]"]
+				"* [[Старая собака]]",
+				"=== март ===",
+				"=== апрель ==="]
             }
 		],
 		"firstRevision": [
@@ -62,13 +65,16 @@
 				"revid": 690, "timestamp": "2020-02-14T20:18:40Z", "title": "Белый пудель", "summary": "create new page",
 				"user" : "MegaUser 7", "minor": false, "bot": false, "rvnew": true, "size": 50
 			}, {
-				"revid": 690, "timestamp": "2020-01-24T19:20:40Z", "title": "Мегадог", "summary": "create new page",
+				"revid": 691, "timestamp": "2020-01-24T19:20:40Z", "title": "Мегадог", "summary": "create new page",
 				"user" : "MegaUser 8", "minor": false, "bot": false, "rvnew": true, "size": 50
 			}, {
-				"revid": 690, "timestamp": "2020-02-14T19:19:40Z", "title": "Странный пёс", "summary": "create new page",
+				"revid": 692, "timestamp": "2020-02-14T19:19:40Z", "title": "Странный пёс", "summary": "create new page",
 				"user" : "MegaUser 8", "minor": false, "bot": false, "rvnew": true, "size": 50
 			}, {
-				"revid": 690, "timestamp": "2020-02-14T19:18:40Z", "title": "Тайский бегемот", "summary": "create new page",
+				"revid": 693, "timestamp": "2020-02-14T19:18:40Z", "title": "Тайский бегемот", "summary": "create new page",
+				"user" : "MegaUser 8", "minor": false, "bot": false, "rvnew": true, "size": 50
+			}, {
+				"revid": 694, "timestamp": "2020-01-30T19:18:40Z", "title": "Бельгийская кошка", "summary": "create new page",
 				"user" : "MegaUser 8", "minor": false, "bot": false, "rvnew": true, "size": 50
 			}
 		]
@@ -99,13 +105,15 @@
 			"title": "Проект:Project 1/Новые статьи/Архив",
 			"text": [
 			    "== 2020 ==",
-				"=== февраль ===",
-				"* [[Гонконский штрудель]]",
-				"* [[Тайский бегемот]]",
-				"* [[Странный пёс]]",
 				"=== январь ===",
-				"* [[Мегадог]]",
                 "* [[Старая собака]]",
+				"* [[Мегадог]]",
+				"=== март ===",
+				"=== апрель ===",
+				"=== февраль ===",
+				"* [[Странный пёс]]",
+				"* [[Тайский бегемот]]",
+				"* [[Гонконский штрудель]]",
 				""
 			],
 			"section": -2

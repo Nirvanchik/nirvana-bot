@@ -898,7 +898,7 @@ public class NewPages implements PortalModule{
     	if(archiveSettings.isSingle()) {
     		defaultArhiveName = archiveSettings.archive;    		
     	} else {
-    		defaultArhiveName = archiveSettings.getArchiveForDate(Calendar.getInstance());
+            defaultArhiveName = archiveSettings.getArchiveForDate(systemTime.now());
     	}
         defaultArchive = ArchiveFactory.createArchiveAndRead(archiveSettings, wiki,
                 defaultArhiveName);

@@ -1177,4 +1177,183 @@ public class NirvanaBotTest {
                 BOT_CONFIG_RU_TESTARCH_PATH);
     }
 
+    /**
+     * Test case 064.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 056.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_html_enum_add() throws TestError {
+        run("064_new_pages_archive_update_with_2headers_html_enum_add.js");
+    }
+
+    /**
+     * Test case 065.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 056, 064.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_html_enum_update() throws TestError {
+        run("065_new_pages_archive_update_with_2headers_html_enum_update.js");
+    }
+
+    /**
+     * Test case 066.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 056, 064.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_html_enumglob_add() throws TestError {
+        run("066_new_pages_archive_update_with_2headers_html_enumglob_add.js");
+    }
+
+    /**
+     * Test case 065.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 056, 064.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_html_enumglob_update() throws TestError {
+        run("067_new_pages_archive_update_with_2headers_html_enumglob_update.js");
+    }
+
+    /**
+     * Test case 068.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 056, 062.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_fastload_html_enum_add() throws TestError {
+        run("068_new_pages_archive_update_with_2headers_fastload_html_enum_add.js",
+                BOT_CONFIG_RU_TESTARCH_PATH);
+    }
+
+    /**
+     * Test case 069.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 056, 062, 068.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_fastload_html_enum_update()
+            throws TestError {
+        run("069_new_pages_archive_update_with_2headers_fastload_html_enum_update.js",
+                BOT_CONFIG_RU_TESTARCH_PATH);
+    }
+
+    /**
+     * Test case 070.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 056, 062, 068.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_fastload_html_enumglob_add()
+            throws TestError {
+        run("070_new_pages_archive_update_with_2headers_fastload_html_enumglob_add.js",
+                BOT_CONFIG_RU_TESTARCH_PATH);
+    }
+
+    /**
+     * Test case 071.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 056, 062, 068, 069.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_fastload_html_enumglob_update()
+            throws TestError {
+        run("071_new_pages_archive_update_with_2headers_fastload_html_enumglob_update.js",
+                BOT_CONFIG_RU_TESTARCH_PATH);
+    }
+
+    /**
+     * Test case 072.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 053, 056, 058.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_bottom_html_enum_add() throws TestError {
+        run("072_new_pages_archive_update_with_2headers_bottom_html_enum_add.js");
+    }
+
+    /**
+     * Test case 073.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 053, 056, 058, 072.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_bottom_html_enum_update() throws TestError {
+        run("073_new_pages_archive_update_with_2headers_bottom_html_enum_update.js");
+    }
+
+    /**
+     * Test case 074.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 053, 056, 058, 072.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_bottom_html_enumglob_add()
+            throws TestError {
+        run("074_new_pages_archive_update_with_2headers_bottom_html_enumglob_add.js");
+    }
+
+    /**
+     * Test case 075.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 053, 056, 058, 072, 073.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_bottom_html_enumglob_update()
+            throws TestError {
+        run("075_new_pages_archive_update_with_2headers_bottom_html_enumglob_update.js");
+    }
+
+    // TODO: Broken (invalid header order)
+    /**
+     * Test case 058.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     * Similar tests: 049, 053, 056.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_with_2headers_bottom_skipped_header() throws TestError {
+        run("076_new_pages_archive_update_with_2headers_bottom_skipped_header.js");
+    }
+
 }
