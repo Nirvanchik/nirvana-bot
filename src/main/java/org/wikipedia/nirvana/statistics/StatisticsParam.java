@@ -22,7 +22,7 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
-import org.wikipedia.nirvana.archive.ArchiveProcessingSettings;
+import org.wikipedia.nirvana.archive.ScanArchiveSettings;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ import java.util.List;
  *
  */
 public class StatisticsParam {
-    public ArchiveProcessingSettings archiveSettings;
+    public ScanArchiveSettings archiveSettings;
 	public String archive;
 	public List<String> reportTypes;
 	public boolean sort;

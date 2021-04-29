@@ -23,36 +23,11 @@
 
 package org.wikipedia.nirvana.archive;
 
-import javax.annotation.Nullable;
 
-// TODO: Split it to separate classes.
 /**
- * Class to keep settings of archive update rules, wiki page locations and processing rules.
- * Used by StatisticsBot and FixArchiveBot.
+ * Class to keep settings of archive processing and updating rules.
  */
-public class ArchiveProcessingSettings extends ArchiveSettings {
-    private static int START_YEAR_DEFAULT = 2003;
-    /**
-     * Starting year of Wiki Project new pages archive.
-     * Used by StatisticsBot and FixArchiveBot.
-     */
-    public int startYear;
-    /**
-     * Second starting year of Wiki Project new pages archive.
-     * Used when the first archive page has multiple years merged.
-     * The next year after them will be set by this parameter.
-     * Used by StatisticsBot and FixArchiveBot.
-     */
-    public int startYear2;
-    /**
-     * First archive wiki page.
-     * Used to mark a year by year archive page which does not match "archive" parameter.
-     * Usually this is a wiki page with multiple years merged into one.
-     * Used by StatisticsBot and FixArchiveBot.
-     */
-    @Nullable
-    public String firstArchive;
-
+public class ArchiveProcessingSettings extends ScanArchiveSettings {
     /**
      * Flag for processing existing archive. If <code>true</code> archive should be sorted according
      * to new page creation dage and 'addToTop' parameter.
@@ -65,28 +40,9 @@ public class ArchiveProcessingSettings extends ArchiveSettings {
     public boolean removeDuplicates;
 
     /**
-     * Sets starting year of this archive.
-     */
-    public static void setDefaultStartYear(int year) {
-        START_YEAR_DEFAULT = year;
-    }
-
-    /**
-     * @return starting year of this archive.
-     */
-    public static int getDefaultStartYear() {
-        return START_YEAR_DEFAULT;
-    }
-
-    /**
      * Constructs instance of ArchiveProcessingSettings.
      */
     public ArchiveProcessingSettings() {
         super();
-        startYear = START_YEAR_DEFAULT;
-        startYear2 = -1;
-        firstArchive = null;
-        sorted = false;
-        removeDuplicates = false;
     }
 }

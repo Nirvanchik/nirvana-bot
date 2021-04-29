@@ -27,9 +27,9 @@ import static org.wikipedia.nirvana.util.OptionsUtils.validateIntegerSetting;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.BasicBot;
-import org.wikipedia.nirvana.archive.ArchiveProcessingSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.archive.ScanArchiveSettings;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
@@ -125,17 +125,17 @@ public class StatisticsBot extends BasicBot {
 		
 		USE_CACHE_ONLY = properties.getProperty("use-cache-only",USE_CACHE_ONLY?YES:NO).equals(YES);
 		log.info("use cache only: "+(USE_CACHE_ONLY?YES:NO));
-		
-        ArchiveProcessingSettings.setDefaultStartYear(
+
+        ScanArchiveSettings.setDefaultStartYear(
                 validateIntegerSetting(properties, "archive-start-year",
-                        ArchiveProcessingSettings.getDefaultStartYear(), false));
-		
+                        ScanArchiveSettings.getDefaultStartYear(), false));
+
 		RatingTotal.setDefaultStartYear(
 				validateIntegerSetting(properties,"rating-total-start-year", RatingTotal.getDefaultStartYear(), false));
-		
+
 		return true;
 	}
-	
+
 	protected void showStatus(String status, StopWatch w) {
 		w.stop();
 		log.info(String.format(STATUS_INFO_FORMAT,status,w));
@@ -376,7 +376,7 @@ public class StatisticsBot extends BasicBot {
 	}
 
 	private boolean readPortalSettings(Map<String, String> options, StatisticsParam params) {
-        params.archiveSettings = new ArchiveProcessingSettings();
+        params.archiveSettings = new ScanArchiveSettings();
 		params.archive = null;
         String key = "архив";
 		if (options.containsKey(key) && !options.get(key).isEmpty())
@@ -534,7 +534,7 @@ public class StatisticsBot extends BasicBot {
 		return suboptions;
 	}
 
-    static ArrayList<String> parseArchiveSettings(ArchiveProcessingSettings archiveSettings,
+    static ArrayList<String> parseArchiveSettings(ScanArchiveSettings archiveSettings,
             String settings) {
         Localizer localizer = Localizer.getInstance();
         List<String> items = OptionsUtils.optionToList(settings);
