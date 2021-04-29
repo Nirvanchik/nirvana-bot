@@ -25,7 +25,6 @@ package org.wikipedia.nirvana.fixarchive;
 
 import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveFactory;
-import org.wikipedia.nirvana.archive.ArchiveProcessingSettings;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;

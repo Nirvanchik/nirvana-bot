@@ -21,8 +21,9 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana.archive;
+package org.wikipedia.nirvana.fixarchive;
 
+import org.wikipedia.nirvana.archive.ScanArchiveSettings;
 
 /**
  * Class to keep settings of archive processing and updating rules.

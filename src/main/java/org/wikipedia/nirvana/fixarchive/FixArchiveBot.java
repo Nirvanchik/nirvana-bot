@@ -29,7 +29,6 @@ import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_TOSORT;
 
 import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.archive.Archive;
-import org.wikipedia.nirvana.archive.ArchiveProcessingSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.archive.EnumerationUtils;
