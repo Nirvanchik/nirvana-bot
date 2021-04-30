@@ -255,28 +255,12 @@ public class ArchiveWithHeaders extends Archive {
                 buf.append(headerText);
                 buf.append("\n");
             }
-            if (enumeration == Enumeration.HTML && (!trancated || hasOL)) {
-                buf.append(OL);
-                buf.append("\n");
-            }
             // TODO: Merge this code with enumItem()?
             // TODO: May be do this convertion separately and globally after parsing?
             // Convert usual enumeration symbols (#,*) in the old items if this section is old
             // and enum
             if (!trancated && !this.hasOL && !this.hasOLEnd && this.old) {
-                if (enumeration == Enumeration.HTML || enumeration == Enumeration.HTML_GLOBAL) {
-                    for (int i = 0; i < items.size(); i++) {
-                        String item = items.get(i);
-                        if (!item.startsWith("<li>")) {
-                            if (item.startsWith("#") || item.startsWith("*")) {
-                                item = "<li>" + item.substring(1);
-                            } else {
-                                item = "<li> " + item;
-                            }
-                            items.set(i, item);
-                        }
-                    }
-                } else if (enumeration == Enumeration.HASH) {
+                if (enumeration == Enumeration.HASH) {
                     for (int i = 0; i < items.size(); i++) {
                         String item = items.get(i);
                         if (item.startsWith("*")) {
@@ -289,10 +273,6 @@ public class ArchiveWithHeaders extends Archive {
             for (String item: items) {
                 buf.append(item).append("\n");
             }
-            if (enumeration == Enumeration.HTML && (!trancated || hasOLEnd)) {
-                buf.append(OL_END);
-                buf.append("\n");
-            }
             return buf.toString();
         }
 
@@ -304,15 +284,7 @@ public class ArchiveWithHeaders extends Archive {
          */
         public String enumItem(String item) {
             String str = item;
-            if (enumeration == Enumeration.HTML_GLOBAL ||
-                    (enumeration == Enumeration.HTML && 
-                        (this.hasOL || this.hasOLEnd || !this.trancated))) {
-                if (item.startsWith("#") || item.startsWith("*")) {
-                    str = "<li>" + item.substring(1);
-                } else {
-                    str = "<li> " + item;
-                }
-            } else if (enumeration == Enumeration.HASH) {
+            if (enumeration == Enumeration.HASH) {
                 if (str.startsWith("#")) {
                     // do nothing
                 } else if (str.startsWith("*")) {
@@ -411,10 +383,6 @@ public class ArchiveWithHeaders extends Archive {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        if (this.enumeration == Enumeration.HTML_GLOBAL) {
-            buf.append(OL);
-            buf.append("\n");
-        }
         if (!addToTop) {
             buf.append(this.archivePartialText);
         }
@@ -428,11 +396,6 @@ public class ArchiveWithHeaders extends Archive {
             if (!archivePartialText.endsWith("\n")) { 
                 buf.append("\n");
             }
-        }
-        
-        if (this.enumeration == Enumeration.HTML_GLOBAL) {            
-            buf.append(OL_END);
-            buf.append("\n");
         }
         
         return buf.toString();
@@ -513,16 +476,8 @@ public class ArchiveWithHeaders extends Archive {
     void parseBottom(String[] lines) {    
         int i = 0;
         while (i < lines.length && lines[i].isEmpty()) i++;
-        if (enumeration == Enumeration.HTML_GLOBAL && i < lines.length &&
-                lines[i].compareToIgnoreCase(OL) == 0) {
-            i++;
-        }
         int j = lines.length - 1;
         while (j >= 0 && lines[j].isEmpty()) j--;
-        if (enumeration == Enumeration.HTML_GLOBAL && j >= 0 &&
-                lines[j].compareToIgnoreCase(OL_END) == 0) {
-            j--;
-        }
 
         int first;
         int last;

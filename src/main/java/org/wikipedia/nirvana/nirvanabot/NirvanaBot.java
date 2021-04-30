@@ -52,10 +52,6 @@ import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_DEFAULT;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_DELETE;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_ENUMERATE_WITH_HASH;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_ENUMERATE_WITH_HASH2;
-import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_ENUMERATE_WITH_HTML;
-import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_ENUMERATE_WITH_HTML2;
-import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_ENUMERATE_WITH_HTML_GLOBAL;
-import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_ENUMERATE_WITH_HTML_GLOBAL2;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_LEAVE;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_MARK;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_NEW_TITLE;
@@ -1596,16 +1592,6 @@ public class NirvanaBot extends BasicBot{
                 items.contains(STR_ENUMERATE_WITH_HASH2)) {
 			cnt++;
 			archiveSettings.enumeration = Enumeration.HASH;
-		}
-        if (items.contains(STR_ENUMERATE_WITH_HTML) ||
-                items.contains(STR_ENUMERATE_WITH_HTML2)) {
-			cnt++;
-			archiveSettings.enumeration = Enumeration.HTML;
-		}
-        if (items.contains(STR_ENUMERATE_WITH_HTML_GLOBAL) ||
-                items.contains(STR_ENUMERATE_WITH_HTML_GLOBAL2)) {
-			cnt++;
-			archiveSettings.enumeration = Enumeration.HTML_GLOBAL;
 		}
 		if(cnt>1) {
 			archiveSettings.enumeration = Enumeration.NONE;

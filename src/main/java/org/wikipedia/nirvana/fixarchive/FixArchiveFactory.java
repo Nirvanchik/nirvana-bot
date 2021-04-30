@@ -56,10 +56,6 @@ public class FixArchiveFactory extends ArchiveFactory {
                 throw new IllegalArgumentException("Sort command is not supported for archives "
                         + "with headers");
             }
-            if (archiveSettings.hasHtmlEnumeration()) {
-                throw new IllegalArgumentException("Sort command is not supported for archives "
-                        + "with html enumeration");
-            }
             String [] lines = new String[0];
             archive = new ArchiveSimpleSorted(wiki, lines, archiveSettings.addToTop);
         } else {

@@ -100,10 +100,6 @@ public class PortalConfig {
     public static String STR_DELETE;
     public static String STR_ENUMERATE_WITH_HASH;
     public static String STR_ENUMERATE_WITH_HASH2;
-    public static String STR_ENUMERATE_WITH_HTML;
-    public static String STR_ENUMERATE_WITH_HTML2;
-    public static String STR_ENUMERATE_WITH_HTML_GLOBAL;
-    public static String STR_ENUMERATE_WITH_HTML_GLOBAL2;
     public static String STR_LEAVE;
     public static String STR_NEW_TITLE;
     public static String STR_MARK;
@@ -189,10 +185,6 @@ public class PortalConfig {
         STR_DELETE = localizer.localize("удалять");
         STR_ENUMERATE_WITH_HASH = localizer.localize("нумерация решетками");
         STR_ENUMERATE_WITH_HASH2 = localizer.localize("нумерация решётками");
-        STR_ENUMERATE_WITH_HTML = localizer.localize("нумерация кодом html");
-        STR_ENUMERATE_WITH_HTML2 = localizer.localize("нумерация кодом HTML");
-        STR_ENUMERATE_WITH_HTML_GLOBAL = localizer.localize("глобальная нумерация кодом html");
-        STR_ENUMERATE_WITH_HTML_GLOBAL2 = localizer.localize("глобальная нумерация кодом HTML");
         STR_NEW_TITLE = localizer.localize("новое название");
         STR_LEAVE = localizer.localize("оставлять");
         STR_MARK = localizer.localize("помечать");

@@ -86,10 +86,6 @@ public class ArchiveSettings {
         NONE,
         // bot adds #
         HASH,
-        // bot adds html tags. Every paragraph has independent enumeration
-        HTML,
-        // bot adds html tags. Enumeration is global through the whole archive page.
-        HTML_GLOBAL,
         // ?
         DETECT
     }
@@ -182,13 +178,6 @@ public class ArchiveSettings {
      */
     public boolean needItemDate() {
         return hasHeaders();
-    }
-
-    /**
-     * @return <code>true</code> if archive has html enumeration.
-     */
-    public boolean hasHtmlEnumeration() {
-        return (enumeration == Enumeration.HTML || enumeration == Enumeration.HTML_GLOBAL);
     }
 
     /**

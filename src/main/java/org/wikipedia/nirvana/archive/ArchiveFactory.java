@@ -71,11 +71,7 @@ public class ArchiveFactory {
             String name) throws IOException {
         log.debug("Creating archive: {}", name);
         if (!archiveSettings.hasHeaders()) {
-            if (!archiveSettings.hasHtmlEnumeration()) {
-                return new ArchiveSimple(archiveSettings.addToTop);
-            } else {
-                return new ArchiveWithEnumeration(archiveSettings.addToTop);
-            }
+            return new ArchiveSimple(archiveSettings.addToTop);
         } else {
             return new ArchiveWithHeaders(archiveSettings.parseCount,
                     archiveSettings.addToTop, archiveSettings.enumeration,
