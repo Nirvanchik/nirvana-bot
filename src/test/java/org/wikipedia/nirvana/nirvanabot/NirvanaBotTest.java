@@ -921,22 +921,6 @@ public class NirvanaBotTest {
     }
 
     /**
-     * Test case 047.
-     * Summary: when bot updates new pages it must also update archive page with removed items. User
-     *     added requirement to add html enumeration, so we must do that. Old items in archive are
-     *     not HTML-enumerated, so bot must convert them - add html enumeration for older items.
-     * Similar tests: 042, 045.
-     *
-     * PORTAL SETTINGS:
-     *   type = "новые статьи"
-     */
-    @Ignore ("It's broken. Please fix it.")
-    @Test
-    public void new_pages_archive_update_html_enumeration_convert_old() throws TestError {
-        run("047_new_pages_archive_update_html_enumeration_convert_old.js");
-    }
-
-    /**
      * Test case 049.
      * Summary: when bot updates new pages it must also update archive page with removed items.
      * Similar tests: 042.
