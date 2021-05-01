@@ -140,7 +140,7 @@ public class PageFormatter {
      */
     public void substPlaceholdersIfNeed() {
         header = substAllParams(header);
-        footer = substAllParams(footer);
+        footer = StringTools.trimRight(substAllParams(footer));
     }
 
     private long now() {
@@ -213,8 +213,9 @@ public class PageFormatter {
             PortalConfig portalConfig = new PortalConfig(options);
             headerLastUsed = portalConfig.getUnescaped(PortalConfig.KEY_HEADER,
                     globalSettings.getDefaultHeader());
-            footerLastUsed = portalConfig.getUnescaped(PortalConfig.KEY_FOOTER,
-                    globalSettings.getDefaultFooter());
+            footerLastUsed = StringTools.trimRight(
+                    portalConfig.getUnescaped(PortalConfig.KEY_FOOTER,
+                            globalSettings.getDefaultFooter()));
         }
     }
 

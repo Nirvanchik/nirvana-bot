@@ -940,6 +940,44 @@ public class NirvanaBotTest {
     }
 
     /**
+     * Test case 046.
+     * Summary: footer must be added at the bottom of the page (there was no footer before update).
+     * Similar tests: 025.
+     */
+    @Test
+    public void new_pages_add_footer() throws TestError {
+        run("046_new_pages_add_footer.js");
+    }
+
+    /**
+     * Test case 047.
+     * Summary: footer must be added at the bottom of the page (there was the same footer in the
+     * page before update).
+     * Similar tests: 026, 046.
+     */
+    @Test
+    public void new_pages_update_footer() throws TestError {
+        run("047_new_pages_update_footer.js");
+    }
+
+    /**
+     * Test case 048.
+     * Summary: footer must be added at the bottom of the page
+     * Scenario:
+     *   - There was the same footer in the page and in bot settings, and that footer has some
+     *   whitespace at the beginning;
+     *   - Bot updates portal page and correctly leaves footer.
+     *   - empty lines at the end of footer must be trancated as MediaWiki itself trancates trailing
+     *   new lines.
+     *
+     * Similar tests: 047, 045.
+     */
+    @Test
+    public void new_pages_update_footer_with_trailing_whitespace() throws TestError {
+        run("048_new_pages_update_footer_with_trailing_whitespace.js");
+    }
+
+    /**
      * Test case 049.
      * Summary: when bot updates new pages it must also update archive page with removed items.
      * Similar tests: 042.
