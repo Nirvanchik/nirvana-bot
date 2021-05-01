@@ -645,7 +645,7 @@ public class NirvanaBotTest {
      *   - User edited portal page and added some whitespace before header;
      *   - Bot updates portal page and correctly leaves header (but it's ok to remove whitespace).
      *
-     * Similar tests: 027, 026.
+     * Similar tests: 027, 026, 045.
      *
      * PORTAL SETTINGS:
      *   type = "новые статьи"
@@ -918,6 +918,25 @@ public class NirvanaBotTest {
     @Test
     public void new_pages_archive_create() throws TestError {
         run("044_new_pages_archive_create.js");
+    }
+
+    /**
+     * Test case 045.
+     * Summary: header must be added at the top of the page
+     * Scenario:
+     *   - There was the same header in the page and in bot settings, and that header has some
+     *   whitespace at the beginning;
+     *   - Bot updates portal page and correctly leaves header.
+     *
+     * Similar tests: 027, 028.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     *   header = \n === Новые статьи на тему Собаки === \n
+     */
+    @Test
+    public void new_pages_update_header_with_whitespace() throws TestError {
+        run("045_new_pages_update_header_with_whitespace.js");
     }
 
     /**
