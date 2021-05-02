@@ -59,7 +59,10 @@ public abstract class BaseImageFinder implements ImageFinder {
 
     protected String findImageByRegex(String wikiText, Pattern pattern, String tag,
             boolean checkExists) throws IOException {
-        if (wikiText == null || wikiText.isEmpty()) {
+        if (wikiText == null) {
+            throw new NullPointerException("wikiText argument must not be null");
+        }
+        if (wikiText.isEmpty()) {
             return null;
         }
         Matcher m = pattern.matcher(wikiText);

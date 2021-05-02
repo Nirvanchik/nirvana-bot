@@ -54,8 +54,16 @@ public class ImageFinderTest {
             "image file,Фото,портрет,Изображение,Файл,File";
     public static final String PICTURE_SEARCH_TAGS_RU_EXTRA = 
             "image file,Фото,портрет,Изображение,Файл,File,флаг";
+    public static final String PICTURE_SEARCH_TAGS_RU_CUSTOM =
+            "Валюта:Изображение;Монета:Аверс,Реверс;image file,Фото,портрет,Изображение,Файл,File";
 
     private static final String ARTICLE_WITH_IMAGE_IN_CARD = "ru_image_in_card.txt";
+    private static final String ARTICLE_WITH_IMAGE_IN_CARD_ONELINER =
+            "ru_image_in_card_oneliner.txt";
+    private static final String ARTICLE_WITH_IMAGE_IN_CARD_IMAGE_WIKICODE =
+            "ru_image_in_card_image_wikicode.txt";
+    private static final String ARTICLE_WITH_IMAGE_IN_CARD_WITH_CUSTOM_TAG =
+            "ru_image_in_card_with_custom_tag.txt";
     private static final String ARTICLE_WITH_MANY_IMAGES_IN_CARD = "ru_many_images_in_card.txt";
     private static final String ARTICLE_WITH_IMAGE_IN_TEXT = "ru_image_in_text.txt";
     private static final String ARTICLE_WITH_MANY_IMAGES_IN_TEXT = "ru_many_images_in_text.txt";
@@ -156,7 +164,43 @@ public class ImageFinderTest {
         
         Assert.assertEquals("Standard of the President of the Russian Federation.svg", result);
     }
-    
+
+    @Test
+    public void findInCard_findsImageInCard_imageFromWikicode() throws IOException {
+        String article = FileTools.readFile(TEST_DATA_PATH +
+                ARTICLE_WITH_IMAGE_IN_CARD_IMAGE_WIKICODE);
+        when(wiki.exists(eq("File:Julius_Caesar_(1914).jpg"))).thenReturn(true);
+
+        ImageFinder finder = new ImageFinderInCard(wiki, commons, PICTURE_SEARCH_TAGS_RU);
+        String result = finder.findImage(article);
+        
+        Assert.assertEquals("Julius_Caesar_(1914).jpg", result);
+    }
+
+    @Test
+    public void findInCard_findsImageInCard_templateOneLiner() throws IOException {
+        String article = FileTools.readFile(TEST_DATA_PATH +
+                ARTICLE_WITH_IMAGE_IN_CARD_ONELINER);
+        when(wiki.exists(eq("File:Jirina-sedlackova.jpg"))).thenReturn(true);
+
+        ImageFinder finder = new ImageFinderInCard(wiki, commons, PICTURE_SEARCH_TAGS_RU);
+        String result = finder.findImage(article);
+        
+        Assert.assertEquals("Jirina-sedlackova.jpg", result);
+    }
+
+    @Test
+    public void findInCard_findsImageByCustomTag() throws IOException {
+        String article = FileTools.readFile(TEST_DATA_PATH +
+                ARTICLE_WITH_IMAGE_IN_CARD_WITH_CUSTOM_TAG);
+        when(wiki.exists(eq("File:АР Крим аверс.jpg"))).thenReturn(true);
+
+        ImageFinder finder = new ImageFinderInCard(wiki, commons, PICTURE_SEARCH_TAGS_RU_CUSTOM);
+        String result = finder.findImage(article);
+        
+        Assert.assertEquals("АР Крим аверс.jpg", result);
+    }
+
     @Test
     public void findInText_returnsNullIfImageDoesNotExist() throws IOException {
         String article = FileTools.readFile(TEST_DATA_PATH + ARTICLE_WITH_IMAGE_IN_TEXT);

@@ -110,6 +110,12 @@ public class ImageFinderInCard extends BaseImageFinder {
         return findImageByRegex(text, pattern, DEFAULT_REGEX_IMAGE_TAG, false);
     }
 
+    // TODO: Stop using dummy regex here and rewrite this shit code.
+    //     RE like "|image=(.+?)\n" does not work for complex code where image is enveloped into
+    //     multiline template. It also badly works for one-liner templates.
+    //     So to parse this it is a bad idea to use simple regex.
+    //     We should parse template code into key/value pairs and iterate through it.
+    //     In the iterated value we can check if image is template and should be parsed again.
     private String checkImage(String wikiText, String regexToFindImage) throws IOException {
         Matcher m = Pattern.compile(
                 regexToFindImage,
@@ -122,25 +128,35 @@ public class ImageFinderInCard extends BaseImageFinder {
             // it happened to be non-existing and we return with null and don't check what
             // it is further in the article text
             // This should be made with using some kind of iterator rather then just return value
-            if (image == null || image.isEmpty()) {
+            if (image.isEmpty()) {
                 continue;
             }
             if (image.contains("{{")) {
                 image = finderInTemplates.checkImageIsImageTemplate(image);
             } else if (image.contains("[[")) {
                 image = findImageByRegexSimple(image, ImageFinderInBody.PATTERN_TO_FIND_IMAGE);
-            } 
-            if (image != null && image.contains("|")) {
+            }
+            if (image == null || image.isEmpty()) {
+                continue;
+            }
+            if (image.contains("|")) {
+                // One-liner template case
+                // Example: {{персона|изображение = Jirina-sedlackova.jpg|other param = 100500}}
                 image = StringUtils.strip(image.substring(0, image.indexOf('|')));
+            }
+            if (image.isEmpty()) {
+                continue;
             }
             // TODO: May be rewrite this with a better fix or better RE?
             // TODO: Cover this in tests.
             // TODO: Add right trim.
             // Workaround against [#73]
-            if (image != null && image.contains("}}")) {
+            if (image.contains("}}")) {
+                // One-liner template case
+                // Example: {{персона|изображение = Jirina-sedlackova.jpg}}
                 image = StringUtils.strip(image.substring(0, image.indexOf("}}")));
             }
-            if (image == null || image.isEmpty() || image.contains(">") || image.contains("<")) {
+            if (image.contains(">") || image.contains("<")) {
                 continue;
             }
             if (checkImageExists(image)) {

@@ -483,18 +483,7 @@ public class NirvanaBotTest {
      */
     @Test
     public void newPages_images() throws TestError {
-        String config = "015_new_pages_with_images_everywhere.js";
-        // TODO(Nirvanchik): mock it with Mockito.
-        // Not possible to mock with Mockito currently.
-        // Service spyService = Mockito.spy(Service.PETSCAN);
-        // Mockito.when(spyService.supportsFeature(ServiceFeatures.NEWPAGES_WITH_TEMPLATE))
-        //         .thenReturn(false);
-        Service.setTestFeatures(ServiceFeatures.NEWPAGES | ServiceFeatures.FAST_MODE);
-        MockNirvanaBot bot =
-                new MockNirvanaBot(BasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
-        bot.run(new String[]{BOT_CONFIG_DEFAULT_PATH});
-        bot.validateQueries();
-        bot.validateEdits();
+        run("015_new_pages_with_images_everywhere.js");
     }
 
     /**
@@ -1214,4 +1203,16 @@ public class NirvanaBotTest {
     public void new_pages_archive_update_with_2headers_hash_enum_update() throws TestError {
         run("078_new_pages_archive_update_with_2headers_hash_enum_update.js");
     }
+
+    /**
+     * Test case 080.
+     * Summary: New pages with images should find pages with images. Image should be checked for
+     * existance. If image doesn't exist in main wiki it should exist in Commons.
+     * Similar tests: 014.
+     */
+    @Test
+    public void newPages_images_from_commons() throws TestError {
+        run("080_new_pages_with_images_from_commons.js");
+    }
+
 }
