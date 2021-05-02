@@ -92,8 +92,8 @@ public class ImageFinderTest {
         String articleFile = "ru_no_images.txt";
         String article = FileTools.readFile(TEST_DATA_PATH + articleFile);
 
-        ImageFinder finder = new ImageFinderInCard(PICTURE_SEARCH_TAGS_RU);
-        String result = finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInCard(wiki, commons, PICTURE_SEARCH_TAGS_RU);
+        String result = finder.findImage(article);
         
         Assert.assertNull(result);
     }
@@ -103,8 +103,8 @@ public class ImageFinderTest {
         String articleFile = "ru_no_images.txt";
         String article = FileTools.readFile(TEST_DATA_PATH + articleFile);
         
-        ImageFinder finder = new ImageFinderInBody();
-        String result = finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInBody(wiki, commons);
+        String result = finder.findImage(article);
         
         Assert.assertNull(result);
     }
@@ -114,8 +114,8 @@ public class ImageFinderTest {
         String article = FileTools.readFile(TEST_DATA_PATH + ARTICLE_WITH_IMAGE_IN_CARD);
         when(wiki.exists(eq("File:Julius_Caesar_(1914).jpg"))).thenReturn(true);
 
-        ImageFinder finder = new ImageFinderInCard(PICTURE_SEARCH_TAGS_RU);
-        String result = finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInCard(wiki, commons, PICTURE_SEARCH_TAGS_RU);
+        String result = finder.findImage(article);
         
         Assert.assertEquals("Julius_Caesar_(1914).jpg", result);
     }
@@ -125,8 +125,8 @@ public class ImageFinderTest {
         String article = FileTools.readFile(TEST_DATA_PATH + ARTICLE_WITH_IMAGE_IN_TEXT);
         when(wiki.exists(eq("File:BIPOLAR-Dave Tyo Headbang CBGB.jpg"))).thenReturn(true);
 
-        ImageFinder finder = new ImageFinderInBody();
-        String result = finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInBody(wiki, commons);
+        String result = finder.findImage(article);
         
         Assert.assertEquals("BIPOLAR-Dave Tyo Headbang CBGB.jpg", result);
     }
@@ -137,8 +137,8 @@ public class ImageFinderTest {
         when(wiki.exists(eq("File:Julius_Caesar_(1914).jpg"))).thenReturn(false);
         when(commons.exists(eq("File:Julius_Caesar_(1914).jpg"))).thenReturn(false);
 
-        ImageFinder finder = new ImageFinderInCard(PICTURE_SEARCH_TAGS_RU);
-        String result = finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInCard(wiki, commons, PICTURE_SEARCH_TAGS_RU);
+        String result = finder.findImage(article);
         
         Assert.assertNull(result);
     }
@@ -151,8 +151,8 @@ public class ImageFinderTest {
         when(wiki.exists(eq("File:Standard of the President of the Russian Federation.svg")))
                 .thenReturn(true);
 
-        ImageFinder finder = new ImageFinderInCard(PICTURE_SEARCH_TAGS_RU_EXTRA);
-        String result = finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInCard(wiki, commons, PICTURE_SEARCH_TAGS_RU_EXTRA);
+        String result = finder.findImage(article);
         
         Assert.assertEquals("Standard of the President of the Russian Federation.svg", result);
     }
@@ -163,8 +163,8 @@ public class ImageFinderTest {
         when(wiki.exists(eq("File:BIPOLAR-Dave Tyo Headbang CBGB.jpg"))).thenReturn(false);
         when(commons.exists(eq("File:BIPOLAR-Dave Tyo Headbang CBGB.jpg"))).thenReturn(false);
 
-        ImageFinder finder = new ImageFinderInBody();
-        String result = finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInBody(wiki, commons);
+        String result = finder.findImage(article);
         
         Assert.assertNull(result);
     }
@@ -176,8 +176,8 @@ public class ImageFinderTest {
         when(commons.exists(eq("File:RMK05.jpg"))).thenReturn(false);
         when(wiki.exists(eq("File:Mormuska.JPG"))).thenReturn(true);
 
-        ImageFinder finder = new ImageFinderInBody();
-        String result = finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInBody(wiki, commons);
+        String result = finder.findImage(article);
         
         Assert.assertEquals("Mormuska.JPG", result);
     }
@@ -188,8 +188,8 @@ public class ImageFinderTest {
         when(wiki.exists(eq("File:Julius_Caesar_(1914).jpg"))).thenReturn(false);
         when(commons.exists(eq("File:Julius_Caesar_(1914).jpg"))).thenReturn(false);
 
-        ImageFinder finder = new ImageFinderInCard(PICTURE_SEARCH_TAGS_RU);
-        finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInCard(wiki, commons, PICTURE_SEARCH_TAGS_RU);
+        finder.findImage(article);
         
         Mockito.verify(wiki).exists(eq("File:Julius_Caesar_(1914).jpg"));
     }
@@ -200,8 +200,8 @@ public class ImageFinderTest {
         when(wiki.exists(eq("File:BIPOLAR-Dave Tyo Headbang CBGB.jpg"))).thenReturn(false);
         when(commons.exists(eq("File:BIPOLAR-Dave Tyo Headbang CBGB.jpg"))).thenReturn(false);
 
-        ImageFinder finder = new ImageFinderInBody();
-        finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInBody(wiki, commons);
+        finder.findImage(article);
         
         Mockito.verify(wiki).exists(eq("File:BIPOLAR-Dave Tyo Headbang CBGB.jpg"));
     }
@@ -212,8 +212,8 @@ public class ImageFinderTest {
         when(wiki.exists(eq("File:Julius_Caesar_(1914).jpg"))).thenReturn(false);
         when(commons.exists(eq("File:Julius_Caesar_(1914).jpg"))).thenReturn(false);
 
-        ImageFinder finder = new ImageFinderInCard(PICTURE_SEARCH_TAGS_RU);
-        finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInCard(wiki, commons, PICTURE_SEARCH_TAGS_RU);
+        finder.findImage(article);
         
         Mockito.verify(commons).exists(eq("File:Julius_Caesar_(1914).jpg"));
     }
@@ -224,8 +224,8 @@ public class ImageFinderTest {
         when(wiki.exists(eq("File:BIPOLAR-Dave Tyo Headbang CBGB.jpg"))).thenReturn(false);
         when(commons.exists(eq("File:BIPOLAR-Dave Tyo Headbang CBGB.jpg"))).thenReturn(false);
 
-        ImageFinder finder = new ImageFinderInBody();
-        finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInBody(wiki, commons);
+        finder.findImage(article);
         
         Mockito.verify(commons).exists(eq("File:BIPOLAR-Dave Tyo Headbang CBGB.jpg"));
     }
@@ -238,8 +238,8 @@ public class ImageFinderTest {
                 eq("File:Vladimir Putin and Aleksandr Lukashenko, BRICS summit 2015 04.jpg")))
                         .thenReturn(true);
 
-        ImageFinder finder = new ImageFinderInCard(PICTURE_SEARCH_TAGS_RU);
-        String result = finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInCard(wiki, commons, PICTURE_SEARCH_TAGS_RU);
+        String result = finder.findImage(article);
         
         Assert.assertEquals("Vladimir Putin and Aleksandr Lukashenko, BRICS summit 2015 04.jpg",
                 result);
@@ -254,8 +254,8 @@ public class ImageFinderTest {
                 ARTICLE_WITH_IMAGE_IN_TEMPLATE_IN_CARD_MULTILINE);
         when(wiki.exists(eq("File:Beatles ad 1965.JPG"))).thenReturn(true);
 
-        ImageFinder finder = new ImageFinderInCard(PICTURE_SEARCH_TAGS_RU);
-        String result = finder.findImage(wiki, commons, article);
+        ImageFinder finder = new ImageFinderInCard(wiki, commons, PICTURE_SEARCH_TAGS_RU);
+        String result = finder.findImage(article);
         
         Assert.assertEquals("Beatles ad 1965.JPG", result);
     }

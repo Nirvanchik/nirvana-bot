@@ -129,12 +129,10 @@ public class NewPagesWithImages extends NewPages {
                     FileTools.dump(article, page.getPage());
                 }
             }
-            String image = imageFinder.findImage(wiki, commons, article);
+            String image = imageFinder.findImage(article);
             if (image != null && checkImageFree(wiki, image)) {	
-            	//log.debug("found pattern");
-            	//String image = m.group("filename").trim();	                	
-            	log.debug("image found = "+image);
-            	
+                log.debug("Image found: {}", image);
+
             		if(page==null) {
                         // TODO: This looks ugly. Revision object is actually fake.
                         page = new RevisionWithImage(wiki, revId, OffsetDateTime.now(), title, "",

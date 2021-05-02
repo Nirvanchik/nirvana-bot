@@ -1392,15 +1392,15 @@ public class NirvanaBot extends BasicBot{
         } else if (type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_CARD) ||
                 type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_CARD_OLD)) {
             data.portalModule = new NewPagesWithImages(param, pageFormatter, systemTime, commons,
-                    new ImageFinderInCard(param.imageSearchTags));
+                    new ImageFinderInCard(wiki, commons, param.imageSearchTags));
         } else if (type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_TEXT) ||
                 type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_IN_TEXT_OLD) ) {
             data.portalModule = new NewPagesWithImages(param, pageFormatter, systemTime, commons,
-                    new ImageFinderInBody());
+                    new ImageFinderInBody(wiki, commons));
         } else if (type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES) ||
                 type.equals(LIST_TYPE_NEW_PAGES_WITH_IMAGES_OLD)) {
             data.portalModule = new NewPagesWithImages(param, pageFormatter, systemTime, commons,
-                    new ImageFinderUniversal(param.imageSearchTags));
+                    new ImageFinderUniversal(wiki, commons, param.imageSearchTags));
         } else if (type.equals(LIST_TYPE_NEW_PAGES_7_DAYS) ||
                 type.equals(LIST_TYPE_NEW_PAGES_7_DAYS_OLD)) {
             data.portalModule = new NewPagesWeek(param, pageFormatter, systemTime);

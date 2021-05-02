@@ -1,6 +1,6 @@
 /**
- *  @(#)ImageFinderInBody.java 23/08/2012
- *  Copyright © 2013 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)ImageFinderInBody.java
+ *  Copyright © 2013 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,25 +29,27 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 /**
- * @author kin
- *
+ * Searches image in wiki page text.
  */
-public class ImageFinderInBody extends ImageFinder {
+public class ImageFinderInBody extends BaseImageFinder {
     static final String REGEX_TO_FIND_IMAGE =
             "\\[\\[(Image|File|Файл|Изображение):(?<filename>[^\\|\\]]+)";
-	static final Pattern PATTERN_TO_FIND_IMAGE = Pattern.compile(REGEX_TO_FIND_IMAGE);
+    static final Pattern PATTERN_TO_FIND_IMAGE = Pattern.compile(REGEX_TO_FIND_IMAGE);
 
-	/**
-	 * 
-	 */
-	public ImageFinderInBody() {
-		// nothing to do
-	}
+    /**
+     * Public constructor.
+     */
+    public ImageFinderInBody(NirvanaWiki wiki, NirvanaWiki commons) {
+        super(wiki, commons);
+    }
 
-	@Override
-	public String findImage(NirvanaWiki wiki, NirvanaWiki commons, String article) throws IOException {
-        return findImageByRegex(wiki, commons, null, article, PATTERN_TO_FIND_IMAGE, "filename");
-	}
-	
-
+    @Override
+    public String findImage(String wikiText) throws IOException {
+        return findImageByRegex(wikiText, PATTERN_TO_FIND_IMAGE, "filename");
+    }
+    
+    private String findImageByRegex(String article, Pattern pattern, String tag)
+            throws IOException {
+        return findImageByRegex(article, pattern, tag, true);
+    }
 }

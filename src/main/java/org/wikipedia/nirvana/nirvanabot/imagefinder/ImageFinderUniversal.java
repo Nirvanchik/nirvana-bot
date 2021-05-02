@@ -1,6 +1,6 @@
 /**
- *  @(#)ImageFinderUniversal.java 23/08/2012
- *  Copyright © 2013 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)ImageFinderUniversal.java
+ *  Copyright © 2013 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,32 +28,28 @@ import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import java.io.IOException;
 
 /**
- * @author kin
- *
+ * Searches image in all places of wiki page - in page text and in article card.
  */
-public class ImageFinderUniversal extends ImageFinder {
-	ImageFinderInCard finder1;
-	ImageFinderInBody finder2;
+public class ImageFinderUniversal implements ImageFinder {
+    ImageFinderInCard finder1;
+    ImageFinderInBody finder2;
 
-	/**
-	 * 
-	 */
-	public ImageFinderUniversal(String param) {
-		finder1 = new ImageFinderInCard(param);
-		finder2 = new ImageFinderInBody();
-	}
+    /**
+     * Public constructor.
+     */
+    public ImageFinderUniversal(NirvanaWiki wiki, NirvanaWiki commons, String param) {
+        super();
+        finder1 = new ImageFinderInCard(wiki, commons, param);
+        finder2 = new ImageFinderInBody(wiki, commons);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.ImageFinder#findImage(org.wikipedia.nirvana.NirvanaWiki, java.lang.String)
-	 */
-	@Override
-	public String findImage(NirvanaWiki wiki, NirvanaWiki commons, String article)
-			throws IOException {
-		String image = finder1.findImage(wiki, commons, article);
-		if(image!=null)
-			return image;
-		image = finder2.findImage(wiki, commons, article);
-		return image;
-	}
-
+    @Override
+    public String findImage(String wikiText) throws IOException {
+        String image = finder1.findImage(wikiText);
+        if (image != null) {
+            return image;
+        }
+        image = finder2.findImage(wikiText);
+        return image;
+    }
 }

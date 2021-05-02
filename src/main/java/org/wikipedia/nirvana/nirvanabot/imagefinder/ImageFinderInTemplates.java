@@ -1,5 +1,5 @@
 /**
- *  @(#)ImageFinderInTemplates.java 17.02.2017
+ *  @(#)ImageFinderInTemplates.java
  *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
