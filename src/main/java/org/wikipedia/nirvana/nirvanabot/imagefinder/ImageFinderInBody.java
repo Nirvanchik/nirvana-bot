@@ -45,11 +45,6 @@ public class ImageFinderInBody extends BaseImageFinder {
 
     @Override
     public String findImage(String wikiText) throws IOException {
-        return findImageByRegex(wikiText, PATTERN_TO_FIND_IMAGE, "filename");
-    }
-    
-    private String findImageByRegex(String article, Pattern pattern, String tag)
-            throws IOException {
-        return findImageByRegex(article, pattern, tag, true);
-    }
+        return findImageByRegex(wikiText, PATTERN_TO_FIND_IMAGE, "filename", true);
+    }    
 }
