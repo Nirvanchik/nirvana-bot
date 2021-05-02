@@ -40,10 +40,6 @@ NOTICE text
 src/main/java/org/wikipedia/nirvana/cleanarchive/CleanArchiveBot.java
 src/main/java/org/wikipedia/nirvana/ListTools.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/DiscussedPages.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/imagefinder/ImageFinder.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/imagefinder/ImageFinderInBody.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/imagefinder/ImageFinderInCard.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/imagefinder/ImageFinderUniversal.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/NewPages.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/NewPagesWeek.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/NewPagesWithImages.java -text
