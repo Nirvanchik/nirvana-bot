@@ -7336,11 +7336,15 @@ public class Wiki implements Serializable
                     .flatMap(cookieHeader -> HttpCookie.parse(cookieHeader).stream())
                     .forEach(cookie -> store.add(null, cookie));
 
+                List<String> encoding = headerFields.getOrDefault("Content-Encoding",
+                        Arrays.asList(new String[]{""})); 
+                boolean zipped_ = !encoding.isEmpty() ? encoding.get(0).equals("gzip"): false;
+
                 // get the text
                 String line;
                 StringBuilder text = new StringBuilder(100000);
                 try (BufferedReader in = new BufferedReader(new InputStreamReader(
-                    zipped ? new GZIPInputStream(connection.getInputStream()) : connection.getInputStream(), "UTF-8")))
+                    zipped_ ? new GZIPInputStream(connection.getInputStream()) : connection.getInputStream(), "UTF-8")))
                 {
                     while ((line = in.readLine()) != null)
                     {
@@ -7552,8 +7556,7 @@ public class Wiki implements Serializable
         URLConnection u = new URL(url).openConnection();
         u.setConnectTimeout(CONNECTION_CONNECT_TIMEOUT_MSEC);
         u.setReadTimeout(CONNECTION_READ_TIMEOUT_MSEC);
-        if (zipped)
-            u.setRequestProperty("Accept-encoding", "gzip");
+        u.setRequestProperty("Accept-encoding", "gzip");
         u.setRequestProperty("User-Agent", useragent);
         return u;
     }
