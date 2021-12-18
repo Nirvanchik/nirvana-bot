@@ -40,6 +40,16 @@ import java.util.logging.Logger;
  * new line symbols. Merge operations supported: union, intersection and subtraction. *
  */
 public class ListTools {
+
+    Logger log = Logger.getLogger(ListTools.class.getSimpleName());
+
+    /**
+     * Empty constructor.
+     */
+    public ListTools() {
+        // empty
+    }
+
     enum Command {
         NONE,
         SUBSTRACTION,
@@ -48,11 +58,70 @@ public class ListTools {
     }
 
     /**
+     * Merge two files specified by file name.
+     *
+     * @param cmd merge command.
+     * @param leftFileName file name of the left file
+     * @param rightFileName file name of the right file
+     * @param outFileName file name of the result file
+     */
+    public void merge(Command cmd, String leftFileName, String rightFileName,
+            String outFileName) throws IOException {
+        List<String> lines1;
+        try {
+            lines1 = FileTools.readFileToList(leftFileName, FileTools.UTF8, true);
+        } catch (IOException e1) {
+            log.severe("Failed to read file: " + leftFileName);
+            throw e1;
+        }
+        List<String> lines2;
+        try {
+            lines2 = FileTools.readFileToList(rightFileName, FileTools.UTF8, true);
+        } catch (IOException e1) {
+            log.severe("Failed to read file: " + rightFileName);
+            throw e1;
+        }
+        if (lines1.size() == 0) {
+            log.severe("The first list is empty");
+            throw new IllegalArgumentException();
+        }
+        if (lines2.size() == 0) {
+            log.severe("The second list is empty");
+            throw new IllegalArgumentException();
+        }
+        String [] lines3 = null;
+        switch (cmd) {
+            case SUBSTRACTION:
+                lines3 = ArrayUtils.relativeComplement(
+                        lines1.toArray(new String[0]), lines2.toArray(new String[0]));
+                break;
+            case INTERSECTION:
+                lines3 = ArrayUtils.intersection(
+                        lines1.toArray(new String[0]), lines2.toArray(new String[0]));
+                break;
+            case UNION:
+                log.severe("Union command not supported. Sorry!");
+                throw new IllegalArgumentException();
+            default:
+                log.severe("Unexpected command: " + cmd);
+                throw new IllegalArgumentException();
+        }
+        String text = StringUtils.join(lines3, "\r\n");
+        try (OutputStreamWriter sw = new OutputStreamWriter(new FileOutputStream(
+                new File(outFileName)), "UTF-8")) {
+            sw.write(text);
+        }        
+    }
+
+    /**
      * Entry point.
      */
-    public static void main(String[] args) {
-        Logger log = Logger.getLogger(ListTools.class.getSimpleName());
+    public static void main(String[] args) throws IOException {
         if (args.length == 0) {
+            System.out.println("List merge utility. Command line:\n"
+                    + "> java -jar listtools.jar "
+                    + "COMMAND -left <LEFT FILE> -right <RIGHT FILE> [-out <OUT FILE>]\n"
+                    + "Commands: intersect, subtract, union.");
             return;
         }
         Command cmd = Command.NONE;
@@ -60,11 +129,11 @@ public class ListTools {
         String list2 = "";
         String out = "";
         for (String str: args) {
-            if (str.startsWith("-sub")) {
+            if (str.startsWith("sub")) {
                 cmd = Command.SUBSTRACTION;
-            } else if (str.startsWith("-uni")) {
+            } else if (str.startsWith("uni")) {
                 cmd = Command.UNION;
-            } else if (str.startsWith("-int")) {
+            } else if (str.startsWith("int")) {
                 cmd = Command.INTERSECTION;
             } else if (str.startsWith("-left:")) {
                 list1 = str.substring(6);
@@ -82,62 +151,16 @@ public class ListTools {
                 out = str.substring(5);
             }
         }
-        if (cmd == Command.NONE || list1.isEmpty() || list2.isEmpty()) {
+        if (cmd == Command.NONE) {
+            return;
+        }
+        if (list1.isEmpty() || list2.isEmpty()) { 
             return;
         }
         if (out.isEmpty()) {
             out = "out_" + cmd.toString() + ".txt";            
         }
 
-        List<String> lines1;
-        try {
-            lines1 = FileTools.readFileToList(list1, FileTools.UTF8, true);
-        } catch (IOException e1) {
-            log.severe("Failed to read file: " + list1);
-            return;
-        }
-        List<String> lines2;
-        try {
-            lines2 = FileTools.readFileToList(list2, FileTools.UTF8, true);
-        } catch (IOException e1) {
-            log.severe("Failed to read file: " + list2);
-            return;
-        }
-        if (lines1.size() == 0) {
-            log.severe("The first list is empty");
-            return;
-        }
-        if (lines2.size() == 0) {
-            log.severe("The second list is empty");
-            return;
-        }
-        String [] lines3 = null;
-        switch (cmd) {
-            case SUBSTRACTION:
-                lines3 = ArrayUtils.relativeComplement(
-                        lines1.toArray(new String[0]), lines2.toArray(new String[0]));
-                break;
-            case INTERSECTION:
-                lines3 = ArrayUtils.intersection(
-                        lines1.toArray(new String[0]), lines2.toArray(new String[0]));
-                break;
-            case UNION:
-                log.severe("Union command not supported. Sorry!");
-                return;
-            default:
-                log.severe("Unexpected command: " + cmd);
-                return;
-        }
-        String text = StringUtils.join(lines3, "\r\n");
-        try {
-            FileOutputStream os = new FileOutputStream(new File(out));
-            OutputStreamWriter sw = new OutputStreamWriter(os,"UTF-8");
-            sw.write(text);
-            sw.close();
-            os.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        new ListTools().merge(cmd, list1, list2, out);
     }
 }
