@@ -24,56 +24,63 @@
 package org.wikipedia.nirvana.error;
 
 /**
- * @author kin
+ * Exception that raised when some third party service returns unexpected output that looks like 
+ * the service made a mistake. Instead of using corrupt data we fail current update procedure,
+ * and retry it is allowed by bot logic.
  *
  */
 public class ServiceError extends Exception {
 
-	/**
-     * Serial ID 
+    /**
+     * Serial ID.
      */
     private static final long serialVersionUID = 1L;
 
-	/**
-	 * Default constructor
-	 */
-	public ServiceError() {
-	}
+    /**
+     * Default constructor.
+     */
+    public ServiceError() {
+    }
 
-	/**
-	 * Constructor with text message
-	 * @param message text message
-	 */
-	public ServiceError(String message) {
-		super(message);
-	}
+    /**
+     * Constructor with text message.
+     *
+     * @param message the detail message
+     */
+    public ServiceError(String message) {
+        super(message);
+    }
 
-	/**
-	 * Constructor with exception
-	 * @param cause exception, that caused this error
-	 */
-	public ServiceError(Throwable cause) {
-		super(cause);
-	}
+    /**
+     * Constructor with exception.
+     *
+     * @param cause exception, that caused this error
+     */
+    public ServiceError(Throwable cause) {
+        super(cause);
+    }
 
-	/**
-	 * Constructor with text message and exception
-	 * @param message
-	 * @param cause
-	 */
-	public ServiceError(String message, Throwable cause) {
-		super(message, cause);
-	}
+    /**
+     * Constructor with text message and exception.
+     *
+     * @param message the detail message
+     * @param cause exception, that caused this error
+     */
+    public ServiceError(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	/**
-	 * Customized constructor 
-	 * @param message
-	 * @param cause
-	 * @param enableSuppression
-	 * @param writableStackTrace
-	 */
-	public ServiceError(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);		
-	}
-
+    /**
+     * Constructs a new exception with the specified detail message,cause, suppression enabled or
+     * disabled, and writable stacktrace enabled or disabled.
+     *
+     * @param message the detail message
+     * @param cause exception, that caused this error
+     * @param enableSuppression whether or not suppression is enabledor disabled
+     * @param writableStackTrace whether or not the stack trace shouldbe writable
+     */
+    public ServiceError(String message, Throwable cause, boolean enableSuppression,
+            boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);        
+    }
 }
