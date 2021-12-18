@@ -20,16 +20,15 @@
  * WARNING: This file may contain Russian characters.
  * This file is encoded with UTF-8.
  * */
+
 package org.wikipedia.nirvana.tool;
 
 import org.wikipedia.ArrayUtils;
-import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.util.FileTools;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -37,59 +36,60 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * @author kin
- *
+ * Simple utility application that can merge text files that contain lists of items separated by
+ * new line symbols. Merge operations supported: union, intersection and subtraction. *
  */
 public class ListTools {
-	enum COMMAND {
-		NONE,
-		SUBSTRACTION,
-		UNION,
-		INTERSECTION
-	}
+    enum Command {
+        NONE,
+        SUBSTRACTION,
+        UNION,
+        INTERSECTION
+    }
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		Logger log = Logger.getLogger(ListTools.class.getSimpleName());
-		if(args.length==0) {
-			return;
-		}
-		COMMAND cmd = COMMAND.NONE;
-		String list1 = "",list2="";
-		String out = "";
-		for(String str:args) {
-			if(str.startsWith("-sub")) {
-				cmd = COMMAND.SUBSTRACTION;
-			} else if(str.startsWith("-uni")) {
-				cmd = COMMAND.UNION;
-			} else if(str.startsWith("-int")) {
-				cmd = COMMAND.INTERSECTION;
-			} else if(str.startsWith("-left:")) {
-				list1 = str.substring(6);
-			} else if(str.startsWith("-list1:")) {
-				list1 = str.substring(7);
-			} else if(str.startsWith("-a:")) {
-				list1 = str.substring(3);
-			}else if(str.startsWith("-right:")) {
-				list2 = str.substring(7);
-			} else if(str.startsWith("-list2:")) {
-				list2 = str.substring(7);
-			} else if(str.startsWith("-b:")) {
-				list2 = str.substring(3);
-			} else if(str.startsWith("-out:")) {
-				out = str.substring(5);
-			}
-		}
-		if(cmd==COMMAND.NONE || list1.isEmpty() || list2.isEmpty()) {
-			return;
-		}
-		if(out.isEmpty()) {
-			out = "out_"+cmd.toString()+".txt";			
-		}
+    /**
+     * Entry point.
+     */
+    public static void main(String[] args) {
+        Logger log = Logger.getLogger(ListTools.class.getSimpleName());
+        if (args.length == 0) {
+            return;
+        }
+        Command cmd = Command.NONE;
+        String list1 = "";
+        String list2 = "";
+        String out = "";
+        for (String str: args) {
+            if (str.startsWith("-sub")) {
+                cmd = Command.SUBSTRACTION;
+            } else if (str.startsWith("-uni")) {
+                cmd = Command.UNION;
+            } else if (str.startsWith("-int")) {
+                cmd = Command.INTERSECTION;
+            } else if (str.startsWith("-left:")) {
+                list1 = str.substring(6);
+            } else if (str.startsWith("-list1:")) {
+                list1 = str.substring(7);
+            } else if (str.startsWith("-a:")) {
+                list1 = str.substring(3);
+            } else if (str.startsWith("-right:")) {
+                list2 = str.substring(7);
+            } else if (str.startsWith("-list2:")) {
+                list2 = str.substring(7);
+            } else if (str.startsWith("-b:")) {
+                list2 = str.substring(3);
+            } else if (str.startsWith("-out:")) {
+                out = str.substring(5);
+            }
+        }
+        if (cmd == Command.NONE || list1.isEmpty() || list2.isEmpty()) {
+            return;
+        }
+        if (out.isEmpty()) {
+            out = "out_" + cmd.toString() + ".txt";            
+        }
 
-		List<String> lines1;
+        List<String> lines1;
         try {
             lines1 = FileTools.readFileToList(list1, FileTools.UTF8, true);
         } catch (IOException e1) {
@@ -111,35 +111,33 @@ public class ListTools {
             log.severe("The second list is empty");
             return;
         }
-		String lines3[] = null;
-		switch(cmd) {
-			case SUBSTRACTION:
+        String [] lines3 = null;
+        switch (cmd) {
+            case SUBSTRACTION:
                 lines3 = ArrayUtils.relativeComplement(
                         lines1.toArray(new String[0]), lines2.toArray(new String[0]));
-				break;
-			case INTERSECTION:
+                break;
+            case INTERSECTION:
                 lines3 = ArrayUtils.intersection(
                         lines1.toArray(new String[0]), lines2.toArray(new String[0]));
-				break;
-			case UNION:
-				lines3 = new String[0];
-				break;
-		}
-		String text = StringUtils.join(lines3, "\r\n");
-		try {
-			//File f = new File(out);
-			//FileUtils.write(f, "Contents", "UTF-8");
-			FileOutputStream os = new FileOutputStream(new File(out));
-			OutputStreamWriter sw = new OutputStreamWriter(os,"UTF-8");
-			sw.write(text);
-			//os.write(text.getBytes());
-			sw.close();
-			os.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+                break;
+            case UNION:
+                log.severe("Union command not supported. Sorry!");
+                return;
+            default:
+                log.severe("Unexpected command: " + cmd);
+                return;
+        }
+        String text = StringUtils.join(lines3, "\r\n");
+        try {
+            FileOutputStream os = new FileOutputStream(new File(out));
+            OutputStreamWriter sw = new OutputStreamWriter(os,"UTF-8");
+            sw.write(text);
+            sw.close();
+            os.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-	}
-
+    }
 }
