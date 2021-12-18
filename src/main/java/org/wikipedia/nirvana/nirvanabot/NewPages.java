@@ -25,11 +25,11 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.ServiceError;
 import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveFactory;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListFetcher;

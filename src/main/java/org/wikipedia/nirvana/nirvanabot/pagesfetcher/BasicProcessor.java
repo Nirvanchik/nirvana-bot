@@ -25,7 +25,7 @@ package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.ServiceError;
+import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
