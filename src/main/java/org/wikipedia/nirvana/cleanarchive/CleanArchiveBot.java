@@ -414,7 +414,7 @@ public class CleanArchiveBot extends BasicBot {
                 }
 
                 try {
-                    wiki.edit(archive, text, COMMENT);
+                    wiki.edit(archive, text, comment);
                 } catch (LoginException | IOException e) {
                     log.error("Failed to update page {}", archive);
                     throw new BotFatalError(e);

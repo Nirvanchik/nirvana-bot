@@ -446,7 +446,7 @@ public class MockNirvanaBot extends NirvanaBot {
     protected NirvanaWiki createWiki(String domain, String path, String protocol,
             String language) {
         MockNirvanaWiki wiki = new MockNirvanaWiki(domain, path, protocol, language);
-        wiki.allowEdits(this.DEBUG_MODE);
+        wiki.allowEdits(this.debugMode);
         mainWiki = wiki;  // We need it to check edits when test finishes
         if (mainWikiJson != null) {
             readWiki(wiki, mainWikiJson);

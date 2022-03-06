@@ -55,7 +55,9 @@ import javax.security.auth.login.FailedLoginException;
  * 1) CONFIG
  * Write your config file in xml: config.xml
  * You may choose another file name, but specify it in command line when starting the bot:
- * java - <package_name_of_your_bot>.<YourBotClassName> <your_config_file_name>.xml
+ * <pre>
+ * java - [package_name_of_your_bot].[YourBotClassName] [your_config_file_name].xml
+ * </pre>
  * If you have special properties, load them in redefined {@link #loadCustomProperties()}
  * Use {@link #properties} to load your properties
  * 2) Bot INFO, LICENSE, USAGE
@@ -64,10 +66,10 @@ import javax.security.auth.login.FailedLoginException;
  * 3) CONSTRUCTOR
  * Write your constructor and pass int flags to default constructor
  * 4) GO
- * Implement the body of {@link go()} - the main code of what your bot
+ * Implement the body of {@link #go()} - the main code of what your bot
  * 5) MAIN
- * Implement <code>public static void main()</code> where create your bot instance with specified flags
- * and call {@link run()} to run bot. Example of typical main() function:
+ * Implement <code>public static void main()</code> and there create your bot instance with
+ * specific flags and call {@link #run()} to run bot. Example of typical main() function:
  * <pre>
  * {@code
  * public static void main(String[] args) {
@@ -85,6 +87,7 @@ public abstract class BasicBot {
     @Deprecated
     public static final int FLAG_CONSOLE_LOG = 0b0010;
     public static final int FLAG_DEFAULT_LOG = 0b0100;
+
     /**
      * Not supported. Works the same as {@link #FLAG_DEFAULT_LOG}
      */
@@ -99,10 +102,10 @@ public abstract class BasicBot {
 
     protected static Properties properties = null;
 
-	protected boolean DEBUG_MODE = false;
-	
-	public static final String YES = "yes";
-	public static final String NO = "no";
+    protected boolean debugMode = false;
+
+    public static final String YES = "yes";
+    public static final String NO = "no";
 
     /**
      * This is maxlag parameter they are talking about here:
@@ -110,74 +113,93 @@ public abstract class BasicBot {
      * Specified in seconds.
      */
     protected int maxLag = 5;
-	protected int THROTTLE_TIME_MS = 10000;
+    protected int throttleTimeMs = 10000;
 
-	protected NirvanaWiki wiki;
+    protected NirvanaWiki wiki;
 
     protected String outDir = ".";
     protected String dumpDir = DEFAULT_DUMP_DIR;
-	protected String LANGUAGE= "ru";
-	protected String DOMAIN = ".wikipedia.org";
-	protected String SCRIPT_PATH = "/w";
-	protected String PROTOCOL = "https://";
+    protected String language = "ru";
+    protected String domain = ".wikipedia.org";
+    protected String scriptPath = "/w";
+    protected String protocol = "https://";
     @LocalizedBySettings
-    protected String COMMENT = "обновление";
-	protected int flags = 0;
+    protected String comment = "обновление";
+    protected int flags = 0;
 
-	public static String LICENSE = 
-			"This program is free software: you can redistribute it and/or modify\n" +
-			"it under the terms of the GNU General Public License as published by\n" +
-			"the Free Software Foundation, either version 3 of the License, or\n" +
-			"(at your option) any later version.\n" +
-			"\n" +
-			"This program is distributed in the hope that it will be useful,\n" +
-			"but WITHOUT ANY WARRANTY; without even the implied warranty of\n" +
-			"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n" +
-			"GNU General Public License for more details.\n" +
-			"\n" +
-			"You should have received a copy of the GNU General Public License\n" +
-			"along with this program.  If not, see <http://www.gnu.org/licenses/>\n";
-	
-	public void showUsage() {
-		
-	}
+    public static String LICENSE = 
+            "This program is free software: you can redistribute it and/or modify\n" +
+            "it under the terms of the GNU General Public License as published by\n" +
+            "the Free Software Foundation, either version 3 of the License, or\n" +
+            "(at your option) any later version.\n" +
+            "\n" +
+            "This program is distributed in the hope that it will be useful,\n" +
+            "but WITHOUT ANY WARRANTY; without even the implied warranty of\n" +
+            "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n" +
+            "GNU General Public License for more details.\n" +
+            "\n" +
+            "You should have received a copy of the GNU General Public License\n" +
+            "along with this program.  If not, see <http://www.gnu.org/licenses/>\n";
+    
+    /**
+     * Print help text about bot usage to stdout.
+     */
+    public void showUsage() {
+        
+    }
 
     /**
      * Prints basic information about bot (name, version, copyright, purpose) when the bot starts
      * with {@link #run(String[])} method. Override it to print information about your bot. 
      */
-	public void showInfo() {
+    public void showInfo() {
         System.out.print("BasicBot v1.2 Copyright (C) 2018 Dmitry Trofimovich (KIN)\n\n");
-	}
+    }
 
-	public void showLicense() {		
-		System.out.print(LICENSE);
-	}
-	
-	public BasicBot() {
-		
-	}
-	
-	public BasicBot(int flags) {
-		this.flags = flags;
-	}
+    /**
+     * Prints bot license information.
+     */
+    public void showLicense() {        
+        System.out.print(LICENSE);
+    }
+    
+    /**
+     * Constructs bot instance with default flags.
+     */
+    public BasicBot() {
+        
+    }
+    
+    /**
+     * Constructs bot instance with specific flags.
+     */
+    public BasicBot(int flags) {
+        this.flags = flags;
+    }
 
-	public int getFlags() {
-		return flags;
-	}
+    /**
+     * @return bot flags (bit mask).
+     */
+    public int getFlags() {
+        return flags;
+    }
 
-    public int run(String args[]) {
-		showInfo();
-		if((flags & FLAG_SHOW_LICENSE) != 0) {
-			showLicense();
-		}
+    /**
+     * Run bot.
+     * @param args command line arguments.
+     */
+    public int run(String[] args) {
+        showInfo();
+        if ((flags & FLAG_SHOW_LICENSE) != 0) {
+            showLicense();
+        }
         System.out.print("----------------------< BOT STARTED >-------------------------------\n");
-		String configFile = getConfig(args);		
-		System.out.println("applying config file: "+configFile);
-		Map<String,String> launch_params = getLaunchArgs(args);
+        String configFile = getConfig(args);        
+        System.out.println("Applying config file: " + configFile);
+        Map<String, String> launchParams = getLaunchArgs(args);
         int exitCode = 0;
         try {
-            startWithConfig(configFile, launch_params);
+            startWithConfig(configFile, launchParams);
         } catch (BotFatalError e) {
             if (log == null) {
                 System.err.println("Error: " + e.toString());
@@ -199,143 +221,155 @@ public abstract class BasicBot {
     }
 
     private Map<String, String> getLaunchArgs(String[] args) {
-	    HashMap<String,String> params = new HashMap<String,String>();
-	    for(int i=1;i<args.length;i++) {
-	    	if(!args[i].startsWith("-")) continue;
-	    	String [] parts = args[i].substring(1).split("=", 2);
-	    	String left = parts[0];
-	    	String right = "1";
-	    	if(parts.length == 2) {
-	    		right = parts[1];
-	    	}
-	    	params.put(left, right);
-	    }
-	    return params;
+        HashMap<String, String> params = new HashMap<String, String>();
+        for (int i = 1; i < args.length; i++) {
+            if (!args[i].startsWith("-")) continue;
+            String [] parts = args[i].substring(1).split("=", 2);
+            String left = parts[0];
+            String right = "1";
+            if (parts.length == 2) {
+                right = parts[1];
+            }
+            params.put(left, right);
+        }
+        return params;
     }
 
-	public String getConfig(String[] args) {
-		String configFile = null;
-		if(args.length==0) {
-			if(DEBUG_BUILD) {
-				configFile = "config_test.xml";				
-			} else {
-				configFile = "config.xml";				
-			}			
-		} else {
-			configFile = args[0];				
-		}
-		return configFile;
-	}
+    /**
+     * @return path to bot config file.
+     */
+    protected String getConfig(String[] args) {
+        if (args.length == 0) {
+            return DEBUG_BUILD? "config_test.xml": "config.xml";
+        } else {
+            return args[0];
+        }
+    }
 
-    public void startWithConfig(String cfg, Map<String,String> launch_params)
+    /**
+     * Initialize and start bot.
+     *
+     * Reads and initialize bot settings. Initializes logging. Logs in to wiki site.
+     * Calls {@link #go()} method.
+     * 
+     * NOTE: Users should usually call {@link #run()}. 
+     */
+    protected void startWithConfig(String cfg, Map<String, String> launchParams)
             throws BotFatalError {
-		properties = new Properties();
-		try {
-			InputStream in = new FileInputStream(cfg);
-			if(cfg.endsWith(".xml")) {
-				properties.loadFromXML(in);			
-			} else {
-				properties.load(in);		
-			}
-			in.close();
+        properties = new Properties();
+        try {
+            InputStream in = new FileInputStream(cfg);
+            if (cfg.endsWith(".xml")) {
+                properties.loadFromXML(in);
+            } else {
+                properties.load(in);
+            }
+            in.close();
         } catch (IOException e) {
             throw new BotFatalError(e);
-		}
+        }
         outDir = properties.getProperty("out-dir", outDir);
         checkWorkDir();
 
-		initLog();
+        initLog();
         log.info("Work directory: " + outDir);
         dumpDir = outDir + "/" + DEFAULT_DUMP_DIR;
         FileTools.setDefaultOut(dumpDir);
 
-		String login = properties.getProperty("wiki-login");
-		String pw = properties.getProperty("wiki-password");
-		if(login==null || pw==null || login.isEmpty() || pw.isEmpty()) {
-			String accountFile = properties.getProperty("wiki-account-file");
-			if(accountFile==null || accountFile.isEmpty()) {
-				System.out.println("ABORT: login info not found in properties");
-				log.fatal("wiki-login or wiki-password or wiki-account-file is not specified in settings");
-				return;
-			}
-			Properties loginProp = new Properties();
-			try {
-				InputStream in = new FileInputStream(accountFile);
-				if(accountFile.endsWith(".xml")) {
-					loginProp.loadFromXML(in);			
-				} else {
-					loginProp.load(in);		
-				}
-				in.close();
-			} catch (FileNotFoundException e) {
-				System.out.println("ABORT: file "+accountFile+" not found");
-				log.fatal("ABORT: file "+accountFile+" not found");
-				return;
-			} catch (IOException e) {	
-				System.out.println("ABORT: failed to read "+accountFile);
-				log.fatal("failed to read "+accountFile+" : "+e);
-				return;
-			}
-			login = loginProp.getProperty("wiki-login");
-			pw = loginProp.getProperty("wiki-password");
-			if(login==null || pw==null || login.isEmpty() || pw.isEmpty()) {
-				System.out.println("ABORT: login info not found in file "+accountFile);
-				log.fatal("wiki-login or wiki-password or wiki-account-file is not found in file "+accountFile);
-				return;
-			}
-		}
-		
-		log.info("login="+login+",password=(not shown)");
+        String login = properties.getProperty("wiki-login");
+        String pw = properties.getProperty("wiki-password");
+        if (login == null || pw == null || login.isEmpty() || pw.isEmpty()) {
+            String accountFile = properties.getProperty("wiki-account-file");
+            if (accountFile == null || accountFile.isEmpty()) {
+                // TODO: Throw BotFatalError
+                System.out.println("ABORT: login info not found in properties");
+                log.fatal("wiki-login or wiki-password or wiki-account-file is not specified in "
+                        + "settings");
+                return;
+            }
+            Properties loginProp = new Properties();
+            try {
+                InputStream in = new FileInputStream(accountFile);
+                if (accountFile.endsWith(".xml")) {
+                    loginProp.loadFromXML(in);
+                } else {
+                    loginProp.load(in);
+                }
+                in.close();
+            } catch (FileNotFoundException e) {
+                // TODO: Raise exception
+                System.out.println("ABORT: file " + accountFile + " not found");
+                log.fatal("ABORT: file {} not found", accountFile);
+                return;
+            } catch (IOException e) {
+                // TODO: Raise exception
+                System.out.println("ABORT: failed to read " + accountFile);
+                log.fatal("failed to read {} : {}", accountFile, e);
+                return;
+            }
+            login = loginProp.getProperty("wiki-login");
+            pw = loginProp.getProperty("wiki-password");
+            if (login == null || pw == null || login.isEmpty() || pw.isEmpty()) {
+                System.out.println("ABORT: login info not found in file {}" + accountFile);
+                // TODO: Throw BotFatalError
+                log.fatal("wiki-login or wiki-password or wiki-account-file is not found in "
+                        + "settings file {}", accountFile);
+                return;
+            }
+        }
+        
+        log.info("login={}, password=(not shown)", login);
 
-		LANGUAGE = properties.getProperty("wiki-lang", LANGUAGE);
-		log.info("language=" + LANGUAGE);
-		DOMAIN = properties.getProperty("wiki-domain", DOMAIN);
-		log.info("domain=" + DOMAIN);
-		PROTOCOL = properties.getProperty("wiki-protocol", PROTOCOL);
-		log.info("protocol=" + PROTOCOL);
-		COMMENT = properties.getProperty("update-comment",COMMENT);
+        language = properties.getProperty("wiki-lang", language);
+        log.info("language={}", language);
+        domain = properties.getProperty("wiki-domain", domain);
+        log.info("domain={}", domain);
+        protocol = properties.getProperty("wiki-protocol", protocol);
+        log.info("protocol={}", protocol);
+        comment = properties.getProperty("update-comment", comment);
         maxLag = Integer.valueOf(properties.getProperty("wiki-maxlag", String.valueOf(maxLag)));
-		THROTTLE_TIME_MS = Integer.valueOf(properties.getProperty("wiki-throttle", String.valueOf(THROTTLE_TIME_MS)));
-		log.info("comment="+COMMENT);
-		DEBUG_MODE = properties.getProperty("debug-mode",DEBUG_MODE?YES:NO).equals(YES);
-		log.info("DEBUG_MODE="+DEBUG_MODE);
-		
-		if (!loadCustomProperties(launch_params)) {
-			log.fatal("Failed to load all required properties. Exiting...");
-			return;
-		}
-		String domain = DOMAIN;
-		if (domain.startsWith(".")) {
-			domain = LANGUAGE + DOMAIN;
-		}
-        wiki = createWiki(domain, SCRIPT_PATH, PROTOCOL, LANGUAGE);
+        throttleTimeMs = Integer.valueOf(properties.getProperty("wiki-throttle",
+                String.valueOf(throttleTimeMs)));
+        log.info("comment={}", comment);
+        debugMode = properties.getProperty("debug-mode", debugMode? YES: NO).equals(YES);
+        log.info("DEBUG_MODE={}", debugMode);
+        
+        if (!loadCustomProperties(launchParams)) {
+            log.fatal("Failed to load all required properties. Exiting...");
+            return;
+        }
+        String domain = this.domain;
+        if (domain.startsWith(".")) {
+            domain = language + domain;
+        }
+        wiki = createWiki(domain, scriptPath, protocol, language);
 
-		configureWikiBeforeLogin();
-		
-		log.info("login to " + domain + ", login: "+login+", password: (not shown)");
-		try {
-			wiki.login(login, pw.toCharArray());
-		} catch (FailedLoginException e) {
+        configureWikiBeforeLogin();
+        
+        log.info("Login to {} [login: {}, password: (not shown)]", domain, login);
+        try {
+            wiki.login(login, pw.toCharArray());
+        } catch (FailedLoginException e) {
             throw new BotFatalError(String.format("Failed to login to %s, login: %s, password: %s",
                     domain, login, pw));
         } catch (IOException e) {
             throw new BotFatalError(e);
-		}
+        }
 
-		if(DEBUG_MODE) {
+        if (debugMode) {
             wiki.setDumpMode(dumpDir);
-		}	
+        }    
 
         log.info("BOT STARTED");
-		try {
-	        go();
+        try {
+            go();
         } catch (InterruptedException e) {
-        	onInterrupted(e);
+            onInterrupted(e);
         } finally {
             wiki.logout();
         }
         log.info("EXIT");
-	}
+    }
 
     private void checkWorkDir() throws BotFatalError {
         File d = new File(outDir);
@@ -355,24 +389,24 @@ public abstract class BasicBot {
         return new NirvanaWiki(domain, path, protocol, language);
     }
 
-	protected void onInterrupted(InterruptedException e) {
-		
-	}
+    protected void onInterrupted(InterruptedException exception) {
+        
+    }
 
     /**
      * Override it to customize {@link #wiki} before wiki.login() will be called.
      */
     protected void configureWikiBeforeLogin() {
         wiki.setMaxLag(maxLag);
-		wiki.setThrottle(THROTTLE_TIME_MS);
+        wiki.setThrottle(throttleTimeMs);
     }
 
     protected abstract void go() throws InterruptedException, BotFatalError;
 
-    protected boolean loadCustomProperties(Map<String,String> launchParams)
+    protected boolean loadCustomProperties(Map<String, String> launchParams)
             throws BotSettingsError {
-		return true;
-	}
+        return true;
+    }
 
     /**
      * Initialize logger.
@@ -405,24 +439,31 @@ public abstract class BasicBot {
             }
             System.setProperty("log4j.configurationFile", log4jSettings);
             System.setProperty("log4j.nirvana.outdir", outDir);
-			System.out.println("INFO: using log settings : " + log4jSettings);
-		}
+            System.out.println("INFO: using log settings : " + log4jSettings);
+        }
         log = LogManager.getLogger(this.getClass().getName());
-	}
+    }
 
+    /**
+     * Init logger from tests.
+     */
+    @VisibleForTesting
     public static void initLogFromTest() {
         log = LogManager.getLogger(BasicBot.class.getName());
     }
 
-	protected void logPortalSettings(Map<String, String> parameters) {
-		Set<Entry<String,String>> set = parameters.entrySet();
-		Iterator<Entry<String,String>> it = set.iterator();
-		while(it.hasNext()) {
-			Entry<String,String> next = it.next();
-			log.debug(next.getKey()+" = "+next.getValue());
-		}
-	}
+    protected void logPortalSettings(Map<String, String> parameters) {
+        Set<Entry<String,String>> set = parameters.entrySet();
+        Iterator<Entry<String,String>> it = set.iterator();
+        while (it.hasNext()) {
+            Entry<String,String> next = it.next();
+            log.debug("{} = {}", next.getKey(), next.getValue());
+        }
+    }
 
+    // TODO: Refactor it to class. Current method is heavy for multiple calls because or re
+    //    creation. Logging from static method is another problem for this class.
+    //    Logging may be not initialized yet.
     // TODO (Nirvanchik): Allow templates from any namespace?
     /**
      * Parse bot template from wiki text. "Bot template" is a wiki template which is used to
@@ -438,6 +479,7 @@ public abstract class BasicBot {
      * @param parameters Key-value map where bot parameters will be stored.
      * @return true if bot template found and parsed successfully.
      */
+    @Deprecated
     public static boolean tryParseTemplate(String template,
                                            @Nullable String userNamespaceLoc,
                                            String text,
@@ -449,8 +491,9 @@ public abstract class BasicBot {
         if (!WikiUtils.parseBotTemplate(templateRe, text, parameters)) {
             // TODO (Nirvanchik): return error code with error details.
             log.error("Failed to parse bot settings");
-			return false;
-		}
+            return false;
+        }
+        // TODO: Remove it out of here - ugly workaround.
         parameters.put("BotTemplate", template);
         return true;
     }

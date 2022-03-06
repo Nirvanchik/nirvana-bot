@@ -701,7 +701,7 @@ public class NirvanaBot extends BasicBot{
         }
 
         localizationManager = new LocalizationManager(outDir, cacheDir,
-                LocalizationManager.DEFAULT_TRANSLATIONS_DIR, LANGUAGE, customTranslationFile);
+                LocalizationManager.DEFAULT_TRANSLATIONS_DIR, language, customTranslationFile);
 
         BotReporter reporter = createReporter(cacheDir);
         
@@ -719,7 +719,7 @@ public class NirvanaBot extends BasicBot{
 
         BotVariables.init();
         PortalConfig.initStatics();
-        DateTools.init(LANGUAGE);
+        DateTools.init(language);
 
         initLocalizedStrings();
 
@@ -868,7 +868,7 @@ public class NirvanaBot extends BasicBot{
     				
     				String portalSettingsText = wiki.getPageText(portalName);
 
-                    if (DEBUG_MODE || BasicBot.DEBUG_BUILD) {
+                    if (debugMode || BasicBot.DEBUG_BUILD) {
                         FileTools.dump(portalSettingsText, dumpDir, portalName + ".settings.txt");
     				}
 
@@ -890,7 +890,7 @@ public class NirvanaBot extends BasicBot{
                             if ((enabledTypes.contains(TYPE_ALL) ||
                                     enabledTypes.contains(data.type)) &&
                                     data.portalModule != null) {
-                                if (DEBUG_MODE || !portalName.contains("ValidParam") ||
+                                if (debugMode || !portalName.contains("ValidParam") ||
                                         !DEBUG_BUILD) {
                                     reporter.portalProcessed(tryNumber);
                                     reportItem.processed(tryNumber);
@@ -1162,7 +1162,7 @@ public class NirvanaBot extends BasicBot{
         }
         sb.append(localizer.localize(ERROR_NOTIFICATION_TEXT_END)).append(" ");
         sb.append(localizer.localize(ERROR_NOTIFICATION_TEXT_ROBOT));
-        if (!LANGUAGE.equals(LocalizationManager.DEFAULT_LANG)) {
+        if (!language.equals(LocalizationManager.DEFAULT_LANG)) {
             // Add hint that message may be localized.
             String hint;
             if (wikiTranslationPage != null && !wikiTranslationPage.isEmpty()) {
@@ -1186,7 +1186,7 @@ public class NirvanaBot extends BasicBot{
 
 		PortalParam param = new PortalParam();
         data.param = param;
-		param.lang = LANGUAGE;
+        param.lang = language;
         PortalConfig config = new PortalConfig(options);
 
 		String type = null;

@@ -99,7 +99,7 @@ public class FixArchiveBot extends BasicBot {
         Localizer.init(Localizer.NO_LOCALIZATION);
         PortalConfig.initStatics();
         BotVariables.init();
-        DateTools.init(LANGUAGE);
+        DateTools.init(language);
 
         String task;
         try {
@@ -279,8 +279,8 @@ public class FixArchiveBot extends BasicBot {
             }
         }
         try {
-            log.debug("Edit page: {} with a comment: {}", archive, COMMENT);
-            wiki.edit(archive, thisArchive.toString(), COMMENT, minor, bot);
+            log.debug("Edit page: {} with a comment: {}", archive, comment);
+            wiki.edit(archive, thisArchive.toString(), comment, minor, bot);
         } catch (LoginException | IOException e) {
             throw new BotFatalError(String.format("Failed to edit page %s", archive), e);
         }

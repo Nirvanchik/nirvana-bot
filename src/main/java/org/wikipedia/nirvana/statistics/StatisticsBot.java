@@ -145,7 +145,7 @@ public class StatisticsBot extends BasicBot {
     @Override
     protected void go() throws InterruptedException, BotFatalError {
         Localizer.init(Localizer.NO_LOCALIZATION);
-        DateTools.init(LANGUAGE);
+        DateTools.init(language);
 		String [] portalSettingsPages = null;
 		String userNamespace;
         try {
@@ -201,7 +201,7 @@ public class StatisticsBot extends BasicBot {
 				
 				String portalSettingsText = wiki.getPageText(portalName);
 
-                if (DEBUG_MODE || BasicBot.DEBUG_BUILD) {
+                if (debugMode || BasicBot.DEBUG_BUILD) {
                     FileTools.dump(portalSettingsText, portalName + ".settings.txt");
 				}
 
@@ -423,7 +423,7 @@ public class StatisticsBot extends BasicBot {
 		}
 
         key = "комментарий";
-		params.comment = COMMENT;
+        params.comment = comment;
 		if (options.containsKey(key) && !options.get(key).isEmpty()) {
 			params.comment = options.get(key);
 		}
