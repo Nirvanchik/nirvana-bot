@@ -87,9 +87,9 @@ public class ImageFinderInCard extends BaseImageFinder {
         for (Map.Entry<String, List<String>> entry:customKeys.entrySet()) {
             String template = entry.getKey();
             if (wikiText.contains("{{" + template) && entry.getValue().size() > 0) {
-                String regexToFindImage = "\\| *(" +
+                String regexToFindImage = "\\|\\s*(" +
                         StringUtils.join(entry.getValue(), "|") +
-                        ") *= *(?<filename>.+?) *\n";
+                        ")\\s*=\\s*(?<filename>.+?)\\s*\n";
                 //log.debug("regex = "+regexToFindImage);
                 String image = checkImage(wikiText, regexToFindImage);
                 if (image != null) {
