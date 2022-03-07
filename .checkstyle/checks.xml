@@ -55,7 +55,7 @@
         </module>
         <module name="LeftCurly">
             <property name="maxLineLength" value="100"/>
-			<property name="tokens" value="CLASS_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO, STATIC_INIT"/>
+            <property name="tokens" value="CLASS_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO, STATIC_INIT"/>
         </module>
         <module name="RightCurly"/>
         <module name="RightCurly">
