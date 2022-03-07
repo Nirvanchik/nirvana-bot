@@ -240,7 +240,7 @@ public abstract class BasicBot {
      */
     protected String getConfig(String[] args) {
         if (args.length == 0) {
-            return DEBUG_BUILD? "config_test.xml": "config.xml";
+            return DEBUG_BUILD ? "config_test.xml" : "config.xml";
         } else {
             return args[0];
         }
@@ -331,7 +331,7 @@ public abstract class BasicBot {
         throttleTimeMs = Integer.valueOf(properties.getProperty("wiki-throttle",
                 String.valueOf(throttleTimeMs)));
         log.info("comment={}", comment);
-        debugMode = properties.getProperty("debug-mode", debugMode? YES: NO).equals(YES);
+        debugMode = properties.getProperty("debug-mode", debugMode ? YES : NO).equals(YES);
         log.info("DEBUG_MODE={}", debugMode);
         
         if (!loadCustomProperties(launchParams)) {
