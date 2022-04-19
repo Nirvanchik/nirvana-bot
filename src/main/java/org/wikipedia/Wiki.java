@@ -7336,9 +7336,13 @@ public class Wiki implements Serializable
                     .flatMap(cookieHeader -> HttpCookie.parse(cookieHeader).stream())
                     .forEach(cookie -> store.add(null, cookie));
 
-                List<String> encoding = headerFields.getOrDefault("Content-Encoding",
-                        Arrays.asList(new String[]{""})); 
-                boolean zipped_ = !encoding.isEmpty() ? encoding.get(0).equals("gzip"): false;
+                List<String> encodings = headerFields.getOrDefault("Content-Encoding",
+                        Collections.emptyList());
+                encodings = new ArrayList<String>(encodings);
+                encodings.addAll(headerFields.getOrDefault("content-encoding",
+                        Collections.emptyList()));
+                String encoding = encodings.stream().findAny().orElse("");
+                boolean zipped_ = !encoding.isEmpty() ? encoding.equals("gzip"): false;
 
                 // get the text
                 String line;
