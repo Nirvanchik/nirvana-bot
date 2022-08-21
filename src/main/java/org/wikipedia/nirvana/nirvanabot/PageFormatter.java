@@ -25,8 +25,8 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
+import org.wikipedia.nirvana.base.BasicBot;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotGlobalSettings;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;

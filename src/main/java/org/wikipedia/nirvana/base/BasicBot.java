@@ -21,7 +21,7 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana;
+package org.wikipedia.nirvana.base;
 
 import org.wikipedia.nirvana.annotation.LocalizedBySettings;
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
@@ -226,6 +226,7 @@ public abstract class BasicBot {
             if (!args[i].startsWith("-")) continue;
             String [] parts = args[i].substring(1).split("=", 2);
             String left = parts[0];
+            // TODO: Unexpected default. Replace with empty string.
             String right = "1";
             if (parts.length == 2) {
                 right = parts[1];
@@ -281,11 +282,8 @@ public abstract class BasicBot {
         if (login == null || pw == null || login.isEmpty() || pw.isEmpty()) {
             String accountFile = properties.getProperty("wiki-account-file");
             if (accountFile == null || accountFile.isEmpty()) {
-                // TODO: Throw BotFatalError
-                System.out.println("ABORT: login info not found in properties");
-                log.fatal("wiki-login or wiki-password or wiki-account-file is not specified in "
-                        + "settings");
-                return;
+                throw new BotFatalError("wiki-login or wiki-password or wiki-account-file is not "
+                        + "specified in settings");
             }
             Properties loginProp = new Properties();
             try {
@@ -297,24 +295,18 @@ public abstract class BasicBot {
                 }
                 in.close();
             } catch (FileNotFoundException e) {
-                // TODO: Raise exception
-                System.out.println("ABORT: file " + accountFile + " not found");
-                log.fatal("ABORT: file {} not found", accountFile);
-                return;
+                throw new BotFatalError("File " + accountFile + " not found", e);
             } catch (IOException e) {
-                // TODO: Raise exception
-                System.out.println("ABORT: failed to read " + accountFile);
-                log.fatal("failed to read {} : {}", accountFile, e);
-                return;
+                throw new BotFatalError("Failed to read " + accountFile, e);
             }
             login = loginProp.getProperty("wiki-login");
+            if (login == null || login.isEmpty()) {
+                throw new BotFatalError("wiki-login is not found in settings file " + accountFile);
+            }
             pw = loginProp.getProperty("wiki-password");
-            if (login == null || pw == null || login.isEmpty() || pw.isEmpty()) {
-                System.out.println("ABORT: login info not found in file {}" + accountFile);
-                // TODO: Throw BotFatalError
-                log.fatal("wiki-login or wiki-password or wiki-account-file is not found in "
-                        + "settings file {}", accountFile);
-                return;
+            if (pw == null || pw.isEmpty()) {
+                throw new BotFatalError("wiki-password is not found in settings file " +
+                        accountFile);
             }
         }
         
@@ -387,6 +379,13 @@ public abstract class BasicBot {
     protected NirvanaWiki createWiki(String domain, String path, String protocol,
             String language) {
         return new NirvanaWiki(domain, path, protocol, language);
+    }
+
+    /**
+     * @return main wiki object.
+     */
+    public NirvanaWiki getWiki() {
+        return wiki;
     }
 
     protected void onInterrupted(InterruptedException exception) {

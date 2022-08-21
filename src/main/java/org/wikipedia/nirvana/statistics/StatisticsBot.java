@@ -26,9 +26,9 @@ package org.wikipedia.nirvana.statistics;
 import static org.wikipedia.nirvana.util.OptionsUtils.validateIntegerSetting;
 
 import org.wikipedia.Wiki;
-import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.base.BasicBot;
 import org.wikipedia.nirvana.archive.ScanArchiveSettings;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;

@@ -32,8 +32,8 @@ import static org.mockito.Mockito.when;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.User;
-import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
+import org.wikipedia.nirvana.base.BasicBot;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotGlobalSettings;

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="out-dir">out/test</entry>
+<entry key="wiki-login"></entry>
+<entry key="wiki-password"></entry>
+<entry key="new-pages-template">Участник:Bot template</entry>
+<entry key="wiki-lang">ru</entry>
+<entry key="wiki-java-loglevel">OFF</entry>
+<entry key="debug-mode">yes</entry>
+<entry key="update-pause">0</entry>
+<entry key="try-count">1</entry>
+</properties>

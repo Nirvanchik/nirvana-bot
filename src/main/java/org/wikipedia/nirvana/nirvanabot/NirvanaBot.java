@@ -66,10 +66,10 @@ import static org.wikipedia.nirvana.util.OptionsUtils.validateIntegerSetting;
 import static org.wikipedia.nirvana.util.OptionsUtils.validateLongSetting;
 
 import org.wikipedia.Wiki;
-import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.base.BasicBot;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.localization.LocalizationManager;
 import org.wikipedia.nirvana.localization.Localizer;

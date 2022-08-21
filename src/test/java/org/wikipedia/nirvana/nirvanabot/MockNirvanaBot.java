@@ -68,8 +68,8 @@ import javax.annotation.Nullable;
 public class MockNirvanaBot extends NirvanaBot {
     /**
      * Logger to use in early working methods (before {@link
-     * org.wikipedia.nirvana.BasicBot#initLog} which is called from
-     * {@link org.wikipedia.nirvana.BasicBot#startWithConfig}).
+     * org.wikipedia.nirvana.base.BasicBot#initLog} which is called from
+     * {@link org.wikipedia.nirvana.base.BasicBot#startWithConfig}).
      */
     private Logger tmpLog = Logger.getLogger("MockNirvanaBot");
     WikiService mockWikiService;
@@ -142,7 +142,7 @@ public class MockNirvanaBot extends NirvanaBot {
     /**
      * Constructs mocked NirvanaBot.
      *
-     * @param flags global bot run flags, see {@link org.wikipedia.nirvana.BasicBot}
+     * @param flags global bot run flags, see {@link org.wikipedia.nirvana.base.BasicBot}
      * @param testConfigPath path to js config from which to read mock data
      * @throws TestError in the case when test json data are corrupt or unavailable
      */

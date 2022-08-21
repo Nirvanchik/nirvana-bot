@@ -23,7 +23,7 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
-import org.wikipedia.nirvana.BasicBot;
+import org.wikipedia.nirvana.base.BasicBot;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.MockNirvanaBot.TestError;
 import org.wikipedia.nirvana.util.FileTools;

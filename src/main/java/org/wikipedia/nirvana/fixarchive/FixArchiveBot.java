@@ -27,10 +27,10 @@ import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_REMOVE_DUPLICATE
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_SORT;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_TOSORT;
 
-import org.wikipedia.nirvana.BasicBot;
 import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.base.BasicBot;
 import org.wikipedia.nirvana.archive.EnumerationUtils;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
