@@ -28,6 +28,7 @@ import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.BotSettingsError;
 import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.LogUtils;
 import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.wikipedia.nirvana.wiki.WikiUtils;
@@ -41,11 +42,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.security.auth.login.FailedLoginException;
@@ -452,12 +450,7 @@ public abstract class BasicBot {
     }
 
     protected void logPortalSettings(Map<String, String> parameters) {
-        Set<Entry<String,String>> set = parameters.entrySet();
-        Iterator<Entry<String,String>> it = set.iterator();
-        while (it.hasNext()) {
-            Entry<String,String> next = it.next();
-            log.debug("{} = {}", next.getKey(), next.getValue());
-        }
+        LogUtils.logParametersMap(log, parameters);
     }
 
     // TODO: Refactor it to class. Current method is heavy for multiple calls because or re
