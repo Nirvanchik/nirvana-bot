@@ -78,6 +78,7 @@ import javax.security.auth.login.FailedLoginException;
  * </pre>
  */
 public abstract class BasicBot {
+    public static final int NO_FLAGS = 0;
     public static final int FLAG_SHOW_LICENSE = 0b001;
     /**
      * Please use log4j.properties and {@value #FLAG_DEFAULT_LOG} to configure default logger.

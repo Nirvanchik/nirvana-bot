@@ -1,5 +1,5 @@
 /**
- *  @(#)BasicBotTest.java 26 January 2019 г.
+ *  @(#)BasicBotTest.java
  *  Copyright © 2019 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -49,6 +49,8 @@ public class BasicBotTest {
     public static final String BOT_CONFIG_NO_ACCOUNT = "test_data/bot_config_ru_no_account.xml";
     public static final String BOT_CONFIG_EXT_ACCOUNT_CONF = 
             "test_data/bot_config_ru_ext_account_conf.xml";
+    public static final String BOT_CONFIG_WITH_LOGGING_CONF =
+            "test_data/bot_config_ru_log4j_conf.xml";
 
     @Rule
     public TemporaryFolder tempDir = new TemporaryFolder();
@@ -91,7 +93,6 @@ public class BasicBotTest {
         }
     }
     
-    @SuppressWarnings("unchecked")
     @Test
     public void testRun() throws Exception {
         TestBot bot = new TestBot(BasicBot.FLAG_DEFAULT_LOG);
@@ -155,6 +156,32 @@ public class BasicBotTest {
         assertBotRunSuccessfully(bot, exitCode);
 
         verify(bot.getWiki()).login("TestBot2", "no password 2".toCharArray());
+    }
+    
+    @Test
+    public void testLogging_notConfigured() throws Exception {
+        TestBot bot = new TestBot(BasicBot.NO_FLAGS);
+        
+        File configFileResource = new File(this.getClass().getClassLoader()
+                .getResource(BOT_CONFIG_DEFAULT)
+                .getFile());
+
+        int exitCode = bot.run(new String[] {configFileResource.getPath()});
+
+        assertBotCrashed(bot, exitCode);
+    }
+
+    @Test
+    public void testLogging_Configured() throws Exception {
+        TestBot bot = new TestBot(BasicBot.NO_FLAGS);
+        
+        File configFileResource = new File(this.getClass().getClassLoader()
+                .getResource(BOT_CONFIG_WITH_LOGGING_CONF)
+                .getFile());
+
+        int exitCode = bot.run(new String[] {configFileResource.getPath()});
+
+        assertBotRunSuccessfully(bot, exitCode);
     }
     
     @Test
