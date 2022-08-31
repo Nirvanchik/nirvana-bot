@@ -23,6 +23,9 @@
 
 package org.wikipedia.nirvana.base;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -41,6 +44,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.security.auth.login.FailedLoginException;
+
 /**
  * Unit tests for {@link BasicBot}.
  */
@@ -58,6 +63,7 @@ public class BasicBotTest {
     private static class TestBot extends BasicBot {
         public BasicBot mocked = Mockito.mock(BasicBot.class);
         public Map<String, String> interceptLaunchParams;
+        public NirvanaWiki mockWiki = Mockito.mock(NirvanaWiki.class);
 
         public TestBot(int flags) {
             super(flags);
@@ -89,7 +95,7 @@ public class BasicBotTest {
         
         protected NirvanaWiki createWiki(String domain, String path, String protocol,
                 String language) {
-            return Mockito.mock(NirvanaWiki.class);
+            return mockWiki;
         }
     }
     
@@ -106,6 +112,23 @@ public class BasicBotTest {
         assertBotRunSuccessfully(bot, exitCode);
 
         verify(bot.getWiki()).login("TestBot", "no password".toCharArray());
+    }
+
+    @Test
+    public void testCleanupAfterCrash() throws Exception {
+        TestBot bot = new TestBot(BasicBot.FLAG_DEFAULT_LOG);
+
+        File configFileResource = new File(this.getClass().getClassLoader()
+                .getResource(BOT_CONFIG_DEFAULT)
+                .getFile());
+
+        doThrow(new BotFatalError("bot crashed")).when(bot.mocked).go();
+
+        int exitCode = bot.run(new String[] {configFileResource.getPath()});
+
+        Assert.assertEquals(1, exitCode);
+
+        verify(bot.mockWiki).logout();
     }
 
     @SuppressWarnings("serial")
@@ -140,7 +163,7 @@ public class BasicBotTest {
 
         int exitCode = bot.run(new String[] {configFileResource.getPath()});
 
-        assertBotCrashed(bot, exitCode);
+        assertBotCrashedEarly(bot, exitCode);
     }
 
     @Test
@@ -165,6 +188,24 @@ public class BasicBotTest {
         File configFileResource = new File(this.getClass().getClassLoader()
                 .getResource(BOT_CONFIG_DEFAULT)
                 .getFile());
+
+        int exitCode = bot.run(new String[] {configFileResource.getPath()});
+
+        assertBotCrashedEarly(bot, exitCode);
+    }
+
+    @Test
+    public void testWikiLoginFailed() throws Exception {
+        TestBot bot = new TestBot(BasicBot.FLAG_DEFAULT_LOG);
+        
+        File configFileResource = new File(this.getClass().getClassLoader()
+                .getResource(BOT_CONFIG_DEFAULT)
+                .getFile());
+
+        doThrow(new FailedLoginException("Login Failed")).when(bot.mockWiki)
+                .login(anyString(), anyString());
+        doThrow(new FailedLoginException("Login Failed")).when(bot.mockWiki)
+                .login(anyString(), (char[]) any());
 
         int exitCode = bot.run(new String[] {configFileResource.getPath()});
 
@@ -237,16 +278,28 @@ public class BasicBotTest {
         text = "Xyz.  {{Участник:MyBot|param1=value1}} blablabla";
         Assert.assertTrue(p.matcher(text).find());
     }
+    
+    private void assertBotCrashedEarly(TestBot bot, int exitCode) throws Exception {
+        assertBotCrashed(bot, exitCode, true);
+    }
+    
+    private void assertBotCrashed(TestBot bot, int exitCode) throws Exception {
+        assertBotCrashed(bot, exitCode, false);
+    }
 
     @SuppressWarnings("unchecked")
-    private void assertBotCrashed(TestBot bot, int exitCode) throws Exception {
+    private void assertBotCrashed(TestBot bot, int exitCode, boolean early) throws Exception {
         Assert.assertEquals(1, exitCode);
         
-        verify(bot.mocked, never()).configureWikiBeforeLogin();
-        verify(bot.mocked, never()).loadCustomProperties(Mockito.anyMap());
+        if (early) {
+            verify(bot.mocked, never()).configureWikiBeforeLogin();
+            verify(bot.mocked, never()).loadCustomProperties(Mockito.anyMap());
+        }
         verify(bot.mocked, never()).go();
 
-        Assert.assertNull(bot.getWiki());        
+        if (early) {
+            Assert.assertNull(bot.getWiki());
+        }
     }
 
     @SuppressWarnings("unchecked")
