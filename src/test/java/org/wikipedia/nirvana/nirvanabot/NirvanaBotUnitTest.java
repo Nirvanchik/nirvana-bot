@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.base.BasicBot;
+import org.wikipedia.nirvana.base.BotTemplateParser;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.MockNirvanaBot.TestError;
@@ -189,8 +190,9 @@ public class NirvanaBotUnitTest {
         }
 
         @Override
-        protected boolean createPortalModule(Map<String, String> options, NewPagesData data) {
-            boolean retValue = super.createPortalModule(options, data);
+        protected boolean createPortalModule(BotTemplateParser botTemplateParser, 
+                Map<String, String> options, NewPagesData data) {
+            boolean retValue = super.createPortalModule(botTemplateParser, options, data);
             data.portalModule = mockNewPages;
             return retValue;
         }

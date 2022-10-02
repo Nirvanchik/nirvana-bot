@@ -34,6 +34,7 @@ import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.User;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.base.BasicBot;
+import org.wikipedia.nirvana.base.BotTemplateParser;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotGlobalSettings;
@@ -146,6 +147,7 @@ public class PageFormatterTest {
         User user = Mockito.mock(User.class);
         when(user.getUsername()).thenReturn("Bot1");
         when(wiki.getCurrentUser()).thenReturn(user);
+        when(wiki.namespaceIdentifier(eq(Wiki.USER_NAMESPACE))).thenReturn("User");
 
         mockSystemTime.setFromTimestamp("2020-02-20T21:00:00Z");
 
@@ -185,8 +187,11 @@ public class PageFormatterTest {
     }
 
     private PageFormatter create() {
-        return new PageFormatter(params,
-                BOT_SETTINGS_TEMPLATE, PORTAL_SETTINGS_PAGE, PORTAL_SETTINGS_TEXT,
+        String userNamespace = wiki.namespaceIdentifier(Wiki.USER_NAMESPACE);
+        BotTemplateParser botTemplateParser = 
+                new BotTemplateParser(BOT_SETTINGS_TEMPLATE, userNamespace);
+        return new PageFormatter(botTemplateParser, params,
+                PORTAL_SETTINGS_PAGE, PORTAL_SETTINGS_TEXT,
                 globalSettings, wiki, mockSystemTime, cacheDir.getPath());
     }
 
@@ -298,7 +303,6 @@ public class PageFormatterTest {
         when(revSettingsNew.getPrevious()).thenReturn(revSettingsOld);
         when(wiki.getPageHistory(anyString(), anyObject(), anyObject(), anyBoolean()))
                 .thenReturn(new Wiki.Revision[] {revSettingsNew});
-        when(wiki.namespaceIdentifier(eq(Wiki.USER_NAMESPACE))).thenReturn("User");
         formatter.getHeaderFooterChanges();
         Assert.assertEquals("{{OLD HEADER}}\n", formatter.headerLastUsed);
         Assert.assertEquals("\n{{OLD FOOTER}}", formatter.footerLastUsed);

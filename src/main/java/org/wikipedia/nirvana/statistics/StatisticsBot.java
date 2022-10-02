@@ -29,6 +29,7 @@ import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.base.BasicBot;
+import org.wikipedia.nirvana.base.BotTemplateParser;
 import org.wikipedia.nirvana.archive.ScanArchiveSettings;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
@@ -155,7 +156,8 @@ public class StatisticsBot extends BasicBot {
 	        log.fatal("failed to get user namespace");
 	        return;
         }
-		//List<String>
+        BotTemplateParser botTemplateParser =
+                new BotTemplateParser(statSettingsTemplate, userNamespace);
 		try {
 			portalSettingsPages = wiki.whatTranscludesHere(statSettingsTemplate, Wiki.ALL_NAMESPACES);
 		} catch (IOException e) {			
@@ -207,7 +209,7 @@ public class StatisticsBot extends BasicBot {
 
 				
 				Map<String, String> options = new HashMap<String, String>();
-                if (!tryParseTemplate(statSettingsTemplate, userNamespace, portalSettingsText, options)) {
+                if (!botTemplateParser.tryParseTemplate(portalSettingsText, options)) {
 					log.error("validate portal settings FAILED");
 					continue;
 				}

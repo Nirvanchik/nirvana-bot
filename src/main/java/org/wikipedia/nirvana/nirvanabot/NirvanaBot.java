@@ -70,6 +70,7 @@ import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.base.BasicBot;
+import org.wikipedia.nirvana.base.BotTemplateParser;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.localization.LocalizationManager;
 import org.wikipedia.nirvana.localization.Localizer;
@@ -296,7 +297,6 @@ public class NirvanaBot extends BasicBot{
     }
 
     static class NewPagesData {
-        String botSettingsTemplate;
         String portalSettingsPage;
         String portalSettingsText;
 		ArrayList<String> errors;
@@ -558,7 +558,8 @@ public class NirvanaBot extends BasicBot{
                     "Failed to read overriden properties page: " + overridenPropertiesPage);
         }
 		Map<String, String> options = new HashMap<String, String>();		
-        if (!tryParseTemplate(newpagesTemplate, userNamespace, overridenPropertiesText, options)) {
+        if (!new BotTemplateParser(newpagesTemplate, userNamespace)
+                .tryParseTemplate(overridenPropertiesText, options)) {
 			log.info("no default settings for this template: "+newpagesTemplate);
             return false;
 		}
@@ -763,7 +764,9 @@ public class NirvanaBot extends BasicBot{
         for (String newpagesTemplate: newpagesTemplates) {
 
             long startT = getTimeInMillis();
-    		log.info("template to check: "+newpagesTemplate);
+            log.info("Template to check: {}", newpagesTemplate);
+            BotTemplateParser botTemplateParser =
+                    new BotTemplateParser(newpagesTemplate, userNamespace);
 
             String []portalNewPagesLists = null;
             int repeat = 2;
@@ -877,14 +880,13 @@ public class NirvanaBot extends BasicBot{
     				}
     				
     				Map<String, String> parameters = new HashMap<String, String>();
-                    if (tryParseTemplate(newpagesTemplate, userNamespace, portalSettingsText, parameters)) {
+                    if (botTemplateParser.tryParseTemplate(portalSettingsText, parameters)) {
     					log.info("validate portal settings OK");					
     					logPortalSettings(parameters);
     					NewPagesData data = new NewPagesData();
-                        data.botSettingsTemplate = newpagesTemplate;
                         data.portalSettingsPage = portalName;
                         data.portalSettingsText = portalSettingsText;
-    					if (createPortalModule(parameters, data)) {
+                        if (createPortalModule(botTemplateParser, parameters, data)) {
                             tryCount = data.param.tryCount;
                             CatScanTools.setMaxRetryCount(data.param.catscanTryCount);
                             if ((enabledTypes.contains(TYPE_ALL) ||
@@ -1181,7 +1183,8 @@ public class NirvanaBot extends BasicBot{
         listTypeDefault = LIST_TYPE_NEW_PAGES;
     }
 
-    protected boolean createPortalModule(Map<String, String> options, NewPagesData data) {
+    protected boolean createPortalModule(BotTemplateParser botTemplateParser,
+            Map<String, String> options, NewPagesData data) {
         log.debug("Scan portal settings...");
 
 		PortalParam param = new PortalParam();
@@ -1381,8 +1384,9 @@ public class NirvanaBot extends BasicBot{
 		}
 
         // TODO: Too many data in constructor. May be use some kind of Context class?
-        PageFormatter pageFormatter = new PageFormatter(param,
-                data.botSettingsTemplate, data.portalSettingsPage, data.portalSettingsText,
+        PageFormatter pageFormatter = new PageFormatter(botTemplateParser,
+                param,
+                data.portalSettingsPage, data.portalSettingsText,
                 new BotGlobalSettings(), wiki, systemTime, cacheDir);
 
         if (isTypeNewPages(type)) {

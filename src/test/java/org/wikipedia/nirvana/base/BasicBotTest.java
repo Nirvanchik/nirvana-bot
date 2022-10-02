@@ -231,54 +231,6 @@ public class BasicBotTest {
         bot.showLicense();
     }
 
-    
-    @Test
-    public void testGetUserTemplateRe_findsWhenTemplateNoNs() {
-        Pattern p = Pattern.compile(BasicBot.getUserTemplateRe("MyBot", null));
-        String text = "Xyz.  {{User:MyBot|param1=value1}} blablabla";
-        Assert.assertTrue(p.matcher(text).find());
-    }
-
-    @Test
-    public void testGetUserTemplateRe_findsWhenTemplateWithEnNs() {
-        Pattern p = Pattern.compile(BasicBot.getUserTemplateRe("User:MyBot", null));
-        String text = "Xyz.  {{User:MyBot|param1=value1}} blablabla";
-        Assert.assertTrue(p.matcher(text).find());
-    }
-
-    @Test
-    public void testGetUserTemplateRe_findsLocalizedNsTitleNoNs() {
-        Pattern p = Pattern.compile(BasicBot.getUserTemplateRe("MyBot", "Участник"));
-        
-        String text = "Xyz.  {{User:MyBot|param1=value1}} blablabla";
-        Assert.assertTrue(p.matcher(text).find());
-        
-        text = "Xyz.  {{Участник:MyBot|param1=value1}} blablabla";
-        Assert.assertTrue(p.matcher(text).find());
-    }
-
-    @Test
-    public void testGetUserTemplateRe_findsLocalizedNsTitleEnNs() {
-        Pattern p = Pattern.compile(BasicBot.getUserTemplateRe("User:MyBot", "Участник"));
-        
-        String text = "Xyz.  {{User:MyBot|param1=value1}} blablabla";
-        Assert.assertTrue(p.matcher(text).find());
-        
-        text = "Xyz.  {{Участник:MyBot|param1=value1}} blablabla";
-        Assert.assertTrue(p.matcher(text).find());
-    }
-
-    @Test
-    public void testGetUserTemplateRe_findsLocalizedNsTitleLocNs() {
-        Pattern p = Pattern.compile(BasicBot.getUserTemplateRe("Участник:MyBot", "Участник"));
-        
-        String text = "Xyz.  {{User:MyBot|param1=value1}} blablabla";
-        Assert.assertTrue(p.matcher(text).find());
-        
-        text = "Xyz.  {{Участник:MyBot|param1=value1}} blablabla";
-        Assert.assertTrue(p.matcher(text).find());
-    }
-    
     private void assertBotCrashedEarly(TestBot bot, int exitCode) throws Exception {
         assertBotCrashed(bot, exitCode, true);
     }

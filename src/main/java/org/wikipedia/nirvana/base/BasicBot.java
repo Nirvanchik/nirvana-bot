@@ -29,9 +29,7 @@ import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.BotSettingsError;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.LogUtils;
-import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
-import org.wikipedia.nirvana.wiki.WikiUtils;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +43,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
 import javax.security.auth.login.FailedLoginException;
 
 /**
@@ -452,64 +449,5 @@ public abstract class BasicBot {
 
     protected void logPortalSettings(Map<String, String> parameters) {
         LogUtils.logParametersMap(log, parameters);
-    }
-
-    // TODO: Refactor it to class. Current method is heavy for multiple calls because or re
-    //    creation. Logging from static method is another problem for this class.
-    //    Logging may be not initialized yet.
-    // TODO (Nirvanchik): Allow templates from any namespace?
-    /**
-     * Parse bot template from wiki text. "Bot template" is a wiki template which is used to
-     * provide configuration parameters for wiki bot. This function will search the first
-     * occurrence of bot template only.
-     *
-     * @param template Title of template which is used to provide bot parameters.
-     *                 Normally template is expected to be in User namespace. Namespace name
-     *                 can be omitted in title but the function will always search template
-     *                 of User namespace.
-     * @param userNamespaceLoc Localized name of user namespace.
-     * @param text Wiki text in which bot parameters should be parsed.
-     * @param parameters Key-value map where bot parameters will be stored.
-     * @return true if bot template found and parsed successfully.
-     */
-    @Deprecated
-    public static boolean tryParseTemplate(String template,
-                                           @Nullable String userNamespaceLoc,
-                                           String text,
-                                           Map<String, String> parameters) {
-        // TODO: Remove logging out of here as it may be not initialized
-        log.debug("Bot settings parsing started for template: {}", template);
-        log.debug("Text (truncated to 100): {}", StringTools.trancateTo(text, 100));
-        String templateRe = getUserTemplateRe(template, userNamespaceLoc);
-        if (!WikiUtils.parseBotTemplate(templateRe, text, parameters)) {
-            // TODO (Nirvanchik): return error code with error details.
-            log.error("Failed to parse bot settings");
-            return false;
-        }
-        // TODO: Remove it out of here - ugly workaround.
-        parameters.put("BotTemplate", template);
-        return true;
-    }
-
-    static String getUserTemplateRe(String template,
-                                    @Nullable String userNamespaceLoc) {
-        String userPrefix = "";
-        String templateName;
-        String userEnPrefix = "User";
-        if (template.startsWith(userEnPrefix)) {
-            templateName = template.substring(userEnPrefix.length() + ":".length());
-        } else if (userNamespaceLoc != null && template.startsWith(userNamespaceLoc + ":")) {
-            templateName = template.substring(userNamespaceLoc.length() + ":".length());
-        } else {
-            templateName = template;
-        }
-        userPrefix = userEnPrefix + ":";
-        if (userNamespaceLoc != null) {
-            userPrefix = String.format("(%s:|%s:)", userEnPrefix, userNamespaceLoc);
-        }
-        // Escape "(" and ")" in template name.
-        templateName = templateName.replace("(", "\\(").replace(")", "\\)");
-        // We don't start from ^ because we allow any text before template
-        return userPrefix + templateName;
     }
 }

@@ -26,7 +26,7 @@ package org.wikipedia.nirvana.nirvanabot;
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
-import org.wikipedia.nirvana.base.BasicBot;
+import org.wikipedia.nirvana.base.BotTemplateParser;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotGlobalSettings;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
@@ -62,6 +62,8 @@ public class PageFormatter {
     private static final int MAX_TRASH_SPACE_LENGTH = 10;
     private static final long ROTTEN_SETTINGS_TIMEOUT = TimeUnit.DAYS.toMillis(30);
 
+    protected final BotTemplateParser botTemplateParser;
+
     protected final Logger log;
     // Main params of this class
     @Nonnull
@@ -76,7 +78,6 @@ public class PageFormatter {
     // Params required for SUBST
     protected final String pageName;
     protected final ArchiveSettings archiveSettings;
-    protected final String botSettingsTemplate;
     protected final String portalSettingsPage;
     protected final String portalSettingsText;
     
@@ -96,10 +97,13 @@ public class PageFormatter {
     /**
      * Constructs page formatter object.
      */
-    public PageFormatter(PortalParam params,
-            String botSettingsTemplate, String portalSettingsPage, String portalSettingsText,
+    public PageFormatter(
+            BotTemplateParser botTemplateParser,
+            PortalParam params,
+            String portalSettingsPage, String portalSettingsText,
             BotGlobalSettings globalSettings, NirvanaWiki wiki, SystemTime systemTime,
             String cacheDir) {
+        this.botTemplateParser = botTemplateParser;
         this.delimeter = params.delimeter;
         this.header = params.header == null ? "" : params.header;
         this.footer = params.footer == null ? "" : params.footer;
@@ -108,7 +112,6 @@ public class PageFormatter {
 
         this.pageName = params.page;
         this.archiveSettings = params.archSettings;
-        this.botSettingsTemplate = botSettingsTemplate;
         this.portalSettingsPage = portalSettingsPage;
         this.portalSettingsText = portalSettingsText;
 
@@ -208,8 +211,7 @@ public class PageFormatter {
         
         String settingsText = r.getText();
         Map<String, String> options = new HashMap<String,String>();
-        String userNamespace = wiki.namespaceIdentifier(Wiki.USER_NAMESPACE);
-        if (BasicBot.tryParseTemplate(botSettingsTemplate, userNamespace, settingsText, options)) {
+        if (botTemplateParser.tryParseTemplate(settingsText, options)) {
             PortalConfig portalConfig = new PortalConfig(options);
             headerLastUsed = portalConfig.getUnescaped(PortalConfig.KEY_HEADER,
                     globalSettings.getDefaultHeader());
