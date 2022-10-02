@@ -91,31 +91,70 @@ public class WikiUtils {
      * - pipe symbol ("|") is considered as a regular text if no "=" symbol found before next pipe
      *   symbol;
      * - template parameters are always specified on new line
+     * 
+     * NOTE: Please use {@link #parseBotTemplate(Pattern, String, Map)} version for better
+     * performance.
      *
-     * @param templateRegex Regex to find template beginning in wiki text.
+     * @param templateNameRe Regex to find template beginning in wiki text.
      * @param text Any wiki text where to parse template from.
      * @param parameters A key/value map where parameters will be stored.
      * @return true if template found and parsed successfully, false if not found.
      */
-    public static boolean parseBotTemplate(String templateRegex, String text,
+    public static boolean parseBotTemplate(String templateNameRe, String text,
             Map<String, String> parameters) {
-        return parseTemplateImpl(templateRegex, text, parameters, true);
+        return parseTemplateImpl(makeTemplateBeginPattern(templateNameRe), text, parameters, true);
+    }
+
+    /**
+     * Parse bot template from wiki page (the first one if multiple found).
+     * Bot template has a special format:
+     * - template parameters can be multiline;
+     * - pipe symbol ("|") is considered as a regular text if no "=" symbol found before next pipe
+     *   symbol;
+     * - template parameters are always specified on new line
+     *
+     * @param templateBeginPattern Pattern instance to find template beginning in wiki text.
+     * @param text Any wiki text where to parse template from.
+     * @param parameters A key/value map where parameters will be stored.
+     * @return true if template found and parsed successfully, false if not found.
+     */
+    public static boolean parseBotTemplate(Pattern templateBeginPattern, String text,
+            Map<String, String> parameters) {
+        return parseTemplateImpl(templateBeginPattern, text, parameters, true);
     }
 
     /**
      * Parse wiki template from wiki page (the first one if multiple found).
      *
-     * @param templateRegex Regex to find template beginning in wiki text.
+     * @param templateNameRe Regex to find template beginning in wiki text.
      * @param text Any wiki text where to parse template from.
      * @param parameters A key/value map where parameters will be stored.
      * @return true if template found and parsed successfully, false if not found.
      */
-    public static boolean parseWikiTemplate(String templateRegex, String text,
+    public static boolean parseWikiTemplate(String templateNameRe, String text,
             Map<String, String> parameters) {
-        return parseTemplateImpl(templateRegex, text, parameters, false);
+        return parseTemplateImpl(makeTemplateBeginPattern(templateNameRe), text, parameters, false);
     }
 
-    private static boolean parseTemplateImpl(String templateRegex, String text,
+    /**
+     * Makes pattern to parse template beginning (a line where searched templates starts).
+     *
+     * Example: 
+     * 1) {{Bot|params}}
+     * 2) {{Bot
+     *     | param1=x
+     *     | params2=y}}
+     * For both examples the pattern should find the first line with "{{Bot" statement.
+     *
+     * @param templateNameRe Regex to find template name.
+     * @return pattern that can parse template beginning in wiki text.
+     */
+    public static Pattern makeTemplateBeginPattern(String templateNameRe) {
+        String str = "(\\{\\{" + templateNameRe + ")(.+)$"; // GOOD
+        return Pattern.compile(str, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+    }
+
+    private static boolean parseTemplateImpl(Pattern templateBeginPattern, String text,
             Map<String, String> parameters, boolean botTemplate) {
         // Bot template looks like:
         // {{Template
@@ -134,10 +173,7 @@ public class WikiUtils {
         // }}
         // or
         // {{Template | param1 | param2 = value2}}
-        boolean splitByNewLine = botTemplate;
-        String str = "(\\{\\{" + templateRegex + ")(.+)$"; // GOOD
-        Pattern pattern = Pattern.compile(str, Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-        Matcher m = pattern.matcher(text);
+        Matcher m = templateBeginPattern.matcher(text);
         if (!m.find()) {
             return false;
         }
@@ -150,6 +186,7 @@ public class WikiUtils {
         
         String parameterString = text.substring(begin, end);
         String splitParam = "\\|";
+        boolean splitByNewLine = botTemplate;
         if (splitByNewLine) {
             splitParam = "\\n\\s*\\|";
         }

@@ -30,6 +30,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -45,8 +46,8 @@ public class BotTemplateParser {
     private Logger log = LogManager.getLogger(BotTemplateParser.class.getName());
 
     private final String template;
-    // TODO: Prepare and cache Pattern instance instead of String RE.
-    private final String templateRe;
+    private final String templateNameRe;
+    private final Pattern templateBeginPattern;
 
     /**
      * Constructs bot template parser class.
@@ -59,7 +60,8 @@ public class BotTemplateParser {
      */
     public BotTemplateParser(String template, @Nullable String userNamespaceLoc) {
         this.template = template; 
-        templateRe = getUserTemplateRe(template, userNamespaceLoc);
+        templateNameRe = getUserTemplateRe(template, userNamespaceLoc);
+        templateBeginPattern = WikiUtils.makeTemplateBeginPattern(templateNameRe);
     }
 
     /**
@@ -74,7 +76,7 @@ public class BotTemplateParser {
     public boolean tryParseTemplate(String text, Map<String, String> parameters) {
         log.debug("Bot settings parsing started for template: {}", template);
         log.debug("Text (truncated to 100): {}", StringTools.trancateTo(text, 100));
-        if (!WikiUtils.parseBotTemplate(templateRe, text, parameters)) {
+        if (!WikiUtils.parseBotTemplate(templateBeginPattern, text, parameters)) {
             // TODO (Nirvanchik): return error code with error details.
             log.error("Failed to parse bot settings");
             return false;
