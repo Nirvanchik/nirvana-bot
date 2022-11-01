@@ -1,6 +1,6 @@
 /**
  *  @(#)PageListFetcher.java 13.12.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2022 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,25 +28,48 @@ import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import java.io.IOException;
 import java.util.List;
 
+// TODO: May be separate it into two interface classes?
+// TODO: Why String is returned here (raw HTTP response)?
+//     I think it should return List<String> with parsed results.
 /**
- * @author kin
- *
+ * Interface for page list fetcher classes.
+ * Abstracts two methods to fetch lists of wiki pages:
+ * 1) method that fetches pages of one category
+ * 2) method that fetches pages of many categories and result is cleaned of pages of ignored
+ * categories.
+ * 
+ * Implementations may fetch pages using different arguments and in a different way but mostly
+ * they should do only one HTTP GET (or POST) request and return result as... as a String?.
  */
 public interface PageListFetcher {
-	/**
-     * @param service
-     * @param categories
-     * @param categoriesToIgnore
-     * @param language
-     * @param depth
-     * @param namespace
-     * @return
+    /**
+     * Fetches list of pages using specified requirements. Search is going in many categories.
+     * Ignore categories specify which categories should be skipped (removed from result).
+     * 
+     * @param service Catscan service that will be used for fetching.
+     * @param categories list of categories to search pages in
+     * @param categoriesToIgnore list of ignored categories
+     * @param language Wiki language
+     * @param depth category depth to search in
+     * @param namespace namespace number to search
+     * @return list of page infos in TSV format (raw response from Catscan service)
      */
     String loadNewPagesForCatListAndIgnore(Service service, 
             List<String> categories, List<String> categoriesToIgnore,
             String language, int depth, int namespace) throws IOException, InterruptedException;
-	
+    
+    /**
+     * Fetches list of pages using specified requirements.
+     *
+     * @param service Catscan service that will be used for fetching.
+     * @param category category to search pages in
+     * @param language Wiki language
+     * @param depth category depth to search in
+     * @param namespace namespace number to search
+     * @return list of page infos in TSV format (raw response from Catscan service)
+     */
     String loadNewPagesForCat(Service service, 
-    		String category, String language, int depth, int namespace) throws IOException, InterruptedException;
+            String category, String language, int depth, int namespace)
+                    throws IOException, InterruptedException;
 
 }

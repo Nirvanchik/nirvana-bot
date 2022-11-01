@@ -1,6 +1,6 @@
 /**
- *  @(#)PageListProcessorFast.java 26.11.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)PageListProcessorFast.java
+ *  Copyright © 2022 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,57 +23,56 @@
 
 package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
+import org.wikipedia.Wiki.Revision;
+import org.wikipedia.nirvana.error.ServiceError;
+import org.wikipedia.nirvana.wiki.CatScanTools.Service;
+import org.wikipedia.nirvana.wiki.NirvanaWiki;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.wikipedia.Wiki.Revision;
-import org.wikipedia.nirvana.error.ServiceError;
-import org.wikipedia.nirvana.wiki.NirvanaWiki;
-import org.wikipedia.nirvana.wiki.CatScanTools.Service;
-
 /**
- * @author kin
+ * Page list processor which is called "fast" because it extracts page list in one HTTP request.
  *
  */
 public class PageListProcessorFast extends BasicProcessor {
 
-	/**
-	 * @param service
-	 * @param cats
-	 * @param ignore
-	 * @param lang
-	 * @param depth
-	 * @param namespace
-	 */
-	public PageListProcessorFast(Service service, List<String> cats,
-	        List<String> ignore, String lang, int depth, int namespace,
-	        PageListFetcher fetcher) {
-		super(service, cats, ignore, lang, depth, namespace, fetcher);
-		// TODO Auto-generated constructor stub
-	}
+    /**
+     * Creates page list processor using provided requirements and fetcher.
+     *
+     * @param service Catscan Service class instance.
+     * @param cats list of categories to extract pages in
+     * @param ignore list of ignored categories
+     * @param lang Wiki language
+     * @param depth depth to search in
+     * @param namespace namespace number to search
+     */
+    public PageListProcessorFast(Service service, List<String> cats,
+            List<String> ignore, String lang, int depth, int namespace,
+            PageListFetcher fetcher) {
+        super(service, cats, ignore, lang, depth, namespace, fetcher);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor#getNewPages(org.wikipedia.nirvana.NirvanaWiki)
-	 */
-	@Override
-	public ArrayList<Revision> getNewPages(NirvanaWiki wiki)
-	        throws IOException, InterruptedException, ServiceError {
-		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(50);
-		HashSet<String> pages = new HashSet<String>();
-		String text = fetcher.loadNewPagesForCatListAndIgnore(service, categories, categoriesToIgnore, language, depth, namespace);
-		parsePageList(wiki, pages, pageInfoList, null, text);	
-		return pageInfoList;
-	}
+    @Override
+    public ArrayList<Revision> getNewPages(NirvanaWiki wiki)
+            throws IOException, InterruptedException, ServiceError {
+        ArrayList<Revision> pageInfoList = new ArrayList<Revision>(50);
+        HashSet<String> pages = new HashSet<String>();
+        String text = fetcher.loadNewPagesForCatListAndIgnore(service, categories,
+                categoriesToIgnore, language, depth, namespace);
+        parsePageList(wiki, pages, pageInfoList, null, text);    
+        return pageInfoList;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor#mayHaveDuplicates()
-	 */
-	@Override
-	public boolean mayHaveDuplicates() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    /* (non-Javadoc)
+     * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor#mayHaveDuplicates()
+     */
+    @Override
+    public boolean mayHaveDuplicates() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
 }

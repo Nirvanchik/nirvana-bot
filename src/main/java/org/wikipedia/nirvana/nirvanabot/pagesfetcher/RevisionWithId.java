@@ -1,6 +1,6 @@
 /**
- *  @(#)RevisionWithId.java 02.11.2013
- *  Copyright © 2013 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)RevisionWithId.java
+ *  Copyright © 2022 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,26 +29,43 @@ import org.wikipedia.Wiki.Revision;
 import java.time.OffsetDateTime;
 
 /**
- * @author kin
+ * Extended version of {@class Wiki.Revision} class that can keep page id.
+ * This page id is later used to sort pages by id which is similar to sorting it by creation date. 
  *
  */
 public class RevisionWithId extends Revision {
-	private long id;
+    private long id;
 
+    /**
+     * Constructs RevisionWithId object using specified parameters for Revision class and id.
+     */
     public RevisionWithId(Wiki wiki, long revid, OffsetDateTime timestamp,
-			String title, String summary, String user, boolean minor,
-			boolean bot, boolean rvnew, int size, long id) {
-		wiki.super(revid, timestamp, title, summary, user, minor, bot, rvnew, size);
-		this.id = id;
-	}
+            String title, String summary, String user, boolean minor,
+            boolean bot, boolean rvnew, int size, long id) {
+        wiki.super(revid, timestamp, title, summary, user, minor, bot, rvnew, size);
+        this.id = id;
+    }
 
-	public RevisionWithId(Wiki wiki, Revision r, long id) {
-		wiki.super(r.getRevid(), r.getTimestamp(), r.getPage(), 
-				r.getSummary(), r.getUser(), r.isMinor(), r.isBot(), r.isNew(), r.getSize());
-		this.id = id;
-	}
+    /**
+     * Constructs RevisionWithId object by cloning existing Revision object.
+     */
+    public RevisionWithId(Wiki wiki, Revision rev, long id) {
+        wiki.super(rev.getRevid(), rev.getTimestamp(), rev.getPage(), 
+                rev.getSummary(), rev.getUser(), rev.isMinor(), rev.isBot(), rev.isNew(),
+                rev.getSize());
+        this.id = id;
+    }
 
-	public long getId() { return this.id; }
-	public void setId(long id) { this.id = id; }
+    /**
+     * @return page id.
+     */
+    public long getId() { return this.id; }
+    
+    /**
+     * Sets page id.
+     *
+     * @param id page id
+     */
+    public void setId(long id) { this.id = id; }
 
 }

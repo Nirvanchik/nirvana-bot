@@ -1,6 +1,6 @@
 /**
- *  @(#)ProcessorCombinator.java 29.04.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)ProcessorCombinator.java
+ *  Copyright © 2022 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,62 +23,52 @@
 
 package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.error.ServiceError;
-import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * @author kin
+ * Processor that runs a group of other processors and merges results into one list. 
  *
  */
 public class ProcessorCombinator implements PageListProcessor {
     protected final Logger log;
 
-	private List<PageListProcessor> fetchers;
+    private List<PageListProcessor> fetchers;
 
-	/**
-	 * @param cats
-	 * @param ignore
-	 * @param lang
-	 * @param depth
-	 * @param hours
-	 * @param namespace
-	 */
-	public ProcessorCombinator(List<PageListProcessor> fetchers) {
-		this.fetchers = fetchers;
-        log = LogManager.getLogger(this.getClass().getName());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.BasicProcessor#getNewPages(org.wikipedia.nirvana.NirvanaWiki)
-	 */
-	@Override
-	public ArrayList<Revision> getNewPages(NirvanaWiki wiki)
-	        throws IOException, InterruptedException, ServiceError {
-		ArrayList<Revision> list;
-		log.debug("getting results from main fetcher");
-		list = fetchers.get(0).getNewPages(wiki);
-		for(int i=1;i<fetchers.size();i++) {
-			log.debug("getting results from another fetcher: "+i);
-			list.addAll(fetchers.get(i).getNewPages(wiki));
-		}
-		return list;
-	}
-
-	/* (non-Javadoc)
-     * @see org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor#mayHaveDuplicates()
+    /**
+     * Creates processor instance using provided list of other processors.
+     *
+     * @param fetchers list of processors to use.
      */
+    public ProcessorCombinator(List<PageListProcessor> fetchers) {
+        this.fetchers = fetchers;
+        log = LogManager.getLogger(this.getClass().getName());
+    }
+
     @Override
-    public boolean mayHaveDuplicates() {	    
-	    return fetchers.size()>1;
+    public ArrayList<Revision> getNewPages(NirvanaWiki wiki)
+            throws IOException, InterruptedException, ServiceError {
+        ArrayList<Revision> list;
+        log.debug("getting results from main fetcher");
+        list = fetchers.get(0).getNewPages(wiki);
+        for (int i = 1; i < fetchers.size(); i++) {
+            log.debug("getting results from another fetcher: {}", i);
+            list.addAll(fetchers.get(i).getNewPages(wiki));
+        }
+        return list;
+    }
+
+    @Override
+    public boolean mayHaveDuplicates() {        
+        return fetchers.size() > 1;
     }
 
 }

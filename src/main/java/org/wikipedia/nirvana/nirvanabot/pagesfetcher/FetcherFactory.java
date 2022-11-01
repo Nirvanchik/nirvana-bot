@@ -1,6 +1,6 @@
 /**
- *  @(#)FetcherFactory.java 13.12.2014
- *  Copyright © 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)FetcherFactory.java
+ *  Copyright © 2022 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ import java.util.List;
 // Implementations may be hidden from user visibility.
 // This will serve good for testing.
 /**
- * @author kin
+ * Factory class that keeps multiple implementations of page list fetchers.
  *
  */
 public abstract class FetcherFactory {
@@ -44,20 +44,30 @@ public abstract class FetcherFactory {
     private FetcherFactory() {
     }
 
-	public static class NewPagesFetcher implements PageListFetcher {
-		protected int hours;
+    /**
+     * Fetcher that can fetch list of new pages.
+     *
+     */
+    public static class NewPagesFetcher implements PageListFetcher {
+        protected int hours;
 
-		public NewPagesFetcher(int hours) {
-			this.hours = hours;
-		}
-		
-		@Override
-		public String loadNewPagesForCatListAndIgnore(Service service,
-	            List<String> categories, List<String> categoriesToIgnore,
-	            String language, int depth, int namespace) throws IOException, InterruptedException {
+        /**
+         * Constructs fetcher using provided "hours" parameter.
+         *
+         * @param hours it will search only pages created not before this number of hours.
+         */
+        public NewPagesFetcher(int hours) {
+            this.hours = hours;
+        }
+
+        @Override
+        public String loadNewPagesForCatListAndIgnore(Service service,
+                List<String> categories, List<String> categoriesToIgnore,
+                String language, int depth, int namespace)
+                        throws IOException, InterruptedException {
             return CatScanTools.loadNewPagesForCatListAndIgnoreWithService(service, categories,
                     categoriesToIgnore, language, depth, hours, namespace);
-		}
+        }
 
         @Override
         public String loadNewPagesForCat(Service service, String category, String language,
@@ -65,12 +75,22 @@ public abstract class FetcherFactory {
             return CatScanTools.loadNewPagesForCatWithService(service, category, language, depth,
                     hours, namespace);
         }
-	}
+    }
 
+    /**
+     * Fetcher that can fetch list of new pages containing specific templates in their text.
+     *
+     */
     public static class NewPagesWithTemplatesFetcher implements PageListFetcher {
         protected TemplateFilter templateFilter;
         protected int hours;
 
+        /**
+         * Constructs fetcher using provided {@class TemplateFilter} and hours value.
+         *
+         * @param templateFilter template filter to use when searching new pages.
+         * @param hours it will search only pages created not before this number of hours.
+         */
         public NewPagesWithTemplatesFetcher(TemplateFilter templateFilter, int hours) {
             this.templateFilter = templateFilter;
             this.hours = hours;
@@ -96,21 +116,26 @@ public abstract class FetcherFactory {
         }
     }
 
-	public static class PagesFetcher implements PageListFetcher {
+    /**
+     * Fetcher that can fetch list of all wiki pages in provided category or categories.
+     *
+     */
+    public static class PagesFetcher implements PageListFetcher {
 
-		/**
-		 */
-		public PagesFetcher() {
-		}
+        /**
+         * Creates fetcher.
+         */
+        public PagesFetcher() {
+        }
 
-		@Override
+        @Override
         public String loadNewPagesForCatListAndIgnore(Service service,
-		        List<String> categories, List<String> categoriesToIgnore,
-		        String language, int depth, int namespace) throws IOException,
-		        InterruptedException {		
+                List<String> categories, List<String> categoriesToIgnore,
+                String language, int depth, int namespace) throws IOException,
+                InterruptedException {        
             return CatScanTools.loadPagesForCatListAndIgnoreWithService(service, categories,
                     categoriesToIgnore, language, depth, namespace);
-		}
+        }
 
         @Override
         public String loadNewPagesForCat(Service service, String category,
@@ -119,24 +144,34 @@ public abstract class FetcherFactory {
             return CatScanTools.loadPagesForCatWithService(service, category, language, depth,
                     namespace);
         }
-	}
+    }
 
-	public static class PagesWithTemplatesFetcher implements PageListFetcher {
+    /**
+     * Fetcher that can fetch list of all wiki pages in provided category or categories and 
+     * containing specific templates in their body.
+     *
+     */
+    public static class PagesWithTemplatesFetcher implements PageListFetcher {
         TemplateFilter templateFilter;
 
+        /**
+         * Constructs fetcher using provided {@class TemplateFilter}.
+         *
+         * @param templateFilter template filter to use when searching new pages.
+         */
         public PagesWithTemplatesFetcher(TemplateFilter templateFilter) {
             this.templateFilter = templateFilter;
-		}
+        }
 
-		@Override
-		public String loadNewPagesForCatListAndIgnore(Service service,
-		        List<String> categories, List<String> categoriesToIgnore,
-		        String language, int depth, int namespace) throws IOException,
-		        InterruptedException {
+        @Override
+        public String loadNewPagesForCatListAndIgnore(Service service,
+                List<String> categories, List<String> categoriesToIgnore,
+                String language, int depth, int namespace) throws IOException,
+                InterruptedException {
             return CatScanTools.loadPagesWithTemplatesForCatListAndIgnoreWithService(service,
                     categories, categoriesToIgnore, language, depth, templateFilter.getTemplates(),
                     templateFilter.listType(), namespace);
-		}
+        }
 
         @Override
         public String loadNewPagesForCat(Service service, String category,
@@ -146,5 +181,5 @@ public abstract class FetcherFactory {
                     category, language, depth, templateFilter.getTemplates(),
                     templateFilter.listType(), namespace);
         }
-	}
+    }
 }

@@ -1,6 +1,6 @@
 /**
- *  @(#)PageListProcessor.java 13.07.2014
- *  Copyright © 2013 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  @(#)PageListProcessor.java
+ *  Copyright © 2022 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,19 +23,37 @@
 
 package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 /**
- * @author kin
+ * Interface for page list processing implementation classes.
  *
+ * They take page list requirements (categories, namespaces, depth, time range, etc.),
+ * fetch page list using provided fetcher, parse it, convert item to desired fromat 
+ * (Revision class), make some post processing (merge multiple lists into one) and return result.
+ * 
+ * So basically, we have inputs: page list fetcher class, page list requirements, and 
+ * we produce output: list of pages put in Revision objects. 
  */
 public interface PageListProcessor {
-	public abstract ArrayList<Revision> getNewPages(NirvanaWiki wiki) throws IOException, InterruptedException, ServiceError;
+    /**
+     * Fetches new pages list using specified fetcher and pages requirements and 
+     * produces list of pages.
+     * 
+     * @param wiki {@class NirvanaWiki} instance.
+     * @return list of page items.
+     */
+    public abstract ArrayList<Revision> getNewPages(NirvanaWiki wiki)
+            throws IOException, InterruptedException, ServiceError;
 
-	public abstract boolean mayHaveDuplicates();
+    // TODO: Remove duplicates at processor level and stop returning them.
+    /**
+     * @return "true" if page list processor can produce duplicated results.
+     */
+    public abstract boolean mayHaveDuplicates();
 }
