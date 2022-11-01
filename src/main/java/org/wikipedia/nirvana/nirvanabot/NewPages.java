@@ -507,7 +507,7 @@ public class NewPages implements PortalModule{
 			return fetchers.get(0);
 	}
 	
-	public void sortPagesByRevision(ArrayList<Revision> pageInfoList) {
+    public void sortPagesByRevision(List<Revision> pageInfoList) {
 		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
 			@Override
@@ -518,7 +518,7 @@ public class NewPages implements PortalModule{
 		});
 	}
 
-	public void sortPagesById(ArrayList<Revision> pageInfoList) {
+    public void sortPagesById(List<Revision> pageInfoList) {
 		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
 			@Override
@@ -529,7 +529,7 @@ public class NewPages implements PortalModule{
 		});
 	}
 	
-	public void sortPagesByName(ArrayList<Revision> pageInfoList) {
+    public void sortPagesByName(List<Revision> pageInfoList) {
 		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
 			@Override
@@ -540,7 +540,7 @@ public class NewPages implements PortalModule{
 		});
 	}
 	
-	public void sortPagesByDate(ArrayList<Revision> pageInfoList) {
+    public void sortPagesByDate(ArrayList<Revision> pageInfoList) {
 		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
 			@Override
@@ -550,8 +550,8 @@ public class NewPages implements PortalModule{
 			
 		});
 	}
-	
-	public void sortPages(ArrayList<Revision> pageInfoList, boolean byRevision) {
+
+    public void sortPages(List<Revision> pageInfoList, boolean byRevision) {
 		if(byRevision) {
 			sortPagesByRevision(pageInfoList);
 		} else {

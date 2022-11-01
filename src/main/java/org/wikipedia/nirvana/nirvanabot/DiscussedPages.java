@@ -217,7 +217,7 @@ public class DiscussedPages extends Pages {
 	}
 	
 	@Override
-	public void sortPages(ArrayList<Revision> pageInfoList, boolean byRevision) {
+    public void sortPages(List<Revision> pageInfoList, boolean byRevision) {
 		// no sort (sort implemented in another place)
 	}	
 
@@ -261,7 +261,7 @@ public class DiscussedPages extends Pages {
 		return pageInfoListNew;
 	}
 
-    public void sortPagesCustom(ArrayList<Revision> pageInfoList) {
+    public void sortPagesCustom(List<Revision> pageInfoList) {
         // TODO Isn't it better to make compareTo() ?
         java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
