@@ -28,7 +28,7 @@ import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Interface for page list processing implementation classes.
@@ -48,12 +48,12 @@ public interface PageListProcessor {
      * @param wiki {@class NirvanaWiki} instance.
      * @return list of page items.
      */
-    public abstract ArrayList<Revision> getNewPages(NirvanaWiki wiki)
+    List<Revision> getNewPages(NirvanaWiki wiki)
             throws IOException, InterruptedException, ServiceError;
 
     // TODO: Remove duplicates at processor level and stop returning them.
     /**
      * @return "true" if page list processor can produce duplicated results.
      */
-    public abstract boolean mayHaveDuplicates();
+    boolean mayHaveDuplicates();
 }

@@ -567,8 +567,8 @@ public class NewPages implements PortalModule{
 		if (getRevisionMethod == GetRevisionMethod.GET_REV) {
             getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
 		}
-		ArrayList<Revision> pageInfoList = pageListProcessor.getNewPages(wiki);
-
+		List<Revision> pageInfoList = pageListProcessor.getNewPages(wiki);
+		
 		pageInfoList = filterPagesByCondition(pageInfoList, wiki);
 
         sortPages(pageInfoList, false);
@@ -579,7 +579,7 @@ public class NewPages implements PortalModule{
 		return pageInfoList;
 	}
 	
-	protected ArrayList<Revision> filterPagesByCondition(ArrayList<Revision> pageInfoList, NirvanaWiki wiki) throws IOException {
+	protected List<Revision> filterPagesByCondition(List<Revision> pageInfoList, NirvanaWiki wiki) throws IOException {
         if (this.templateFilter == null ||
                 (!templateFilter.paramValueFiltering() && !needsCustomTemlateFiltering)) {
 			return pageInfoList;
@@ -744,7 +744,7 @@ public class NewPages implements PortalModule{
 		return d;
 	}
 
-    private void removeDuplicatesInSortedList(ArrayList<Revision> list) {
+    private void removeDuplicatesInSortedList(List<Revision> list) {
     	log.debug("removing duplicates from list");
 	    int i = 1;
 	    while(i<list.size()) {

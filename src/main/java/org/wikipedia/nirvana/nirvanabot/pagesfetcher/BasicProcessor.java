@@ -25,6 +25,8 @@ package org.wikipedia.nirvana.nirvanabot.pagesfetcher;
 
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.error.ServiceError;
+import org.wikipedia.nirvana.parser.format.TabFormatDescriptor;
+import org.wikipedia.nirvana.parser.format.TabularFormat;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
@@ -61,8 +63,6 @@ public abstract class BasicProcessor implements PageListProcessor {
     protected int namespace;
     protected PageListFetcher fetcher;
 
-    // Regex to check validity of line
-    protected final String lineRule;
     // We will not check every line if output has thousands lines for better performance
     protected static final int LINES_TO_CHECK = 25;
 
@@ -77,7 +77,6 @@ public abstract class BasicProcessor implements PageListProcessor {
         this.language = lang;
         this.depth = depth;
         this.namespace = namespace;
-        this.lineRule = service.lineRule == null ? "^.+$" : service.lineRule;
         this.fetcher = fetcher;
         log = LogManager.getLogger(this.getClass().getName());
     }
@@ -141,12 +140,15 @@ public abstract class BasicProcessor implements PageListProcessor {
         if (namespace != 0) {
             namespaceIdentifier = wiki.namespaceIdentifier(namespace);
         }
+        assert service.getFormat() instanceof TabularFormat;
+
+        TabFormatDescriptor descriptor = ((TabularFormat)service.getFormat()).getFormatDescriptor();
         StringReader sr = new StringReader(pageList);
         BufferedReader b = new BufferedReader(sr);
-        for (int j = 0; j < service.skipLines; j++) {
+        for (int j = 0; j < descriptor.getSkipLines(); j++) {
             b.readLine();
         }
-        Pattern p = Pattern.compile(lineRule);
+		Pattern p = Pattern.compile(descriptor.getLineRule());
 
         int j = 0;
         while ((line = b.readLine()) != null) {
@@ -164,7 +166,7 @@ public abstract class BasicProcessor implements PageListProcessor {
                         CatScanTools.ERR_SERVICE_FILTER_BY_NAMESPACE_DISABLED);
             }
             if (service.filteredByNamespace) {
-                String title = groups[service.titlePos].replace('_', ' ');
+                String title = groups[descriptor.getTitlePos()].replace('_', ' ');
                 if (ignore != null && ignore.contains(title)) {
                     log.debug("Ignore page: {}", title);
                     continue;
@@ -178,9 +180,9 @@ public abstract class BasicProcessor implements PageListProcessor {
                 if (!pages.contains(title))
                 {
                     long id = 0;
-                    if (service.idPos >= 0) {
+                    if (descriptor.getIdPos()>=0) {
                         try {
-                            id = Long.parseLong(groups[service.idPos]);
+                            id = Long.parseLong(groups[descriptor.getIdPos()]);
                         } catch (NumberFormatException e) {
                             log.error(e.toString());
                             continue;
