@@ -145,10 +145,10 @@ public abstract class BasicProcessor implements PageListProcessor {
         TabFormatDescriptor descriptor = ((TabularFormat)service.getFormat()).getFormatDescriptor();
         StringReader sr = new StringReader(pageList);
         BufferedReader b = new BufferedReader(sr);
-        for (int j = 0; j < descriptor.getSkipLines(); j++) {
+        for (int j = 0; j < descriptor.skipLines; j++) {
             b.readLine();
         }
-		Pattern p = Pattern.compile(descriptor.getLineRule());
+        Pattern p = Pattern.compile(descriptor.lineRule);
 
         int j = 0;
         while ((line = b.readLine()) != null) {
@@ -166,7 +166,7 @@ public abstract class BasicProcessor implements PageListProcessor {
                         CatScanTools.ERR_SERVICE_FILTER_BY_NAMESPACE_DISABLED);
             }
             if (service.filteredByNamespace) {
-                String title = groups[descriptor.getTitlePos()].replace('_', ' ');
+                String title = groups[descriptor.titlePos].replace('_', ' ');
                 if (ignore != null && ignore.contains(title)) {
                     log.debug("Ignore page: {}", title);
                     continue;
@@ -180,9 +180,9 @@ public abstract class BasicProcessor implements PageListProcessor {
                 if (!pages.contains(title))
                 {
                     long id = 0;
-                    if (descriptor.getIdPos()>=0) {
+                    if (descriptor.idPos >= 0) {
                         try {
-                            id = Long.parseLong(groups[descriptor.getIdPos()]);
+                            id = Long.parseLong(groups[descriptor.idPos]);
                         } catch (NumberFormatException e) {
                             log.error(e.toString());
                             continue;

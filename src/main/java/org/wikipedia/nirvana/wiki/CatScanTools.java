@@ -23,10 +23,12 @@
 
 package org.wikipedia.nirvana.wiki;
 
-import static org.wikipedia.nirvana.parser.format.TabularFormat.TSV_PETSCAN_FORMAT;
+import static org.wikipedia.nirvana.parser.format.Format.FormatType.TSV;
 
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
 import org.wikipedia.nirvana.parser.format.Format;
+import org.wikipedia.nirvana.parser.format.TabFormatDescriptor;
+import org.wikipedia.nirvana.parser.format.TabularFormat;
 import org.wikipedia.nirvana.util.HttpTools;
 
 import org.apache.commons.lang3.StringUtils;
@@ -163,6 +165,11 @@ public class CatScanTools {
             this.isString = isString;
         }
     }
+
+    public static final TabFormatDescriptor TSV_PETSCAN_RULES = new TabFormatDescriptor(1, 3, 1, 2,
+            "^\\d+\\s+\\S+\\s+\\d+\\s+(\\S+\\s+)?\\d+\\s+\\d+\\s*$");
+    public static final TabularFormat TSV_PETSCAN_FORMAT =
+            new TabularFormat(TSV_PETSCAN_RULES, TSV);
 
     /**
      * CatScan service instances with preconfigured parameters.

@@ -127,7 +127,8 @@ public class PageListProcessorSlow extends BasicProcessor {
         }
         assert service.getFormat() instanceof TabularFormat;
 
-        TabFormatDescriptor descriptor = ((TabularFormat) service.getFormat()).getFormatDescriptor();
+        TabFormatDescriptor descriptor =
+                ((TabularFormat) service.getFormat()).getFormatDescriptor();
         for (String category : categoriesToIgnore) {        
             log.debug("Processing data of ignore category: {}", category);
             String line;
@@ -137,10 +138,10 @@ public class PageListProcessorSlow extends BasicProcessor {
                 throw new ServiceError("Invalid output of service: " + service.getName());
             }
             BufferedReader br = new BufferedReader(new StringReader(pageList));
-            for (int j = 0; j < descriptor.getSkipLines(); j++) {
+            for (int j = 0; j < descriptor.skipLines; j++) {
                 br.readLine();
             }
-            Pattern p = Pattern.compile(descriptor.getLineRule());
+            Pattern p = Pattern.compile(descriptor.lineRule);
             int j = 0;
             while ((line = br.readLine()) != null) {
                 j++;
@@ -158,7 +159,7 @@ public class PageListProcessorSlow extends BasicProcessor {
                 }
 
                 if (service.filteredByNamespace) {
-                    String title = groups[descriptor.getTitlePos()].replace('_', ' ');
+                    String title = groups[descriptor.titlePos].replace('_', ' ');
                     log.debug("Add page to ignore list: {}", title);
                     ignore.add(title);
                 }

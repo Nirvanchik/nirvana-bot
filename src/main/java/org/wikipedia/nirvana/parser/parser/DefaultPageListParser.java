@@ -76,7 +76,7 @@ public class DefaultPageListParser implements PageListParser {
         this.service = service;
         this.wiki = wiki;
 
-        lineRulePattern = Pattern.compile(descriptor.getLineRule());
+        lineRulePattern = Pattern.compile(descriptor.lineRule);
     }
 
     public DefaultPageListParser(CatScanTools.Service service, NirvanaWiki wiki, int namespace) {
@@ -116,7 +116,7 @@ public class DefaultPageListParser implements PageListParser {
 
         try (StringReader sr = new StringReader(rawPageList);
                 BufferedReader b = new BufferedReader(sr)) {
-            for (int j = 0; j < descriptor.getSkipLines(); j++) b.readLine();
+            for (int j = 0; j < descriptor.skipLines; j++) b.readLine();
             String line;
             int j = 0;
             while ((line = b.readLine()) != null) {
@@ -135,7 +135,7 @@ public class DefaultPageListParser implements PageListParser {
                 }
                 // то что мы ищем совпадает с тем, что нашли
                 if (service.filteredByNamespace) {
-                    String title = groups[descriptor.getTitlePos()].replace('_', ' ');
+                    String title = groups[descriptor.titlePos].replace('_', ' ');
                     if (!service.hasSuffix && namespace != 0) {
                         title = namespaceIdentifier + ":" + title;
                         log.debug("Namespace is not 0, add suffix!");
@@ -143,9 +143,9 @@ public class DefaultPageListParser implements PageListParser {
 
                     pageInfoMap.computeIfAbsent(title, _title -> {
                         long id = 0;
-                        if (descriptor.getIdPos() >= 0) {
+                        if (descriptor.idPos >= 0) {
                             try {
-                                id = Long.parseLong(groups[descriptor.getIdPos()]);
+                                id = Long.parseLong(groups[descriptor.idPos]);
                             } catch (NumberFormatException e) {
                                 log.error(e.toString());
                             }
