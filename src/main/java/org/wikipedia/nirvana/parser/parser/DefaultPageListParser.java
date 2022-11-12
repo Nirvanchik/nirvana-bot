@@ -109,6 +109,10 @@ public class DefaultPageListParser implements PageListParser {
             log.error("Invalid service output: " + StringTools.trancateTo(rawPageList, 100));
             throw new ServiceError("Invalid output of service" + service.getName());
         }
+        if (!rawPageList.contains("\n")) {
+            log.warn("Service output looks bad - no new lines. See first 300 chars: {}",
+                    StringTools.trancateTo(rawPageList, 300));
+        }
 
         Map<String, Wiki.Revision> pageInfoMap = new HashMap<>();
 
