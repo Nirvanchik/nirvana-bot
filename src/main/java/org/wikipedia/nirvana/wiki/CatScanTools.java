@@ -166,8 +166,13 @@ public class CatScanTools {
         }
     }
 
-    public static final TabFormatDescriptor TSV_PETSCAN_RULES = new TabFormatDescriptor(1, 3, 1, 2,
-            "^\\d+\\s+\\S+\\s+\\d+\\s+(\\S+\\s+)?\\d+\\s+\\d+\\s*$");
+    public static final TabFormatDescriptor TSV_PETSCAN_RULES = new TabFormatDescriptor.Builder()
+            .shouldSkipLines(1)
+            .withTitlePosition(1)
+            .withPageIdPosition(2)
+            .withNamespacePosition(3)
+            .eachLineMustMatchRule("^\\d+\\s+\\S+\\s+\\d+\\s+(\\S+\\s+)?\\d+\\s+\\d+\\s*$")
+            .build();
     public static final TabularFormat TSV_PETSCAN_FORMAT =
             new TabularFormat(TSV_PETSCAN_RULES, TSV);
 
