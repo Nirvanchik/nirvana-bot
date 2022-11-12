@@ -40,6 +40,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+// TODO: Support parsing of 1-namespace lists and many-namespaces lists.
+// 1-namespace parser doesn't parse namespace position. It requires additional argument "namespace".
+// many-namespaces parser parses namespace position.
+// TODO: Get rid of RevisionWithId class here which is nirvanabot specific. Create internal class 
+//     for this matter.
+// TODO: Get rid of service instance from here. This is just parser. It should be free from knowing
+//     any services.
+// TODO: Get rid of NirvanaWiki instance here. This is a simple parser. It should not depend on
+//     Wiki heavy class. Finally, allowed dependencies here: org.wikipedia.nirvana.util and
+//     org.wikipedia.nirvana.parser. So this code can be moved to separate common module.
 /**
  * Default Catscan response parser class implementation (works with TSV format only).
  */
