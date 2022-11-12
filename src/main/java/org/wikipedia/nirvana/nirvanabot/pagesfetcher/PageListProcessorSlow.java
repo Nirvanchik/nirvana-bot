@@ -29,22 +29,21 @@ import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 import org.wikipedia.nirvana.parser.format.TabFormatDescriptor;
 import org.wikipedia.nirvana.parser.format.TabularFormat;
-import org.wikipedia.nirvana.util.StringTools;
+import org.wikipedia.nirvana.parser.parser.DefaultPageListParser;
+import org.wikipedia.nirvana.parser.parser.PageListParser;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * Page list processor implementation which is called "slow".
@@ -77,9 +76,9 @@ public class PageListProcessorSlow extends BasicProcessor {
         ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
         HashSet<String> pages = new HashSet<String>();
         getData(wiki);
-        HashSet<String> ignore = getIgnorePages(wiki, null);        
-        for (String category : categories) {        
-            log.info("Processing data of " + category);
+        HashSet<String> ignore = getIgnorePages(wiki);        
+        for (String category : categories) {
+            log.info("Processing data of {}", category);
             String pageList = pageLists.get(category);
             parsePageList(wiki, pages, pageInfoList, ignore, pageList);                        
         }
@@ -117,53 +116,24 @@ public class PageListProcessorSlow extends BasicProcessor {
         }
         return new ImmutablePair<Integer, String>(depth, category);
     }
-    
-    // TODO: What is this? Most of code is a copy-paste of parsePageList() Refactor it.
-    HashSet<String> getIgnorePages(NirvanaWiki wiki, HashSet<String> ignorePages)
+
+    HashSet<String> getIgnorePages(NirvanaWiki wiki)
             throws IOException, ServiceError {
-        HashSet<String> ignore = ignorePages;
-        if (ignore == null) {
-            ignore = new HashSet<String>();
-        }
+        HashSet<String> ignore = new HashSet<String>();
         assert service.getFormat() instanceof TabularFormat;
 
         TabFormatDescriptor descriptor =
                 ((TabularFormat) service.getFormat()).getFormatDescriptor();
+        PageListParser parser = new DefaultPageListParser(service, wiki, descriptor, namespace);
         for (String category : categoriesToIgnore) {        
             log.debug("Processing data of ignore category: {}", category);
-            String line;
-            String pageList = this.pageListsToIgnore.get(category);
-            if (pageList.startsWith("ERROR : MYSQL error")) {
-                log.error("Invalid service output: {}", StringTools.trancateTo(pageList, 100));
-                throw new ServiceError("Invalid output of service: " + service.getName());
+            String pageListRaw = this.pageListsToIgnore.get(category);
+            Collection<Revision> pageInfos = parser.parsePagesList(pageListRaw);
+            for (Revision pageInfo: pageInfos) {
+                String title = pageInfo.getPage();
+                log.debug("Add page to ignore list: {}", title);
+                ignore.add(title);
             }
-            BufferedReader br = new BufferedReader(new StringReader(pageList));
-            for (int j = 0; j < descriptor.skipLines; j++) {
-                br.readLine();
-            }
-            Pattern p = Pattern.compile(descriptor.lineRule);
-            int j = 0;
-            while ((line = br.readLine()) != null) {
-                j++;
-                if (line.isEmpty()) continue;
-                if (j < LINES_TO_CHECK && !p.matcher(line).matches()) {
-                    log.error("Invalid service output line: {}", line);
-                    throw new ServiceError("Invalid output of service: " + service.getName());
-                }
-                // TODO: Move this low level TSV parsing out of here.
-                String[] groups = line.split("\t");
-
-                if (!service.filteredByNamespace) {
-                    throw new IllegalStateException(
-                            CatScanTools.ERR_SERVICE_FILTER_BY_NAMESPACE_DISABLED);
-                }
-
-                if (service.filteredByNamespace) {
-                    String title = groups[descriptor.titlePos].replace('_', ' ');
-                    log.debug("Add page to ignore list: {}", title);
-                    ignore.add(title);
-                }
-            }            
         }
         return ignore;
     }
