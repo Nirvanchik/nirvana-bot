@@ -79,10 +79,31 @@ public class PageListProcessorSlow extends BasicProcessor {
         HashSet<String> ignore = getIgnorePages(wiki);        
         for (String category : categories) {
             log.info("Processing data of {}", category);
-            String pageList = pageLists.get(category);
-            parsePageList(wiki, pages, pageInfoList, ignore, pageList);                        
+            String pageListRaw = pageLists.get(category);
+            parsePageList(wiki, pages, pageInfoList, ignore, pageListRaw);                        
         }
         return pageInfoList;
+    }
+    
+    private void parsePageList(NirvanaWiki wiki, HashSet<String> pages,
+            ArrayList<Revision> pageInfoList, HashSet<String> ignore, String pageListRaw) 
+                    throws IOException, ServiceError {
+        assert service.getFormat() instanceof TabularFormat;
+
+        TabFormatDescriptor descriptor = ((TabularFormat)service.getFormat()).getFormatDescriptor();
+        PageListParser parser = new DefaultPageListParser(service, wiki, descriptor, namespace);
+        Collection<Revision> pageInfos = parser.parsePagesList(pageListRaw);
+        for (Revision pageInfo: pageInfos) {
+            String title = pageInfo.getPage();
+            if (ignore.contains(title)) {
+                log.debug("Ignore page: {}", title);
+                continue;
+            }
+            if (pages.contains(title)) continue;
+            log.debug("Add page to list: {}", title);
+            pages.add(title);
+            pageInfoList.add(pageInfo);
+        }
     }
     
     void getData(Wiki wiki) throws IOException, InterruptedException {        
