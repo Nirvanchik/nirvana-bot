@@ -44,14 +44,6 @@ src/main/java/org/wikipedia/nirvana/nirvanabot/NewPagesWeek.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/NewPagesWithImages.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/NirvanaBot.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/Pages.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/pagesfetcher/BasicProcessor.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/pagesfetcher/FetcherFactory.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/pagesfetcher/PageListFetcher.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/pagesfetcher/PageListProcessor.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/pagesfetcher/PageListProcessorFast.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/pagesfetcher/PageListProcessorSlow.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/pagesfetcher/ProcessorCombinator.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/pagesfetcher/RevisionWithId.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/PortalModule.java -text
 src/main/java/org/wikipedia/nirvana/nirvanabot/PortalParam.java -text
 src/main/java/org/wikipedia/nirvana/statistics/ArchiveDatabase2.java -text
