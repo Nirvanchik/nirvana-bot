@@ -47,16 +47,6 @@ public class RevisionWithId extends Revision {
     }
 
     /**
-     * Constructs RevisionWithId object by cloning existing Revision object.
-     */
-    public RevisionWithId(Wiki wiki, Revision rev, long id) {
-        wiki.super(rev.getRevid(), rev.getTimestamp(), rev.getPage(), 
-                rev.getSummary(), rev.getUser(), rev.isMinor(), rev.isBot(), rev.isNew(),
-                rev.getSize());
-        this.id = id;
-    }
-
-    /**
      * @return page id.
      */
     public long getId() { return this.id; }
