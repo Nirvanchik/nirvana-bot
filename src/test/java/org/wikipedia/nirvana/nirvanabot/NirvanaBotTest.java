@@ -1214,5 +1214,79 @@ public class NirvanaBotTest {
     public void newPages_images_from_commons() throws TestError {
         run("080_new_pages_with_images_from_commons.js");
     }
+    
+    /**
+     * Test case 081.
+     * Summary: New pages must support "slow mode" ("fast mode = off"). In slow mode we request
+     * data from Catscan for every category in the category list. We merge results and remove
+     * duplications.
+     *
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     *
+     * BOT SETTINGS:
+     * 1) быстрый режим = "нет"
+     * 2) категории -> has 2 categories
+     *
+     * WIKI state:
+     * 1) New pages page doesn't exist
+     *
+     * Similar tests: 001.
+     */
+    @Test
+    public void newPages_slow_mode() throws TestError {
+        run("081_new_pages_slow_mode.js");
+    }
+
+    /**
+     * Test case 082.
+     * Summary: New pages must support "slow mode" ("fast mode = off"). In slow mode we request
+     * data from Catscan for every category in the category list. We merge results and remove
+     * duplications. Also, we request ignored categories one by one and remove ignored pages from
+     * results.
+     *
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     *
+     * BOT SETTINGS:
+     * 1) быстрый режим = "нет"
+     * 2) категории -> has 2 categories
+     * 2) игнорировать -> has 2 categories
+     *
+     * WIKI state:
+     * 1) New pages page doesn't exist
+     *
+     * Similar tests: 081.
+     */
+    @Test
+    public void newPages_slow_mode_ignored_categories() throws TestError {
+        run("082_new_pages_slow_mode_ignored_categories.js");
+    }
+
+    /**
+     * Test case 081.
+     * Summary: New pages must support "slow mode" ("fast mode = off"). In slow mode we request
+     * data from Catscan for every category in the category list. We merge results and remove
+     * duplications. For any category user may specify customized depth. We must not loose it.
+     *
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     *
+     * BOT SETTINGS:
+     * 1) быстрый режим = "нет"
+     * 2) категории -> has 2 categories; one category has customized depth
+     *
+     * WIKI state:
+     * 1) New pages page doesn't exist
+     *
+     * Similar tests: 081.
+     */
+    @Test
+    public void newPages_custom_category_depth() throws TestError {
+        run("083_new_pages_custom_category_depth.js");
+    }
 
 }
