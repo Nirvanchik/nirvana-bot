@@ -9,10 +9,15 @@ version = '1.0'
 
 description = """"""
 
-sourceCompatibility = 8
-targetCompatibility = 8
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+    // Uncomment to see deprecations
+    // options.deprecation = true
 }
 
 repositories {
@@ -21,22 +26,23 @@ repositories {
 }
 
 dependencies {
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.10'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.10'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.10.8'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
-    compile group: 'commons-collections', name: 'commons-collections', version:'3.2.2'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.16.0'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.16.0'
-    compile group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.10'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.9.10'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.10.8'
+    implementation 'org.apache.commons:commons-lang3:3.5'
+    implementation 'commons-collections:commons-collections:3.2.2'
+    implementation 'org.apache.logging.log4j:log4j-api:2.16.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.16.0'
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
-    compileOnly group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
+    annotationProcessor 'org.apache.logging.log4j:log4j-core:2.16.0'
 
-    testCompile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
-    testCompile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
-    testCompile group: 'junit', name: 'junit', version: '4.13.1'
-    testCompile group: 'com.github.tomakehurst', name: 'wiremock-jre8-standalone', version: '2.25.1'
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
 
+    testImplementation 'com.googlecode.json-simple:json-simple:1.1.1'
+    testImplementation 'org.mockito:mockito-all:1.10.19'
+    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'com.github.tomakehurst:wiremock-jre8-standalone:2.25.1'
 }
 
 jar {
