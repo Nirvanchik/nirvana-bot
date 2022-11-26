@@ -195,7 +195,9 @@ public class NirvanaBot extends BasicBot{
     private static final int MAX_TRY_COUNT = 100;
     private static final int MAX_CATSCAN_TRY_COUNT = 100;
 
-    private static String DEFAULT_SERVICE_NAME = CatScanTools.Service.PETSCAN.name;
+    // Do not take it from CatScanTools.Service.PETSCAN.name - this will break logging system by
+    // early log initializer.
+    private static String DEFAULT_SERVICE_NAME = "petscan";
 	private static String SELECTED_SERVICE_NAME = SERVICE_AUTO;
 
 	private static boolean DEFAULT_USE_FAST_MODE = true;
@@ -349,11 +351,11 @@ public class NirvanaBot extends BasicBot{
 	public void showInfo() {
 		System.out.print(PROGRAM_INFO);
 	}
-	
+
 	public String getVersion() {
 		return VERSION;
 	}
-		
+
 	/**
 	 * Constructor with flags
 	 * 

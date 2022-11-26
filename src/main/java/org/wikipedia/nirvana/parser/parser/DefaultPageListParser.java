@@ -55,7 +55,7 @@ import java.util.regex.Pattern;
  */
 public class DefaultPageListParser implements PageListParser {
 
-    private final Logger log = LogManager.getLogger(this.getClass().getName());
+    private final Logger log;
 
     // We will not check every line if output has thousands lines for better performance
     protected static final int LINES_TO_CHECK = 25;
@@ -77,6 +77,7 @@ public class DefaultPageListParser implements PageListParser {
         this.wiki = wiki;
 
         lineRulePattern = Pattern.compile(descriptor.lineRule);
+        log = LogManager.getLogger(this.getClass().getName());
     }
 
     public DefaultPageListParser(CatScanTools.Service service, NirvanaWiki wiki, int namespace) {
