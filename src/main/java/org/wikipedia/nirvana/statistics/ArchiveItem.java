@@ -1,6 +1,6 @@
 /**
  *  @(#)ArchiveItem.java
- *  Copyright © 2012 - 2014 Dmitry Trofimovich (KIN)
+ *  Copyright © 2023 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,58 +31,67 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.OffsetDateTime;
 import java.util.Calendar;
 
-@JsonIgnoreProperties({"getDateAsInt","dateAsInt","getQuarter","quarter"})
+@JsonIgnoreProperties({"getDateAsInt", "dateAsInt", "getQuarter", "quarter"})
 public class ArchiveItem {
-	
-	public String article;
-	public String user;
-	public int year;
-	public int month;
-	public int day;
-	public int size;
-	
-	public ArchiveItem(String article, String user, int year, int month, int day) {
-		this.article = article;
-		this.user = user;
-		this.year = year;
-		this.month = month;
-		this.day = day;
-	}
+    
+    public String article;
+    public String user;
+    public int year;
+    public int month;
+    public int day;
+    public int size;
+    
+    /**
+     * Constructs archive item using all item properties.
+     * Size will be set to 0.
+     *
+     */
+    public ArchiveItem(String article, String user, int year, int month, int day) {
+        this.article = article;
+        this.user = user;
+        this.year = year;
+        this.month = month;
+        this.day = day;
+    }
 
-	public ArchiveItem() {
-		// default constructor
-	}
+    public ArchiveItem() {
+        // default constructor
+    }
 
-	public ArchiveItem(Revision r) {
-        this(r, r.getSize());
-	}
+    public ArchiveItem(Revision revision) {
+        this(revision, revision.getSize());
+    }
 
-	public ArchiveItem(Revision r, int size) {
-        this.article = XmlTools.removeEscape(r.getPage());
-        this.user = XmlTools.removeEscape(r.getUser());
-        OffsetDateTime datetime = r.getTimestamp();
+    /**
+     * Constructs archive item using data from {@link Revision} object and size.
+     */
+    public ArchiveItem(Revision revision, int size) {
+        this.article = XmlTools.removeEscape(revision.getPage());
+        this.user = XmlTools.removeEscape(revision.getUser());
+        OffsetDateTime datetime = revision.getTimestamp();
         this.year = datetime.getYear();
         this.month = datetime.getMonthValue();
         this.day = datetime.getDayOfMonth();
-		this.size = size;
-	}
+        this.size = size;
+    }
 
-	public ArchiveItem(String article, String user, Calendar c) {
-		this.article = article;
-		this.user = user;
-		this.year = c.get(Calendar.YEAR);
-		this.month = c.get(Calendar.MONTH);
-		this.day = c.get(Calendar.DAY_OF_MONTH);
-	}
+    /**
+     * Constructs archive item. Creation date parameters are taken from Calendar instance.
+     *
+     */
+    public ArchiveItem(String article, String user, Calendar cal) {
+        this.article = article;
+        this.user = user;
+        this.year = cal.get(Calendar.YEAR);
+        this.month = cal.get(Calendar.MONTH);
+        this.day = cal.get(Calendar.DAY_OF_MONTH);
+    }
 
-	//@JsonAnySetter
-	//@JsonIgnoreProperties
-	public int getDateAsInt() {
-		return (year<<16 | month<<8 | day);
-	}
-	
-	public int getQuarter() {
-		return month/3+1;
-	}
-
+    public int getDateAsInt() {
+        return (year << 16 | month << 8 | day);
+    }
+    
+    public int getQuarter() {
+        return month / 3 + 1;
+    }
 }
