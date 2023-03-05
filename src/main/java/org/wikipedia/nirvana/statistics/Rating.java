@@ -88,9 +88,7 @@ public class Rating extends Statistics {
         this.year = year;
     }
 
-    /**
-     * Set options specific for project.
-     */
+    @Override
     public void setOptions(Map<String,String> options) {
         super.setOptions(options);
         String key = "размер";
@@ -114,9 +112,7 @@ public class Rating extends Statistics {
         }
     }
 
-    /**
-     * Loads rating data from archive database.
-     */
+    @Override
     public void put(ArchiveDatabase2 db) throws BotFatalError {
         Statistics reporter = null;
         if (!this.filterBySize) {

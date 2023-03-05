@@ -184,7 +184,7 @@ public class Statistics {
     }
 
     /**
-     * Set options specific for this report.
+     * Set options specific for this report instance (specific for project).
      */
     public void setOptions(Map<String,String> options) {        
         String key = "шапка";
@@ -228,6 +228,9 @@ public class Statistics {
         if (totalTemplate != null) totalTemplate = totalTemplate.replace("\\n", "\n");
     }
 
+    /**
+     * Load statistics data from archive database.
+     */
     public void put(ArchiveDatabase2 db) throws BotFatalError {}
 
     protected void calcTotal() {
