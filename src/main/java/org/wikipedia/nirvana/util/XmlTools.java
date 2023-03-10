@@ -37,6 +37,7 @@ public class XmlTools {
      * @return Unescaped string.
      */
     public static String removeEscape(String text) {
+        if (text == null) return text;
         return text.replace("&quot;","\"").replace("&#039;", "'").replace("&amp;", "&");
     }
 
@@ -47,6 +48,7 @@ public class XmlTools {
      * @return unescaped text.
      */
     public static String unescapeSimple(String text) {
+        if (text == null) return text;
         return text.replace("&quot;","\"");
     }
 }
