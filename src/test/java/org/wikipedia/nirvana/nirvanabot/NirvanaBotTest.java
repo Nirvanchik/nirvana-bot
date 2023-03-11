@@ -25,7 +25,7 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.nirvana.base.BasicBot;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
-import org.wikipedia.nirvana.nirvanabot.MockNirvanaBot.TestError;
+import org.wikipedia.nirvana.testing.TestError;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.MockDateTools;
 import org.wikipedia.nirvana.wiki.CatScanTools.Service;
