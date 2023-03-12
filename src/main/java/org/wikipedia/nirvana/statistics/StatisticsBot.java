@@ -349,10 +349,10 @@ public class StatisticsBot extends BasicBot {
                 wtotal.stop();
                 log.info(String.format(STATUS_INFO_FORMAT, "FINISHED. total time ->", wtotal));
                 StatisticsFabric.purge();
+                portalIndex++;
             }
-            portalIndex++;
         }
-        
+
     }
 
     private static List<String> optionToList(Map<String, String> options, String key) {
