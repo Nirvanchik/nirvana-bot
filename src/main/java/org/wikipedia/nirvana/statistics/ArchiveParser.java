@@ -28,6 +28,7 @@ import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.archive.ScanArchiveSettings;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.wiki.NamespaceUtils;
@@ -57,17 +58,19 @@ public class ArchiveParser {
     private ArchiveDatabase2 db;
     NirvanaWiki wiki;
     private final String cacheDir;
+    private SystemTime systemTime;
 
     /**
      * Constructors instance.
      */
     public ArchiveParser(ScanArchiveSettings archiveSettings, ArchiveDatabase2 db,
-            NirvanaWiki wiki, String cacheDir) {
+            NirvanaWiki wiki, String cacheDir, SystemTime systemTime) {
         log = LogManager.getLogger(this.getClass().getName());
         this.archiveSettings = archiveSettings;
         this.db = db;
         this.wiki = wiki;
         this.cacheDir = cacheDir;
+        this.systemTime = systemTime;
     }
 
     private interface PurgeDatabase {
@@ -99,7 +102,7 @@ public class ArchiveParser {
             // Архив состоит из нескольких страниц
             boolean markAll = db.isEmpty();
             int startYear = archiveSettings.startYear;
-            Calendar c = Calendar.getInstance();
+            Calendar c = systemTime.now();
             int endYear = c.get(Calendar.YEAR);
             int curQ = c.get(Calendar.MONTH) / 3 + 1;
             ArchiveItem last = db.getLastFromCache();

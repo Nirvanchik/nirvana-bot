@@ -25,6 +25,7 @@ package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;
@@ -91,9 +92,9 @@ public class RatingTotal extends Rating {
     /**
      * Default constructor for {@link StatisticsFabric}.
      */
-    public RatingTotal(NirvanaWiki wiki, String cacheDir, String type)
+    public RatingTotal(NirvanaWiki wiki, String cacheDir, String type, SystemTime systemTime)
             throws BadAttributeValueExpException, IOException {
-        super(wiki, cacheDir, type);
+        super(wiki, cacheDir, type, systemTime);
         startYear = DEFAULT_START_YEAR;
         endYear = Calendar.getInstance().get(Calendar.YEAR);
         userstatByYear = new HashMap<Integer,Map<String,Integer>>(5);

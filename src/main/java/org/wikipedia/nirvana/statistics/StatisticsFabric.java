@@ -23,9 +23,11 @@
 package org.wikipedia.nirvana.statistics;
 
 import java.lang.reflect.Constructor;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.commons.collections.keyvalue.MultiKey;
@@ -70,16 +72,18 @@ public class StatisticsFabric {
 	}
 
 	@SuppressWarnings("unchecked")
-    static Statistics createReporter(NirvanaWiki wiki, String cacheDir, String type) {
+    static Statistics createReporter(NirvanaWiki wiki, String cacheDir, String type,
+            SystemTime systemTime) {
 		Statistics ob = null;
 		ob = reporters.get(type);
 		if(ob==null) {
 			Class cl = reporterClass.get(type);
 			if(cl==null) return null;			
 			try {
-                Class params[] = new Class[]{NirvanaWiki.class, String.class, String.class};
+                Class params[] = new Class[]{
+                        NirvanaWiki.class, String.class, String.class, SystemTime.class};
                 ob = (Statistics) cl.getDeclaredConstructor(params)
-                        .newInstance(wiki, cacheDir, type);
+                        .newInstance(wiki, cacheDir, type, systemTime);
 				reporters.put(type, ob);
 			} catch (Exception e) {
 				log.error(e);
@@ -90,7 +94,8 @@ public class StatisticsFabric {
 	}
 	
 	@SuppressWarnings("unchecked")
-    static Statistics createReporter(NirvanaWiki wiki, String cacheDir, String type, int year) {
+    static Statistics createReporter(NirvanaWiki wiki, String cacheDir, String type,
+            SystemTime systemTime, int year) {
 		Statistics ob = null;
 		MultiKey multiKey = new MultiKey(type, new Integer(year));
 		ob = (Statistics) reportersYear.get(multiKey);
@@ -99,9 +104,9 @@ public class StatisticsFabric {
 			if(cl==null) return null;
 			try {
                 Class params[] = new Class[]{
-                        NirvanaWiki.class, String.class, String.class, int.class};
+                        NirvanaWiki.class, String.class, String.class, SystemTime.class, int.class};
 				Constructor c = cl.getDeclaredConstructor(params); 
-                ob = (Statistics) c.newInstance(wiki, cacheDir, type, year);
+                ob = (Statistics) c.newInstance(wiki, cacheDir, type, systemTime, year);
 				reportersYear.put(multiKey,ob);
 			} catch (Exception e) {
 				log.error(e.toString());

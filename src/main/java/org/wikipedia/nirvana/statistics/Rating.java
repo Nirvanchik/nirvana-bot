@@ -25,6 +25,7 @@ package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.NumberTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
@@ -72,9 +73,9 @@ public class Rating extends Statistics {
     /**
      * Default constructor (year set to 0).
      */
-    public Rating(NirvanaWiki wiki, String cacheDir, String type)
+    public Rating(NirvanaWiki wiki, String cacheDir, String type, SystemTime systemTime)
             throws BadAttributeValueExpException, IOException {
-        super(wiki, cacheDir, type);
+        super(wiki, cacheDir, type, systemTime);
         year = 0;
     }
 
@@ -82,9 +83,9 @@ public class Rating extends Statistics {
     /**
      * Constructor with initialization to specific year. 
      */
-    public Rating(NirvanaWiki wiki, String cacheDir, String type, int year)
+    public Rating(NirvanaWiki wiki, String cacheDir, String type, SystemTime systemTime, int year)
             throws BadAttributeValueExpException, IOException {
-        super(wiki, cacheDir, type);
+        super(wiki, cacheDir, type, systemTime);
         this.year = year;
     }
 

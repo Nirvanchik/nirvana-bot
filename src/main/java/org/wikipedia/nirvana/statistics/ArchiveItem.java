@@ -31,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.OffsetDateTime;
 import java.util.Calendar;
 
+// TODO: Migrate to java.time dates.
 @JsonIgnoreProperties({"getDateAsInt", "dateAsInt", "getQuarter", "quarter"})
 public class ArchiveItem {
     
@@ -70,7 +71,9 @@ public class ArchiveItem {
         this.user = XmlTools.removeEscape(revision.getUser());
         OffsetDateTime datetime = revision.getTimestamp();
         this.year = datetime.getYear();
-        this.month = datetime.getMonthValue();
+        // We are still working with Calendar dates, where months are indexed from 0.
+        this.month = datetime.getMonthValue() - 1;
+        if (this.month < 0) throw new IllegalStateException("Negative month value");
         this.day = datetime.getDayOfMonth();
         this.size = size;
     }

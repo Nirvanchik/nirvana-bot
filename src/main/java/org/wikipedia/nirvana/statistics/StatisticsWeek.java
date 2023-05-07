@@ -22,9 +22,11 @@
  * */
 package org.wikipedia.nirvana.statistics;
 
+import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;
+import java.time.Month;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -47,9 +49,9 @@ public class StatisticsWeek extends Statistics {
 	 * @throws BadAttributeValueExpException
      * @throws IOException 
 	 */
-    public StatisticsWeek(NirvanaWiki wiki, String cacheDir, String type, int year)
-            throws BadAttributeValueExpException, IOException {
-        super(wiki, cacheDir, type);
+    public StatisticsWeek(NirvanaWiki wiki, String cacheDir, String type, SystemTime systemTime,
+            int year) throws BadAttributeValueExpException, IOException {
+        super(wiki, cacheDir, type, systemTime);
 		this.year = year;
 	}
 	
@@ -58,19 +60,18 @@ public class StatisticsWeek extends Statistics {
 	 * @throws BadAttributeValueExpException
      * @throws IOException 
 	 */
-    public StatisticsWeek(NirvanaWiki wiki, String cacheDir, String type)
+    public StatisticsWeek(NirvanaWiki wiki, String cacheDir, String type, SystemTime systemTime)
             throws BadAttributeValueExpException, IOException {
-        super(wiki, cacheDir, type);
+        super(wiki, cacheDir, type, systemTime);
 		this.year = 0;
 	}
 	
 		
-	public void put(ArchiveDatabase2 db) throws IllegalStateException {
-		Calendar c = Calendar.getInstance();
+    public void put(ArchiveDatabase2 db) throws IllegalStateException {
+        Calendar c = systemTime.now();
         c.setFirstDayOfWeek(dateTools.getFirstDayOfWeek());
         c.setMinimalDaysInFirstWeek(dateTools.getMinimalDaysInFirstWeek());
-		
-		
+
 		// 1) find out period of the first week
 		ListIterator<ArchiveItem> it = null;
 		if(this.year==0) it = db.getIterator();
@@ -91,8 +92,10 @@ public class StatisticsWeek extends Statistics {
 			throw new IllegalStateException("year processing: "+this.year+", item's year: "+item.year+", item: "+item.article);
 		if(item!=null) {		
 					//DateTools.dayToWeek(item.year, item.month, item.day);
-			y = item.year;			
-			c.set(item.year, item.month, item.day);
+            y = item.year;
+            c.clear();
+            c.set(item.year, item.month, item.day, 0, 0, 0);
+
 			curWeek = c.get(Calendar.WEEK_OF_YEAR);
 			if(item.month==0 && item.day<=7 && curWeek>50) {
 				curWeek = 0;
@@ -107,7 +110,8 @@ public class StatisticsWeek extends Statistics {
 			item = it.next();
 			if(this.year!=0 && item.year!=this.year) 
 				throw new IllegalStateException("year processing: "+this.year+", item's year: "+item.year+", item: "+item.article);
-			c.set(item.year, item.month, item.day);
+            c.clear();
+            c.set(item.year, item.month, item.day, 0, 0, 0);
 			//int week = DateTools.dayToWeek(item.year, item.month, item.day);
 			int week = c.get(Calendar.WEEK_OF_YEAR);
 			
@@ -187,7 +191,7 @@ public class StatisticsWeek extends Statistics {
 		sb.append(DELIMETER);
 		for(int i=0;i<items.size();i++) {
 			StatItem item = items.get(i);
-			if(i==0 && HIDE_WEEK_0) continue;
+            if (i == 0 && items.size() > 1 && HIDE_WEEK_0) continue;
 			sb.append(item.toString());
 			sb.append(DELIMETER);
 		}		

@@ -34,6 +34,7 @@ import org.wikipedia.nirvana.base.BotTemplateParser;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.NumberTools;
@@ -91,6 +92,8 @@ public class StatisticsBot extends BasicBot {
     private static boolean USE_CACHE_ONLY = false;
     private static boolean USE_CACHE = true;
 
+    private SystemTime systemTime;
+
     public void showInfo() {
         System.out.print(INFO);
     }
@@ -99,6 +102,13 @@ public class StatisticsBot extends BasicBot {
      * Constructs bot instance. 
      */
     public StatisticsBot() {
+    }
+
+    /**
+     * Constructs bot instance with specific flags. 
+     */
+    public StatisticsBot(int flags) {
+        super(flags);
     }
 
     public static void main(String[] args) {
@@ -155,6 +165,8 @@ public class StatisticsBot extends BasicBot {
     protected void go() throws InterruptedException, BotFatalError {
         Localizer.init(Localizer.NO_LOCALIZATION);
         DateTools.init(language);
+        systemTime = initSystemTime();
+
         String [] portalSettingsPages = null;
         String userNamespace;
         try {
@@ -244,8 +256,8 @@ public class StatisticsBot extends BasicBot {
                 showStatus("database created", watch);
 
                 if (!params.cacheonly) {
-                    ArchiveParser parser =
-                            new ArchiveParser(params.archiveSettings, db, wiki, cacheDir);
+                    ArchiveParser parser = new ArchiveParser(params.archiveSettings, db, wiki,
+                            cacheDir, systemTime);
                     try {
                         parser.getData(params.cache);
                     } catch (IOException e) {            
@@ -268,8 +280,7 @@ public class StatisticsBot extends BasicBot {
                     db.save();
                 }
 
-                Calendar c = Calendar.getInstance();
-                int endYear = c.get(Calendar.YEAR);
+                int endYear = systemTime.now().get(Calendar.YEAR);
 
                 Statistics.portal = dbName;
 
@@ -304,7 +315,8 @@ public class StatisticsBot extends BasicBot {
                         for (int year = params.archiveSettings.startYear; year <= endYear; year++) {
                             log.info("creating report of type: {} for year: {}", type,
                                     String.valueOf(year));
-                            stat = StatisticsFabric.createReporter(wiki, cacheDir, type, year);
+                            stat = StatisticsFabric.createReporter(wiki, cacheDir, type, systemTime,
+                                    year);
                             if (stat == null) {
                                 log.error("Report type {} is not defined", type);
                                 break;
@@ -319,7 +331,7 @@ public class StatisticsBot extends BasicBot {
                         }
                     } else {
                         log.info("creating report of type: {}", type);
-                        stat = StatisticsFabric.createReporter(wiki, cacheDir, type);
+                        stat = StatisticsFabric.createReporter(wiki, cacheDir, type, systemTime);
                         if (stat == null) {
                             log.error("Report type {} is not defined", type);
                             continue;
@@ -518,4 +530,11 @@ public class StatisticsBot extends BasicBot {
         return NirvanaBot.parseArchiveSettings(archiveSettings, items, localizer);
     }
 
+    protected SystemTime initSystemTime() {
+        return new SystemTime();
+    }
+
+    protected long getTimeInMillis() {
+        return systemTime.now().getTimeInMillis();
+    }
 }

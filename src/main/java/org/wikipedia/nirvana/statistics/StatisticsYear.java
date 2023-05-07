@@ -23,6 +23,7 @@
 package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;
@@ -46,9 +47,9 @@ public class StatisticsYear extends Statistics {
 	 * @throws BadAttributeValueExpException
      * @throws IOException 
 	 */
-    public StatisticsYear(NirvanaWiki wiki, String cacheDir, String type)
+    public StatisticsYear(NirvanaWiki wiki, String cacheDir, String type, SystemTime systemTime)
             throws BadAttributeValueExpException, IOException {
-        super(wiki, cacheDir, type);
+        super(wiki, cacheDir, type, systemTime);
 		startYear = 2008;
 	}
 	

@@ -23,6 +23,8 @@
 
 package org.wikipedia.nirvana.testing;
 
+import org.wikipedia.nirvana.nirvanabot.SystemTime;
+import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki.EditInfoMinimal;
@@ -37,7 +39,9 @@ import org.junit.Assert;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Calendar;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Testing helper used for complicated integration tests.
@@ -45,10 +49,13 @@ import java.util.List;
  *
  */
 public class IntegrationTestHelper {
-    MockNirvanaWiki mainWiki;
-    List<EditInfoMinimal> expectedEdits = null;
+    protected Logger tmpLog = Logger.getLogger("IntegrationTestHelper");
 
-    JSONObject mainWikiJson = null;
+    protected MockNirvanaWiki mainWiki;
+    protected List<EditInfoMinimal> expectedEdits = null;
+
+    protected JSONObject mainWikiJson = null;
+    protected SystemTime mockSystemTime = new SystemTime();
 
     /**
      * Creates {@link NirvanaWiki} object configured to use testing mocks. 
@@ -62,6 +69,13 @@ public class IntegrationTestHelper {
             IntegrationTesting.readWiki(wiki, mainWikiJson);
         }
         return wiki;
+    }
+
+    /**
+     * Get {@link SystemTime instance}, optionally configured to freezed time for testing.
+     */
+    public SystemTime getSystemTime() {
+        return mockSystemTime;
     }
 
 
@@ -88,7 +102,20 @@ public class IntegrationTestHelper {
         JSONArray jsonEdits = (JSONArray) jsonObject.get("expected_edits");
         if (jsonEdits != null) {
             expectedEdits = IntegrationTesting.parseEdits(jsonEdits); 
-        }        
+        }
+
+        if (jsonObject.containsKey("system_time")) {
+            final Calendar time = IntegrationTesting
+                    .readTimestamp(jsonObject.get("system_time"));
+            Assert.assertNotNull(time);
+            tmpLog.info("[MOCK] Set current time to " +
+                    DateTools.printTimestamp(time.getTime()));
+            mockSystemTime = new SystemTime() {
+                public Calendar now() {
+                    return (Calendar) time.clone();
+                }
+            };
+        }
     }
 
     /**

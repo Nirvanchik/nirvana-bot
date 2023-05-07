@@ -102,16 +102,10 @@ public class MockNirvanaBot extends NirvanaBot {
     }
     
     private static class TestHelper extends IntegrationTestHelper {
-        private Logger tmpLog = Logger.getLogger("MockNirvanaBot");
-        SystemTime mockSystemTime = new SystemTime();
 
         JSONObject commonsWikiJson = null;
 
         List<ExpectedQuery> expectedQueries = null;
-        
-        public SystemTime getSystemTime() {
-            return mockSystemTime;
-        }
         
         public MockNirvanaWiki createCommonsWiki() {
             MockNirvanaWiki wiki = new MockNirvanaWiki("commons");
@@ -132,19 +126,6 @@ public class MockNirvanaBot extends NirvanaBot {
                 List<String> wikiToolsResponces = JsonUtils
                         .parseMultilineStringArray(jsonResponces);
                 MockCatScanTools.mockResponses(wikiToolsResponces);
-            }
-
-            if (jsonObject.containsKey("system_time")) {
-                final Calendar time = IntegrationTesting
-                        .readTimestamp(jsonObject.get("system_time"));
-                Assert.assertNotNull(time);
-                tmpLog.info("[MOCK] Set current time to " +
-                        DateTools.printTimestamp(time.getTime()));
-                mockSystemTime = new SystemTime() {
-                    public Calendar now() {
-                        return (Calendar) time.clone();
-                    }
-                };
             }
 
             JSONArray jsonQueries = (JSONArray) jsonObject.get("expected_tools_queries");

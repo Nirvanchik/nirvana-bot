@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.TextUtils;
@@ -75,6 +76,7 @@ public class Statistics {
     protected TotalItem total;
     protected NirvanaWiki wiki = null;
     protected final DateTools dateTools;
+    protected SystemTime systemTime;
 
     protected class StatItem {
         public int number;
@@ -173,13 +175,14 @@ public class Statistics {
         total = new TotalItem();
     }
 
-    Statistics(NirvanaWiki wiki, String cacheDir, String type)
+    Statistics(NirvanaWiki wiki, String cacheDir, String type, SystemTime systemTime)
             throws BadAttributeValueExpException, IOException {
         this.wiki = wiki;
         this.type = type;
         log = LogManager.getLogger(this.getClass().getName());
         this.cacheDir = cacheDir;
         dateTools = DateTools.getInstance();
+        this.systemTime = systemTime;
         init();
     }
 
