@@ -1,6 +1,6 @@
 /**
  *  @(#)StatisticsParam.java 
- *  Copyright © 2013 - 2014 Dmitry Trofimovich (KIN)
+ *  Copyright © 2023 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
  * WARNING: This file may contain Russian characters.
  * This file is encoded with UTF-8.
  * */
+
 package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.nirvana.archive.ScanArchiveSettings;
@@ -27,20 +28,20 @@ import org.wikipedia.nirvana.archive.ScanArchiveSettings;
 import java.util.List;
 
 /**
- * @author kin
+ * Keeps project settings used to produce statistics pages.
  *
  */
 public class StatisticsParam {
     public ScanArchiveSettings archiveSettings;
-	public String archive;
-	public List<String> reportTypes;
-	public boolean sort;
-	public boolean cacheonly;
-	public boolean cache;
-	public boolean filterBySize;
-	public int minSize;
-	public String comment;
-	public String header;
-	public String footer;
+    public String archive;
+    public List<String> reportTypes;
+    public boolean sort;
+    public boolean cacheonly;
+    public boolean cache;
+    public boolean filterBySize;
+    public int minSize;
+    public String comment;
+    public String header;
+    public String footer;
 
 }
