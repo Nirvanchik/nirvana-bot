@@ -95,4 +95,23 @@ public class StatisticsBotTest {
         run("001_statistics_week.js");
     }
 
+    @Test
+    public void testStatisticsMonth() throws TestError {
+        run("002_statistics_month.js");
+    }
+
+    @Test
+    public void testStatisticsYear() throws TestError {
+        run("003_statistics_year.js");
+    }
+    
+    @Test
+    public void testStatisticsYear_archive_single() throws TestError {
+        run("004_statistics_year_archive_single.js");
+    }
+
+    @Test
+    public void testStatisticsYear_archive_parse_template_items() throws TestError {
+        run("005_statistics_year_archive_parse_template_items.js");
+    }
 }
