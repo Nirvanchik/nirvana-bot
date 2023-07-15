@@ -43,6 +43,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-all:1.10.19'
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'com.github.tomakehurst:wiremock-jre8-standalone:2.25.1'
+    testImplementation 'commons-io:commons-io:2.13.0'
 }
 
 jar {

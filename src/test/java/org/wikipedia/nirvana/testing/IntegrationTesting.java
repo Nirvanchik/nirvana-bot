@@ -169,6 +169,16 @@ public class IntegrationTesting {
                         parseRevisionList(wiki, (JSONArray) pageHistoryItem.get("revisions")));
             }
         }
+        
+        JSONArray resolveRedirectJsonList = (JSONArray) wikiJson.get("resolveRedirect");
+        if (resolveRedirectJsonList != null) {
+            Iterator<?> it = resolveRedirectJsonList.iterator();
+            while (it.hasNext()) {
+                JSONObject resolveRedirectJson = (JSONObject) it.next();
+                wiki.mockResolveRedirect((String) resolveRedirectJson.get("title"),
+                        (String) resolveRedirectJson.get("resolvedTitle"));
+            }
+        }
     }
     
     private static MockRevision [] parseRevisionList(MockNirvanaWiki wiki,

@@ -695,25 +695,6 @@ public class NirvanaWiki extends Wiki {
     }
 
     /**
-     * Get page history in the specified time range.
-     *
-     * @param title Title of the page.
-     * @param start the EARLIEST of the two dates
-     * @param end the LATEST of the two dates
-     * @return Array of revisions made in this time range.
-     */
-    @Deprecated
-    public Revision[] getPageHistory(String title, Calendar start, Calendar end)
-            throws IOException {
-        // TODO: Migrate to Java8 dates.
-        OffsetDateTime odtStart = OffsetDateTime.ofInstant(start.toInstant(),
-                ZoneId.systemDefault());
-        OffsetDateTime odtEnd = OffsetDateTime.ofInstant(end.toInstant(),
-                ZoneId.systemDefault());
-        return getPageHistory(title, odtStart, odtEnd, false);
-    }
-
-    /**
      * Gets the revision history of a page between two dates.
      * @param title a page
      * @param start the EARLIEST of the two dates

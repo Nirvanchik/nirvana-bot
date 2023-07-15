@@ -24,7 +24,6 @@
 package org.wikipedia.nirvana.localization;
 
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
-import org.wikipedia.nirvana.nirvanabot.NewPages;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
 /**
  * Localization module for bot.
  *
@@ -144,7 +144,6 @@ public class Localizer {
      * Initialize with a special {@link Localizer} instance.
      */
     public static void init(Localizer instance) {
-        assert sInstance == null;
         assert instance != null;
 
         sInstance = instance;

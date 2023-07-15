@@ -156,10 +156,6 @@ public class DateTools {
      * @param language language to localize strings.
      */
     public static void init(String language) {
-        if (sInstance != null) {
-            throw new IllegalArgumentException("DateTools is already initialized");
-        }
-
         sInstance = new DateTools(language);
     }
 

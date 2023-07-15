@@ -34,6 +34,7 @@ import org.wikipedia.nirvana.base.BotTemplateParser;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
+import org.wikipedia.nirvana.nirvanabot.PortalConfig;
 import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
@@ -115,6 +116,10 @@ public class StatisticsBot extends BasicBot {
         BasicBot bot = new StatisticsBot();
         System.exit(bot.run(args));
     }
+    
+    public String getCacheDir() {
+        return outDir + "/" + DEFAULT_CACHE_FOLDER;
+    }
 
     @Override
     protected boolean loadCustomProperties(Map<String,String> launchParams) {
@@ -164,6 +169,7 @@ public class StatisticsBot extends BasicBot {
     @Override
     protected void go() throws InterruptedException, BotFatalError {
         Localizer.init(Localizer.NO_LOCALIZATION);
+        PortalConfig.initStatics();
         DateTools.init(language);
         systemTime = initSystemTime();
 
@@ -249,7 +255,7 @@ public class StatisticsBot extends BasicBot {
 
                 showStatus("parameter processing finished", watch);
 
-                String cacheDir = outDir + "/" + DEFAULT_CACHE_FOLDER;
+                String cacheDir = getCacheDir();
                 ArchiveDatabase2 db = new ArchiveDatabase2(dbName, params.cache, cacheDir,
                         params.filterBySize);
 

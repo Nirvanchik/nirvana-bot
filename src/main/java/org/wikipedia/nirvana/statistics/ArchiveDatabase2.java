@@ -79,6 +79,9 @@ public class ArchiveDatabase2 {
     Map<Integer,Integer> yearIndexes = null;
 
     boolean sorted = true;
+    // TODO: Why version is V1? Remove this strange disambiguity.
+    //     version field has 2 meanings:
+    //     1) new database structure 2) archive item contains page size
     private int version = V1;
     
     /**

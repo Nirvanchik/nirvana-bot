@@ -30,6 +30,7 @@ import org.wikipedia.nirvana.testing.TestError;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.MockDateTools;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -47,7 +48,11 @@ public class StatisticsBotTest {
 
     public static final String TEST_DATA_PATH = "src/test/resources/test_data/stat_bot/";
     public static final String BOT_CONFIG_DEFAULT = "bot_config_ru_default.xml";
+    public static final String BOT_CONFIG_WITH_CACHE = "bot_config_ru_with_cache.xml";
     public static final String BOT_CONFIG_DEFAULT_PATH = TEST_DATA_PATH + BOT_CONFIG_DEFAULT;
+    public static final String BOT_CONFIG_WITH_CACHE_PATH = TEST_DATA_PATH + BOT_CONFIG_WITH_CACHE;
+    
+    MockStatisticsBot bot;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -61,12 +66,15 @@ public class StatisticsBotTest {
     @Before
     public void setUp() throws Exception {
     }
-
+    
     @After
     public void tearDown() throws Exception {
         TestLocalizationManager.reset();
         MockDateTools.reset();
         TestPortalConfig.reset();
+        if (bot != null) {
+            FileUtils.deleteDirectory(new File(bot.getCacheDir()));
+        }
     }
 
     protected void run(String config) throws TestError {
@@ -74,11 +82,11 @@ public class StatisticsBotTest {
     }
 
     protected void run(String config, String botConfig) throws TestError {
-        MockStatisticsBot bot =
-                new MockStatisticsBot(BasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
+        bot = new MockStatisticsBot(BasicBot.FLAG_DEFAULT_LOG, TEST_DATA_PATH + config);
         bot.run(new String[]{botConfig});
         bot.validateEdits();
     }
+    
 
     // Ensure test infrastructure is not broken
     @Test
@@ -114,4 +122,31 @@ public class StatisticsBotTest {
     public void testStatisticsYear_archive_parse_template_items() throws TestError {
         run("005_statistics_year_archive_parse_template_items.js");
     }
+    
+    @Test
+    public void testStatisticsYear_archive_quarter() throws TestError {
+        run("006_statistics_year_archive_quarter.js");
+    }
+    
+    @Test
+    public void testStatisticsYear_archive_single_load_from_cache() throws TestError {
+        run("007_statistics_year_archive_single_load_from_cache_p1.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+        run("007_statistics_year_archive_single_load_from_cache_p2.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+    }
+
+    @Test
+    public void testStatisticsYear_archive_single_load_from_cache_from_bottom() throws TestError {
+        run("008_statistics_year_archive_single_load_from_cache_fbot_p1.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+        run("008_statistics_year_archive_single_load_from_cache_fbot_p2.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+    }
+    
+    @Test
+    public void testStatisticsYear_first_revision_has_no_author() throws TestError {
+        run("009_statistics_year_first_revision_has_no_author.js");
+    }
+
 }

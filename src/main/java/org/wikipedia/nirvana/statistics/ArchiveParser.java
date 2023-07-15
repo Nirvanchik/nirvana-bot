@@ -40,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -283,6 +284,7 @@ public class ArchiveParser {
         Matcher m = p.matcher(line);
         while (m.find()) {
             String article = m.group("article");
+            // TODO: Make it more intelligent. Move it to some settings?
             if (article.contains("Категория:Википедия:Списки новых статей по темам")) {
                 continue;
             }
@@ -330,9 +332,8 @@ public class ArchiveParser {
 
     ArchiveItem getArchiveItemFromTitle(String title, boolean getSize) throws IOException {
         if (title == null) return null;
-        ArchiveItem item = null;
         Revision r = null;
-        r = wiki.getFirstRevision(title,true);
+        r = wiki.getFirstRevision(title, true);
         if (r != null) {
             /** sometimes shit happens, for instance check this page history 
              *  http://ru.wikipedia.org/wiki/%D0%9B%D1%91%D0%B2%D0%B0_%D0%91%D0%B8-2
@@ -343,35 +344,27 @@ public class ArchiveParser {
                 r = tryFindAnotherRev(title, r);
             }
         }
-        if (r != null) {
-            if (getSize) {
-                Revision last = wiki.getTopRevisionWithNewTitle(title, true);
-                item = new ArchiveItem(r, last.getSize());
-            } else {
-                item = new ArchiveItem(r);
-            }            
-        }
-        return item;
+        if (r == null) return null;
+        int size = 0;
+        if (getSize) {
+            Revision last = wiki.getTopRevisionWithNewTitle(title, true);
+            size = last.getSize();
+        }            
+        return new ArchiveItem(r, size);
     }
 
-    // TODO: Migrate to Java8 dates
     Revision tryFindAnotherRev(String article, Revision revision) throws IOException {
         Revision[] revs = null;
         String redirect = null;
         redirect = wiki.resolveRedirect(article);
         String realPage = (redirect == null) ? article : redirect;
-        Calendar c1 = GregorianCalendar.from(
-                revision.getTimestamp().atZoneSameInstant(ZoneId.systemDefault()));
-        Calendar c2 = Calendar.getInstance();
-        c2.set(c1.get(Calendar.YEAR) + 2, 0, 1); // we give 2 years chance to find next rev
-        revision = null;
-        revs = wiki.getPageHistory(realPage, c2, c1);
-        if (revs != null) {
-            for (int i = revs.length - 1; i >= 0; i--) {
-                Revision rev = revs[i];
-                if (rev.getUser() != null) {
-                    return rev;
-                }
+        OffsetDateTime start = revision.getTimestamp();
+        OffsetDateTime end = start.plusYears(2);  // we give 2 years chance to find next rev
+        revs = wiki.getPageHistory(realPage, start, end);
+        for (int i = revs.length - 1; i >= 0; i--) {
+            Revision rev = revs[i];
+            if (rev.getUser() != null) {
+                return rev;
             }
         }
         return null;

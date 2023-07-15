@@ -64,6 +64,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     private Map<Long, Revision> revMap = new HashMap<>();
     private Map<Long, String> revTextMap = new HashMap<>();
     private Map<String, Map> pageInfoMap = new HashMap<>();
+    private Map<String, String> redirectMap = new HashMap<>();
 
     private LinkedList<String> fetchQueue = new LinkedList<>();
 
@@ -497,6 +498,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
         if (history.containsKey(key)) {
             return (Revision[]) history.get(key);
         }
+        // TODO: Remove it. We can mock now() currently
         // Workaround for now() that cannot be mocked easily.
         key = new MultiKey(
                 new Long(start.toInstant().toEpochMilli()), new Long(0));
@@ -560,6 +562,17 @@ public class MockNirvanaWiki extends NirvanaWiki {
     @Override
     public String getToken(String type) throws IOException {
         return token;
+    }
+    
+    public void mockResolveRedirect(String title, String resolvedTitle) {
+        redirectMap.put(title, resolvedTitle);
+    }
+    
+    @Override
+    public String resolveRedirect(String title) throws IOException {
+        log.debug("[MOCK] resolveRedirect: {}", title);
+        Assert.assertTrue(ASSERT_MSG, redirectMap.containsKey(title));
+        return redirectMap.get(title);
     }
 
     public void debug() {
