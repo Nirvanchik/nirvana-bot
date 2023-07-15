@@ -23,6 +23,7 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import java.time.OffsetDateTime;
 import java.util.Calendar;
 
 /**
@@ -42,7 +43,12 @@ public class SystemTime {
     /**
      * Get current time.
      */
+    @Deprecated
     public Calendar now() {
         return Calendar.getInstance();
+    }
+    
+    public OffsetDateTime nowOdt() {
+        return OffsetDateTime.now(); 
     }
 }

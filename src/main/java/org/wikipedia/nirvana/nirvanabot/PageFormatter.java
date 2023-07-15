@@ -192,9 +192,8 @@ public class PageFormatter {
             return;
         }
 
-        // TODO: WTF we put now() as an earliest date?
-        Revision []revs = wiki.getPageHistory(portalSettingsPage, OffsetDateTime.now(),
-                revNewPages.getTimestamp(), false);
+        Revision[] revs = wiki.getPageHistory(portalSettingsPage, revNewPages.getTimestamp(),
+                systemTime.nowOdt(), false);
         if (revs.length == 0) {
             // No changes made in the time period after the last new pages update.
             return;

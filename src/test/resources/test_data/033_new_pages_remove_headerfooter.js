@@ -1,4 +1,5 @@
 {
+	"system_time": "2020-02-20T21:00:00Z",
 	"wiki" : {
 		"whatTranscludesHere": [
 			{ "title": "Участник:Bot template", "list": "Проект:Project 1/Новые статьи/Параметры" }
@@ -42,42 +43,42 @@
 		],
 		"firstRevision": [
 		    {
-			"revid": 666, "timestamp": 1275804366, "title": "Квазисобака", "summary": "create page Квазисобака",
+			"revid": 666, "timestamp": 1275804366000, "title": "Квазисобака", "summary": "create page Квазисобака",
 			"user" : "MegaUser 1", "minor": false, "bot": false, "rvnew": true, "size": 500
 			}, {
-			"revid": 680, "timestamp": 1275804400, "title": "Бульдог", "summary": "create new fucking page",
+			"revid": 680, "timestamp": 1275804400000, "title": "Бульдог", "summary": "create new fucking page",
 			"user" : "MegaUser 2", "minor": false, "bot": false, "rvnew": true, "size": 300
 			}, {
-			"revid": 685, "timestamp": 1275804500, "title": "Плоскожопый долгонос", "summary": "create new page",
+			"revid": 685, "timestamp": 1275804500000, "title": "Плоскожопый долгонос", "summary": "create new page",
 			"user" : "MegaUser 3", "minor": false, "bot": false, "rvnew": true, "size": 666
 			}, {
-			"revid": 686, "timestamp": 1275805366, "title": "Серо-буро-малиновый пенчекряк", "summary": "create new page",
+			"revid": 686, "timestamp": 1275805366000, "title": "Серо-буро-малиновый пенчекряк", "summary": "create new page",
 			"user" : "MegaUser 4", "minor": false, "bot": false, "rvnew": true, "size": 700
 			}, {
-			"revid": 687, "timestamp": 1275806000, "title": "Немецкая овчарка", "summary": "create new page",
+			"revid": 687, "timestamp": 1275806000000, "title": "Немецкая овчарка", "summary": "create new page",
 			"user" : "MegaUser 5", "minor": false, "bot": false, "rvnew": true, "size": 1000
 			}, {
-			"revid": 688, "timestamp": 1275807366, "title": "Розовый пудель", "summary": "create new page",
+			"revid": 688, "timestamp": 1275807366000, "title": "Розовый пудель", "summary": "create new page",
 			"user" : "MegaUser 6", "minor": false, "bot": false, "rvnew": true, "size": 1500
 			}, {
-			"revid": 690, "timestamp": 1275808366, "title": "Белый пудель", "summary": "create new page",
+			"revid": 690, "timestamp": 1275808366000, "title": "Белый пудель", "summary": "create new page",
 			"user" : "MegaUser 7", "minor": false, "bot": false, "rvnew": true, "size": 50
 		    }
 		],
 		"topRevision": [
 			{
-				"revid": 1000, "timestamp": 1275804366, "title": "Проект:Project 1/Новые статьи", "summary": "Remove header",
+				"revid": 1000, "timestamp": 1275804366000, "title": "Проект:Project 1/Новые статьи", "summary": "Remove header",
 				"user" : "SuperUser 1", "minor": false, "bot": false, "rvnew": true, "size": 500
 			}, {
-				"revid": 680, "timestamp": 1275804400, "title": "Бульдог", "summary": "create new fucking page",
+				"revid": 680, "timestamp": 1275804400000, "title": "Бульдог", "summary": "create new fucking page",
 				"user" : "MegaUser 2", "minor": false, "bot": false, "rvnew": true, "size": 300
 			} 
 		],
 		"pageHistory": [
 		    {
-				"title": "Проект:Project 1/Новые статьи/Параметры", "start_time": 0, "end_time": 1275804366, "revisions": [
+				"title": "Проект:Project 1/Новые статьи/Параметры", "start_time": 1275804366000, "end_time": 1582232400000, "revisions": [
 					{
-						"revid": 1000, "timestamp": 1275804366, "title": "Проект:Project 1/Новые статьи/Параметры", "summary": "Remove header",
+						"revid": 1000, "timestamp": 1275804366000, "title": "Проект:Project 1/Новые статьи/Параметры", "summary": "Remove header",
 						"user" : "SuperUser 1", "minor": false, "bot": false, "rvnew": true, "size": 500, "previous": 990
 					}
 				]
@@ -85,7 +86,7 @@
 		],
 		"revision": [
 			{
-				"revid": 990, "timestamp": 1275004166, "title": "Проект:Project 1/Новые статьи/Параметры", "summary": "Add header",
+				"revid": 990, "timestamp": 1275004166000, "title": "Проект:Project 1/Новые статьи/Параметры", "summary": "Add header",
 				"user" : "SuperUser 1", "minor": false, "bot": false, "rvnew": true, "size": 500
 			}
 		],

@@ -39,6 +39,8 @@ import org.junit.Assert;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Logger;
@@ -111,8 +113,15 @@ public class IntegrationTestHelper {
             tmpLog.info("[MOCK] Set current time to " +
                     DateTools.printTimestamp(time.getTime()));
             mockSystemTime = new SystemTime() {
+                @Override
                 public Calendar now() {
                     return (Calendar) time.clone();
+                }
+
+                @Override
+                public OffsetDateTime nowOdt() {
+                    return OffsetDateTime.ofInstant(time.toInstant(),
+                            ZoneId.systemDefault());
                 }
             };
         }
