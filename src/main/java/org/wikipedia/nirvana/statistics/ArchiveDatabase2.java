@@ -457,11 +457,12 @@ public class ArchiveDatabase2 {
         if (this.lastItemFromCache == null) return;
         int ypos = this.yearIndexes.get(lastItemFromCache.year);
         int q = lastItemFromCache.getQuarter();
-        int m = (q - 1) * 3;
+        // Get the first month of previous quarter
+        int m = (q - 1) * 3 + 1;
         int pos = ypos;
         for (; pos < items.size(); pos++) {
             ArchiveItem item = items.get(pos);
-            if (item.month == m) break;
+            if (item.month >= m) break;
         }
         for (int i = items.size() - 1; i >= pos; i--) {
             items.remove(i);

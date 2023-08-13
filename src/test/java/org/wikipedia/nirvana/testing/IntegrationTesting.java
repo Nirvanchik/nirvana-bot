@@ -203,8 +203,8 @@ public class IntegrationTesting {
         String summary = (String) revisionJson.get("summary");
         String user = (String) revisionJson.get("user");
         boolean minor = (Boolean) revisionJson.get("minor");
-        boolean bot = (Boolean) revisionJson.get("bot");
-        boolean rvnew = (Boolean) revisionJson.get("rvnew");
+        boolean bot = (Boolean) revisionJson.getOrDefault("bot", false);
+        boolean rvnew = (Boolean) revisionJson.getOrDefault("rvnew", false);
         int size = (int)(long)(Long) revisionJson.get("size");
         String currentTitle = (String) revisionJson.getOrDefault("current_title", title);
         MockRevision r = wiki.new MockRevision(

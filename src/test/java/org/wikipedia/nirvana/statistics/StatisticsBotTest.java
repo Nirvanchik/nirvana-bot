@@ -110,7 +110,7 @@ public class StatisticsBotTest {
 
     @Test
     public void testStatisticsYear() throws TestError {
-        run("003_statistics_year.js");
+        run("003_statistics_year_archive_year.js");
     }
     
     @Test
@@ -149,4 +149,43 @@ public class StatisticsBotTest {
         run("009_statistics_year_first_revision_has_no_author.js");
     }
 
+    @Test
+    public void testStatisticsYear_archive_single_drop_cache() throws TestError {
+        run("010_statistics_year_archive_single_drop_cache_p1.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+        run("010_statistics_year_archive_single_drop_cache_p2.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+    }
+
+    @Test
+    public void testStatisticsYear_archive_quarter_load_from_cache() throws TestError {
+        run("011_statistics_year_archive_quarter_load_from_cache_p1.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+        run("011_statistics_year_archive_quarter_load_from_cache_p2.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+    }
+
+    @Test
+    public void testStatisticsYear_archive_year_load_from_cache() throws TestError {
+        run("012_statistics_year_archive_year_load_from_cache_p1.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+        run("012_statistics_year_archive_year_load_from_cache_p2.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+    }
+
+    @Test
+    public void testStatisticsYear_archive_quarter_drop_cache() throws TestError {
+        run("013_statistics_year_archive_quarter_drop_cache_p1.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+        run("013_statistics_year_archive_quarter_drop_cache_p2.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+    }
+
+    @Test
+    public void testStatisticsYear_archive_year_drop_cache() throws TestError {
+        run("014_statistics_year_archive_year_drop_cache_p1.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+        run("014_statistics_year_archive_year_drop_cache_p2.js",
+                BOT_CONFIG_WITH_CACHE_PATH);
+    }
 }
