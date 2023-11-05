@@ -30,9 +30,7 @@ import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.NumberTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
@@ -67,7 +65,7 @@ public class Rating extends Statistics {
     protected static final int RESERVE_PERCENT_FOR_RENAMED_USERS = 30;
     int year;    
     int size = DEFAULT_SIZE;
-    boolean filterBySize = true;
+    boolean filterBySize = false;
     public int minSize = 0;
 
     /**
@@ -300,10 +298,6 @@ public class Rating extends Statistics {
                 data = mapper.readValue(
                         new File(startingDir + "\\" + file), 
                         new TypeReference<Map<String,Integer>>() { });
-            } catch (JsonParseException e) {
-                log.error(e);
-            } catch (JsonMappingException e) {
-                log.error(e);
             } catch (IOException e) {
                 log.error(e);
             }
@@ -328,12 +322,6 @@ public class Rating extends Statistics {
         ObjectMapper mapper = new ObjectMapper();
         try {
             mapper.writeValue(new File(file), data);
-        } catch (JsonParseException e) {
-            log.error(e);
-            return;
-        } catch (JsonMappingException e) {
-            log.error(e);
-            return;
         } catch (IOException e) {
             log.error(e);
             return;

@@ -36,6 +36,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -187,5 +188,41 @@ public class StatisticsBotTest {
                 BOT_CONFIG_WITH_CACHE_PATH);
         run("014_statistics_year_archive_year_drop_cache_p2.js",
                 BOT_CONFIG_WITH_CACHE_PATH);
+    }
+
+    @Test
+    public void testRating_total() throws TestError {
+        run("015_rating_total_archive_single.js");
+    }
+
+    @Test
+    public void testRating_by_year() throws TestError {
+        run("016_rating_year_archive_single.js");
+    }
+
+    @Test
+    public void testStatisticsYear_ratingYear() throws TestError {
+        run("017_statistics_year_rating_year.js");
+    }
+
+    @Test
+    public void testRating_total_user_redirects_to_talk_page() throws TestError {
+        run("018_rating_total_user_redirects_to_talk_page.js");
+    }
+
+    @Ignore // FIXME
+    @Test
+    public void testRating_renamed_user() throws TestError {
+        run("019_rating_total_renamed_user.js");
+    }
+
+    @Test
+    public void testRating_renamed_user_2() throws TestError {
+        run("020_rating_total_renamed_user_2.js");
+    }
+
+    @Test
+    public void testRating_total_size_filter() throws TestError {
+        run("021_rating_total_size_filter.js");
     }
 }

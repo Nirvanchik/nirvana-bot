@@ -96,7 +96,7 @@ public class RatingTotal extends Rating {
             throws BadAttributeValueExpException, IOException {
         super(wiki, cacheDir, type, systemTime);
         startYear = DEFAULT_START_YEAR;
-        endYear = Calendar.getInstance().get(Calendar.YEAR);
+        endYear = this.systemTime.now().get(Calendar.YEAR);
         userstatByYear = new HashMap<Integer,Map<String,Integer>>(5);
     }
 

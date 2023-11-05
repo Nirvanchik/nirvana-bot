@@ -122,6 +122,9 @@ public class IntegrationTesting {
         if (topRevJsonList != null) {
             for (MockRevision r: parseRevisionList(wiki, topRevJsonList)) {
                 wiki.mockTopRevision(r.title, r.revision);
+                if (!r.title.equals(r.currentTitle)) {
+                    wiki.mockTopRevision(r.currentTitle, r.revision);
+                }
             }
         }
 
