@@ -41,6 +41,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 
@@ -317,7 +318,7 @@ public class MockNirvanaWiki extends NirvanaWiki {
     @Override
     public Revision getTopRevision(String title) throws IOException {
         log.debug("[MOCK] getTopRevision: {}", title);
-        if (!topRevMap.containsKey(title)) return null;
+        Assert.assertTrue(ASSERT_MSG, topRevMap.containsKey(title));
         return topRevMap.get(title);
     }
 
@@ -579,14 +580,11 @@ public class MockNirvanaWiki extends NirvanaWiki {
         // Empty. Used in tests only.
     }
 
-    public class MockRevision extends Revision {
-        public final String currentTitle;
+    public class TestRevision extends Revision {
 
-        public MockRevision(long revid, OffsetDateTime timestamp, String title,
-                String currentTitle, String summary,
+        public TestRevision(long revid, OffsetDateTime timestamp, String title, String summary,
                 String user, boolean minor, boolean bot, boolean rvnew, int size) {
             super(revid, timestamp, title, summary, user, minor, bot, rvnew, size);
-            this.currentTitle = currentTitle;
         }
 
         public void setPrevious(long previous) {
@@ -596,6 +594,22 @@ public class MockNirvanaWiki extends NirvanaWiki {
         @Override
         public String getText() throws IOException {
             return getRevisionText(getRevid());
+        }
+    }
+
+    public class MockRevision {
+        public final String title;
+        public final String currentTitle;
+        @Nullable
+        public final TestRevision revision;
+
+        /**
+         * Constructs object initialized with provided title, currentTitle and revision (optional).
+         */
+        public MockRevision(String title, String currentTitle, TestRevision revision) {
+            this.title = title;
+            this.currentTitle = currentTitle;
+            this.revision = revision;
         }
     }
 }

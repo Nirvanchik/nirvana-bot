@@ -679,7 +679,7 @@ public class NirvanaWiki extends Wiki {
             throws IOException {
         boolean was = isResolvingRedirects();
         this.setResolveRedirects(resolveRedirect);
-        Revision r = super.getTopRevision(title);
+        Revision r = this.getTopRevision(title);
         setResolveRedirects(was);
         return r;
     }

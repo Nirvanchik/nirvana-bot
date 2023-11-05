@@ -46,6 +46,11 @@
 				"revid": 688, "timestamp": 1436837810000, "title": "Гулд, Стивен Джей", "summary": "create new page",
 				"user" : "MegaUser 6", "minor": false, "bot": false, "rvnew": true, "size": 1100
 			}
+		],
+		"topRevision": [
+			{
+				"title": "Проект:Project 1/Новые статьи"
+			} 
 		]
 	},
 	"wiki_tools" : [[

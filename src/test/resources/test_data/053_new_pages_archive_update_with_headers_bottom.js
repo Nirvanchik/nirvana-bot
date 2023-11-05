@@ -70,6 +70,11 @@
 				"revid": 690, "timestamp": "2020-02-14T19:18:40Z", "title": "Тайский бегемот", "summary": "create new page",
 				"user" : "MegaUser 8", "minor": false, "bot": false, "rvnew": true, "size": 50
 			}
+		],
+		"topRevision": [
+			{
+				"title": "Проект:Project 1/Новые статьи"
+			} 
 		]
 	},
 	"wiki_tools" : [[

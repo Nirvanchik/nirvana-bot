@@ -819,7 +819,10 @@ public class NewPages implements PortalModule{
 			return false;
 		}
 
-        pageFormatter.getHeaderFooterChanges();
+        // Disable this logic for pages which are not updated but recreated
+        if (UPDATE_FROM_OLD) {
+            pageFormatter.getHeaderFooterChanges();
+        }
 
         Data d;
         try {

@@ -28,6 +28,7 @@ import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki.EditInfoMinimal;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki.MockRevision;
+import org.wikipedia.nirvana.wiki.MockNirvanaWiki.TestRevision;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -36,9 +37,11 @@ import org.junit.Assert;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.TimeZone;
 
 /**
@@ -108,24 +111,26 @@ public class IntegrationTesting {
         JSONArray firstRevJsonList = (JSONArray) wikiJson.get("firstRevision");
         if (firstRevJsonList != null) {
             for (MockRevision r: parseRevisionList(wiki, firstRevJsonList)) {
-                wiki.mockFirstRevision(r.getPage(), r);
-                if (!r.getPage().equals(r.currentTitle)) {
-                    wiki.mockFirstRevision(r.currentTitle, r);
+                wiki.mockFirstRevision(r.title, r.revision);
+                if (!r.title.equals(r.currentTitle)) {
+                    wiki.mockFirstRevision(r.currentTitle, r.revision);
                 }
             }
         }
 
         JSONArray topRevJsonList = (JSONArray) wikiJson.get("topRevision");
         if (topRevJsonList != null) {
-            for (Revision r: parseRevisionList(wiki, topRevJsonList)) {
-                wiki.mockTopRevision(r.getPage(), r);
+            for (MockRevision r: parseRevisionList(wiki, topRevJsonList)) {
+                wiki.mockTopRevision(r.title, r.revision);
             }
         }
 
         JSONArray revJsonList = (JSONArray) wikiJson.get("revision");
         if (revJsonList != null) {
-            for (Revision r: parseRevisionList(wiki, revJsonList)) {
-                wiki.mockRevision(r.getRevid(), r);
+            for (MockRevision r: parseRevisionList(wiki, revJsonList)) {
+                if (r.revision != null) {
+                    wiki.mockRevision(r.revision.getRevid(), r.revision);
+                }
             }
         }
 
@@ -163,10 +168,16 @@ public class IntegrationTesting {
             Iterator<?> it = pageHistoryJsonList.iterator();
             while (it.hasNext()) {
                 JSONObject pageHistoryItem = (JSONObject) it.next();
+                MockRevision [] mockRevs = parseRevisionList(
+                        wiki, (JSONArray) pageHistoryItem.get("revisions"));
+                Revision [] revs = Arrays.stream(mockRevs)
+                        .map(r -> r.revision)
+                        .filter(Objects::nonNull)
+                        .toArray(Revision[]::new);
                 wiki.mockPageHistory((String) pageHistoryItem.get("title"),
                         (Long) pageHistoryItem.get("start_time"),
                         (Long) pageHistoryItem.get("end_time"),
-                        parseRevisionList(wiki, (JSONArray) pageHistoryItem.get("revisions")));
+                        revs);
             }
         }
         
@@ -193,26 +204,30 @@ public class IntegrationTesting {
 
     @SuppressWarnings("unchecked")  // Json parsing
     private static MockRevision parseRevision(MockNirvanaWiki wiki, JSONObject revisionJson) {
-        long revid = (Long) revisionJson.get("revid");
-        Object timestampField = revisionJson.get("timestamp");
-        Assert.assertNotNull("'timestamp' item must not be null", timestampField);
-        Calendar timestamp = readTimestamp(timestampField);
-        OffsetDateTime datetime = OffsetDateTime.ofInstant(timestamp.toInstant(),
-                ZoneId.systemDefault());
         String title = (String) revisionJson.get("title");
-        String summary = (String) revisionJson.get("summary");
-        String user = (String) revisionJson.get("user");
-        boolean minor = (Boolean) revisionJson.get("minor");
-        boolean bot = (Boolean) revisionJson.getOrDefault("bot", false);
-        boolean rvnew = (Boolean) revisionJson.getOrDefault("rvnew", false);
-        int size = (int)(long)(Long) revisionJson.get("size");
-        String currentTitle = (String) revisionJson.getOrDefault("current_title", title);
-        MockRevision r = wiki.new MockRevision(
-                revid, datetime, title, currentTitle, summary, user, minor, bot, rvnew, size);
-        if (revisionJson.containsKey("previous")) {
-            r.setPrevious((Long) revisionJson.get("previous")); 
+        TestRevision r = null;
+        if (revisionJson.containsKey("revid")) {
+            long revid = (Long) revisionJson.get("revid");
+            Object timestampField = revisionJson.get("timestamp");
+            Assert.assertNotNull("'timestamp' item must not be null", timestampField);
+            Calendar timestamp = readTimestamp(timestampField);
+            OffsetDateTime datetime = OffsetDateTime.ofInstant(timestamp.toInstant(),
+                    ZoneId.systemDefault());
+            String summary = (String) revisionJson.get("summary");
+            String user = (String) revisionJson.get("user");
+            boolean minor = (Boolean) revisionJson.get("minor");
+            boolean bot = (Boolean) revisionJson.getOrDefault("bot", false);
+            boolean rvnew = (Boolean) revisionJson.getOrDefault("rvnew", false);
+            int size = (int)(long)(Long) revisionJson.get("size");
+            r = wiki.new TestRevision(
+                    revid, datetime, title, summary, user, minor, bot, rvnew, size);
+            if (revisionJson.containsKey("previous")) {
+                r.setPrevious((Long) revisionJson.get("previous")); 
+            }
         }
-        return r;
+        String currentTitle = (String) revisionJson.getOrDefault("current_title", title);
+        MockRevision mockRev = wiki.new MockRevision(title, currentTitle, r);
+        return mockRev;
     }
 
     // TODO: Migrate to Java8 dates

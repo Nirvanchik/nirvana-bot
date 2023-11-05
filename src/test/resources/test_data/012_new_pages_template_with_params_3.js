@@ -82,6 +82,11 @@
 				"user" : "Lemmy Indarkness", "minor": false, "bot": false, "rvnew": true, "size": 1000
 			}
 		],
+		"topRevision": [
+			{
+				"title": "Проект:Project 1/Новые статьи"
+			} 
+		],
 		"templates": [
 			{
 				"title": "Scream In Darkness",

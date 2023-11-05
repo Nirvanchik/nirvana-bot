@@ -318,6 +318,11 @@
 				"revid": 721, "timestamp": "2020-02-20T20:29:39Z", "title": "Солина, Виктория", "summary": "create new page",
 				"user" : "Igor Borisenko", "minor": false, "bot": false, "rvnew": true, "size": 50
 			}
+		],
+		"topRevision": [
+			{
+				"title": "Проект:Футбол/Статьи"
+			} 
 		]
 	},
 	"wiki_tools" : [[

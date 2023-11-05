@@ -46,6 +46,11 @@
 				"revid": 690, "timestamp": 1275804366, "title": "Транспортные здания и сооружения Иванова", "summary": "create page Транспортные здания и сооружения Иванова",
 				"user" : "Wagon", "minor": false, "bot": false, "rvnew": true, "size": 500
 			}
+		],
+		"topRevision": [
+			{
+				"title": "Проект:Project 1/Новые статьи"
+			} 
 		]
 	},
 	"wiki_tools" : [[

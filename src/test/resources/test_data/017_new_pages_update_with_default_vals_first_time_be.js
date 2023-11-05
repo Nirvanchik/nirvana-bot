@@ -45,6 +45,11 @@
 				"revid": 690, "timestamp": 1275808366, "title": "Белый пудель", "summary": "create new page",
 				"user" : "MegaUser 7", "minor": false, "bot": false, "rvnew": true, "size": 50
 			}
+		],
+		"topRevision": [
+			{
+				"title": "Праект:Project 1/Новыя артыкулы"
+			} 
 		]
 	},
 	"wiki_tools" : [[

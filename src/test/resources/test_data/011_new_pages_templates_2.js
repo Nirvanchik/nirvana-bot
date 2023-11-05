@@ -161,6 +161,11 @@
 				"user" : "Mega", "minor": false, "bot": false, "rvnew": true, "size": 1100
 			}
 		],
+		"topRevision": [
+			{
+				"title": "Проект:Project 1/Новые статьи"
+			} 
+		],
 		"templates": [
 			{
 				"title": "Lavanify miolaka",

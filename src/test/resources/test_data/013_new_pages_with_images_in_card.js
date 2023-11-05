@@ -78,6 +78,11 @@
 				"user" : "MegaUser 3", "minor": false, "bot": false, "rvnew": true, "size": 666
 			}
 		],
+		"topRevision": [
+			{
+				"title": "Проект:Project 1/Новые статьи"
+			} 
+		]
 		"templates": [
 		],
 		"exists": [
