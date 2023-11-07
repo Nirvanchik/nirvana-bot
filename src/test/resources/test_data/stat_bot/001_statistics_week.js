@@ -181,7 +181,7 @@
 		{
 			"title": "Проект:Project 1/Новые статьи/Статистика/2020/По неделям",
 			"text": [
-"{| class=\"wikitable sortable\" style=\"text-align:center\" ",
+"{| class=\"wikitable sortable\" style=\"text-align:center\"",
 "|-",
 "! № недели !! месяц !! статей !! прогресс !! среднее за день !! MIN за день !! MAX за день !! самый активный",
 "|-",
@@ -199,7 +199,7 @@
 		{
 			"title": "Проект:Project 1/Новые статьи/Статистика/2021/По неделям",
 			"text": [
-"{| class=\"wikitable sortable\" style=\"text-align:center\" ",
+"{| class=\"wikitable sortable\" style=\"text-align:center\"",
 "|-",
 "! № недели !! месяц !! статей !! прогресс !! среднее за день !! MIN за день !! MAX за день !! самый активный",
 "|-",

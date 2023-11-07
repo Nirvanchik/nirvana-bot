@@ -231,6 +231,7 @@ public class Rating extends Statistics {
         if (this.itemTemplate.contains("%(прогресс)")) calcProgress();
     }
 
+    // TODO: Use user id instead of user name
     protected boolean removeDuplicates() throws BotFatalError {
         boolean duplicates = false;
         int n = items.size();

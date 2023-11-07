@@ -225,4 +225,9 @@ public class StatisticsBotTest {
     public void testRating_total_size_filter() throws TestError {
         run("021_rating_total_size_filter.js");
     }
+
+    @Test
+    public void testRating_total_all_types() throws TestError {
+        run("022_statistics_all_types.js");
+    }
 }
