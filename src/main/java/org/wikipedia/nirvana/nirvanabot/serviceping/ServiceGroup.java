@@ -113,11 +113,6 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
 	}
 	
 	@Override
-	public boolean isReplacable() {
-		return true;
-	}
-
-	@Override
     public void resetCache() {
 	    super.resetCache();
 	    for(T service:services) {

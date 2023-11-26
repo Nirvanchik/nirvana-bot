@@ -1,6 +1,6 @@
 /**
- *  @(#)CatscanService.java 12.03.2016
- *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)CatscanService.java
+ *  Copyright © 2023 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,70 +29,68 @@ import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Date;
 
 /**
- * @author kin
+ * Checks availability of Catscan service.
  *
  */
 public class CatscanService extends InternetService {
     CatScanTools.Service service;
 
-	/**
-	 * @param priority
-	 */
+    /**
+     * Constructs service with instance to CatScanTools.Service object.
+     */
     public CatscanService(CatScanTools.Service service) {
-		this(service.getName(), service);
-	}
+        this(service.getName(), service);
+    }
 
-	/**
-	 * @param name
-	 * @param priority
-	 */
+    /**
+     * Constructs service with specific name and instance to CatScanTools.Service object.
+     */
     public CatscanService(String name, CatScanTools.Service service) {
-		super(name);
-		this.service = service;
-	}
+        super(name);
+        this.service = service;
+    }
 
+    /**
+     * @return connected CatScanTools.Service service. 
+     */
     public CatScanTools.Service getService() {
-		return service;
-	}
+        return service;
+    }
 
-	@Override
-	protected boolean checkAvailable() {
-		URL url;
+    @Override
+    protected boolean checkAvailable() {
+        URL url;
         try {
             url = new URL(CatScanTools.HTTPS + "://" + service.domain + service.path);
         } catch (MalformedURLException e) {
-	        throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
-		return checkConnection(url);
-	}
+        return checkConnection(url);
+    }
 
-	@Override
-    protected boolean checkWorking() throws InterruptedException {	    
+    @Override
+    protected boolean checkWorking() throws InterruptedException {        
         if (service.supportsFeature(ServiceFeatures.PAGES)) {
             boolean fastMode = CatScanTools.setFastMode(true);
             boolean statState = CatScanTools.enableStat(false);
             boolean retriesState = CatScanTools.enableRetries(false);
-			try {
-				Date date = new Date();
-				log.debug("time: "+date.toString());
+            try {
                 String result = CatScanTools.loadPagesForCatWithService(service, "HTML", "ru", 1,
                         0);
-	            date = new Date();
-	            log.debug("time: "+date.toString());
-	            if (result == null || result.isEmpty()) {
-	            	setLastError("loadPagesForCatWithService() returned empty result");
-	            	return false;
-	            }
-	            if (!result.contains("HTML5")) {
-	            	setLastError("loadPagesForCatWithService() returned corrupted result ");
-	            	return false;
-	            }
+                if (result == null || result.isEmpty()) {
+                    setLastError("loadPagesForCatWithService() returned empty result");
+                    return false;
+                }
+                if (!result.contains("HTML5")) {
+                    setLastError("loadPagesForCatWithService() returned corrupted result ");
+                    return false;
+                }
             } catch (IOException e) {
-            	setLastError("Exception when calling loadPagesForCatWithService(): " + e.toString());
-	            return false;
+                setLastError("Exception when calling loadPagesForCatWithService(): " +
+                        e.toString());
+                return false;
             } finally {
                 CatScanTools.setFastMode(fastMode);
                 CatScanTools.enableStat(statState);
@@ -100,33 +98,30 @@ public class CatscanService extends InternetService {
             }
         } 
         if (service.supportsFeature(ServiceFeatures.NEWPAGES)) {
-				try {
-					//System.currentTimeMillis();
-					Date date = new Date();
-					log.debug("time: "+date.toString());
-                    CatScanTools.setFastMode(true);
-                    String result = CatScanTools.loadNewPagesForCatWithService(service, "HTML",
-                            "ru", 0, 50*12*31*24, 0);
-		            date = new Date();
-		            log.debug("time: "+date.toString());
-		            if (result == null || result.isEmpty()) {
-		            	setLastError("loadNewPagesForCatWithService() returned empty result");
-		            	return false;
-		            }
-		            if (!result.contains("HTML5")) {
-		            	setLastError("loadNewPagesForCatWithService() returned corrupted result ");
-		            	return false;
-		            }
-	            } catch (IOException | InterruptedException e) {
-	            	setLastError("Exception when calling loadNewPagesForCatWithService(): " + e.toString());
-		            return false;
-	            } finally {
-                    CatScanTools.setFastMode(false);
-	            }
-		} /*else {
-			setLastError("This is an unexpected service which doesn't support required things");
-			return false;
-		}*/
-		return true;
+            boolean fastMode = CatScanTools.setFastMode(true);
+            boolean statState = CatScanTools.enableStat(false);
+            boolean retriesState = CatScanTools.enableRetries(false);
+            try {
+                String result = CatScanTools.loadNewPagesForCatWithService(service, "HTML",
+                        "ru", 0, 50 * 12 * 31 * 24, 0);
+                if (result == null || result.isEmpty()) {
+                    setLastError("loadNewPagesForCatWithService() returned empty result");
+                    return false;
+                }
+                if (!result.contains("HTML5")) {
+                    setLastError("loadNewPagesForCatWithService() returned corrupted result");
+                    return false;
+                }
+            } catch (IOException | InterruptedException e) {
+                setLastError("Exception when calling loadNewPagesForCatWithService(): " +
+                        e.toString());
+                return false;
+            } finally {
+                CatScanTools.setFastMode(fastMode);
+                CatScanTools.enableStat(statState);
+                CatScanTools.enableRetries(retriesState);
+            }
+        }
+        return true;
     }
 }

@@ -1,6 +1,6 @@
 /**
- *  @(#)NetworkInterface.java 12.03.2016
- *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)NetworkInterface.java
+ *  Copyright © 2023 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,26 +27,29 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
- * @author kin
+ * Service that represents local network connection, no matter wired or wireless.
  *
  */
 public class NetworkInterface extends BasicService {
 
-	public NetworkInterface() {
-		super("Network interface");
-	}
+    /**
+     * Default constructor.
+     */
+    public NetworkInterface() {
+        super("Network interface");
+    }
 
-	@Override
-	protected boolean checkOk() {
-		try {
-	        if ("127.0.0.1".equals(InetAddress.getLocalHost().getHostAddress().toString())) {
-	        	setLastError("This host has a local address : 127.0.0.1");
-	        	return false;
-	        }
+    @Override
+    protected boolean checkOk() {
+        try {
+            if ("127.0.0.1".equals(InetAddress.getLocalHost().getHostAddress().toString())) {
+                setLastError("This host has a local address : 127.0.0.1");
+                return false;
+            }
         } catch (UnknownHostException e) {
-        	setLastError("Got exception when checking host address: " + e.toString());
-	        return false;
+            setLastError("Got exception when checking host address: " + e.toString());
+            return false;
         }
-		return true;
-	}
+        return true;
+    }
 }

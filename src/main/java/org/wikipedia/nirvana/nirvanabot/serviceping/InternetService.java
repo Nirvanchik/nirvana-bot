@@ -1,6 +1,6 @@
 /**
- *  @(#)InternetService.java 12.03.2016
- *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)InternetService.java
+ *  Copyright © 2023 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,75 +33,84 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author kin
- *
+ * Service that represents Internet connection.
+ * Internet connection is checked by making simple HTTP GET requests
+ * to well known worldwide sites.
  */
 public class InternetService extends DoubleCheckService {
-	private final URL url1;
-	private final URL url2;
-	private static final Pattern HTML_SITE_PATTERN = 
-			Pattern.compile("^.*<html.*>.*<body.*>.*<\\/body>.*<\\/html>.*$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-			//Pattern.compile("^.*<html.*>.*<\\/html>.*$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    private final URL url1;
+    private final URL url2;
+    private static final Pattern HTML_SITE_PATTERN = 
+            Pattern.compile("^.*<html.*>.*<body.*>.*<\\/body>.*<\\/html>.*$",
+                    Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-	public InternetService() {
-		this("Internet connection");
-	}
-	
-	public InternetService(String name) {
-		super(name);
-		try {
-	        url1 = new URL("https://ya.ru");
-			url2 = new URL("http://www.bbc.com/");
-        } catch (MalformedURLException e) {	        
-	        e.printStackTrace();
-	        throw new RuntimeException(e);
+    /**
+     * Default constructior.
+     */
+    public InternetService() {
+        this("Internet connection");
+    }
+
+    /**
+     * Constructs object with specific name.
+     */
+    public InternetService(String name) {
+        this(name, "https://ya.ru", "http://www.bbc.com/");
+    }
+
+    /**
+     * Constructs object with specific name and web site urls to check.
+     */
+    public InternetService(String name, String url1, String url2) {
+        super(name);
+        try {
+            this.url1 = new URL(url1);
+            this.url2 = new URL(url2);
+        } catch (MalformedURLException e) {            
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-	}
-
-	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService#isAvailable()
-	 */
-	@Override
-	protected boolean checkAvailable() {
-		if (!checkConnection(url1) && !checkConnection(url2)) {
-			return false;
-		}
-		return true;
-	}
-	
-	protected boolean checkConnection(URL url) {
-		try {
-			final URLConnection conn = url.openConnection();                                                                                                                                                                                  
-	        conn.connect();
-        } catch (IOException e) {
-        	setLastError("Failed to open connection to url: " + url.toString());
-	        return false;
-        }                                                                                                                                                                                                                   
-        return true;          
-	}
+    }
 
     @Override
-    protected boolean checkWorking() throws InterruptedException {	    
-	    return checkHtmlSiteWorking(url1) || checkHtmlSiteWorking(url2);
+    protected boolean checkAvailable() {
+        return checkConnection(url1) || checkConnection(url2);
     }
-    
+
+    protected boolean checkConnection(URL url) {
+        try {
+            final URLConnection conn = url.openConnection();
+            conn.connect();
+        } catch (IOException e) {
+            setLastError("Failed to open connection to url: " + url.toString());
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected boolean checkWorking() throws InterruptedException {        
+        return checkHtmlSiteWorking(url1) || checkHtmlSiteWorking(url2);
+    }
+
     private boolean checkHtmlSiteWorking(URL url) {
-    	String result = null;
-    	try {
+        String result = null;
+        try {
             result = HttpTools.fetch(url);
         } catch (IOException e) {
-        	setLastError("IOException when fetching url: " + url.toString()+" " + e.toString());
-	        return false;
+            setLastError("IOException when fetching url: " + url.toString() + " " + e.toString());
+            return false;
         }
-    	if (result == null || result.isEmpty()) {
-    		setLastError("Fetch result is empty from url: "+url.toString());
-    		return false;
-    	}
-    	Matcher m = HTML_SITE_PATTERN.matcher(result);
-    	if (!m.matches()) {
-    		setLastError(String.format("The site %1$s doesn't match to HTML site pattern", url.toString()));
-    		return false;
-    	}
-    	return true;
+        if (result == null || result.isEmpty()) {
+            setLastError("Fetch result is empty from url: " + url.toString());
+            return false;
+        }
+        Matcher m = HTML_SITE_PATTERN.matcher(result);
+        if (!m.matches()) {
+            setLastError(String.format("The site %1$s doesn't match to HTML site pattern",
+                    url.toString()));
+            return false;
+        }
+        return true;
     }
 }

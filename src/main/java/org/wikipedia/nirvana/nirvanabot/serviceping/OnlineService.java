@@ -1,6 +1,6 @@
 /**
- *  @(#)OnlineService.java 12.03.2016
- *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)OnlineService.java
+ *  Copyright © 2023 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,20 +24,51 @@
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
 /**
- * @author kin
- *
+ * Basic interface that represents any online service.
+ * "Online" means that service is available via network (Internet) connection
+ * and is third-party, or network/internet connection itself.
+ * This abstraction is used to deal with services that can be broken when bot starts
+ * or while bot is working.
  */
 public interface OnlineService {
-	enum Status {
-		OK,
-		FAIL,
-		UNKNOWN
-	}
-	String getName();
-	Status isOk() throws InterruptedException;
-	boolean isReplacable();
-	void recover() throws InterruptedException;
-	int getPriority();
-	void resetCache();
-	String getLastError();
+    /**
+     * Availability status of service
+     * (if service is available and working).
+     */
+    enum Status {
+        OK,
+        FAIL,
+        UNKNOWN
+    }
+
+    /**
+     * @return human readable service name. Used for logging and ui.
+     */
+    String getName();
+
+    /**
+     * Check service availability and return its status.
+     * This status may be cached to speed up subsequent calls.
+     *
+     * @return service availability status
+     */
+    Status isOk() throws InterruptedException;
+
+    /**
+     * Try recover this service if possible.
+     * This method can make some actions to make service working again
+     * (may be use alternative domain name or anything else).
+     */
+    void recover() throws InterruptedException;
+
+    /**
+     * Drop any cached state of the service.
+     */
+    void resetCache();
+
+    /**
+     * Return error that happened when service availability was last checked
+     * (for use when status was FAIL or UNKNOWN). 
+     */
+    String getLastError();
 }

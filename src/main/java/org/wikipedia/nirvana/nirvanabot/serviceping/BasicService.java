@@ -1,6 +1,6 @@
 /**
- *  @(#)BasicService.java 12.03.2016
- *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)BasicService.java
+ *  Copyright © 2023 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,142 +29,94 @@ import org.apache.logging.log4j.Logger;
 
 
 /**
- * @author kin
+ * Basic implementation of online service.
  *
  */
-public class BasicService implements OnlineService {
+public abstract class BasicService implements OnlineService {
     protected final Logger log;
 
-	BasicService dependantOn = null;
-	private String name;
-	@Deprecated
-	private int priority = 0;
-	private Status cachedStatus = null;
-	private String lastError = null;
+    BasicService dependantOn = null;
+    private String name;
+    private Status cachedStatus = null;
+    private String lastError = null;
 
-	/**
-	 * 
-	 */
-	@Deprecated
-	public BasicService(String name, int priority) {
-		this.name = name;
-		this.priority = priority;
-        log = LogManager.getLogger(getClass().getName());
-	}
-
-	public BasicService(String name) {
-		this.name = name;
-        log = LogManager.getLogger(getClass().getName());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService#getName()
-	 */
-	@Override
-	public String getName() {
-		return name;
-	}
-	
-	@Override
-	public String toString() {
-		return getName();
-	}
-	
-	protected boolean checkOk() throws InterruptedException {		
-		return true;
-	}
-	
-	public boolean checkParentWorking() throws InterruptedException {
-		return (dependantOn == null || dependantOn.isOk() == Status.OK);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService#isReplacable()
-	 */
-	@Override
-	public boolean isReplacable() {
-		return false;
-	}
-
-	/* (non-Javadoc)
-     * @see org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService#getPriority()
+    /**
+     * Constructs instance of service with specified name.
      */
+    public BasicService(String name) {
+        this.name = name;
+        log = LogManager.getLogger(getClass().getName());
+    }
+
     @Override
-    public int getPriority() {
-	    return priority;
+    public String getName() {
+        return name;
     }
     
-    public BasicService dependsOn(BasicService service) {
-    	dependantOn = service;
-    	return this;
+    @Override
+    public String toString() {
+        return getName();
+    }
+    
+    /**
+     * Check service availability.
+     * Must always do a real check, not using caching. 
+     */
+    protected abstract boolean checkOk() throws InterruptedException;
+    
+    private boolean checkParentIsOk() throws InterruptedException {
+        return (dependantOn == null || dependantOn.isOk() == Status.OK);
     }
 
-	/* (non-Javadoc)
-     * @see org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService#resetCache()
+    /**
+     * Set dependency of this service on another service.
+     * This will optimize isOk() detection logic.
      */
+    public BasicService dependsOn(BasicService service) {
+        dependantOn = service;
+        return this;
+    }
+
     @Override
     public void resetCache() {
-	    cachedStatus = null;
-	    lastError = null;
+        cachedStatus = null;
+        lastError = null;
     }
 
-	/* (non-Javadoc)
-     * @see org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService#recover()
-     */
     @Override
     public void recover() throws InterruptedException {
+        // do nothing if service is not recoverable
     }
     
     @Override
     public Status isOk() throws InterruptedException {
-/*    	Status status = isAvailable();
-    	if (status != Status.OK) {
-    		return status;
-    	}
-    	status = isWorking();
-    	if (status == Status.UNKNOWN) {
-    		return Status.FAIL;
-    	}
-    	return status;*/
-    	if (cachedStatus != null) {
-			return cachedStatus;
-		}
-		if (!checkParentWorking()) {
-			cachedStatus = Status.UNKNOWN;
-			return cachedStatus;
-		}
-		if (checkOk()) {
-			cachedStatus = Status.OK;
-		} else {
-			cachedStatus = Status.FAIL;
-		}
-		return cachedStatus;
+        if (cachedStatus != null) {
+            return cachedStatus;
+        }
+        if (!checkParentIsOk()) {
+            cachedStatus = Status.UNKNOWN;
+            return cachedStatus;
+        }
+        if (checkOk()) {
+            cachedStatus = Status.OK;
+        } else {
+            cachedStatus = Status.FAIL;
+        }
+        return cachedStatus;
     }
 
-	/* (non-Javadoc)
-     * @see org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService#getDetailedStatus()
-     */
-    /*
-    @Override
-    public String getDetailedStatus() {
-    	if (cachedStatus != null) {
-    		return cachedStatus.toString();
-    	}
-	    return "";
-    }*/
-
-	/* (non-Javadoc)
-     * @see org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService#getLastError()
-     */
     @Override
     public String getLastError() {
-    	if (lastError == null) {
-    		return "";
-    	}
-	    return lastError;
+        if (lastError == null) {
+            return "";
+        }
+        return lastError;
     }
-    
-    public void setLastError(String error) {
-    	lastError = error;
+
+    /**
+     * Set last error that happened during checking availability.
+     */
+    void setLastError(String error) {
+        lastError = error;
     }
 }

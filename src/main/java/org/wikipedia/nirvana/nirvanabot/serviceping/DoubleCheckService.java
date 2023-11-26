@@ -1,6 +1,6 @@
 /**
- *  @(#)DoubleCheckService.java 13.03.2016
- *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)DoubleCheckService.java
+ *  Copyright © 2023 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,36 +23,28 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
-
 /**
- * @author kin
+ * Abstract service with double check.
  *
  */
-public class DoubleCheckService extends BasicService {
+public abstract class DoubleCheckService extends BasicService {
 
-	/**
-	 * @param name
-	 * @param priority
-	 */
-	public DoubleCheckService(String name) {
-		super(name);
-	}
-	
-	
-	protected boolean checkAvailable() {
-		return true;
-	}
-	
-	protected boolean checkWorking() throws InterruptedException {		
-		return true;
-	}
+    /**
+     * Construct service instance with specified name.
+     */
+    public DoubleCheckService(String name) {
+        super(name);
+    }
+
+    protected abstract boolean checkAvailable();
+
+    protected abstract boolean checkWorking() throws InterruptedException;
 
     @Override
-	protected boolean checkOk() throws InterruptedException {
-		if (!checkAvailable()) {
-			return false;
-		}
-		return checkWorking();
-	}
-
+    protected boolean checkOk() throws InterruptedException {
+        if (!checkAvailable()) {
+            return false;
+        }
+        return checkWorking();
+    }
 }
