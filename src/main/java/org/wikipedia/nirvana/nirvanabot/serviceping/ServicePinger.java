@@ -178,15 +178,15 @@ public class ServicePinger {
         }
         return currentTimeMillis() - start;
     }
-    
-    protected long currentTimeMillis() {
+
+    private long currentTimeMillis() {
         return systemTime.currentTimeMillis();
     }
-    
-    protected void sleep(long millis) throws InterruptedException {
-        Thread.sleep(millis);
+
+    private void sleep(long millis) throws InterruptedException {
+        systemTime.sleep(millis);
     }
-    
+
     /**
      * Exception that is raised if allowed time passed and services didn't come online.
      *

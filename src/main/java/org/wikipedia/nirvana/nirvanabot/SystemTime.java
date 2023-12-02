@@ -24,7 +24,9 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Mediator object for working with system time.
@@ -37,7 +39,7 @@ public class SystemTime {
      * Default constructor. 
      */
     public SystemTime() {
-        // Do nothing
+        // do nothing
     }
 
     /**
@@ -47,7 +49,10 @@ public class SystemTime {
     public Calendar now() {
         return Calendar.getInstance();
     }
-    
+
+    /**
+     * Returns current time if {@link OffsetDateTime} format.
+     */
     public OffsetDateTime nowOdt() {
         return OffsetDateTime.now(); 
     }
@@ -57,5 +62,13 @@ public class SystemTime {
      */
     public long currentTimeMillis() {
         return System.currentTimeMillis();
+    }
+
+    /**
+     * Causes the currently executing thread to sleep (temporarily cease execution)
+     * for the specified number of milliseconds.
+     */
+    public void sleep(long millis) throws InterruptedException {
+        Thread.sleep(millis);
     }
 }

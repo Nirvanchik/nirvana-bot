@@ -37,12 +37,12 @@ import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.report.BotReporter;
 import org.wikipedia.nirvana.nirvanabot.serviceping.CatscanService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.InternetService;
-import org.wikipedia.nirvana.nirvanabot.serviceping.MockServicePinger;
 import org.wikipedia.nirvana.nirvanabot.serviceping.NetworkInterface;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger;
 import org.wikipedia.nirvana.nirvanabot.serviceping.TestServiceManager;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
+import org.wikipedia.nirvana.testing.MockSystemTime;
 import org.wikipedia.nirvana.testing.TestError;
 import org.wikipedia.nirvana.util.MockDateTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
@@ -156,7 +156,8 @@ public class NirvanaBotUnitTest {
 
             mockReporter = Mockito.mock(BotReporter.class);
 
-            servicePinger = new MockServicePinger(
+            servicePinger = new ServicePinger(
+                    new MockSystemTime(),  // Use SystemTime object of bot
                     mockServiceNetwork,
                     mockServiceInternet,
                     mockWikiService,

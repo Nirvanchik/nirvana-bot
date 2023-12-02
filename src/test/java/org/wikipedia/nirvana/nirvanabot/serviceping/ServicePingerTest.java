@@ -34,9 +34,12 @@ import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.TIMEOUT
 import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
+import org.wikipedia.nirvana.testing.MockSystemTime;
+import org.wikipedia.nirvana.testing.MockSystemTime.SleepCallback;
 
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -47,7 +50,8 @@ import java.util.List;
  *
  */
 public class ServicePingerTest {
-    SystemTime systemTime = new SystemTime();
+    MockSystemTime testTime = new MockSystemTime();
+    long testStartTime = 0;
 
     private static class TestService extends BasicService {
         protected boolean checkOkCalled = false;
@@ -70,28 +74,27 @@ public class ServicePingerTest {
         
     }
 
-    private static class TestServicesManager extends MockServicePinger {
-        private TestService failingService = null;
-        private long timeToRecover = -1;
+    private void recoverServiceAfter(TestService service, long millis) {
+        testTime.setSleepCallback(new SleepCallback() {
 
-        public TestServicesManager(OnlineService... servicesList) {
-            super(servicesList);
-        }
-        
-        public void setFailingServiceAndTimeToRecover(TestService failingService,
-                long timeToRecover) {
-            this.failingService = failingService;
-            this.timeToRecover = timeToRecover;
-        }
-
-        @Override
-        protected void sleep(long millis) throws InterruptedException {
-            super.sleep(millis);
-            if (failingService != null && timeToRecover != -1 && currentTime >= timeToRecover) {
-                failingService.checkOkReturnVal = true;
+            @Override
+            public void beforeSleep(long currentTime, long sleepTime) {
+                // do nothing
             }
-        }
 
+            @Override
+            public void afterSleep(long currentTime, long sleepTime) {
+                if (currentTime > testStartTime + millis) {
+                    service.checkOkReturnVal = true;
+                }
+            }
+        });
+    }
+
+    @Before
+    public void setup() {
+        testTime = new MockSystemTime();
+        testStartTime = testTime.currentTimeMillis();
     }
 
     @Test
@@ -99,7 +102,7 @@ public class ServicePingerTest {
         TestService service1 = new TestService("service1");
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
-        ServicePinger manager = new ServicePinger(systemTime, service1, service2, service3);
+        ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
         Assert.assertTrue(manager.isOk());
     }
 
@@ -108,7 +111,7 @@ public class ServicePingerTest {
         TestService service1 = new TestService("service1");
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
-        ServicePinger manager = new ServicePinger(systemTime, service1, service2, service3);
+        ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
         service1.checkOkReturnVal = false;
         Assert.assertFalse(manager.isOk());
         service1.checkOkReturnVal = true;
@@ -120,7 +123,7 @@ public class ServicePingerTest {
     public void addRemoveService() throws InterruptedException {
         TestService service1 = new TestService("service1");
         TestService service2 = new TestService("service2");
-        ServicePinger manager = new ServicePinger(systemTime, service1, service2);
+        ServicePinger manager = new ServicePinger(testTime, service1, service2);
         Assert.assertTrue(manager.isOk());
 
         TestService service3 = new TestService("service3");
@@ -139,7 +142,7 @@ public class ServicePingerTest {
         TestService service1 = new TestService("service1");
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
-        ServicePinger manager = new ServicePinger(systemTime, service1, service2, service3);
+        ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
         service2.checkOkReturnVal = false;
         Assert.assertFalse(manager.isOk());
         OnlineService service = manager.getLastFailedService();
@@ -151,7 +154,7 @@ public class ServicePingerTest {
         TestService service1 = new TestService("service1");
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
-        ServicePinger manager = new ServicePinger(systemTime, service1, service2, service3);
+        ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
         manager.isOk();
         service1.resetFromTest();
         service2.resetFromTest();
@@ -166,13 +169,15 @@ public class ServicePingerTest {
         TestService service1 = new TestService("service1");
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
-        TestServicesManager manager = new TestServicesManager(service1, service2, service3);
+        ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
         service2.checkOkReturnVal = false;
-        manager.setFailingServiceAndTimeToRecover(service2, RECHECK_1_TIMEOUT / 2);
+        recoverServiceAfter(service2, RECHECK_1_TIMEOUT / 2);
         Assert.assertFalse(manager.isOk());
+
         long waitTime = manager.waitServicesOk();
+
         Assert.assertTrue(waitTime > RECHECK_DELAY_1 && waitTime < RECHECK_1_TIMEOUT);
-        List<Long> times = manager.getTimeTicks();
+        List<Long> times = testTime.getTimeTicks();
         Assert.assertTrue(times.size() > 0);
         for (Long time:times) {
             Assert.assertTrue(time > 0 && time < RECHECK_1_TIMEOUT);
@@ -184,17 +189,19 @@ public class ServicePingerTest {
         TestService service1 = new TestService("service1");
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
-        TestServicesManager manager = new TestServicesManager(service1, service2, service3);
+        ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
         service2.checkOkReturnVal = false;
-        manager.setFailingServiceAndTimeToRecover(service2, TIMEOUT / 2);
+        recoverServiceAfter(service2, TIMEOUT / 2);
         Assert.assertFalse(manager.isOk());
+
         long waitTime = manager.waitServicesOk();
+
         Assert.assertTrue(
                 waitTime > RECHECK_DELAY_1 &&
                 waitTime > RECHECK_DELAY_2 &&
                 waitTime > RECHECK_1_TIMEOUT &&
                 waitTime < TIMEOUT);
-        List<Long> times = manager.getTimeTicks();
+        List<Long> times = testTime.getTimeTicks();
         Assert.assertTrue(times.size() > 0);
         long max = 0;
         boolean timeEncreased = false;
@@ -212,13 +219,14 @@ public class ServicePingerTest {
     }
 
     @Test(expected = ServiceWaitTimeoutException.class)
-    public void resolveProblemsByWaiting_timeout() throws Exception {
+    public void timeout() throws Exception {
         TestService service1 = new TestService("service1");
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
-        TestServicesManager manager = new TestServicesManager(service1, service2, service3);
+        ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
         service2.checkOkReturnVal = false;
-        manager.setFailingServiceAndTimeToRecover(service2, TIMEOUT * 2);
+        recoverServiceAfter(service2, TIMEOUT * 2);
+
         Assert.assertFalse(manager.isOk());
         manager.waitServicesOk();
     }
@@ -228,11 +236,11 @@ public class ServicePingerTest {
         TestService service1 = new TestService("service1");
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
-        TestServicesManager manager = new TestServicesManager(service1, service2, service3);
+        ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
         AfterDowntimeCallback callback = mock(AfterDowntimeCallback.class);
         manager.setAfterDowntimeCallback(callback);
         service2.checkOkReturnVal = false;
-        manager.setFailingServiceAndTimeToRecover(service2, RECHECK_1_TIMEOUT / 2);
+        recoverServiceAfter(service2, RECHECK_1_TIMEOUT / 2);
         Assume.assumeFalse(manager.isOk());
 
         manager.waitServicesOk();
@@ -245,17 +253,15 @@ public class ServicePingerTest {
         TestService service1 = new TestService("service1");
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
-        TestServicesManager manager = new TestServicesManager(service1, service2, service3);
+        ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
         service2.checkOkReturnVal = false;
         long timeout = TIMEOUT * 2;
         manager.setTimeout(timeout);
-        manager.setFailingServiceAndTimeToRecover(service2, timeout * 2);
         Assert.assertFalse(manager.isOk());
         try {
             manager.waitServicesOk();
         } catch (ServiceWaitTimeoutException e) {
-            long time = manager.getCurrentTime();
-            Assert.assertTrue(time >= timeout);
+            Assert.assertTrue(testTime.currentTimeMillis() >= timeout);
             return;
         }
         Assert.fail("Timeout expected but it didn't come.");
