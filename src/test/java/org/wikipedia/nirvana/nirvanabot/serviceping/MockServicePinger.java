@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.nirvanabot.SystemTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,7 @@ public class MockServicePinger extends ServicePinger {
      * Public constructor.
      */
     public MockServicePinger(OnlineService... servicesList) {
-        super(servicesList);
+        super(new SystemTime(), servicesList);
     }
 
     @Override
@@ -71,5 +72,9 @@ public class MockServicePinger extends ServicePinger {
 
     public List<Long> getTimeTicks() {
         return waitTimeTicks;
+    }
+    
+    public long getCurrentTime() {
+        return currentTime;
     }
 }

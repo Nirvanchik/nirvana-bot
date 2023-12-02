@@ -51,4 +51,11 @@ public class SystemTime {
     public OffsetDateTime nowOdt() {
         return OffsetDateTime.now(); 
     }
+
+    /**
+     * Returns the current time in milliseconds.
+     */
+    public long currentTimeMillis() {
+        return System.currentTimeMillis();
+    }
 }

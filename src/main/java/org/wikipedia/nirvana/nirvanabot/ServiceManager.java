@@ -84,6 +84,7 @@ public class ServiceManager {
 		WikiService serviceCommons = new WikiService(commons);
 		serviceCommons.dependsOn(serviceInternet);
         servicePinger = new ServicePinger(
+                 new SystemTime(),
                  serviceNetwork,
                  serviceInternet,
                  serviceWiki,

@@ -24,6 +24,7 @@
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
 import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
 
 import org.apache.commons.lang3.StringUtils;
@@ -68,6 +69,7 @@ public class ServicePinger {
     private OnlineService lastFailedService = null;
     
     private long timeout = TIMEOUT;
+    private final SystemTime systemTime;
 
     @Nullable
     private AfterDowntimeCallback afterDowntimeCallback;
@@ -92,7 +94,8 @@ public class ServicePinger {
     /**
      * Constructs service pinger with provided list of services objects.
      */
-    public ServicePinger(OnlineService... servicesList) {
+    public ServicePinger(SystemTime systemTime, OnlineService... servicesList) {
+        this.systemTime = systemTime;
         services = new ArrayList<>(Arrays.asList(servicesList));
         log = LogManager.getLogger(getClass().getName());
         log.debug("Build ServicePinger of services: " + StringUtils.join(services, ", "));
@@ -177,7 +180,7 @@ public class ServicePinger {
     }
     
     protected long currentTimeMillis() {
-        return System.currentTimeMillis();
+        return systemTime.currentTimeMillis();
     }
     
     protected void sleep(long millis) throws InterruptedException {
