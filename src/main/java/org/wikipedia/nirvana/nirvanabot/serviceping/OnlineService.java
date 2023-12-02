@@ -58,6 +58,12 @@ public interface OnlineService {
      * Try recover this service if possible.
      * This method can make some actions to make service working again
      * (may be use alternative domain name or anything else).
+     *
+     * Called mostly after some time period, when the service was broken, 
+     * or switched to some fallback state, or to some alternative option, 
+     * and we decide that it's time to check if the main service can be used again.
+     * 
+     * Service can recover successfully or stay using fallback if it's not possible.
      */
     void recover() throws InterruptedException;
 

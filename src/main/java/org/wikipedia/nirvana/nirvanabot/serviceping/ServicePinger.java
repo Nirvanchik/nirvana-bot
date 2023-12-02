@@ -1,6 +1,6 @@
 /**
- *  @(#)ServicePinger.java 12.03.2016
- *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)ServicePinger.java
+ *  Copyright © 2023 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -39,26 +39,35 @@ import java.util.concurrent.TimeoutException;
 import javax.annotation.Nullable;
 
 /**
- * @author kin
+ * The main class of this package.
+ * Holds all services instances implementing {@link OnlineService} interface.
+ * Helps in managing with services availability.
+ *
+ * Provides methods that allow to:
+ * 1) check if all services are OK;
+ * 2) wait when services come alive;
+ * 3) try recover some services that allow this.
  *
  */
 public class ServicePinger {
     protected static final Logger sLog;
     protected final Logger log;
 
-	static final long RECHECK_DELAY_1 = 10L*60L*1000L;
-	static final long RECHECK_DELAY_2 = 60L*60L*1000L;
-	
-	static final long RECHECK_1_TIMEOUT = 60L*60L*1000L;  // 1 hour
-	static final long TIMEOUT = 10L*60L*60L*1000L;  // 10 hours
-	
-	static final String SERVICE_STATUS_STRING = "%1$-25s -> %2$s";
-	private static final String SERVICE_STATUS_STRING_DETAILED = "%1$s: %2$s";
-	
+    static final long RECHECK_DELAY_1 = 10 * 60 * 1000L;
+    static final long RECHECK_DELAY_2 = 60 * 60 * 1000L;
+    
+    static final long RECHECK_1_TIMEOUT = 60 * 60 * 1000L;  // 1 hour
+    static final long TIMEOUT = 10 * 60 * 60 * 1000L;  // 10 hours
+    
+    static final String SERVICE_STATUS_STRING = "%1$-25s -> %2$s";
+    private static final String SERVICE_STATUS_STRING_DETAILED = "%1$s: %2$s";
+    private static final String TIMEOUT_MSG =
+            "Required services are not available after waiting more than %d ms";
+    
     private final List<OnlineService> services;
-	private OnlineService lastFuckedService = null;
-	
-	private long timeout = TIMEOUT;
+    private OnlineService lastFailedService = null;
+    
+    private long timeout = TIMEOUT;
 
     @Nullable
     private AfterDowntimeCallback afterDowntimeCallback;
@@ -80,10 +89,13 @@ public class ServicePinger {
         void afterDowntime(long downtime) throws BotFatalError;
     }
 
+    /**
+     * Constructs service pinger with provided list of services objects.
+     */
     public ServicePinger(OnlineService... servicesList) {
         services = new ArrayList<>(Arrays.asList(servicesList));
         log = LogManager.getLogger(getClass().getName());
-    	log.debug("Build ServicePinger of services: " + StringUtils.join(services, ", "));
+        log.debug("Build ServicePinger of services: " + StringUtils.join(services, ", "));
     }
 
     /**
@@ -96,121 +108,136 @@ public class ServicePinger {
         afterDowntimeCallback = callback;
     }
 
+    /**
+     * Add service to monitor.
+     */
     public void addService(OnlineService service) {
         log.debug("Add service to ServicePinger: " + service.toString());
         services.add(service);
     }
 
+    /**
+     * Remove service from monitoring.
+     */
     public void removeService(OnlineService service) {
-        for (OnlineService s: services) {
-            if (s == service) {
-                services.remove(s);
-                return;
-            }
+        services.remove(service);
+    }
+
+    /**
+     * Set timeout value in milliseconds.
+     * This is the max time to wait by {@link #waitServicesOk()} method
+     * when services come back online.
+     */
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
+    }
+
+    /**
+     * Try to recover broken services.
+     * Call this method in any free moments when services are not used.
+     */
+    public void tryRecoverServices() throws InterruptedException {
+        for (OnlineService service: services) {
+            service.recover();
         }
     }
 
-    public void setTimeout(long timeout) {
-    	this.timeout = timeout;
-    }
-
-    public void tryRecoverReplacedServices() throws InterruptedException {
-    	for (OnlineService service: services) {
-   			service.recover();
-    	}
-    }
-
-    public long tryToSolveProblems() throws InterruptedException, ServiceWaitTimeoutException,
+    /**
+     * Wait when services come back online.
+     *
+     * @return time in milliseconds that we have waited.
+     */
+    public long waitServicesOk() throws InterruptedException, ServiceWaitTimeoutException,
             BotFatalError {
-    	long start = currentTimeMillis();
-   		tryToSolveProblemsByWaiting();
-    	long end = currentTimeMillis();
-    	return end - start;
-    }
-
-    private void tryToSolveProblemsByWaiting() throws InterruptedException,
-            ServiceWaitTimeoutException, BotFatalError {
-    	long firstFailTime = currentTimeMillis();
-    	long currentDelay = RECHECK_DELAY_1;
-    	boolean ok = false;
-    	while (!ok) {
+        long start = currentTimeMillis();
+        long firstFailTime = start;
+        long currentDelay = RECHECK_DELAY_1;
+        boolean ok = false;
+        while (!ok) {
             long downtime = currentTimeMillis() - firstFailTime;
             if (downtime > RECHECK_1_TIMEOUT) {
-    			currentDelay = RECHECK_DELAY_2;
-    		}
+                currentDelay = RECHECK_DELAY_2;
+            }
             if (downtime > timeout) {
                 if (timeout > 0 ) {
-                    log.warn("Stop waiting after more then "+ timeout +" ms passed");
+                    log.warn("Stop waiting after more then " + timeout + " ms passed");
                 }
-    			throw new ServiceWaitTimeoutException(
-    					String.format(Locale.ENGLISH,
-    							"Required services are not available after waiting more than %d ms",
-    							timeout));
-    		}
-    		log.info(String.format(Locale.ENGLISH, "Sleep for %d ms before next status check...", currentDelay));
-    		sleep(currentDelay);    	
-    		ok = isOk();    		
-    	}
+                throw new ServiceWaitTimeoutException(
+                        String.format(Locale.ENGLISH, TIMEOUT_MSG, timeout));
+            }
+            log.info(String.format(Locale.ENGLISH, "Sleep for %d ms before next status check...",
+                    currentDelay));
+            sleep(currentDelay);
+            ok = isOk();
+        }
         if (afterDowntimeCallback != null) {
             afterDowntimeCallback.afterDowntime(currentTimeMillis() - firstFailTime);
         }
+        return currentTimeMillis() - start;
     }
     
-	protected long currentTimeMillis() {
-    	return System.currentTimeMillis();
+    protected long currentTimeMillis() {
+        return System.currentTimeMillis();
     }
     
     protected void sleep(long millis) throws InterruptedException {
-    	Thread.sleep(millis);
+        Thread.sleep(millis);
     }
     
+    /**
+     * Exception that is raised if allowed time passed and services didn't come online.
+     *
+     */
     public static class ServiceWaitTimeoutException extends TimeoutException {
 
         private static final long serialVersionUID = -3303561839370965807L;
 
         public ServiceWaitTimeoutException(String message) {
-	        super(message);
+            super(message);
         }
-    	
+        
     }
-    
+
+    /**
+     * Check if all services are online.
+     */
     public boolean isOk() throws InterruptedException {
-    	log.info("Checking available services...");
-    	lastFuckedService = null;
-    	for (OnlineService service: services) {
-    		service.resetCache();
-    	}
-    	boolean online = true;
-    	for (OnlineService service: services) {
-    		OnlineService.Status status = service.isOk();
-    		if (status != OnlineService.Status.OK) {
-    			online = false;
-    			if (lastFuckedService == null) {
-    				lastFuckedService = service;
-    			}
-    		}
-    		log.info(String.format(Locale.ENGLISH, SERVICE_STATUS_STRING, service.getName(), status));
-    	}/*
-    	if (online) {
-    		lastFailTime = null;
-    		currentDelay = RECHECK_DELAY_1;
-    	}*/
-    	if (!online) {
-    		for (OnlineService service: services) {
-    			logDetailedStatusIfFailed(service);
-    		}
-    	}
-    	return online;
+        log.info("Checking available services...");
+        lastFailedService = null;
+        for (OnlineService service: services) {
+            service.resetCache();
+        }
+        boolean online = true;
+        for (OnlineService service: services) {
+            OnlineService.Status status = service.isOk();
+            if (status != OnlineService.Status.OK) {
+                online = false;
+                if (lastFailedService == null) {
+                    lastFailedService = service;
+                }
+            }
+            log.info(String.format(Locale.ENGLISH, SERVICE_STATUS_STRING, service.getName(),
+                    status));
+        }
+        if (!online) {
+            for (OnlineService service: services) {
+                logDetailedStatusIfFailed(service);
+            }
+        }
+        return online;
     }
-    
-    public OnlineService getLastFuckedService() {
-    	return lastFuckedService;
+
+    /**
+     * Get service that was last failing.
+     */
+    public OnlineService getLastFailedService() {
+        return lastFailedService;
     }
     
     static void logDetailedStatusIfFailed(OnlineService service) throws InterruptedException {
-    	if (service.isOk() != Status.OK) {
-            sLog.warn(String.format(Locale.ENGLISH, SERVICE_STATUS_STRING_DETAILED, service.getName(),
-                    service.getLastError()));
-    	}
+        if (service.isOk() != Status.OK) {
+            sLog.warn(String.format(Locale.ENGLISH, SERVICE_STATUS_STRING_DETAILED,
+                    service.getName(), service.getLastError()));
+        }
     }
 }

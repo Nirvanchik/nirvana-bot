@@ -57,16 +57,16 @@ public class MockServicePinger extends ServicePinger {
     }
 
     @Override
-    public void tryRecoverReplacedServices() throws InterruptedException {
-        super.tryRecoverReplacedServices();
+    public void tryRecoverServices() throws InterruptedException {
+        super.tryRecoverServices();
     }
 
     @Override
-    public long tryToSolveProblems() throws InterruptedException, ServiceWaitTimeoutException,
+    public long waitServicesOk() throws InterruptedException, ServiceWaitTimeoutException,
             BotFatalError {
         currentTime = 0;
         waitTimeTicks.clear();
-        return super.tryToSolveProblems();
+        return super.waitServicesOk();
     }
 
     public List<Long> getTimeTicks() {

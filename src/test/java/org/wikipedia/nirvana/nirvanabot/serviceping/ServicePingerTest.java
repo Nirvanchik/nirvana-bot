@@ -1,6 +1,6 @@
 /**
  *  @(#)ServicePingerTest.java
- *  Copyright © 2016 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright © 2023 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,184 +34,174 @@ import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.TIMEOUT
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
 
 /**
- * @author kin
+ * Unit tests for {@link ServicePinger}.
  *
  */
 public class ServicePingerTest {
 
-	private static class TestService extends BasicService {
-		protected boolean checkOkCalled = false;
-		
-		boolean checkOkReturnVal = true;
+    private static class TestService extends BasicService {
+        protected boolean checkOkCalled = false;
+        
+        boolean checkOkReturnVal = true;
 
         public TestService(String name) {
-	        super(name);
+            super(name);
         }
         
         @Override
         protected boolean checkOk() {
-        	checkOkCalled = true;
-        	return checkOkReturnVal;
+            checkOkCalled = true;
+            return checkOkReturnVal;
         }
         
         public void resetFromTest() {
-        	checkOkCalled = false;
-        }
-		
-	}
-
-    private static class TestServicesManager extends MockServicePinger {
-		private TestService failingService = null;
-		private long timeToRecover = -1;
-
-        public TestServicesManager(OnlineService... servicesList) {
-	        super(servicesList);
+            checkOkCalled = false;
         }
         
-        public void setFailingServiceAndTimeToRecover(TestService failingService, long timeToRecover) {
-	        this.failingService = failingService;
-	        this.timeToRecover = timeToRecover;
+    }
+
+    private static class TestServicesManager extends MockServicePinger {
+        private TestService failingService = null;
+        private long timeToRecover = -1;
+
+        public TestServicesManager(OnlineService... servicesList) {
+            super(servicesList);
+        }
+        
+        public void setFailingServiceAndTimeToRecover(TestService failingService,
+                long timeToRecover) {
+            this.failingService = failingService;
+            this.timeToRecover = timeToRecover;
         }
 
         @Override
         protected void sleep(long millis) throws InterruptedException {
             super.sleep(millis);
-        	if (failingService != null && timeToRecover != -1 && currentTime >= timeToRecover) {
-        		failingService.checkOkReturnVal = true;
-        	}
+            if (failingService != null && timeToRecover != -1 && currentTime >= timeToRecover) {
+                failingService.checkOkReturnVal = true;
+            }
         }
 
-	}
+    }
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-	}
+    @Test
+    public void ok_whenAllServicesOk() throws InterruptedException {
+        TestService service1 = new TestService("service1");
+        TestService service2 = new TestService("service2");
+        TestService service3 = new TestService("service3");
+        ServicePinger manager = new ServicePinger(service1, service2, service3);
+        Assert.assertTrue(manager.isOk());
+    }
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-	}
+    @Test
+    public void fail_whenAnyServiceFails() throws InterruptedException {
+        TestService service1 = new TestService("service1");
+        TestService service2 = new TestService("service2");
+        TestService service3 = new TestService("service3");
+        ServicePinger manager = new ServicePinger(service1, service2, service3);
+        service1.checkOkReturnVal = false;
+        Assert.assertFalse(manager.isOk());
+        service1.checkOkReturnVal = true;
+        service2.checkOkReturnVal = false;
+        Assert.assertFalse(manager.isOk());
+    }
 
-	@Test
-	public void ok_whenAllServicesOk() throws InterruptedException {
-		TestService service1 = new TestService("service1");
-		TestService service2 = new TestService("service2");
-		TestService service3 = new TestService("service3");
-		ServicePinger manager = new ServicePinger(service1, service2, service3);
-		Assert.assertTrue(manager.isOk());
-	}
+    @Test
+    public void failsAndReturnsLastFailedService() throws InterruptedException {
+        TestService service1 = new TestService("service1");
+        TestService service2 = new TestService("service2");
+        TestService service3 = new TestService("service3");
+        ServicePinger manager = new ServicePinger(service1, service2, service3);
+        service2.checkOkReturnVal = false;
+        Assert.assertFalse(manager.isOk());
+        OnlineService service = manager.getLastFailedService();
+        Assert.assertEquals(service2, service);
+    }
+    
+    @Test
+    public void eachServicesCheckIsReal() throws InterruptedException {
+        TestService service1 = new TestService("service1");
+        TestService service2 = new TestService("service2");
+        TestService service3 = new TestService("service3");
+        ServicePinger manager = new ServicePinger(service1, service2, service3);
+        manager.isOk();
+        service1.resetFromTest();
+        service2.resetFromTest();
+        service3.resetFromTest();
+        Assert.assertTrue(manager.isOk());
+        Assert.assertTrue(service1.checkOkCalled && service2.checkOkCalled &&
+                service3.checkOkCalled);
+    }
 
-	@Test
-	public void fail_whenAnyServiceFails() throws InterruptedException {
-		TestService service1 = new TestService("service1");
-		TestService service2 = new TestService("service2");
-		TestService service3 = new TestService("service3");
-		ServicePinger manager = new ServicePinger(service1, service2, service3);
-		service1.checkOkReturnVal = false;
-		Assert.assertFalse(manager.isOk());
-		service1.checkOkReturnVal = true;
-		service2.checkOkReturnVal = false;
-		Assert.assertFalse(manager.isOk());
-	}
+    @Test
+    public void resolveProblemsByWaiting_shortTime() throws Exception {
+        TestService service1 = new TestService("service1");
+        TestService service2 = new TestService("service2");
+        TestService service3 = new TestService("service3");
+        TestServicesManager manager = new TestServicesManager(service1, service2, service3);
+        service2.checkOkReturnVal = false;
+        manager.setFailingServiceAndTimeToRecover(service2, RECHECK_1_TIMEOUT / 2);
+        Assert.assertFalse(manager.isOk());
+        long waitTime = manager.waitServicesOk();
+        Assert.assertTrue(waitTime > RECHECK_DELAY_1 && waitTime < RECHECK_1_TIMEOUT);
+        List<Long> times = manager.getTimeTicks();
+        Assert.assertTrue(times.size() > 0);
+        for (Long time:times) {
+            Assert.assertTrue(time > 0 && time < RECHECK_1_TIMEOUT);
+        }
+    }
 
-	@Test
-	public void failsAndReturnsLastFailedService() throws InterruptedException {
-		TestService service1 = new TestService("service1");
-		TestService service2 = new TestService("service2");
-		TestService service3 = new TestService("service3");
-		ServicePinger manager = new ServicePinger(service1, service2, service3);
-		service2.checkOkReturnVal = false;
-		Assert.assertFalse(manager.isOk());
-		OnlineService service = manager.getLastFuckedService();
-		Assert.assertEquals(service2, service);
-	}
-	
-	@Test
-	public void eachServicesCheckIsReal() throws InterruptedException {
-		TestService service1 = new TestService("service1");
-		TestService service2 = new TestService("service2");
-		TestService service3 = new TestService("service3");
-		ServicePinger manager = new ServicePinger(service1, service2, service3);
-		manager.isOk();
-		service1.resetFromTest();
-		service2.resetFromTest();
-		service3.resetFromTest();
-		Assert.assertTrue(manager.isOk());
-		Assert.assertTrue(service1.checkOkCalled && service2.checkOkCalled && service3.checkOkCalled);
-	}
-
-	@Test
-	public void resolveProblemsByWaiting_shortTime() throws Exception {
-		TestService service1 = new TestService("service1");
-		TestService service2 = new TestService("service2");
-		TestService service3 = new TestService("service3");
-		TestServicesManager manager = new TestServicesManager(service1, service2, service3);
-		service2.checkOkReturnVal = false;
-		manager.setFailingServiceAndTimeToRecover(service2, RECHECK_1_TIMEOUT/2);
-		Assert.assertFalse(manager.isOk());
-        long waitTime = manager.tryToSolveProblems();
-		Assert.assertTrue(waitTime > RECHECK_DELAY_1 && waitTime < RECHECK_1_TIMEOUT);
-		List<Long> times = manager.getTimeTicks();
-		Assert.assertTrue(times.size() > 0);
-		for (Long time:times) {
-			Assert.assertTrue(time > 0 && time < RECHECK_1_TIMEOUT);
-		}
-	}
-
-	@Test
+    @Test
     public void resolveProblemsByWaiting_longTime() throws Exception {
-		TestService service1 = new TestService("service1");
-		TestService service2 = new TestService("service2");
-		TestService service3 = new TestService("service3");
-		TestServicesManager manager = new TestServicesManager(service1, service2, service3);
-		service2.checkOkReturnVal = false;
-		manager.setFailingServiceAndTimeToRecover(service2, TIMEOUT/2);
-		Assert.assertFalse(manager.isOk());
-        long waitTime = manager.tryToSolveProblems();
-		Assert.assertTrue(waitTime > RECHECK_DELAY_1 && waitTime > RECHECK_DELAY_2 && waitTime > RECHECK_1_TIMEOUT && waitTime < TIMEOUT);
-		List<Long> times = manager.getTimeTicks();
-		Assert.assertTrue(times.size() > 0);
-		long max = 0;
-		boolean timeEncreased = false;
-		for (Long time:times) {
-			Assert.assertTrue(time > 0 && time < TIMEOUT);
-			Assert.assertTrue(time >= max);
-			if (time > max) {
-				if (max != 0) {
-					timeEncreased = true;
-				}
-				max = time;
-			}
-		}
-		Assert.assertTrue(timeEncreased);
-	}
+        TestService service1 = new TestService("service1");
+        TestService service2 = new TestService("service2");
+        TestService service3 = new TestService("service3");
+        TestServicesManager manager = new TestServicesManager(service1, service2, service3);
+        service2.checkOkReturnVal = false;
+        manager.setFailingServiceAndTimeToRecover(service2, TIMEOUT / 2);
+        Assert.assertFalse(manager.isOk());
+        long waitTime = manager.waitServicesOk();
+        Assert.assertTrue(
+                waitTime > RECHECK_DELAY_1 &&
+                waitTime > RECHECK_DELAY_2 &&
+                waitTime > RECHECK_1_TIMEOUT &&
+                waitTime < TIMEOUT);
+        List<Long> times = manager.getTimeTicks();
+        Assert.assertTrue(times.size() > 0);
+        long max = 0;
+        boolean timeEncreased = false;
+        for (Long time:times) {
+            Assert.assertTrue(time > 0 && time < TIMEOUT);
+            Assert.assertTrue(time >= max);
+            if (time > max) {
+                if (max != 0) {
+                    timeEncreased = true;
+                }
+                max = time;
+            }
+        }
+        Assert.assertTrue(timeEncreased);
+    }
 
-	@Test(expected = ServiceWaitTimeoutException.class)
+    @Test(expected = ServiceWaitTimeoutException.class)
     public void resolveProblemsByWaiting_timeout() throws Exception {
-		TestService service1 = new TestService("service1");
-		TestService service2 = new TestService("service2");
-		TestService service3 = new TestService("service3");
-		TestServicesManager manager = new TestServicesManager(service1, service2, service3);
-		service2.checkOkReturnVal = false;
-		manager.setFailingServiceAndTimeToRecover(service2, TIMEOUT*2);
-		Assert.assertFalse(manager.isOk());
-        manager.tryToSolveProblems();
-	}
+        TestService service1 = new TestService("service1");
+        TestService service2 = new TestService("service2");
+        TestService service3 = new TestService("service3");
+        TestServicesManager manager = new TestServicesManager(service1, service2, service3);
+        service2.checkOkReturnVal = false;
+        manager.setFailingServiceAndTimeToRecover(service2, TIMEOUT * 2);
+        Assert.assertFalse(manager.isOk());
+        manager.waitServicesOk();
+    }
 
     @Test
     public void callCallbackAfterDowntime() throws Exception {
@@ -225,7 +215,7 @@ public class ServicePingerTest {
         manager.setFailingServiceAndTimeToRecover(service2, RECHECK_1_TIMEOUT / 2);
         Assume.assumeFalse(manager.isOk());
 
-        manager.tryToSolveProblems();
+        manager.waitServicesOk();
 
         verify(callback, times(1)).afterDowntime(Mockito.anyLong());
     }

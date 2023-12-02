@@ -177,7 +177,7 @@ public class ServiceManager {
 
 	public void timeToFixProblems() throws InterruptedException {
 		if (pageListFetchServiceGroup != null) {
-			servicePinger.tryRecoverReplacedServices();
+            servicePinger.tryRecoverServices();
 			activeService = pageListFetchServiceGroup.getActiveService().getService();
 		}
 	}
@@ -185,7 +185,7 @@ public class ServiceManager {
     public boolean checkServices() throws InterruptedException, BotFatalError {
 		try {
 	        if (!servicePinger.isOk()) {
-	        	servicePinger.tryToSolveProblems();
+                servicePinger.waitServicesOk();
 	        }
         } catch (ServiceWaitTimeoutException e) {
 	        log.error(e);
