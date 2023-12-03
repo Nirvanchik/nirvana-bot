@@ -135,8 +135,10 @@ public class ServiceManager {
             log.info("Create service group");
 
 			pageListFetchServiceGroup =
-					new ServiceGroup<CatscanService>(
-                            serviceCatscanDefault, services.toArray(new CatscanService[0]));
+                    new ServiceGroup<CatscanService>(
+                            new SystemTime(),
+                            services.toArray(new CatscanService[0]))
+                    .setDefault(serviceCatscanDefault);
 
 			pageListFetchServiceGroup.setListener(new Listener<CatscanService>() {
 

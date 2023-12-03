@@ -31,7 +31,6 @@ import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.RECHECK
 import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.RECHECK_DELAY_2;
 import static org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.TIMEOUT;
 
-import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
 import org.wikipedia.nirvana.testing.MockSystemTime;
@@ -61,17 +60,25 @@ public class ServicePingerTest {
         public TestService(String name) {
             super(name);
         }
-        
+
         @Override
         protected boolean checkOk() {
             checkOkCalled = true;
             return checkOkReturnVal;
         }
-        
+
         public void resetFromTest() {
             checkOkCalled = false;
         }
-        
+
+        public void setOk() {
+            checkOkReturnVal = true;
+        }
+
+        public void setBroken() {
+            checkOkReturnVal = false;
+        }
+
     }
 
     private void recoverServiceAfter(TestService service, long millis) {
@@ -85,7 +92,7 @@ public class ServicePingerTest {
             @Override
             public void afterSleep(long currentTime, long sleepTime) {
                 if (currentTime > testStartTime + millis) {
-                    service.checkOkReturnVal = true;
+                    service.setOk();
                 }
             }
         });
@@ -112,10 +119,10 @@ public class ServicePingerTest {
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
         ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
-        service1.checkOkReturnVal = false;
+        service1.setBroken();
         Assert.assertFalse(manager.isOk());
-        service1.checkOkReturnVal = true;
-        service2.checkOkReturnVal = false;
+        service1.setOk();
+        service2.setBroken();
         Assert.assertFalse(manager.isOk());
     }
 
@@ -130,7 +137,7 @@ public class ServicePingerTest {
         manager.addService(service3);
         Assert.assertTrue(manager.isOk());
 
-        service3.checkOkReturnVal = false;
+        service3.setBroken();
         Assert.assertFalse(manager.isOk());
 
         manager.removeService(service3);
@@ -143,7 +150,7 @@ public class ServicePingerTest {
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
         ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
-        service2.checkOkReturnVal = false;
+        service2.setBroken();
         Assert.assertFalse(manager.isOk());
         OnlineService service = manager.getLastFailedService();
         Assert.assertEquals(service2, service);
@@ -170,7 +177,7 @@ public class ServicePingerTest {
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
         ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
-        service2.checkOkReturnVal = false;
+        service2.setBroken();
         recoverServiceAfter(service2, RECHECK_1_TIMEOUT / 2);
         Assert.assertFalse(manager.isOk());
 
@@ -190,7 +197,7 @@ public class ServicePingerTest {
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
         ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
-        service2.checkOkReturnVal = false;
+        service2.setBroken();
         recoverServiceAfter(service2, TIMEOUT / 2);
         Assert.assertFalse(manager.isOk());
 
@@ -224,7 +231,7 @@ public class ServicePingerTest {
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
         ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
-        service2.checkOkReturnVal = false;
+        service2.setBroken();
         recoverServiceAfter(service2, TIMEOUT * 2);
 
         Assert.assertFalse(manager.isOk());
@@ -239,7 +246,7 @@ public class ServicePingerTest {
         ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
         AfterDowntimeCallback callback = mock(AfterDowntimeCallback.class);
         manager.setAfterDowntimeCallback(callback);
-        service2.checkOkReturnVal = false;
+        service2.setBroken();
         recoverServiceAfter(service2, RECHECK_1_TIMEOUT / 2);
         Assume.assumeFalse(manager.isOk());
 
@@ -254,7 +261,7 @@ public class ServicePingerTest {
         TestService service2 = new TestService("service2");
         TestService service3 = new TestService("service3");
         ServicePinger manager = new ServicePinger(testTime, service1, service2, service3);
-        service2.checkOkReturnVal = false;
+        service2.setBroken();
         long timeout = TIMEOUT * 2;
         manager.setTimeout(timeout);
         Assert.assertFalse(manager.isOk());

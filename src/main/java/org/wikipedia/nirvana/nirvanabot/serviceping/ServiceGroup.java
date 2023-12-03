@@ -23,6 +23,8 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
+import org.wikipedia.nirvana.nirvanabot.SystemTime;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -43,11 +45,12 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
     private long lastFailTime = 0;
 
     final T[] services;
-    final T defaultService;
+    private T defaultService;
 
     private T activeService;
 
     private Listener<T> listener = null;
+    private SystemTime systemTime;
 
     /**
      * Listener interface for important changes in Service Group.
@@ -64,10 +67,11 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
      * varied number of additional services.
      */
     @SafeVarargs
-    public ServiceGroup(String name, T defaultChecker, T... allCheckers) {
+    public ServiceGroup(String name, SystemTime systemTime, T... allCheckers) {
         super(name);
         services = Arrays.copyOf(allCheckers, allCheckers.length);
-        activeService = defaultService = defaultChecker;
+        activeService = defaultService = services[0];
+        this.systemTime = systemTime;
     }
 
     /**
@@ -75,10 +79,15 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
      * varied number of additional services.
      */
     @SafeVarargs
-    public ServiceGroup(T defaultChecker, T... allCheckers) {
+    public ServiceGroup(SystemTime systemTime, T... allCheckers) {
         this("group of services: " + StringUtils.join(allCheckers, ", ") + ".",
-                defaultChecker,
+                systemTime,
                 allCheckers);
+    }
+    
+    public ServiceGroup<T> setDefault(T defaultService) {
+        this.defaultService = defaultService;
+        return this;
     }
 
     /**
@@ -117,7 +126,7 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
                             activeService.getName(),
                             service.getName()));
                     activeService = service;
-                    firstFailTime = System.currentTimeMillis();
+                    firstFailTime = systemTime.currentTimeMillis();
                     lastFailTime = firstFailTime;
                     currentDelay = RECHECK_DELAY_1;
                     notifyActiveServiceChanged();
@@ -148,7 +157,7 @@ public class ServiceGroup<T extends BasicService> extends BasicService {
         }
         assert firstFailTime != 0;
         assert lastFailTime != 0;
-        long time = System.currentTimeMillis();
+        long time = systemTime.currentTimeMillis();
         if (time - firstFailTime > RECHECK_1_TIMEOUT) {
             currentDelay = RECHECK_DELAY_2;
         }
