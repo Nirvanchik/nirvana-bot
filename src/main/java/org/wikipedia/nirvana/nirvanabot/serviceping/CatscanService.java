@@ -84,7 +84,7 @@ public class CatscanService extends InternetService {
                     return false;
                 }
                 if (!result.contains("HTML5")) {
-                    setLastError("loadPagesForCatWithService() returned corrupted result ");
+                    setLastError("loadPagesForCatWithService() returned corrupted result");
                     return false;
                 }
             } catch (IOException e) {

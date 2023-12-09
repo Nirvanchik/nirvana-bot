@@ -23,8 +23,6 @@
 
 package org.wikipedia.nirvana.wiki;
 
-import org.wikipedia.nirvana.wiki.CatScanTools;
-
 import java.util.List;
 
 /**
