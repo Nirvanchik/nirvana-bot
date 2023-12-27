@@ -109,7 +109,11 @@ public class DefaultPageListParser implements PageListParser {
             throws IOException, ServiceError {
         if (rawPageList.startsWith("ERROR : MYSQL error")) {
             log.error("Invalid service output: " + StringTools.trancateTo(rawPageList, 100));
-            throw new ServiceError("Invalid output of service" + service.getName());
+            throw new ServiceError("Invalid output of service " + service.getName());
+        }
+        if (isHtml(rawPageList)) {
+            log.error("Invalid service output (HTML): " + StringTools.trancateTo(rawPageList, 100));
+            throw new ServiceError("Invalid (HTML) output of service " + service.getName());
         }
         if (!rawPageList.contains("\n")) {
             log.warn("Service output looks bad - no new lines. See first 300 chars: {}",
@@ -166,5 +170,10 @@ public class DefaultPageListParser implements PageListParser {
         }
 
         return pageInfoMap.values();
+    }
+
+    private boolean isHtml(String text) {
+        String textTrimmed = text.trim();        
+        return textTrimmed.startsWith("<html>") && textTrimmed.endsWith("</html>");
     }
 }
