@@ -38,6 +38,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 // TODO: Support parsing of 1-namespace lists and many-namespaces lists.
@@ -115,7 +116,7 @@ public class DefaultPageListParser implements PageListParser {
                     StringTools.trancateTo(rawPageList, 300));
         }
 
-        Map<String, Wiki.Revision> pageInfoMap = new HashMap<>();
+        Map<String, Wiki.Revision> pageInfoMap = new TreeMap<>();
 
         String namespaceIdentifier = namespace == 0 ? "" : wiki.namespaceIdentifier(namespace);
 

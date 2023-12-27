@@ -219,6 +219,7 @@ public class DiscussedPages extends Pages {
 	@Override
     public void sortPages(List<Revision> pageInfoList, boolean byRevision) {
 		// no sort (sort implemented in another place)
+        log.debug("Skip sort (will do later)");
 	}	
 
 	@Override

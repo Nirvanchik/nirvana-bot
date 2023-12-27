@@ -552,6 +552,7 @@ public class NewPages implements PortalModule{
 	}
 
     public void sortPages(List<Revision> pageInfoList, boolean byRevision) {
+        log.debug("Sort pages ({} items) by revision: {}", pageInfoList.size(), byRevision);
 		if(byRevision) {
 			sortPagesByRevision(pageInfoList);
 		} else {
