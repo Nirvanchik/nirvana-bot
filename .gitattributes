@@ -38,14 +38,6 @@ NOTICE text
 # Next files hava CRLF line endings in git (not normalized).
 # TODO: Convert line endings here to LF
 src/main/java/org/wikipedia/nirvana/cleanarchive/CleanArchiveBot.java
-src/main/java/org/wikipedia/nirvana/nirvanabot/DiscussedPages.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/NewPages.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/NewPagesWeek.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/NewPagesWithImages.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/NirvanaBot.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/Pages.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/PortalModule.java -text
-src/main/java/org/wikipedia/nirvana/nirvanabot/PortalParam.java -text
 *.js text
 *.MD text
 *.properties text
