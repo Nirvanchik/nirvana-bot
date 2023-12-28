@@ -21,9 +21,7 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana.nirvanabot;
-
-import org.wikipedia.nirvana.base.BotFatalError;
+package org.wikipedia.nirvana.base;
 
 /**
  * Error to throw when found error in settings.
@@ -37,7 +35,7 @@ public class BotSettingsError extends BotFatalError {
      * Default constructor. 
      */
     public BotSettingsError() {
-    	super("Bot settings error");
+        super("Bot settings error");
     }
 
     /**
