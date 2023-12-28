@@ -23,7 +23,7 @@
 
 package org.wikipedia.nirvana.testing;
 
-import org.wikipedia.nirvana.nirvanabot.SystemTime;
+import org.wikipedia.nirvana.util.SystemTime;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;

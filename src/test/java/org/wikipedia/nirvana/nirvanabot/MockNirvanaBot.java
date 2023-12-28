@@ -32,6 +32,7 @@ import org.wikipedia.nirvana.testing.IntegrationTestHelper;
 import org.wikipedia.nirvana.testing.IntegrationTesting;
 import org.wikipedia.nirvana.testing.JsonUtils;
 import org.wikipedia.nirvana.testing.TestError;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.MockCatScanTools;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki;

@@ -23,9 +23,9 @@
 
 package org.wikipedia.nirvana.testing;
 
-import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki.EditInfoMinimal;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;

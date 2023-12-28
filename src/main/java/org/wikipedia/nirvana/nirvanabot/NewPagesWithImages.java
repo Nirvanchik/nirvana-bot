@@ -33,6 +33,7 @@ import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.RevisionWithId;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.OptionsUtils;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.util.XmlTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 

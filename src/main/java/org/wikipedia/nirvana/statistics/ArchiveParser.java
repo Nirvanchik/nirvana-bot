@@ -28,9 +28,9 @@ import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.archive.ScanArchiveSettings;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
-import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.wiki.NamespaceUtils;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 

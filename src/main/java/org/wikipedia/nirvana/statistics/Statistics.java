@@ -24,9 +24,9 @@
 package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.nirvana.base.BotFatalError;
-import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.util.TextUtils;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 

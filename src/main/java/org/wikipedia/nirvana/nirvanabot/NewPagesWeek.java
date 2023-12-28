@@ -27,6 +27,7 @@ import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.report.ReportItem;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 

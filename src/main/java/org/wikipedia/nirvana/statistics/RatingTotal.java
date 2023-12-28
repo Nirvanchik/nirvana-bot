@@ -25,7 +25,7 @@ package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
-import org.wikipedia.nirvana.nirvanabot.SystemTime;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;

@@ -35,11 +35,11 @@ import org.wikipedia.nirvana.base.BotTemplateParser;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 import org.wikipedia.nirvana.nirvanabot.PortalConfig;
-import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.NumberTools;
 import org.wikipedia.nirvana.util.OptionsUtils;
+import org.wikipedia.nirvana.util.SystemTime;
 
 import org.apache.commons.lang3.time.StopWatch;
 

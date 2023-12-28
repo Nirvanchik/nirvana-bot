@@ -24,9 +24,9 @@
 package org.wikipedia.nirvana.statistics;
 
 import org.wikipedia.nirvana.base.BasicBot;
-import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.testing.IntegrationTestHelper;
 import org.wikipedia.nirvana.testing.TestError;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.json.simple.parser.ParseException;

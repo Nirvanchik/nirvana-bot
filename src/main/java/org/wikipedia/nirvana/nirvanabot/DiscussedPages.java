@@ -29,6 +29,7 @@ import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.DiscussionPagesSettings.DiscussionPageTemplate;
 import org.wikipedia.nirvana.util.OptionsUtils;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.util.XmlTools;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;

@@ -36,6 +36,7 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.ServiceGroup.Listener;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.CatScanTools.Service;

@@ -41,6 +41,7 @@ import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotGlobalSettings;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.MockDateTools;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.junit.After;

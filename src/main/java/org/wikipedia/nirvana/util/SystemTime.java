@@ -21,7 +21,7 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.util;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;

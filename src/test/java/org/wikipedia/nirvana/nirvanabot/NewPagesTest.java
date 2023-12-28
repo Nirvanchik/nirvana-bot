@@ -31,6 +31,7 @@ import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot.BotGlobalSettings;
 import org.wikipedia.nirvana.nirvanabot.report.ReportItem;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.junit.After;

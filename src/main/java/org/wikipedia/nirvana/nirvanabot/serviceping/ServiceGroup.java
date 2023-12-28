@@ -23,7 +23,7 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
-import org.wikipedia.nirvana.nirvanabot.SystemTime;
+import org.wikipedia.nirvana.util.SystemTime;
 
 import org.apache.commons.lang3.StringUtils;
 

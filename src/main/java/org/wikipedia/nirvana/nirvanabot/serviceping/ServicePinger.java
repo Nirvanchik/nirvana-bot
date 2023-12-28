@@ -24,8 +24,8 @@
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
 import org.wikipedia.nirvana.base.BotFatalError;
-import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
+import org.wikipedia.nirvana.util.SystemTime;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
