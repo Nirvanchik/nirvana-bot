@@ -29,7 +29,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.BotSettingsError;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 

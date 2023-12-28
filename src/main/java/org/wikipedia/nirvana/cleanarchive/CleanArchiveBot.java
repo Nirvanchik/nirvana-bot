@@ -25,8 +25,8 @@ package org.wikipedia.nirvana.cleanarchive;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.base.BasicBot;
+import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.localization.Localizer;
-import org.wikipedia.nirvana.nirvanabot.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.NewPages;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.TextUtils;

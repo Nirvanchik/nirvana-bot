@@ -25,13 +25,13 @@ package org.wikipedia.nirvana.nirvanabot;
 
 import static org.mockito.Mockito.when;
 
+import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 import org.wikipedia.nirvana.testing.IntegrationTestHelper;
 import org.wikipedia.nirvana.testing.IntegrationTesting;
 import org.wikipedia.nirvana.testing.JsonUtils;
 import org.wikipedia.nirvana.testing.TestError;
-import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.MockCatScanTools;
 import org.wikipedia.nirvana.wiki.MockNirvanaWiki;
@@ -46,7 +46,6 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;

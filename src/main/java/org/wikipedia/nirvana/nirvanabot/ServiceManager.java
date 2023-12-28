@@ -26,6 +26,7 @@ package org.wikipedia.nirvana.nirvanabot;
 import static org.wikipedia.nirvana.nirvanabot.NirvanaBot.SERVICE_AUTO;
 
 import org.wikipedia.nirvana.annotation.VisibleForTesting;
+import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.serviceping.CatscanService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.InternetService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.NetworkInterface;

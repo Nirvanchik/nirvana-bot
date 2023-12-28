@@ -29,6 +29,7 @@ import org.wikipedia.nirvana.archive.Archive;
 import org.wikipedia.nirvana.archive.ArchiveFactory;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
+import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.FetcherFactory;

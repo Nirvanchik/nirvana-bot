@@ -23,6 +23,8 @@
 
 package org.wikipedia.nirvana.nirvanabot;
 
+import org.wikipedia.nirvana.base.BotFatalError;
+
 /**
  * Error to throw when found error in settings.
  *
@@ -35,6 +37,7 @@ public class BotSettingsError extends BotFatalError {
      * Default constructor. 
      */
     public BotSettingsError() {
+    	super("Bot settings error");
     }
 
     /**

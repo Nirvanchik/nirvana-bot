@@ -70,6 +70,7 @@ import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.base.BasicBot;
+import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.base.BotTemplateParser;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.localization.LocalizationManager;

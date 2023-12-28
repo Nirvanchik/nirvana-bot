@@ -26,6 +26,7 @@ package org.wikipedia.nirvana.nirvanabot;
 import org.wikipedia.Wiki;
 import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.base.BasicBot;
+import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.imagefinder.ImageFinder;
 import org.wikipedia.nirvana.nirvanabot.pagesfetcher.PageListProcessor;

@@ -23,7 +23,7 @@
 
 package org.wikipedia.nirvana.nirvanabot.serviceping;
 
-import org.wikipedia.nirvana.nirvanabot.BotFatalError;
+import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.nirvanabot.SystemTime;
 import org.wikipedia.nirvana.nirvanabot.serviceping.OnlineService.Status;
 

@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.base.BasicBot;
+import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.base.BotTemplateParser;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
