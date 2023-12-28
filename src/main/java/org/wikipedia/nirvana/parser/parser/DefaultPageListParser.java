@@ -119,6 +119,9 @@ public class DefaultPageListParser implements PageListParser {
             log.warn("Service output looks bad - no new lines. See first 300 chars: {}",
                     StringTools.trancateTo(rawPageList, 300));
         }
+        if (StringTools.howMany(rawPageList, '\n') == 1) {
+            FileTools.dump(rawPageList, "last_service_out_with_1_new_line.txt");
+        }
 
         Map<String, Wiki.Revision> pageInfoMap = new TreeMap<>();
 
@@ -168,7 +171,10 @@ public class DefaultPageListParser implements PageListParser {
                 }
             }
         }
-
+        if (pageInfoMap.isEmpty()) {
+            log.warn("Empty responce from service");
+            FileTools.dump(rawPageList, "last_service_out_with_empty_data.txt");
+        }
         return pageInfoMap.values();
     }
 
