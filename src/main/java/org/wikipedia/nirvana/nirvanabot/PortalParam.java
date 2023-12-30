@@ -33,53 +33,59 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 /**
- * @author kin
+ * Keeps bot settings for portal page to update.
+ * Most of settings are bot global defaults, some settings are overridden by wiki users for
+ * specific portal page.
+ * POJO class.
  *
  */
 public class PortalParam {
-	public String lang;
-	public List<String> categories; 
-	public List<String> categoriesToIgnore;
-	public String page;
+    public String lang;
+    public List<String> categories; 
+    public List<String> categoriesToIgnore;
+    public String page;
     public CatScanTools.Service service;
     public ArchiveSettings archSettings = new ArchiveSettings();
-	public int ns;
-	public int depth;
-	public int hours;
-	public int maxItems;
-	public String format;
-	public String delimeter;
+    public int ns;
+    public int depth;
+    public int hours;
+    public int maxItems;
+    public String format;
+    public String delimeter;
     @Nonnull
     public String header = "";
     @Nonnull
     public String footer = "";
-	public boolean minor;
-	public boolean bot;
-	public boolean fastMode;
-	public String imageSearchTags;
-	public String fairUseImageTemplates;
-	public int updatesPerDay;
+    public boolean minor;
+    public boolean bot;
+    public boolean fastMode;
+    public String imageSearchTags;
+    public String fairUseImageTemplates;
+    public int updatesPerDay;
     public TemplateFilter templateFilter = null;
-	public String prefix;
+    public String prefix;
     public int tryCount = 1;
     public int catscanTryCount = 1;
 
-	public static final int MAX_CAT_GROUPS = 20;
-	
-	public List<List<String>> categoryGroups;
-	public List<List<String>> categoryToIgnoreGroups;
-	
-	public static final int RENAMED_NEW = 2;
-	
-	public PortalParam() {
-		lang = "ru";
-		minor = true;
-		bot = true;
-		imageSearchTags = null;
-		fairUseImageTemplates = null;
-		updatesPerDay = 1;
+    public static final int MAX_CAT_GROUPS = 20;
+
+    public List<List<String>> categoryGroups;
+    public List<List<String>> categoryToIgnoreGroups;
+
+    public static final int RENAMED_NEW = 2;
+
+    /**
+     * Default constructor.
+     */
+    public PortalParam() {
+        lang = "ru";
+        minor = true;
+        bot = true;
+        imageSearchTags = null;
+        fairUseImageTemplates = null;
+        updatesPerDay = 1;
         delimeter = "\n";
         categories = new ArrayList<String>();
         categoriesToIgnore = new ArrayList<String>();
-	}
+    }
 }
