@@ -33,11 +33,11 @@ import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author kin
+ * Portal page that generates list of articles selected by categories only,
+ * or additionally by having some templates.
  *
  */
 public class Pages extends NewPages {
@@ -51,36 +51,35 @@ public class Pages extends NewPages {
         if (this.archiveSettings.archive != null) {
             // TODO: Handle this in the apropriate place. This class should not care about it.
             this.archiveSettings.archive = null;
-		}
-		//GET_FIRST_REV = true;
-		getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED;
-		UPDATE_FROM_OLD = false;
-		UPDATE_ARCHIVE = false;
+        }
+        getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED;
+        UPDATE_FROM_OLD = false;
+        UPDATE_ARCHIVE = false;
         supportAuthor = false;
-	}
+    }
 
-	@Override
+    @Override
     protected PageListProcessor createPageListProcessor() throws BotFatalError {
-		PageListFetcher fetcher;
+        PageListFetcher fetcher;
         needsCustomTemlateFiltering = false;
         if (templateFilter == null) {
             fetcher = createSimpleFetcher();
-		} else {
+        } else {
             CatScanTools.Service service = this.service;
             if (!service.supportsFeature(CatScanTools.ServiceFeatures.PAGES_WITH_TEMPLATE)) {
                 service = CatScanTools.Service.getDefaultServiceForFeature(
                         CatScanTools.ServiceFeatures.PAGES_WITH_TEMPLATE, this.service);
-    		}
+            }
             if (service.supportsFeature(CatScanTools.ServiceFeatures.PAGES_WITH_TEMPLATE)) {
                 fetcher = new FetcherFactory.PagesWithTemplatesFetcher(templateFilter);
             } else {
                 needsCustomTemlateFiltering = true;
                 fetcher = createSimpleFetcher();
             }
-		}
-		return createPageListProcessorWithFetcher(service, fetcher, categories, categoriesToIgnore);
-	}
-	
+        }
+        return createPageListProcessorWithFetcher(service, fetcher, categories, categoriesToIgnore);
+    }
+    
     private PageListFetcher createSimpleFetcher() throws BotFatalError {
         Service service = this.service;
         if (!service.supportsFeature(ServiceFeatures.PAGES)) {
@@ -93,11 +92,11 @@ public class Pages extends NewPages {
         return new FetcherFactory.PagesFetcher();
     }
 
-	@Override
+    @Override
     public void sortPages(List<Revision> pageInfoList, boolean byRevision) {
-		// no sort (sorted by default)
-		// In CATSCAN2 sort is disabled so we have to sort actually until it's fixed on catscan2
-		sortPagesByName(pageInfoList);
-	}	
-	
+        // no sort (sorted by default)
+        // In CATSCAN2 sort is disabled so we have to sort actually until it's fixed on catscan2
+        sortPagesByName(pageInfoList);
+    }    
+    
 }
