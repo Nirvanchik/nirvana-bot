@@ -36,8 +36,8 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.ServiceGroup.Listener;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.AfterDowntimeCallback;
 import org.wikipedia.nirvana.nirvanabot.serviceping.ServicePinger.ServiceWaitTimeoutException;
-import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
@@ -52,13 +52,14 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
- * @author kin
+ * Services manager.
+ * Handles downtime issues of all used external services that can break and be offline sometimes.
  *
  */
 public class ServiceManager {
     protected static final Logger log;
 
-	private final ServicePinger servicePinger;
+    private final ServicePinger servicePinger;
     @Nullable
     private ServiceGroup<CatscanService> pageListFetchServiceGroup = null;
     protected CatScanTools.Service activeService = null;
@@ -70,21 +71,28 @@ public class ServiceManager {
         log = LogManager.getLogger(ServiceManager.class.getName());
     }
 
-	public ServiceManager(String defaultServiceName, String selectedServiceName, NirvanaWiki wiki, NirvanaWiki commons) throws BotFatalError {
+    /**
+     * Constructs service manager with specifiing default service and currently active service.
+     */
+    public ServiceManager(String defaultServiceName, String selectedServiceName, NirvanaWiki wiki,
+            NirvanaWiki commons) throws BotFatalError {
         this(wiki, commons);
         updateCatScan(defaultServiceName, selectedServiceName);
     }
 
+    /**
+     * Constructs service manager.
+     */
     public ServiceManager(NirvanaWiki wiki, NirvanaWiki commons) {
-		NetworkInterface serviceNetwork = new NetworkInterface();
-		InternetService serviceInternet = new InternetService();
-		serviceInternet.dependsOn(serviceNetwork);
+        NetworkInterface serviceNetwork = new NetworkInterface();
+        InternetService serviceInternet = new InternetService();
+        serviceInternet.dependsOn(serviceNetwork);
         internet = serviceInternet; 
-		WikiService serviceWiki = new WikiService(wiki);
+        WikiService serviceWiki = new WikiService(wiki);
         mainWiki = serviceWiki;
-		serviceWiki.dependsOn(serviceInternet);
-		WikiService serviceCommons = new WikiService(commons);
-		serviceCommons.dependsOn(serviceInternet);
+        serviceWiki.dependsOn(serviceInternet);
+        WikiService serviceCommons = new WikiService(commons);
+        serviceCommons.dependsOn(serviceInternet);
         servicePinger = new ServicePinger(
                  new SystemTime(),
                  serviceNetwork,
@@ -101,7 +109,12 @@ public class ServiceManager {
         this.servicePinger = servicePinger;
     }
 
-    public void updateCatScan(String defaultServiceName, String selectedServiceName) throws BotFatalError {
+    /**
+     * Update default and active catscan service.
+     * Should be called at the application start to initialize service manager.
+     */
+    public void updateCatScan(String defaultServiceName, String selectedServiceName)
+            throws BotFatalError {
         CatScanTools.Service defaultService =
                 CatScanTools.Service.getServiceByName(defaultServiceName);
         assert defaultService != null;
@@ -133,34 +146,40 @@ public class ServiceManager {
         if (catscan != null) {
             servicePinger.removeService(catscan);
         }
-		if (selectedServiceName.equalsIgnoreCase(SERVICE_AUTO)) {
+        if (selectedServiceName.equalsIgnoreCase(SERVICE_AUTO)) {
             log.info("Create service group");
 
-			pageListFetchServiceGroup =
+            pageListFetchServiceGroup =
                     new ServiceGroup<CatscanService>(
                             new SystemTime(),
                             services.toArray(new CatscanService[0]))
                     .setDefault(serviceCatscanDefault);
 
-			pageListFetchServiceGroup.setListener(new Listener<CatscanService>() {
+            pageListFetchServiceGroup.setListener(new Listener<CatscanService>() {
 
-				@Override
+                @Override
                 public void onActiveServiceChanged(CatscanService activeService) {
-					ServiceManager.this.activeService = activeService.getService();	                
-                    log.info("Active service changed to: " + ServiceManager.this.activeService.name());
+                    ServiceManager.this.activeService = activeService.getService();
+                    log.info("Active service changed to: {}",
+                            ServiceManager.this.activeService.name());
                 }
-			});
+            });
             catscan = pageListFetchServiceGroup;
-		} else {
-			pageListFetchServiceGroup = null;
+        } else {
+            pageListFetchServiceGroup = null;
             catscan = serviceCatscanDefault;
-		}
+        }
         servicePinger.addService(catscan);
     }
 
-	public void setTimeout(long timeout) {
-		servicePinger.setTimeout(timeout);
-	}
+    /**
+     * Set time period (downtime) in milliseconds which is allowed to sleep by method 
+     * {@link #checkServices()} to wait when services come alive or error 
+     * {@link ServiceWaitTimeoutException} is raised.  
+     */
+    public void setTimeout(long timeout) {
+        servicePinger.setTimeout(timeout);
+    }
 
     /**
      * Sets callback action that will be called after downtime when services
@@ -168,35 +187,52 @@ public class ServiceManager {
      *
      * @param callback Callback instance.
      */
-	public void setAfterDowntimeCallback(AfterDowntimeCallback callback) {
-		servicePinger.setAfterDowntimeCallback(callback);
-	}
+    public void setAfterDowntimeCallback(AfterDowntimeCallback callback) {
+        servicePinger.setAfterDowntimeCallback(callback);
+    }
 
+    /**
+     * Returns active CatScan service.
+     */
     public CatScanTools.Service getActiveService() {
-		return activeService;
-	}
+        return activeService;
+    }
 
+    /**
+     * Returns main wiki service checker.
+     */
     public WikiService getMainWikiService() {
         return mainWiki;
     }
 
-	public void timeToFixProblems() throws InterruptedException {
-		if (pageListFetchServiceGroup != null) {
+    /**
+     * Recover normal state if possible.
+     * Call this method at the most suitable time (between tasks).
+     */
+    public void timeToFixProblems() throws InterruptedException {
+        if (pageListFetchServiceGroup != null) {
             servicePinger.tryRecoverServices();
-			activeService = pageListFetchServiceGroup.getActiveService().getService();
-		}
-	}
-
-    public boolean checkServices() throws InterruptedException, BotFatalError {
-		try {
-	        if (!servicePinger.isOk()) {
-                servicePinger.waitServicesOk();
-	        }
-        } catch (ServiceWaitTimeoutException e) {
-	        log.error(e);
-            mainWiki.setNeedsRelogin(true);
-	        return false;
+            activeService = pageListFetchServiceGroup.getActiveService().getService();
         }
-		return true;
-	}
+    }
+
+    /**
+     * Check that all services are online and working.
+     * To be called at the application start and after some failures when there is a
+     * strong suspicion that some service is down.
+     *
+     * @return true, if all services are OK.
+     */
+    public boolean checkServices() throws InterruptedException, BotFatalError {
+        try {
+            if (!servicePinger.isOk()) {
+                servicePinger.waitServicesOk();
+            }
+        } catch (ServiceWaitTimeoutException e) {
+            log.error(e);
+            mainWiki.setNeedsRelogin(true);
+            return false;
+        }
+        return true;
+    }
 }
