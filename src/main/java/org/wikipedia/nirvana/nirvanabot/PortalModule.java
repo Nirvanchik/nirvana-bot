@@ -24,6 +24,9 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.nirvana.base.BotFatalError;
+import org.wikipedia.nirvana.error.ArchiveUpdateFailure;
+import org.wikipedia.nirvana.error.DangerousEditException;
+import org.wikipedia.nirvana.error.InvalidLineFormatException;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.nirvanabot.report.ReportItem;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;

@@ -21,7 +21,7 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.error;
 
 /**
  * Exception that raised when archive update fails.

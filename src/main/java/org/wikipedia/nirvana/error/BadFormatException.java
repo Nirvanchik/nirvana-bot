@@ -1,6 +1,6 @@
 /**
- *  @(#)BadFormatException.java 23.08.2015
- *  Copyright © 2015 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)BadFormatException.java
+ *  Copyright © 2023 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,34 +21,30 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.error;
 
 /**
- * @author kin
+ * Exception that can be raised by simple parser utilities when parsing some user-modified settings
+ * when that settings have unexpected format. Bot settings parser cannot recognize that setting
+ * string and raises this error. The calling bot code must decide how to handle this error (ignore, 
+ * abort execution, notify user, etc).
  *
  */
 public class BadFormatException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
-	public BadFormatException() {
-	}
+    /**
+     * Constructs exception with empty message.
+     */
+    public BadFormatException() {
+    }
 
-	public BadFormatException(String arg0) {
-		super(arg0);
-	}
-
-	public BadFormatException(Throwable arg0) {
-		super(arg0);
-	}
-
-	public BadFormatException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-	}
-
-	public BadFormatException(String arg0, Throwable arg1, boolean arg2,
-	        boolean arg3) {
-		super(arg0, arg1, arg2, arg3);
-	}
+    /**
+     * Constructs a new exception with the specified detail message.
+     */
+    public BadFormatException(String message) {
+        super(message);
+    }
 
 }

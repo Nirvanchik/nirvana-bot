@@ -21,7 +21,7 @@
  * This file is encoded with UTF-8.
  * */
 
-package org.wikipedia.nirvana.nirvanabot;
+package org.wikipedia.nirvana.error;
 
 /**
  * Exception to throw when bot detects that the next edit may be dangerous (wrong edit).
