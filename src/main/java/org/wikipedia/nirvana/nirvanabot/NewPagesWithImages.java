@@ -1,6 +1,6 @@
 /**
  *  @(#)NewPagesWithImages.java
- *  Copyright © 2011 - 2014 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
+ *  Copyright © 2023 Dmitry Trofimovich (KIN)(DimaTrofimovich@gmail.com)
  *    
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -48,35 +48,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author kin
+ * New pages block generator that can find images on wiki page and make a new articles page
+ * looking like image gallery.
  *
  */
 public class NewPagesWithImages extends NewPages {
-	//private String regexToFindImage;
-	private ImageFinder imageFinder;
-	private NirvanaWiki commons;
-	private List<String> fairUseImageTemplates;
-	
-	public static class RevisionWithImage extends RevisionWithId {
-		String image;
+    private ImageFinder imageFinder;
+    private NirvanaWiki commons;
+    private List<String> fairUseImageTemplates;
+
+    /**
+     * {@link org.wikipedia.Wiki.Revision} extension that additionally can keep image link.
+     *
+     */
+    private static class RevisionWithImage extends RevisionWithId {
+        String image;
 
         public RevisionWithImage(Wiki wiki, long revid, OffsetDateTime timestamp,
-				String title, String summary, String user, boolean minor,
-				boolean bot, boolean rvnew, int size, long id, String image) {
-			super(wiki, revid, timestamp, title, summary, user, minor, bot, rvnew, size, id);
-			this.image = image;
-		}
-		
-		public RevisionWithImage(Wiki wiki, Revision r, long id, String image) {
-			super(wiki, r.getRevid(), r.getTimestamp(), r.getPage(), 
-					r.getSummary(), r.getUser(), r.isMinor(), r.isBot(), r.isNew(), r.getSize(), id);
-			this.image = image;
-		}
-		
-		public String getImage() { return this.image; }
-		public void setImage(String image) { this.image = image; }
-		
-	}
+                String title, String summary, String user, boolean minor,
+                boolean bot, boolean rvnew, int size, long id, String image) {
+            super(wiki, revid, timestamp, title, summary, user, minor, bot, rvnew, size, id);
+            this.image = image;
+        }
+
+        public RevisionWithImage(Wiki wiki, Revision rev, long id, String image) {
+            super(wiki, rev.getRevid(), rev.getTimestamp(), rev.getPage(),
+                    rev.getSummary(), rev.getUser(), rev.isMinor(), rev.isBot(), rev.isNew(),
+                    rev.getSize(), id);
+            this.image = image;
+        }
+
+        public String getImage() { return this.image; }
+
+        public void setImage(String image) { this.image = image; }
+        
+    }
 
     /**
      * Constructs class instanse using bot params, and special for this module additional things
@@ -88,31 +94,27 @@ public class NewPagesWithImages extends NewPages {
         if (this.archiveSettings.archive != null) {
             // TODO: Handle this in the apropriate place please. 
             this.archiveSettings.archive = null;
-		}
+        }
         this.formatString = formatString.replace(BotVariables.FILE_NAME, "%4$s");
-		this.imageFinder = imageFinder;
-		this.commons = commons;
+        this.imageFinder = imageFinder;
+        this.commons = commons;
         this.fairUseImageTemplates = OptionsUtils.optionToList(param.fairUseImageTemplates);
-	}
+    }
 
     @Override
     public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException,
             ServiceError, BotFatalError {
-		log.info("Processing data for [[" + this.pageName+"]]");
-		
-		/*for (String category : categories) {
-			log.info("Processing data of " + category);
-		}*/
-		
-		PageListProcessor pageListProcessor = createPageListProcessor();
-		List<Revision> pageInfoListNotFiltered = pageListProcessor.getNewPages(wiki);
-		ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
+        log.info("Processing data for [[{}]]", this.pageName);
 
-		for(Revision r: pageInfoListNotFiltered) {
-			long revId = r.getRevid();
-			long id = ((RevisionWithId)r).getId();
-			String title = r.getPage();
-			Revision page = null;
+        PageListProcessor pageListProcessor = createPageListProcessor();
+        List<Revision> pageInfoListNotFiltered = pageListProcessor.getNewPages(wiki);
+        ArrayList<Revision> pageInfoList = new ArrayList<Revision>(30);
+
+        for (Revision r: pageInfoListNotFiltered) {
+            long revId = r.getRevid();
+            long id = ((RevisionWithId)r).getId();
+            String title = r.getPage();
+            Revision page = null;
             String article = wiki.getPageText(r.getPage());
             if (article == null) {
                 // Page was created and renamed or deleted after that
@@ -132,144 +134,135 @@ public class NewPagesWithImages extends NewPages {
                 }
             }
             String image = imageFinder.findImage(article);
-            if (image != null && checkImageFree(wiki, image)) {	
+            if (image != null && checkImageFree(wiki, image)) {    
                 log.debug("Image found: {}", image);
-
-            		if(page==null) {
-                        // TODO: This looks ugly. Revision object is actually fake.
-                        page = new RevisionWithImage(wiki, revId, OffsetDateTime.now(), title, "",
-                                "", false, false, true, 0, id, image);
-            		} else {
-            			((RevisionWithImage)page).setImage(image);
-            		}            		
-            		pageInfoList.add(page);
-            		log.debug("adding page to list: "+title);
+                if (page == null) {
+                    // TODO: This looks ugly. Revision object is actually fake.
+                    page = new RevisionWithImage(wiki, revId, OffsetDateTime.now(), title, "",
+                            "", false, false, true, 0, id, image);
+                } else {
+                    ((RevisionWithImage)page).setImage(image);
+                }                    
+                pageInfoList.add(page);
+                log.debug("adding page to list: {}", title);
             }
-		}
+        }
 
         sortPages(pageInfoList, false);
 
-		List<String> subset = new ArrayList<String>();
-		List<String> includedPages = new ArrayList<String>();
-		List<String> includedImages = new ArrayList<String>();
-		int count = pageInfoList.size();
-		count = count<maxItems?count:maxItems;
-		for (int i = 0; i < count ; ++i)
-		{
+        List<String> subset = new ArrayList<String>();
+        List<String> includedPages = new ArrayList<String>();
+        List<String> includedImages = new ArrayList<String>();
+        int count = pageInfoList.size();
+        count = count < maxItems ? count : maxItems;
+        for (int i = 0; i < count ; ++i) {
 
-			RevisionWithImage page = (RevisionWithImage)pageInfoList.get(i);
-			if(page.getSize()==0) {
+            RevisionWithImage page = (RevisionWithImage)pageInfoList.get(i);
+            if (page.getSize() == 0) {
                 page = new RevisionWithImage(wiki, wiki.getFirstRevision(page.getPage()),
                         page.getId(), page.getImage()); 
-			}
+            }
 
-            if (page != null) {		    	
+            if (page != null) {                
                 String title = XmlTools.removeEscape(page.getPage());
-		    	String time = null;
-		    	if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) 
+                String time = null;
+                if (NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) { 
                     // TODO: Is this needed? Is this used?
                     throw new NotImplementedException("long date format not implemented");
-		    	else {
+                } else {
                     time = page.getTimestamp().atZoneSameInstant(ZoneOffset.UTC)
                             .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "Z";
-		    	}
-		    	/*
-		    	log.debug("title -> ["+title+"]");
-		    	log.debug("user -> ["+page.getUser()+"]");
-		    	log.debug("image -> ["+page.getImage()+"]");
-		    	log.debug("title2 -> "+(namespace!=0?title.substring(wiki.namespaceIdentifier(this.namespace).length()+1):title));
-		    	log.debug("user2 -> "+HTTPTools.removeEscape(page.getUser()));
-		    	log.debug("time -> "+time);
-		    	log.debug("format -> "+this.format);*/
-		    	String element = String.format(this.formatString,
-		    			namespace!=0?title.substring(wiki.namespaceIdentifier(this.namespace).length()+1):title,
+                }
+                String element = String.format(this.formatString, namespace != 0 
+                        ? title.substring(wiki.namespaceIdentifier(this.namespace).length() + 1)
+                                : title,
                         XmlTools.removeEscape(page.getUser()), 
-		    			time, 
-		    			page.getImage()
-		    			);
-		    	
-		        if (!subset.contains(element))
-		        {
-		            subset.add(element);
-		            includedPages.add(title);
-		            includedImages.add(page.getImage());
-		            log.debug("ADD new line: \t"+element);
-		        }
-		    }
-		}
+                        time, 
+                        page.getImage()
+                        );
+                
+                if (!subset.contains(element))
+                {
+                    subset.add(element);
+                    includedPages.add(title);
+                    includedImages.add(page.getImage());
+                    log.debug("ADD new line: \t{}", element);
+                }
+            }
+        }
 
         // TODO: Is this needed?
-		ArrayList<String> archiveItems = new ArrayList<String>();
-		int oldCount = 0;
-		int archiveCount = 0;
-	
-		// Add elements from old page
-		if (true/*count < maxItems /*|| archive!=null*/) { 
-			String oldText = text;
-			String[] oldItems;
+        ArrayList<String> archiveItems = new ArrayList<String>();
+        int oldCount = 0;
+        int archiveCount = 0;
+    
+        // Add elements from old page
+        if (true/*count < maxItems /*|| archive!=null*/) { 
+            String oldText = text;
+            String[] oldItems;
             oldText = pageFormatter.stripBotsAllowString(oldText);
             oldText = pageFormatter.stripDecoration(oldText);
-			oldText = oldText.trim();
-		    oldItems = oldText.split(delimeter.replace("|", "\\|"));
-		    if(delimeter.equals("\n")) log.debug("delimeter is \\n");
-		    else if(delimeter.equals("\r")) log.debug("delimeter is \\r");
-		    else log.debug("delimeter is "+delimeter);
-	 
-		    oldCount = oldItems.length;
-		    for (int i = 0; i < oldItems.length; ++i)
-		    {
-		    	//log.debug("check old line: \t"+items[i]+"");
-		    	boolean skip = false;
-		    	if(oldItems[i].isEmpty()) continue;
-		    	for(String image:includedImages) {
-		    		if(oldItems[i].contains(image+"|")) {
-		    			skip = true;
-		    			log.debug("SKIP old line: \t"+oldItems[i]);
-		    			break;
-		    		}
-		    	}
-		    	if(skip) continue;
-		        if (subset.size() < maxItems)  {
-		        	if(!subset.contains(oldItems[i])) { 
-		        		subset.add(oldItems[i]);		
-		        		log.debug("ADD old line: \t"+oldItems[i]);
-		        	} else {
-		        		log.debug("SKIP old line: \t"+oldItems[i]);
-		        	}
-		        } else {
-		        	log.debug("ARCHIVE old line: \t"+oldItems[i]);
+            oldText = oldText.trim();
+            oldItems = oldText.split(delimeter.replace("|", "\\|"));
+            if (delimeter.equals("\n")) {
+                log.debug("delimeter is \\n");
+            } else if (delimeter.equals("\r")) {
+                log.debug("delimeter is \\r");
+            } else {
+                log.debug("delimeter is {}", delimeter);
+            }
+     
+            oldCount = oldItems.length;
+            for (int i = 0; i < oldItems.length; ++i) {
+                boolean skip = false;
+                if (oldItems[i].isEmpty()) continue;
+                for (String image: includedImages) {
+                    if (oldItems[i].contains(image + "|")) {
+                        skip = true;
+                        log.debug("SKIP old line: \t{}", oldItems[i]);
+                        break;
+                    }
+                }
+                if (skip) continue;
+                if (subset.size() < maxItems)  {
+                    if (!subset.contains(oldItems[i])) { 
+                        subset.add(oldItems[i]);        
+                        log.debug("ADD old line: \t{}", oldItems[i]);
+                    } else {
+                        log.debug("SKIP old line: \t{}", oldItems[i]);
+                    }
+                } else {
+                    log.debug("ARCHIVE old line: \t{}", oldItems[i]);
                     if (archiveSettings.withArchive()) {
-		        		archiveItems.add(oldItems[i]);
-		        	}
-		        	archiveCount++;
-		        }
-		    }
-		}
+                        archiveItems.add(oldItems[i]);
+                    }
+                    archiveCount++;
+                }
+            }
+        }
 
-		Data d = new Data();
+        Data d = new Data();
         d.newText = pageFormatter.formatPage(subset);
         if (archiveSettings.withArchive() && archiveItems != null && archiveItems.size() > 0) {
-			d.archiveText = StringUtils.join(archiveItems.toArray(),delimeter) + "\n";
-			//if(archiveSettings!=null)
-				d.archiveItems = archiveItems;
-		}
-		d.archiveCount = archiveCount;
-		d.newPagesCount = subset.size() - (oldCount - archiveCount);
-		if(d.newPagesCount<0) d.newPagesCount = 0;
-		log.debug("updated items count: "+subset.size());
-		log.debug("old items count: "+oldCount);
-		log.debug("archive count: "+archiveCount);
-		log.debug("new items count: "+d.newPagesCount);
-		
-		return d;
-	}
+            d.archiveText = StringUtils.join(archiveItems.toArray(), delimeter) + "\n";
+            d.archiveItems = archiveItems;
+        }
+        d.archiveCount = archiveCount;
+        d.newPagesCount = subset.size() - (oldCount - archiveCount);
+        if (d.newPagesCount < 0) d.newPagesCount = 0;
+        log.debug("updated items count: {}", subset.size());
+        log.debug("old items count: {}", oldCount);
+        log.debug("archive count: {}", archiveCount);
+        log.debug("new items count: {}", d.newPagesCount);
+        
+        return d;
+    }
 
-	/**
+    /**
      * We have no power to add thumbnails of images which are non-free (fair use of images)
      * So we check for fair-use templates in image description before using it.
      * 
      * @return true if image looks like free (doesn't have a description with fair use template)
-	 * @throws IOException 
      */
     private boolean checkImageFree(NirvanaWiki wiki, String image) throws IOException {
         String text = wiki.getPageText(
@@ -284,8 +277,8 @@ public class NewPagesWithImages extends NewPages {
             if (StringUtils.containsIgnoreCase(text, "{{" + tmpl)) {
                 return false;
             }
-    	}
-	    return true;
+        }
+        return true;
     }
 
 }
