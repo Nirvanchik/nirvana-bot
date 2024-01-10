@@ -69,6 +69,7 @@ public class HttpToolsTest {
 
     @Before
     public void setUp() throws Exception {
+        HttpTools.resetFromOnlineTest();
     }
 
     @After

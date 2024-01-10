@@ -216,6 +216,11 @@ public class HttpTools {
     }
 
     @VisibleForTesting
+    static void resetFromOnlineTest() {
+        testMode = false;
+    }
+
+    @VisibleForTesting
     static List<URL> getQueries() {
         return savedQueries;
     }
