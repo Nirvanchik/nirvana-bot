@@ -53,8 +53,8 @@ public class Pages extends NewPages {
             this.archiveSettings.archive = null;
         }
         getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED;
-        UPDATE_FROM_OLD = false;
-        UPDATE_ARCHIVE = false;
+        enableFeatureUpdateFromOld = false;
+        enableFeatureArchive = false;
         supportAuthor = false;
     }
 

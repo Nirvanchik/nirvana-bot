@@ -67,7 +67,7 @@ public class NewPagesWeek extends NewPages {
      */
     public NewPagesWeek(PortalParam param, PageFormatter pageFormatter, SystemTime systemTime) {
         super(param, pageFormatter, systemTime);
-        UPDATE_FROM_OLD = false;
+        enableFeatureUpdateFromOld = false;
         pageTitleFormat = "%1$s/" + localizer.localize("День") + " %2$d";
     }
 

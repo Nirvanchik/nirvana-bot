@@ -1,6 +1,6 @@
 /**
  *  @(#)NewPages.java
- *  Copyright © 2011 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  Copyright © 2023 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -116,28 +116,31 @@ import javax.security.auth.login.LoginException;
  * 
  *
  */
-public class NewPages implements PortalModule{
+public class NewPages implements PortalModule {
     protected static final Logger sLog;
     protected final Logger log;
     protected final PageFormatter pageFormatter;
     protected final SystemTime systemTime;
     protected final Localizer localizer;
 
-	private static final int WIKI_API_BUNCH_SIZE = 10;
-	public static final String PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE = "\\[\\[(?<article>[^\\]|]+)(|[^\\]]+)?\\]\\]";
-	public static final String PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM = "\\{\\{(?<template>.+)\\}\\}";
+    private static final int WIKI_API_BUNCH_SIZE = 10;
+    public static final String PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE =
+            "\\[\\[(?<article>[^\\]|]+)(|[^\\]]+)?\\]\\]";
+    public static final String PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM =
+            "\\{\\{(?<template>.+)\\}\\}";
 
-    private static String summaryNewPages;
+    private static String summaryNew;
+    private static String summaryUpdate;
     private static String NEW_PAGES_LISTS_CATEGORY;
 
     private static boolean initialized; 
 
-	protected String language;
-	protected List<String> categories;
-	protected List<String> categoriesToIgnore;
-	protected List<List<String>> categoryGroups;
-	protected List<List<String>> categoryToIgnoreGroups;
-	protected String pageName;
+    protected String language;
+    protected List<String> categories;
+    protected List<String> categoriesToIgnore;
+    protected List<List<String>> categoryGroups;
+    protected List<List<String>> categoryToIgnoreGroups;
+    protected String pageName;
     @Nonnull
     protected final ArchiveSettings archiveSettings;
     protected String format;
@@ -165,8 +168,8 @@ public class NewPages implements PortalModule{
 
     protected GetRevisionMethod getRevisionMethod = GetRevisionMethod.GET_REV;
     
-    protected boolean UPDATE_FROM_OLD = true;
-    protected boolean UPDATE_ARCHIVE = true;
+    protected boolean enableFeatureUpdateFromOld = true;
+    protected boolean enableFeatureArchive = true;
     protected boolean checkPlaceholdersBeforeUpdate = true;
 
     protected String currentUser = null;
@@ -193,12 +196,12 @@ public class NewPages implements PortalModule{
     }
 
     protected enum GetRevisionMethod {
-    	GET_FIRST_REV,
-    	GET_FIRST_REV_IF_NEED,
-    	GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL,
-    	GET_REV,
-    	GET_TOP_REV
-    	//GET_LAST_REV_BY_PAGE_NAME
+        GET_FIRST_REV,
+        GET_FIRST_REV_IF_NEED,
+        GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL,
+        GET_REV,
+        GET_TOP_REV
+        //GET_LAST_REV_BY_PAGE_NAME
     }
 
     /**
@@ -212,14 +215,14 @@ public class NewPages implements PortalModule{
         initStatics();
 
         this.language = param.lang;
-    	this.categories = param.categories;
-    	this.categoriesToIgnore = param.categoriesToIgnore;
-    	categoryGroups = param.categoryGroups;
-    	categoryToIgnoreGroups = param.categoryToIgnoreGroups;
-    	this.pageName = param.page;
-   		this.archiveSettings = param.archSettings;
-    	this.maxItems = param.maxItems;
-    	this.format = param.format;
+        this.categories = param.categories;
+        this.categoriesToIgnore = param.categoriesToIgnore;
+        categoryGroups = param.categoryGroups;
+        categoryToIgnoreGroups = param.categoryToIgnoreGroups;
+        this.pageName = param.page;
+        this.archiveSettings = param.archSettings;
+        this.maxItems = param.maxItems;
+        this.format = param.format;
 
         this.formatString = format
                 .replace(BotVariables.TITLE, "%1$s")
@@ -227,27 +230,31 @@ public class NewPages implements PortalModule{
         if (supportAuthor) {
             formatString = formatString.replace(BotVariables.AUTHOR, "%2$s");
         }
-    	this.hours = param.hours;
-    	//this.Module = module;
-    	this.delimeter = param.delimeter;
-    	this.depth = param.depth;
-    	this.namespace = param.ns;
-    	this.minor = param.minor;
-    	this.bot = param.bot;
-    	this.service = param.service;
-    	this.fastMode = param.fastMode;
+        this.hours = param.hours;
+        //this.Module = module;
+        this.delimeter = param.delimeter;
+        this.depth = param.depth;
+        this.namespace = param.ns;
+        this.minor = param.minor;
+        this.bot = param.bot;
+        this.service = param.service;
+        this.fastMode = param.fastMode;
         this.templateFilter = param.templateFilter;
 
         dateTools = DateTools.getInstance();
 
         log = LogManager.getLogger(this.getClass().getName());
         log.debug("Portal module created for portal subpage [[" + this.pageName + "]]");
-	}
+    }
 
+    /**
+     * Initialize static code. Call it before using any static methods of class.
+     */
     public static void initStatics() {
         if (initialized) return;
         Localizer localizer = Localizer.getInstance();
-        summaryNewPages = "+%d " + localizer.localize("новых");
+        summaryNew = localizer.localize("новых");
+        summaryUpdate = localizer.localize("обновление");
         NEW_PAGES_LISTS_CATEGORY =
                 localizer.localize("Категория:Википедия:Списки новых статей по темам");
 
@@ -263,10 +270,10 @@ public class NewPages implements PortalModule{
     }
 
     protected String getFormatString() {
-    	return formatString;
+        return formatString;
     }
 
-    public String getOldText(Wiki wiki) throws IOException {
+    protected String getOldText(Wiki wiki) throws IOException {
         String text = wiki.getPageText(this.pageName);
         if (text == null) {
             text = "";
@@ -274,107 +281,116 @@ public class NewPages implements PortalModule{
         return text;
     }
 
-	public class Data {		
-		String newText;
-		String archiveText;
-		List<String> archiveItems = null;
-		int newPagesCount = 0;
-		int archiveCount = 0;
-		int deletedCount = 0;
-		int oldCount = 0;
-		public Data() {
+    public class Data {        
+        String newText;
+        String archiveText;
+        List<String> archiveItems = null;
+        int newPagesCount = 0;
+        int archiveCount = 0;
+        int deletedCount = 0;
+        int oldCount = 0;
+
+        Data() {
             if (archiveSettings.withArchive()) {
-				archiveItems = new ArrayList<String>();
-			}
-		}
-		public void makeArchiveText() {
+                archiveItems = new ArrayList<String>();
+            }
+        }
+
+        void makeArchiveText() {
             if (archiveSettings.withArchive() && archiveItems != null && archiveItems.size() > 0) {
-				if(archiveSettings.enumeration==Enumeration.HASH) {
-					enumerateWithHash(archiveItems);
-				}
-				archiveText = StringUtils.join(archiveItems.iterator(),delimeter) + "\n";
-			}
-		}
-	}
-			
-	protected class NewPagesBuffer {
-		protected NirvanaWiki wiki;
-		protected List<String> subset = new ArrayList<String>();
-		List<String> includedPages = new ArrayList<String>();
-		public NewPagesBuffer(NirvanaWiki wiki) {
-			this.wiki = wiki;
-		}
-		
-		public boolean contains(String item) {
-			return subset.contains(item);
-		}
-		
-		public int size() {
-			return subset.size();
-		}
-		
-		public boolean checkIsDuplicated(String archiveItem) {
-			if (contains(archiveItem)) {
-				return true;
-			}
-			for(String title:includedPages) {
-	    		String variant1 = "[["+title+"]]";		        		
-	    		String variant2 = "|"+
-	    				pageTitleNormalToEscaped(
-	    						title.substring((namespace==0)?0:namespaceIdentifier.length()+1)
-	    						)+
-	    				"|";
-	    		if(archiveItem.contains(variant1) ||
-	    				archiveItem.contains(variant2)) {
-	    			return true;	    			
-	    		}
-	    	}
-			return false;
-		}
+                if (archiveSettings.enumeration == Enumeration.HASH) {
+                    enumerateWithHash(archiveItems);
+                }
+                archiveText = StringUtils.join(archiveItems.iterator(),delimeter) + "\n";
+            }
+        }
+        
+        boolean needUpdate(String oldText) {
+            if (newText == null || newText.isEmpty()) {
+                return false;
+            }
+            return !newText.equals(oldText) && !newText.equals(oldText.trim());
+        }
+    }
+            
+    protected class NewPagesBuffer {
+        protected NirvanaWiki wiki;
+        protected List<String> subset = new ArrayList<String>();
+        List<String> includedPages = new ArrayList<String>();
+
+        public NewPagesBuffer(NirvanaWiki wiki) {
+            this.wiki = wiki;
+        }
+        
+        public boolean contains(String item) {
+            return subset.contains(item);
+        }
+        
+        public int size() {
+            return subset.size();
+        }
+        
+        public boolean checkIsDuplicated(String archiveItem) {
+            if (contains(archiveItem)) {
+                return true;
+            }
+            for (String title:includedPages) {
+                String variant1 = "[[" + title + "]]";                        
+                String variant2 = "|" + pageTitleNormalToEscaped(
+                        title.substring((namespace == 0) ? 0 : namespaceIdentifier.length() + 1))
+                        + "|";
+                if (archiveItem.contains(variant1) ||
+                        archiveItem.contains(variant2)) {
+                    return true;                    
+                }
+            }
+            return false;
+        }
 
         public String getNewText() {
             return pageFormatter.formatPage(subset);
         }
 
-		protected void addOldItem(String item) {
-			subset.add(item);
-		}
+        protected void addOldItem(String item) {
+            subset.add(item);
+        }
 
-		protected String formatTimeString(Revision rev) {
-			if(NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long"))
+        protected String formatTimeString(Revision rev) {
+            if (NirvanaBot.TIME_FORMAT.equalsIgnoreCase("long")) {
                 // TODO: Is this needed? Is this used?
                 throw new NotImplementedException("long date format not implemented");
-	    	else {
+            } else {
                 return rev.getTimestamp().atZoneSameInstant(ZoneOffset.UTC)
                         .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "Z";
-	    	}
-		}
+            }
+        }
 
-		String formatTitleString(String title) {
-	    	String titleToInsert = title;
+        String formatTitleString(String title) {
+            String titleToInsert = title;
             if (namespace != 0) {
                 log.debug("Namespace: {} / {}, title: ", namespaceIdentifier, namespace, title);
                 assert title.contains(":");
                 assert title.length() > namespaceIdentifier.length();
-	    		titleToInsert = title.substring(namespaceIdentifier.length()+1);
-	    	}
-	        // There are pages like /etc or /dev/null which start with '/'
-	        if (titleToInsert.startsWith("/")) {
-	            titleToInsert = ":" + titleToInsert;
-	        }
-	    	if(format.contains("{{") && format.contains("}}")) {
-	    		titleToInsert = pageTitleNormalToEscaped(titleToInsert); // replaces '=' equal-sign by escape-code
-	    	}
-	    	return titleToInsert;
-		}
+                titleToInsert = title.substring(namespaceIdentifier.length() + 1);
+            }
+            // There are pages like /etc or /dev/null which start with '/'
+            if (titleToInsert.startsWith("/")) {
+                titleToInsert = ":" + titleToInsert;
+            }
+            if (format.contains("{{") && format.contains("}}")) {
+                // replaces '=' equal-sign by escape-code
+                titleToInsert = pageTitleNormalToEscaped(titleToInsert);
+            }
+            return titleToInsert;
+        }
 
         String formatItemString(String title, boolean deleted, Revision rev)
                 throws InvalidLineFormatException {
-			String user = rev.getUser();
-			String time = formatTimeString(rev);	    	
-	    	String titleToInsert = formatTitleString(title);
+            String user = rev.getUser();
+            String time = formatTimeString(rev);            
+            String titleToInsert = formatTitleString(title);
             return String.format(formatString, titleToInsert, XmlTools.removeEscape(user), time);
-		}
+        }
 
         // why 'title' item? because 'rev' can has old title if page was renamed
         // author, date are OK from this 'rev'
@@ -382,59 +398,46 @@ public class NewPages implements PortalModule{
                 InvalidLineFormatException {
             String element = formatItemString(title, false, rev);
 
-	        if (!subset.contains(element))
-	        {
-	            subset.add(element);
-	            if (includedPages != null) {
-	            	includedPages.add(title);
-	            }
-	            log.debug("ADD new line: \t"+element);
-	        }
-		}
-		
-		/*
-		protected void addNewItem(String item) throws IOException {
-	        if (!subset.contains(item))
-	        {
-	            subset.add(item);
-	            if (includedPages != null) {
-	            	includedPages.add(item);
-	            }
-	            log.debug("ADD new line: \t"+item);
-	        }
-		}*/
-
+            if (!subset.contains(element)) {
+                subset.add(element);
+                if (includedPages != null) {
+                    includedPages.add(title);
+                }
+                log.debug("ADD new line: \t{}", element);
+            }
+        }
+        
         protected boolean addNewPage(NirvanaWiki wiki, Revision pageInfo) throws IOException,
                 InvalidLineFormatException {
-			Revision page = null;
-		    switch(getRevisionMethod) {
-		    	case GET_FIRST_REV:
-		    		page = wiki.getFirstRevision(pageInfo.getPage());
-		    		break;
+            Revision page = null;
+            switch (getRevisionMethod) {
+                case GET_FIRST_REV:
+                    page = wiki.getFirstRevision(pageInfo.getPage());
+                    break;
                 // Is this needed?
-		    	case GET_REV:
-		    		page = wiki.getRevision(pageInfo.getRevid());
-		    		break;
+                case GET_REV:
+                    page = wiki.getRevision(pageInfo.getRevid());
+                    break;
                 // Is this needed?
-		    	case GET_TOP_REV:
-		    		page = wiki.getTopRevision(pageInfo.getPage());
-		    		break;
+                case GET_TOP_REV:
+                    page = wiki.getTopRevision(pageInfo.getPage());
+                    break;
                 // Is this needed?
-		    	case GET_FIRST_REV_IF_NEED:
+                case GET_FIRST_REV_IF_NEED:
                     page = pageInfo;
-		    		break;
+                    break;
                 // Is this needed?
-		    	case GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL:
+                case GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL:
                     page = pageInfo;
-		    		break;
-		    	default:
-		    		throw new Error("not supported mode");
-		    }
+                    break;
+                default:
+                    throw new Error("not supported mode");
+            }
 
             if (page == null) {
                 String info = String.format("[rev id: %s, title: %s]",
-                        pageInfo.getRevid() == 0 ? "unknown": String.valueOf(pageInfo.getRevid()),
-                        pageInfo.getPage() == null? "unknown": pageInfo.getPage());
+                        pageInfo.getRevid() == 0 ? "unknown" : String.valueOf(pageInfo.getRevid()),
+                        pageInfo.getPage() == null ? "unknown" : pageInfo.getPage());
                 log.error("Sorry, revision information not found for page {}", info);
                 return false;
             }
@@ -452,19 +455,21 @@ public class NewPages implements PortalModule{
                 addNewItem(titleNew, page);
             }
             return true;
-		}	
-	}
+        }    
+    }
 
     // TODO: Make factory and instantiate it from factory.
     // This will simplify unit-testing.
     protected PageListProcessor createPageListProcessorWithFetcher(CatScanTools.Service service,
             PageListFetcher fetcher, List<String> categories, List<String> categoriesToIgnore) {
-		if (service.supportsFastMode() && fastMode) {
-			return new PageListProcessorFast(service, categories, categoriesToIgnore, language, depth, namespace, fetcher);
-		} else {
-			return new PageListProcessorSlow(service, categories, categoriesToIgnore, language, depth, namespace, fetcher);			
-		}
-	}
+        if (service.supportsFastMode() && fastMode) {
+            return new PageListProcessorFast(service, categories, categoriesToIgnore, language,
+                    depth, namespace, fetcher);
+        } else {
+            return new PageListProcessorSlow(service, categories, categoriesToIgnore, language,
+                    depth, namespace, fetcher);            
+        }
+    }
 
     protected PageListProcessor createPageListFetcherForGroup(List<String> categories,
             List<String> categoriesToIgnore) throws BotFatalError {
@@ -484,8 +489,9 @@ public class NewPages implements PortalModule{
                 fetcher = createSimpleFetcher();
             }
         }
-		return createPageListProcessorWithFetcher(this.service, fetcher, categories, categoriesToIgnore);
-	}
+        return createPageListProcessorWithFetcher(this.service, fetcher, categories,
+                categoriesToIgnore);
+    }
 
     private PageListFetcher createSimpleFetcher() throws BotFatalError {
         if (!service.supportsFeature(ServiceFeatures.NEWPAGES)) {
@@ -499,385 +505,399 @@ public class NewPages implements PortalModule{
     }
 
     protected PageListProcessor createPageListProcessor() throws BotFatalError {
-		List<PageListProcessor> fetchers = new ArrayList<PageListProcessor>(3);
-		fetchers.add(createPageListFetcherForGroup(this.categories, this.categoriesToIgnore));
-		for(int i = 0;i<categoryGroups.size();i++) {
-			if (categoryGroups.get(i).size()>0) {
-				fetchers.add(createPageListFetcherForGroup(categoryGroups.get(i), categoryToIgnoreGroups.get(i)));
-			}
-		}
-		if(fetchers.size()>1)
-			return new ProcessorCombinator(fetchers);
-		else
-			return fetchers.get(0);
-	}
-	
-    public void sortPagesByRevision(List<Revision> pageInfoList) {
-		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
+        List<PageListProcessor> fetchers = new ArrayList<PageListProcessor>(3);
+        fetchers.add(createPageListFetcherForGroup(this.categories, this.categoriesToIgnore));
+        for (int i = 0; i < categoryGroups.size(); i++) {
+            if (categoryGroups.get(i).size() > 0) {
+                fetchers.add(createPageListFetcherForGroup(categoryGroups.get(i),
+                        categoryToIgnoreGroups.get(i)));
+            }
+        }
+        if (fetchers.size() > 1) {
+            return new ProcessorCombinator(fetchers);
+        } else {
+            return fetchers.get(0);
+        }
+    }
+    
+    protected void sortPagesByRevision(List<Revision> pageInfoList) {
+        java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
-			@Override
-			public int compare(Revision r1, Revision r2) {				
-				return (int)(r2.getRevid() - r1.getRevid());
-			}		
-			
-		});
-	}
+            @Override
+            public int compare(Revision r1, Revision r2) {                
+                return (int)(r2.getRevid() - r1.getRevid());
+            }        
+            
+        });
+    }
 
-    public void sortPagesById(List<Revision> pageInfoList) {
-		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
+    protected void sortPagesById(List<Revision> pageInfoList) {
+        java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
-			@Override
-			public int compare(Revision r1, Revision r2) {				
-				return (int)(((RevisionWithId)r2).getId() - ((RevisionWithId)r1).getId());
-			}		
-			
-		});
-	}
-	
-    public void sortPagesByName(List<Revision> pageInfoList) {
-		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
+            @Override
+            public int compare(Revision r1, Revision r2) {                
+                return (int)(((RevisionWithId)r2).getId() - ((RevisionWithId)r1).getId());
+            }        
+            
+        });
+    }
+    
+    protected void sortPagesByName(List<Revision> pageInfoList) {
+        java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
-			@Override
-			public int compare(Revision r1, Revision r2) {				
-				return r1.getPage().compareTo(r2.getPage());
-			}		
-			
-		});
-	}
-	
-    public void sortPagesByDate(ArrayList<Revision> pageInfoList) {
-		java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
+            @Override
+            public int compare(Revision r1, Revision r2) {                
+                return r1.getPage().compareTo(r2.getPage());
+            }        
+            
+        });
+    }
+    
+    protected void sortPagesByDate(ArrayList<Revision> pageInfoList) {
+        java.util.Collections.sort(pageInfoList, new Comparator<Revision>() {
 
-			@Override
-			public int compare(Revision r1, Revision r2) {				
-				return r2.getTimestamp().compareTo(r1.getTimestamp());
-			}		
-			
-		});
-	}
+            @Override
+            public int compare(Revision r1, Revision r2) {                
+                return r2.getTimestamp().compareTo(r1.getTimestamp());
+            }        
+            
+        });
+    }
 
-    public void sortPages(List<Revision> pageInfoList, boolean byRevision) {
+    protected void sortPages(List<Revision> pageInfoList, boolean byRevision) {
         log.debug("Sort pages ({} items) by revision: {}", pageInfoList.size(), byRevision);
-		if(byRevision) {
-			sortPagesByRevision(pageInfoList);
-		} else {
-			sortPagesById(pageInfoList);
-		}
-	}
+        if (byRevision) {
+            sortPagesByRevision(pageInfoList);
+        } else {
+            sortPagesById(pageInfoList);
+        }
+    }
 
     protected List<Revision> getNewPages(NirvanaWiki wiki) throws IOException,
             InterruptedException, ServiceError, BotFatalError {
-		PageListProcessor pageListProcessor = createPageListProcessor();
+        PageListProcessor pageListProcessor = createPageListProcessor();
         CatScanTools.resetStat();
-		log.info("Using pagelist fetcher: "+pageListProcessor);
-		if (getRevisionMethod == GetRevisionMethod.GET_REV) {
+        log.info("Using pagelist fetcher: {}", pageListProcessor);
+        if (getRevisionMethod == GetRevisionMethod.GET_REV) {
             getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
-		}
-		List<Revision> pageInfoList = pageListProcessor.getNewPages(wiki);
-		
-		pageInfoList = filterPagesByCondition(pageInfoList, wiki);
+        }
+        List<Revision> pageInfoList = pageListProcessor.getNewPages(wiki);
+        
+        pageInfoList = filterPagesByCondition(pageInfoList, wiki);
 
         sortPages(pageInfoList, false);
 
-		if(pageListProcessor.mayHaveDuplicates()) {
-			removeDuplicatesInSortedList(pageInfoList);
-		}
-		return pageInfoList;
-	}
-	
-	protected List<Revision> filterPagesByCondition(List<Revision> pageInfoList, NirvanaWiki wiki) throws IOException {
+        if (pageListProcessor.mayHaveDuplicates()) {
+            removeDuplicatesInSortedList(pageInfoList);
+        }
+        return pageInfoList;
+    }
+    
+    protected List<Revision> filterPagesByCondition(List<Revision> pageInfoList, NirvanaWiki wiki)
+            throws IOException {
         if (this.templateFilter == null ||
                 (!templateFilter.paramValueFiltering() && !needsCustomTemlateFiltering)) {
-			return pageInfoList;
-		}
+            return pageInfoList;
+        }
         ArrayList<Revision> list = new ArrayList<>();
         String templatePrefix = wiki.namespaceIdentifier(Wiki.TEMPLATE_NAMESPACE) + ":";
         WikiBooster booster = WikiBooster.create(wiki, pageInfoList, 
                 StringTools.addPrefixToList(templateFilter.getTemplates(), templatePrefix));
         TemplateFinder finder =
                 new TemplateFinder(templateFilter.getParamFilterItems(), wiki, booster);
-		for (Revision r: pageInfoList) {
-			if (finder.find(r.getPage())) {
-				list.add(r);
-			}
+        for (Revision r: pageInfoList) {
+            if (finder.find(r.getPage())) {
+                list.add(r);
+            }
             booster.removePage(r.getPage());
-		}
-		return list;
-	}
-	
-	public class PageInfo {
-		String item;
-		String title;
-		boolean exists;
-		public PageInfo(String item) {
-			this.item = item;
-			this.exists = true;
-            extractTitle();
-		}
-		private void extractTitle() {
-			title = getNewPagesItemArticle(item);
-			if (title != null) title = pageTitleEscapedToNormal(title);
-		}
+        }
+        return list;
+    }
+    
+    public class PageInfo {
+        String item;
+        String title;
+        boolean exists;
 
-        public String fullTitle() {
+        PageInfo(String item) {
+            this.item = item;
+            this.exists = true;
+            extractTitle();
+        }
+
+        void extractTitle() {
+            title = getNewPagesItemArticle(item);
+            if (title != null) title = pageTitleEscapedToNormal(title);
+        }
+
+        String fullTitle() {
             if (!namespaceIdentifier.isEmpty() && title != null && !title.contains(":")) {
-                    return namespaceIdentifier + ":" + title;
+                return namespaceIdentifier + ":" + title;
             }
             return title;
         }
-	}
-	
-	private void checkDeleted(NirvanaWiki wiki, List<PageInfo> pages) throws IOException {
-		ArrayList<String> titles = new ArrayList<String>();
-		boolean pagesExist[];// = new boolean[bunch.size()];
-		for (int j = 0; j < pages.size(); j++) {
+    }
+    
+    private void checkDeleted(NirvanaWiki wiki, List<PageInfo> pages) throws IOException {
+        ArrayList<String> titles = new ArrayList<String>();
+        for (int j = 0; j < pages.size(); j++) {
             String fullTitle = pages.get(j).fullTitle(); 
             if (fullTitle != null) {
                 titles.add(fullTitle);
             }
-		}
-		pagesExist = wiki.exists(titles.toArray(new String[0]));
-		for (int j = 0, k = 0; j < pages.size(); j++) {
+        }
+        boolean[] pagesExist = wiki.exists(titles.toArray(new String[0]));
+        for (int j = 0, k = 0; j < pages.size(); j++) {
             if (pages.get(j).fullTitle() != null) {
-				pages.get(j).exists = pagesExist[k];
-				k++;
-			}	
-		}
-	}
-	
-	public void analyzeOldText(NirvanaWiki wiki, String text, Data d, NewPagesBuffer buffer) throws IOException {
-		log.debug("analyzing old text");
-		String oldText = text;
-		String[] oldItems;
-		
-		// remove {{bots|allow=}} record
-		log.debug("analyzing old text -> trancate header/footer");
+                pages.get(j).exists = pagesExist[k];
+                k++;
+            }    
+        }
+    }
+    
+    protected void analyzeOldText(NirvanaWiki wiki, String text, Data updateResults,
+            NewPagesBuffer buffer) throws IOException {
+        log.debug("analyzing old text");
+        String oldText = text;
+        String[] oldItems;
+        
+        // remove {{bots|allow=}} record
+        log.debug("analyzing old text -> trancate header/footer");
         oldText = pageFormatter.stripBotsAllowString(oldText);
         oldText = pageFormatter.stripDecoration(oldText);
 
-	    oldItems = StringUtils.splitByWholeSeparator(oldText, delimeter); // removes empty items
-	    if(delimeter.equals("\n")) log.debug("delimeter is \\n");
-	    else if(delimeter.equals("\r")) log.debug("delimeter is \\r");
-	    else log.debug("delimeter is \""+delimeter+"\"");
-	    
+        oldItems = StringUtils.splitByWholeSeparator(oldText, delimeter); // removes empty items
+        if (delimeter.equals("\n")) {
+            log.debug("delimeter is \\n");
+        } else if (delimeter.equals("\r")) {
+            log.debug("delimeter is \\r");
+        } else {
+            log.debug("delimeter is \"{}\"", delimeter);
+        }
+        
     
-	    log.debug("analyzing old text -> parse items, len = "+oldItems.length);
-	    
-		d.oldCount = oldItems.length;
-		int pos = 0;		
-	    while (pos < oldItems.length && UPDATE_FROM_OLD && buffer.size() < maxItems)
-	    {
-	    	ArrayList<PageInfo> bunch = new ArrayList<PageInfo>(WIKI_API_BUNCH_SIZE);
-	    	for(; bunch.size()<WIKI_API_BUNCH_SIZE && pos<oldItems.length; pos++) {
-	    		String item = oldItems[pos];
-	    		if (item.isEmpty()) continue;
-		    	log.trace("check old line: \t"+item+"");
-		    	if (buffer.checkIsDuplicated(item)) {
-		    		log.debug("SKIP old line: \t"+item);
-		    		continue;
-		    	}
-		    	bunch.add(new PageInfo(item));		    	
-	    	}	    	
+        log.debug("analyzing old text -> parse items, len = {}", oldItems.length);
+        
+        updateResults.oldCount = oldItems.length;
+        int pos = 0;        
+        while (pos < oldItems.length && enableFeatureUpdateFromOld && buffer.size() < maxItems) {
+            ArrayList<PageInfo> bunch = new ArrayList<PageInfo>(WIKI_API_BUNCH_SIZE);
+            for (; bunch.size() < WIKI_API_BUNCH_SIZE && pos < oldItems.length; pos++) {
+                String item = oldItems[pos];
+                if (item.isEmpty()) continue;
+                log.trace("check old line: \t{}", item);
+                if (buffer.checkIsDuplicated(item)) {
+                    log.debug("SKIP old line: \t{}",item);
+                    continue;
+                }
+                bunch.add(new PageInfo(item));                
+            }            
             checkDeleted(wiki, bunch);
-	    	int j = 0;
-	    	for (; j < bunch.size() && buffer.size() < maxItems; j++) {
-				String item = bunch.get(j).item;
+            int j = 0;
+            for (; j < bunch.size() && buffer.size() < maxItems; j++) {
+                String item = bunch.get(j).item;
                 if (!bunch.get(j).exists) {
-            		log.debug("REMOVE old line: \t"+item);
-            		d.deletedCount++;
+                    log.debug("REMOVE old line: \t{}", item);
+                    updateResults.deletedCount++;
                 } else { 
-    				log.debug("ADD old line: \t"+item);
-    				buffer.addOldItem(item);
-        		}
-	    	}
-	    	pos = pos - bunch.size()+j;	    	
-	    }
-	    for(; pos < oldItems.length; pos++) {
-	    	String item = oldItems[pos];
-	    	if (item.isEmpty()) continue;
-	    	log.trace("check old line: \t"+item+"");
-	    	if (buffer.checkIsDuplicated(item)) {
-	    		log.debug("SKIP old line: \t"+item);
-	    		continue;
-	    	}
-	    	log.debug("ARCHIVE old line:"+item);
-            if (UPDATE_ARCHIVE && archiveSettings.withArchive()) {
-        		d.archiveItems.add(item);
-        	}
-        	d.archiveCount++;
-	    }
-        d.newText = buffer.getNewText();
-	}
+                    log.debug("ADD old line: \t{}", item);
+                    buffer.addOldItem(item);
+                }
+            }
+            pos = pos - bunch.size() + j;            
+        }
+        for (; pos < oldItems.length; pos++) {
+            String item = oldItems[pos];
+            if (item.isEmpty()) continue;
+            log.trace("check old line: \t{}", item);
+            if (buffer.checkIsDuplicated(item)) {
+                log.debug("SKIP old line: \t{}", item);
+                continue;
+            }
+            log.debug("ARCHIVE old line: \t{}", item);
+            if (enableFeatureArchive && archiveSettings.withArchive()) {
+                updateResults.archiveItems.add(item);
+            }
+            updateResults.archiveCount++;
+        }
+        updateResults.newText = buffer.getNewText();
+    }
 
-	protected NewPagesBuffer createPagesBuffer(NirvanaWiki wiki) {
-		return new NewPagesBuffer(wiki);
-	}
+    protected NewPagesBuffer createPagesBuffer(NirvanaWiki wiki) {
+        return new NewPagesBuffer(wiki);
+    }
 
-    public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException,
+    protected Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException,
             ServiceError, BotFatalError, InvalidLineFormatException, DangerousEditException {
-		log.info("Get data for [[" + this.pageName+"]]");
+        log.info("Get data for [[{}]]", this.pageName);
 
         List<Revision> pageInfoList = getNewPages(wiki);
 
-		NewPagesBuffer buffer = createPagesBuffer(wiki);
+        NewPagesBuffer buffer = createPagesBuffer(wiki);
         for (int i = 0; i < pageInfoList.size() && buffer.size() < maxItems; i++) {
             buffer.addNewPage(wiki, pageInfoList.get(i));
         }
-	
-		// Add elements from old page
-		Data d = new Data();
-				
-	    
-		if (true/*count < maxItems /*|| archive!=null*/) { 
-			analyzeOldText(wiki, text, d, buffer);
-		}
-		
-		if (UPDATE_ARCHIVE) d.makeArchiveText();
+    
+        // Add elements from old page
+        Data updateResults = new Data();
+                
+        
+        if (true/*count < maxItems /*|| archive!=null*/) { 
+            analyzeOldText(wiki, text, updateResults, buffer);
+        }
+        
+        if (enableFeatureArchive) updateResults.makeArchiveText();
 
         int totalCount = buffer.size();
-        d.newPagesCount = totalCount - (d.oldCount - d.archiveCount - d.deletedCount);
-		if(d.newPagesCount<0) d.newPagesCount = 0;
+        updateResults.newPagesCount = totalCount - 
+                (updateResults.oldCount - updateResults.archiveCount - updateResults.deletedCount);
+        if (updateResults.newPagesCount < 0) updateResults.newPagesCount = 0;
         log.debug("updated items count: {}", totalCount);
-		log.debug("old items count: "+d.oldCount);
-		log.debug("archive count: "+d.archiveCount);
-		log.debug("deleted count: "+d.deletedCount);
-		log.debug("new items count: "+d.newPagesCount);
+        log.debug("old items count: {}", updateResults.oldCount);
+        log.debug("archive count: {}", updateResults.archiveCount);
+        log.debug("deleted count: {}", updateResults.deletedCount);
+        log.debug("new items count: {}", updateResults.newPagesCount);
 
-        if (totalCount == 0 && d.oldCount > dangerousEditThreshold) {
-            throw new DangerousEditException(pageName, d.oldCount, totalCount);
+        if (totalCount == 0 && updateResults.oldCount > dangerousEditThreshold) {
+            throw new DangerousEditException(pageName, updateResults.oldCount, totalCount);
         }
 
-		return d;
-	}
-
-    private void removeDuplicatesInSortedList(List<Revision> list) {
-    	log.debug("removing duplicates from list");
-	    int i = 1;
-	    while(i<list.size()) {
-	    	if (list.get(i).getPage().equals(list.get(i-1).getPage())) {
-	    		list.remove(i);
-	    	} else {
-	    		i++;
-	    	}
-	    }
+        return updateResults;
     }
 
-	public void enumerateWithHash(List<String> list) {
-		for(int i =0; i<list.size();i++) {
-			String item = list.get(i);
-			if(item.startsWith("#")) {
-				// do nothing
-			} else if(item.startsWith("*")) {
-				item = "#" + item.substring(1);
-			} else {
-				item = "# " + item;
-			}
-			list.set(i, item);
-		}
-		return;
-	}
-	
-	protected String getCurrentUser(NirvanaWiki wiki) {
-		if (this.currentUser == null) {
-			Wiki.User user = wiki.getCurrentUser();
-			this.currentUser = user.getUsername();
-		}
-		return this.currentUser;
-	}
-	
-	protected String getCurrentUser() {
-		return this.currentUser;
-	}
-	
-	protected boolean checkAllowBots(NirvanaWiki wiki, String text) {
-		
-		log.debug("current user retrieved");
-		if(!NirvanaWiki.allowBots(text, getCurrentUser(wiki))) {
-			//reportData.status = Status.DENIED;
-			log.info("bots/nobots template forbids updating this portal section");
-			return false;
-		}
-		return true;
-	}
+    private void removeDuplicatesInSortedList(List<Revision> list) {
+        log.debug("removing duplicates from list");
+        int i = 1;
+        while (i < list.size()) {
+            if (list.get(i).getPage().equals(list.get(i - 1).getPage())) {
+                list.remove(i);
+            } else {
+                i++;
+            }
+        }
+    }
 
-    public void checkPlaceholders(String formatString) throws InvalidLineFormatException {
+    protected void enumerateWithHash(List<String> list) {
+        for (int i = 0; i < list.size(); i++) {
+            String item = list.get(i);
+            if (item.startsWith("#")) {
+                // do nothing
+            } else if (item.startsWith("*")) {
+                item = "#" + item.substring(1);
+            } else {
+                item = "# " + item;
+            }
+            list.set(i, item);
+        }
+        return;
+    }
+    
+    protected String getCurrentUser(NirvanaWiki wiki) {
+        if (this.currentUser == null) {
+            Wiki.User user = wiki.getCurrentUser();
+            this.currentUser = user.getUsername();
+        }
+        return this.currentUser;
+    }
+    
+    protected String getCurrentUser() {
+        return this.currentUser;
+    }
+    
+    protected boolean checkAllowBots(NirvanaWiki wiki, String text) {
+        
+        log.debug("current user retrieved");
+        if (!NirvanaWiki.allowBots(text, getCurrentUser(wiki))) {
+            log.info("bots/nobots template forbids updating this portal section");
+            return false;
+        }
+        return true;
+    }
+
+    protected void checkPlaceholders(String formatString) throws InvalidLineFormatException {
         if (formatString.contains("%(")) {
             throw new InvalidLineFormatException(PortalConfig.KEY_FORMAT, formatString);
         }
     }
 
-	@Override
+    @Override
     public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment)
             throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError,
             InvalidLineFormatException, DangerousEditException, ArchiveUpdateFailure {
-		log.debug("=> update()");
+        log.debug("=> update()");
 
         if (checkPlaceholdersBeforeUpdate) {
             checkPlaceholders(formatString);
         }
 
-		this.namespaceIdentifier = wiki.namespaceIdentifier(this.namespace);
-		boolean updated = false;
-		String text = getOldText(wiki);
-		log.debug("old text retrieved");
+        this.namespaceIdentifier = wiki.namespaceIdentifier(this.namespace);
+        boolean updated = false;
+        String text = getOldText(wiki);
+        log.debug("old text retrieved");
+        assert text != null;
 
-		if (!checkAllowBots(wiki, text)) {
-			return false;
-		}
+        if (!checkAllowBots(wiki, text)) {
+            return false;
+        }
 
         // Disable this logic for pages which are not updated but recreated
-        if (UPDATE_FROM_OLD) {
+        if (enableFeatureUpdateFromOld) {
             pageFormatter.getHeaderFooterChanges();
         }
 
-        Data d;
+        Data updateResults;
         try {
-            d = getData(wiki, text);
+            updateResults = getData(wiki, text);
         } finally {
             reportData.reportCatscanStat(CatScanTools.getQuieriesStat());
         }
 
-		if(text==null) {
-			log.trace("text = null");
-			text="";
-		}
-		
-		if(d.newText==null) {
-			log.trace("d.newText = null");
-			return false;
-		}
+        if (updateResults.newText == null) {
+            log.trace("d.newText = null");
+            return false;
+        }
 
         reportData.willUpdateNewPages();
 
-		if (d.newText!=null && 
-				!d.newText.isEmpty() && 
-				!(d.newText.equals(text) || d.newText.equals(text.trim())))
-		{
-            String str = String.format(summaryNewPages, d.newPagesCount);
-            if (UPDATE_ARCHIVE && archiveSettings.withArchive() && d.archiveCount > 0) {
-                str = str + ", -" + d.archiveCount + " " + localizer.localize("в архив");
-		    }
-            if (d.deletedCount > 0) {
-                str = str + ", -" + d.deletedCount + " " + localizer.localize("удаленных");
-		    }
+        if (updateResults.needUpdate(text)) {
+            StringBuilder summaryBuilder = new StringBuilder("");
+            if (updateResults.newPagesCount > 0) {
+                summaryBuilder.append("+");
+            }            
+            if (updateResults.newPagesCount == 0 && !enableFeatureArchive) {
+                summaryBuilder.append(summaryUpdate);
+            } else {
+                summaryBuilder.append(updateResults.newPagesCount).append(summaryNew);
+            }
+            
+            if (enableFeatureArchive && archiveSettings.withArchive()
+                    && updateResults.archiveCount > 0) {
+                summaryBuilder.append(", -").append(updateResults.archiveCount).append(" ")
+                        .append(localizer.localize("в архив"));
+            }
+            if (updateResults.deletedCount > 0) {
+                summaryBuilder.append(", -").append(updateResults.deletedCount).append(" ")
+                        .append(localizer.localize("удаленных"));
+            }
+            String summary = summaryBuilder.toString();
             try {
-                log.info("Updating [[" + this.pageName+"]] " + str);
-                wiki.edit(pageName, d.newText, str, this.minor, this.bot);
+                log.info("Updating [[{}]] {}", this.pageName, summary);
+                wiki.edit(pageName, updateResults.newText, summary, this.minor, this.bot);
                 updated = true;
-                reportData.newPagesUpdated(d.newPagesCount);
+                reportData.newPagesUpdated(updateResults.newPagesCount);
                 pageFormatter.notifyNewPagesUpdated();
             } catch (Exception e) {
                 reportData.newPagesUpdateError();
                 throw e;
             }
-            updateArchiveIfNeed(wiki, d, reportData);
-		}
-		return updated;
-	}
+            updateArchiveIfNeed(wiki, updateResults, reportData);
+        }
+        return updated;
+    }
 
     protected void updateArchiveIfNeed(NirvanaWiki wiki, Data updateResults,
             ReportItem reportData) throws InterruptedException, ArchiveUpdateFailure {
-        if (!UPDATE_ARCHIVE || !archiveSettings.withArchive()) {
+        if (!enableFeatureArchive || !archiveSettings.withArchive()) {
             return;
         }
         reportData.willUpdateArchive();
@@ -894,31 +914,32 @@ public class NewPages implements PortalModule{
         }
     }
 
-	protected void waitPauseIfNeed() throws InterruptedException {
-		if(NirvanaBot.UPDATE_PAUSE>0) {
-    		log.debug("Waiting "+ NirvanaBot.UPDATE_PAUSE+" ms");
-    		Thread.sleep(NirvanaBot.UPDATE_PAUSE);
-    	}
-	}
+    protected void waitPauseIfNeed() throws InterruptedException {
+        if (NirvanaBot.UPDATE_PAUSE > 0) {
+            log.debug("Waiting {} ms", NirvanaBot.UPDATE_PAUSE);
+            Thread.sleep(NirvanaBot.UPDATE_PAUSE);
+        }
+    }
 
-    public void updateArchive(NirvanaWiki wiki, Data d) throws LoginException, IOException {
-    	Archive defaultArchive = null;
-    	String defaultArhiveName = null;
-    	if(archiveSettings.isSingle()) {
-    		defaultArhiveName = archiveSettings.archive;    		
-    	} else {
+    protected void updateArchive(NirvanaWiki wiki, Data updateResults)
+            throws LoginException, IOException {
+        Archive defaultArchive = null;
+        String defaultArhiveName = null;
+        if (archiveSettings.isSingle()) {
+            defaultArhiveName = archiveSettings.archive;            
+        } else {
             defaultArhiveName = archiveSettings.getArchiveForDate(systemTime.now());
-    	}
+        }
         defaultArchive = ArchiveFactory.createArchiveAndRead(archiveSettings, wiki,
                 defaultArhiveName);
-    	
-		HashMap<String,Archive> hmap = null;
-		hmap = 	new HashMap<String,Archive>(3);
-		hmap.put(defaultArhiveName, defaultArchive);
+        
+        HashMap<String,Archive> hmap = null;
+        hmap = new HashMap<String,Archive>(3);
+        hmap.put(defaultArhiveName, defaultArchive);
 
-    	
-    	for(int i = d.archiveItems.size()-1;i>=0;i--) {
-    		String item = d.archiveItems.get(i);
+        
+        for (int i = updateResults.archiveItems.size() - 1; i >= 0; i--) {
+            String item = updateResults.archiveItems.get(i);
             log.debug("Archiving item: {}", item);
             Archive targetArchive = defaultArchive;
             Calendar itemDate = null;
@@ -933,126 +954,155 @@ public class NewPages implements PortalModule{
                     targetArchive = ArchiveFactory.createArchiveAndRead(archiveSettings, wiki,
                             arname);
                     hmap.put(arname, targetArchive);
-    			}
-    		}
+                }
+            }
             targetArchive.add(item, itemDate);
-    	}    	
+        }        
 
         List<String> archiveNames = hmap.keySet().stream().sorted().collect(Collectors.toList());
         for (String archiveName: archiveNames) {
             Archive thisArchive = hmap.get(archiveName);
-    		if (thisArchive.newItemsCount()>0) {
+            if (thisArchive.newItemsCount() > 0) {
                 log.info("Updating {}", archiveName);
                 thisArchive.update(wiki, archiveName, minor, bot);
-    		}
-    	}   		
-    	return;
-	}
+            }
+        }           
+        return;
+    }
 
+    // TODO: Move it to utils class
     // TODO: Migrate to Java8 dates.
-	public static Calendar getNewPagesItemDate(NirvanaWiki wiki, String item) {
-	    assert initialized;
-		Calendar c = null;
-		//NewPagesItem itemData = null;
-		Pattern p = Pattern.compile(PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
-		Matcher m = p.matcher(item);
-		boolean foundBrackets = false;
-		while(m.find()) {
-			String article = m.group("article");
-			if(article.startsWith(":"))
-				article = article.substring(1); // special case when title starts from : this : is not included in title
+    /**
+     * Parse wiki article creation date from text (one line from new pages list).
+     *
+     * Line is a string coming from new pages list generated by this bot.
+     * Items can have different format.
+     * Examples:
+     * - [[Apple]]
+     * - [[Apple]] (created by [[User:John]])
+     * - {{Новая статья|Ранчо Техас|2023-12-17T16:04:13Z|Archivero}}
+     * 
+     * If article date is missing in text but article name presents, the date is detected with
+     * a wiki Api request.
+     *
+     * @return article creation date or null if failed to parse anything
+     */
+    public static Calendar getNewPagesItemDate(NirvanaWiki wiki, String item) {
+        assert initialized;
+        Calendar c = null;
+        //NewPagesItem itemData = null;
+        Pattern p = Pattern.compile(PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
+        Matcher m = p.matcher(item);
+        boolean foundBrackets = false;
+        while (m.find()) {
+            String article = m.group("article");
+            if (article.startsWith(":")) {
+                // special case when title starts from : this : is not included in title
+                article = article.substring(1);
+            }                
             if (article.contains(NEW_PAGES_LISTS_CATEGORY)) {
-				// foundBrackets should stay false for this case
-				continue;
-			}
-			Revision r = null;
-			try {
-				r = wiki.getFirstRevision(article,true);
-			} catch (IOException e) {				
+                // foundBrackets should stay false for this case
+                continue;
+            }
+            Revision r = null;
+            try {
+                r = wiki.getFirstRevision(article,true);
+            } catch (IOException e) {                
                 sLog.warn(String.format("Article %s not found", article));
-			}
-			if(r!=null) {
+            }
+            if (r != null) {
                 return GregorianCalendar.from(
                         r.getTimestamp().atZoneSameInstant(ZoneId.systemDefault()));
-			}
-			foundBrackets = true;
-		}
-		if(foundBrackets) return null;
+            }
+            foundBrackets = true;
+        }
+        if (foundBrackets) return null;
         // если не нашли по [[]] скобочкам, продолжаем искать по {{}}
-		p = Pattern.compile(PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM);
-		m = p.matcher(item);
-		if(m.find()) {
-			String templateString = m.group("template");			
-			//log.debug("count = "+String.valueOf(m.groupCount()));
-			
-			//if(templateString!=null) System.out.println("found template: "+templateString);
-			String []items = templateString.split("\\|");
-			// 2012-02-26T16:10:36Z
-			//p = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z");
-			for(String s:items) {
-				c = DateTools.parseDate(s);
-				if(c!=null) return c;
-			}
-			for(int i=1;i<items.length;i++) {
-				String s = items[i];
-				//System.out.println("check string: "+s);
-				Revision r = null;
-				try {
-					r = wiki.getFirstRevision(s,true);
-					//r = null;
-				} catch (IOException e) {
+        p = Pattern.compile(PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM);
+        m = p.matcher(item);
+        if (m.find()) {
+            String templateString = m.group("template");            
+            String []items = templateString.split("\\|");
+            // 2012-02-26T16:10:36Z
+            //p = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z");
+            for (String s:items) {
+                c = DateTools.parseDate(s);
+                if (c != null) return c;
+            }
+            for (int i = 1; i < items.length; i++) {
+                String s = items[i];
+                //System.out.println("check string: "+s);
+                Revision r = null;
+                try {
+                    r = wiki.getFirstRevision(s,true);
+                    //r = null;
+                } catch (IOException e) {
                     sLog.warn(String.format("Page %s not found", s));
-				}
+                }
                 if (r != null) {
                     return GregorianCalendar.from(
                             r.getTimestamp().atZoneSameInstant(ZoneId.systemDefault()));
                 }
-			}
-		}
-		return null;
-	}
-
-    // TODO протестировать эту функцию на другие пространства имён!!!
-	public static String getNewPagesItemArticle(String item) {
-		Pattern p = Pattern.compile(PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
-		Matcher m = p.matcher(item);
-		while(m.find()) {
-			String article = m.group("article");
-			if(article.startsWith(":"))
-				article = article.substring(1); // special case when title starts from : this : is not included in title
-            if (article.contains(NEW_PAGES_LISTS_CATEGORY)) {
-				continue;			
-			}
-            if (!NamespaceUtils.userNamespace(article)) {
-				return article;
             }
-		}
-		p = Pattern.compile(PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM);
-		m = p.matcher(item);
-		if(m.find()) {
-			String templateString = m.group("template");			
-			//log.debug("count = "+String.valueOf(m.groupCount()));
-			
-			//if(templateString!=null) System.out.println("found template: "+templateString);
-			String []items = templateString.split("\\|");
-			// 2012-02-26T16:10:36Z
-			//p = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z");
-			for(int i=1;i<items.length;i++) {
-				String s = items[i].trim();
-				String article = s;
+        }
+        return null;
+    }
+
+    // TODO: Move it to utils class
+    // TODO протестировать эту функцию на другие пространства имён!!!
+    /**
+     * Parse wiki article name from text (one line from new pages list).
+     *
+     * Line is a string coming from new pages list generated by this bot.
+     * Items can have different format.
+     * Examples:
+     * - [[Apple]]
+     * - [[Apple]] (created by [[User:John]])
+     * - {{Новая статья|Ранчо Техас|2023-12-17T16:04:13Z|Archivero}}
+     *
+     * @return article name or null if failed to parse anything
+     */
+    public static String getNewPagesItemArticle(String item) {
+        Pattern p = Pattern.compile(PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
+        Matcher m = p.matcher(item);
+        while (m.find()) {
+            String article = m.group("article");
+            if (article.startsWith(":")) {
+                // Special case when title starts from ":". This : is not included in title
+                article = article.substring(1);
+            }
+            if (article.contains(NEW_PAGES_LISTS_CATEGORY)) {
+                continue;            
+            }
+            if (!NamespaceUtils.userNamespace(article)) {
+                return article;
+            }
+        }
+        p = Pattern.compile(PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM);
+        m = p.matcher(item);
+        if (m.find()) {
+            String templateString = m.group("template");
+            String []items = templateString.split("\\|");
+            // 2012-02-26T16:10:36Z
+            //p = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z");
+            for (int i = 1; i < items.length; i++) {
+                String s = items[i].trim();
+                String article = s;
                 if (!NamespaceUtils.userNamespace(article)) {
-					return article;
+                    return article;
                 }
-			}			
-		}
-		return null;
-	}
+            }            
+        }
+        return null;
+    }
 
-	public static String pageTitleNormalToEscaped(String str) {
-		return str.replace("=", "&#61;");
-	}
+    // TODO: Move it to static utils class
+    public static String pageTitleNormalToEscaped(String str) {
+        return str.replace("=", "&#61;");
+    }
 
-	public static String pageTitleEscapedToNormal(String str) {
-		return str.replace("&#61;","=");
-	}
+    // TODO: Move it to static utils class
+    public static String pageTitleEscapedToNormal(String str) {
+        return str.replace("&#61;","=");
+    }
 }
