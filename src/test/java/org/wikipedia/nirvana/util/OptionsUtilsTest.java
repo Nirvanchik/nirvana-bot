@@ -23,15 +23,15 @@
 
 package org.wikipedia.nirvana.util;
 
-import org.wikipedia.nirvana.util.OptionsUtils;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -44,13 +44,27 @@ public class OptionsUtilsTest {
         Properties props = new Properties();
         props.load(new StringReader("a: 10\nx: abc"));
 
-        Assert.assertEquals(10, OptionsUtils.validateIntegerSetting(props, "a", 5, false));
-        Assert.assertEquals(5, OptionsUtils.validateIntegerSetting(props, "b", 5, false));
-        Assert.assertEquals(5, OptionsUtils.validateIntegerSetting(props, "x", 5, false));
+        Assert.assertEquals(10, OptionsUtils.readIntegerProperty(props, "a", 5, false));
+        Assert.assertEquals(5, OptionsUtils.readIntegerProperty(props, "b", 5, false));
+        Assert.assertEquals(5, OptionsUtils.readIntegerProperty(props, "x", 5, false));
 
-        Assert.assertEquals(10, OptionsUtils.validateIntegerSetting(props, "a", 5, true));
-        Assert.assertEquals(5, OptionsUtils.validateIntegerSetting(props, "b", 5, true));
-        Assert.assertEquals(5, OptionsUtils.validateIntegerSetting(props, "x", 5, true));
+        Assert.assertEquals(10, OptionsUtils.readIntegerProperty(props, "a", 5, true));
+        Assert.assertEquals(5, OptionsUtils.readIntegerProperty(props, "b", 5, true));
+        Assert.assertEquals(5, OptionsUtils.readIntegerProperty(props, "x", 5, true));
+    }
+
+    @Test
+    public void validateLongSetting() throws IOException {
+        Properties props = new Properties();
+        props.load(new StringReader("a: 10\nx: abc"));
+
+        Assert.assertEquals(10, OptionsUtils.readLongProperty(props, "a", 5L, false));
+        Assert.assertEquals(5, OptionsUtils.readLongProperty(props, "b", 5L, false));
+        Assert.assertEquals(5, OptionsUtils.readLongProperty(props, "x", 5L, false));
+
+        Assert.assertEquals(10, OptionsUtils.readLongProperty(props, "a", 5L, true));
+        Assert.assertEquals(5, OptionsUtils.readLongProperty(props, "b", 5L, true));
+        Assert.assertEquals(5, OptionsUtils.readLongProperty(props, "x", 5L, true));
     }
     
     @Test
@@ -126,5 +140,29 @@ public class OptionsUtilsTest {
                 OptionsUtils.optionToSet("A, B, C", false, ",")); 
         Assert.assertEquals(new HashSet<>(Arrays.asList(new String[]{"A, B, C"})),
                 OptionsUtils.optionToSet("A, B, C", false, ";")); 
+    }
+    
+    @SuppressWarnings("serial")
+    @Test
+    public void readStringListOption() {
+        Map<String, String> options = new HashMap<String, String>() {
+            {
+                put("key1", "A");
+                put("key2", "apple, potato");
+                put("key3", "\"dog\", \"cat\", \"wolf, bear, and others\"");
+                put("key4", "Some string!");
+            }
+        };
+        Assert.assertEquals(Arrays.asList(new String[] {}),
+                OptionsUtils.readStringListOption(options, "X", true));
+        Assert.assertEquals(Arrays.asList(new String[] {"A"}),
+                OptionsUtils.readStringListOption(options, "key1", true));
+        Assert.assertEquals(Arrays.asList(new String[] {"apple", "potato"}),
+                OptionsUtils.readStringListOption(options, "key2", true));
+        Assert.assertEquals(Arrays.asList(new String[] {"dog", "cat", "wolf, bear, and others"}),
+                OptionsUtils.readStringListOption(options, "key3", true));
+        Assert.assertEquals(Arrays.asList(new String[] {"Some string."}),
+                OptionsUtils.readStringListOption(options, "key4", true,
+                        str -> str.replace("!", ".")));
     }
 }

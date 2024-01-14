@@ -54,8 +54,8 @@ import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_ENUMERATE_WITH_H
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_NO;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_SMALL;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_YES;
-import static org.wikipedia.nirvana.util.OptionsUtils.validateIntegerSetting;
-import static org.wikipedia.nirvana.util.OptionsUtils.validateLongSetting;
+import static org.wikipedia.nirvana.util.OptionsUtils.readIntegerProperty;
+import static org.wikipedia.nirvana.util.OptionsUtils.readLongProperty;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
@@ -91,6 +91,7 @@ import org.wikipedia.nirvana.wiki.CatScanTools.EnumerationType;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.wikipedia.nirvana.wiki.WikiUtils;
 
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileNotFoundException;
@@ -123,6 +124,9 @@ public class NirvanaBot extends BasicBot {
     private String userNamespace;
     public static final String DEPTH_SEPARATOR = "|";
     public static final String ADDITIONAL_SEPARATOR = "#";
+    
+    private static Function<String, String> unescapeCategorylist =
+            option -> option.replace(ADDITIONAL_SEPARATOR, DEPTH_SEPARATOR);
     
     private static int START_FROM = 0;
     private static int STOP_AFTER = 0;
@@ -203,7 +207,6 @@ public class NirvanaBot extends BasicBot {
     private static boolean ERROR_NOTIFICATION = false;
     private static String COMMENT = "обновление";
 
-    // TODO: WTF is it static?
     protected boolean enableReport = false;
     protected boolean enableStatus = false;
     private static String REPORT_FILE_NAME = "report.txt";
@@ -392,24 +395,24 @@ public class NirvanaBot extends BasicBot {
         log.info("error_notification={}", ERROR_NOTIFICATION);
         
 
-        DEFAULT_DEPTH = validateIntegerSetting(properties, "default-depth", DEFAULT_DEPTH, true);
+        DEFAULT_DEPTH = readIntegerProperty(properties, "default-depth", DEFAULT_DEPTH, true);
         log.info("depth={}", DEFAULT_DEPTH);
-        DEFAULT_HOURS = validateIntegerSetting(properties, "default-hours", DEFAULT_HOURS, true);
+        DEFAULT_HOURS = readIntegerProperty(properties, "default-hours", DEFAULT_HOURS, true);
         log.info("hours={}", DEFAULT_HOURS);
-        DEFAULT_MAXITEMS = validateIntegerSetting(properties, "default-maxitems", DEFAULT_MAXITEMS,
+        DEFAULT_MAXITEMS = readIntegerProperty(properties, "default-maxitems", DEFAULT_MAXITEMS,
                 true);
         log.info("maxitems={}", DEFAULT_MAXITEMS);        
-        MAX_MAXITEMS = validateIntegerSetting(properties, "max-maxitems", MAX_MAXITEMS, true);
+        MAX_MAXITEMS = readIntegerProperty(properties, "max-maxitems", MAX_MAXITEMS, true);
         log.info("maxmaxitems={}", MAX_MAXITEMS);
-        START_FROM = validateIntegerSetting(properties, "start-from", START_FROM, false);
-        STOP_AFTER = validateIntegerSetting(properties, "stop-after", STOP_AFTER, false);        
-        UPDATE_PAUSE = validateIntegerSetting(properties,"update-pause",UPDATE_PAUSE,false);
+        START_FROM = readIntegerProperty(properties, "start-from", START_FROM, false);
+        STOP_AFTER = readIntegerProperty(properties, "stop-after", STOP_AFTER, false);        
+        UPDATE_PAUSE = readIntegerProperty(properties,"update-pause",UPDATE_PAUSE,false);
         
-        DEFAULT_STARTS_PER_DAY = validateIntegerSetting(properties,"starts-per-day",
+        DEFAULT_STARTS_PER_DAY = readIntegerProperty(properties,"starts-per-day",
                 DEFAULT_STARTS_PER_DAY, false);
 
         // TODO: Use more clear naming for this variable
-        DEFAULT_PARSE_COUNT = validateIntegerSetting(properties,"parse-count", DEFAULT_PARSE_COUNT,
+        DEFAULT_PARSE_COUNT = readIntegerProperty(properties,"parse-count", DEFAULT_PARSE_COUNT,
                 false);
 
         DEFAULT_SERVICE_NAME = validateService(
@@ -488,11 +491,11 @@ public class NirvanaBot extends BasicBot {
 
         overridenPropertiesPage = properties.getProperty("overriden-properties-page", null);
 
-        botTimeout = validateIntegerSetting(properties, "bot-timeout", botTimeout, false);
-        servicesTimeout = validateLongSetting(properties, "services-timeout", servicesTimeout,
+        botTimeout = readIntegerProperty(properties, "bot-timeout", botTimeout, false);
+        servicesTimeout = readLongProperty(properties, "services-timeout", servicesTimeout,
                 false);
-        globalTryCount = validateIntegerSetting(properties, "try-count", globalTryCount, false);
-        globalCatscanTryCount = validateIntegerSetting(properties, "catscan-try-count",
+        globalTryCount = readIntegerProperty(properties, "try-count", globalTryCount, false);
+        globalCatscanTryCount = readIntegerProperty(properties, "catscan-try-count",
                 globalCatscanTryCount, false);
 
         wikiTranslationPage = properties.getProperty("wiki-translation-page", null);
@@ -1228,12 +1231,15 @@ public class NirvanaBot extends BasicBot {
         log.debug("Тип: " + type);
         data.type = type;
 
-        param.categories = optionToList(options, PortalConfig.KEY_CATEGORIES, true);
+        param.categories = OptionsUtils.readStringListOption(options, PortalConfig.KEY_CATEGORIES,
+                true, unescapeCategorylist);
         if (config.hasKey(PortalConfig.KEY_CATEGORY)) {
-            param.categories.add(config.get(PortalConfig.KEY_CATEGORY));
+            param.categories = ListUtils.union(param.categories,
+                    Arrays.asList(config.get(PortalConfig.KEY_CATEGORY)));
         }        
 
-        param.categoriesToIgnore = optionToList(options, PortalConfig.KEY_IGNORE, true);
+        param.categoriesToIgnore = OptionsUtils.readStringListOption(options,
+                PortalConfig.KEY_IGNORE, true, unescapeCategorylist);
 
         param.categoryGroups = multiOptionToArray(options, PortalConfig.KEY_CATEGORIES, 1,
                 PortalParam.MAX_CAT_GROUPS);
@@ -1667,25 +1673,14 @@ public class NirvanaBot extends BasicBot {
         return errors;
     }
 
-    protected static List<String> optionToList(Map<String, String> options, String key,
-            boolean replaceAdditionalSeparator) {
-        if (options.containsKey(key)) {            
-            String option = options.get(key);
-            if (replaceAdditionalSeparator) {
-                option = option.replace(ADDITIONAL_SEPARATOR, DEPTH_SEPARATOR);
-            }
-            return OptionsUtils.optionToList(option, true);
-        }
-        return new ArrayList<>();
-    }
-
-    protected static ArrayList<List<String>> multiOptionToArray(
+    protected static List<List<String>> multiOptionToArray(
             Map<String, String> options, String key, int start, int end) {
         ArrayList<List<String>> listlist = new ArrayList<List<String>>(end - start + 1);
         String keyNumbered;
         for (int i = start; i <= end; i++) {
             keyNumbered = key + String.valueOf(i);
-            List<String> list = optionToList(options, keyNumbered, true);
+            List<String> list = OptionsUtils.readStringListOption(options, keyNumbered, true,
+                    unescapeCategorylist);
             listlist.add(list);
         }
         return listlist;

@@ -28,10 +28,15 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 /**
  * Utility code for bot settings processing.
@@ -108,7 +113,8 @@ public class OptionsUtils {
     }
 
     /**
-     * Returns integer value in given {@link Properties} object or default value if it's not found.
+     * Reads int property from given {@link Properties} object.
+     * Returns provided default value if key is not found or if value cannot be parsed.
      *
      * @param props {@link Properties} object, properties must be loaded beforehand.
      * @param name the name of property to get
@@ -116,51 +122,91 @@ public class OptionsUtils {
      * @param notifyNotFound write error to log if this property not found
      * @return property value (converted to int) or default value
      */
-    public static int validateIntegerSetting(Properties props, String name, int def,
+    public static int readIntegerProperty(Properties props, String name, int def,
             boolean notifyNotFound) {
-        try {
-            if (!props.containsKey(name)) {
-                if (notifyNotFound) {
-                    sLog.info("settings: value of {} not found in settings, use default: {}",
-                            name, def);
-                }
-                return def;
+        if (!props.containsKey(name)) {
+            if (notifyNotFound) {
+                sLog.info("settings: value of {} not found in settings, use default: {}",
+                        name, def);
             }
-            String str = props.getProperty(name);
+            return def;
+        }
+        String str = props.getProperty(name);
+        try {
             return Integer.parseInt(str);
         } catch (NumberFormatException e) {
-            sLog.error("invalid settings: error when parsing integer value of {}, use default: {}",
-                    name, def);
+            sLog.error("invalid settings: error when parsing integer value {} = \"{}\", "
+                    + "use default: {}", name, str, def);
             return def;
         }
     }
 
     /**
-     * Returns integer value in given {@link Properties} object or default value if it's not found.
+     * Reads long property from given {@link Properties} object.
+     * Returns provided default value if key is not found or if value cannot be parsed.
      *
      * @param props {@link Properties} object, properties must be loaded beforehand.
      * @param name the name of property to get
      * @param def default value
-     * @param notifyNotFound write error to log if this property not found
+     * @param notifyNotFound write message to log if this property not found
      * @return property value (converted to int) or default value
      */
-    public static long validateLongSetting(Properties props, String name, long def,
+    public static long readLongProperty(Properties props, String name, long def,
             boolean notifyNotFound) {
-        try {
-            if (!props.containsKey(name)) {
-                if (notifyNotFound) {
-                    sLog.info("settings: value of {} not found in settings, use default: {}",
-                            name, def);
-                }
-                return def;
+        if (!props.containsKey(name)) {
+            if (notifyNotFound) {
+                sLog.info("settings: value of {} not found in settings, use default: {}",
+                        name, def);
             }
-            String str = props.getProperty(name);
-            return Long.parseLong(str);
-        } catch (NumberFormatException e) {
-            sLog.error("invalid settings: error when parsing long value of {}, use default: {}",
-                    name, def);
             return def;
         }
+        String str = props.getProperty(name);
+        try {
+            return Long.parseLong(str);
+        } catch (NumberFormatException e) {
+            sLog.error("invalid settings: error when parsing long value {} = \"{}\", "
+                    + "use default: {}", name, str, def);
+            return def;
+        }
+    }
+
+    /**
+     * Read option which is a list of strings from options object
+     * which is a map of key/value strings.
+     *
+     * @param options Options, key/value strings.
+     * @param key option name to read.
+     * @param withDQuotes set to <code>true</code> to remove optional double quotes from every item.
+     *     
+     * @return list of strings.
+     */
+    public static List<String> readStringListOption(Map<String, String> options, String key,
+            boolean withDQuotes) {
+        return OptionsUtils.readStringListOption(options, key, withDQuotes, null);
+    }
+
+    /**
+     * Read option which is a list of strings from options object
+     * which is a map of key/value strings.
+     *
+     * @param options Options, key/value strings.
+     * @param key option name to read.
+     * @param withDQuotes set to <code>true</code> to remove optional double quotes from every item.
+     * @param unescape Optional unescaping option convertion function. Unescape is applyed once
+     *     before converting option to list of strings.
+     *     
+     * @return list of strings.
+     */
+    public static List<String> readStringListOption(Map<String, String> options, String key,
+            boolean withDQuotes, @Nullable Function<String, String> unescape) {
+        if (!options.containsKey(key)) {
+            return Collections.emptyList();
+        }
+        String option = options.get(key);
+        if (unescape != null) {
+            option = unescape.apply(option);
+        }
+        return OptionsUtils.optionToList(option, withDQuotes);
     }
 
     private static Collection<String> optionToCollection(String option, boolean withDQuotes,

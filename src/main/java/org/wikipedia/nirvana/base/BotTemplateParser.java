@@ -64,6 +64,7 @@ public class BotTemplateParser {
         templateBeginPattern = WikiUtils.makeTemplateBeginPattern(templateNameRe);
     }
 
+    //TODO: Rewrite to try-catch version insteaf of "return true". Return Map instead.
     /**
      * Parse bot template from wiki text. "Bot template" is a wiki template which is used to
      * provide configuration parameters for wiki bot. This function will search the first

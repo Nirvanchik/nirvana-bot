@@ -33,6 +33,8 @@ import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -74,8 +76,11 @@ public class DateTools {
     private final String[] seasons;
 
     public static String ISO_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS zzz";
+    public static String TIME_FORMAT = "HH:mm:ss";
     private static final TimeZone utc = TimeZone.getTimeZone("UTC");
     private static final SimpleDateFormat isoFormatter = new SimpleDateFormat(ISO_FORMAT);
+    private static final DateTimeFormatter timeFormatter = DateTimeFormatter
+            .ofPattern(TIME_FORMAT, Locale.ENGLISH);
 
     static {
         sLog = LogManager.getLogger(DateTools.class.getName());
@@ -259,6 +264,16 @@ public class DateTools {
      */
     public static String printTimestamp(Date datetime) {
         return isoFormatter.format(datetime).toString();
+    }
+    
+    /**
+     * Print local time to string.
+     *
+     * @param time LocalDateTime instance.
+     * @return time string.
+     */
+    public static String printTime(LocalDateTime time) {
+        return time.format(timeFormatter);
     }
 
     /**

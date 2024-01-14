@@ -23,7 +23,7 @@
 
 package org.wikipedia.nirvana.statistics;
 
-import static org.wikipedia.nirvana.util.OptionsUtils.validateIntegerSetting;
+import static org.wikipedia.nirvana.util.OptionsUtils.readIntegerProperty;
 
 import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
@@ -149,11 +149,11 @@ public class StatisticsBot extends BasicBot {
         log.info("use cache only: {}", USE_CACHE_ONLY);
 
         ScanArchiveSettings.setDefaultStartYear(
-                validateIntegerSetting(properties, "archive-start-year",
+                readIntegerProperty(properties, "archive-start-year",
                         ScanArchiveSettings.getDefaultStartYear(), false));
 
         RatingTotal.setDefaultStartYear(
-                validateIntegerSetting(properties, "rating-total-start-year",
+                readIntegerProperty(properties, "rating-total-start-year",
                         RatingTotal.getDefaultStartYear(), false));
 
         return true;

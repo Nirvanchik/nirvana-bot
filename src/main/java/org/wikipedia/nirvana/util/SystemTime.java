@@ -23,10 +23,9 @@
 
 package org.wikipedia.nirvana.util;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Mediator object for working with system time.
@@ -55,6 +54,13 @@ public class SystemTime {
      */
     public OffsetDateTime nowOdt() {
         return OffsetDateTime.now(); 
+    }
+    
+    /**
+     * Returns current time if {@link LocalDateTime} format.
+     */
+    public LocalDateTime nowLdt() {
+        return LocalDateTime.now();
     }
 
     /**
