@@ -59,6 +59,7 @@ import org.wikipedia.nirvana.base.BasicBot;
 import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.base.BotSettingsError;
 import org.wikipedia.nirvana.base.BotTemplateParser;
+import org.wikipedia.nirvana.base.SettingsUtils;
 import org.wikipedia.nirvana.error.ArchiveUpdateFailure;
 import org.wikipedia.nirvana.error.BadFormatException;
 import org.wikipedia.nirvana.error.DangerousEditException;
@@ -436,10 +437,16 @@ public class NirvanaBot extends BasicBot {
                 .equals(YES);
         REPORT_FILE_NAME = properties.getProperty("statistics-file", REPORT_FILE_NAME);
         REPORT_WIKI_PAGE = properties.getProperty("statistics-wiki", REPORT_WIKI_PAGE);
-        detailedReportWikiVerbosity = propertyToEnum(properties, "statistics-wiki-verbosity",
-                detailedReportWikiVerbosity, BotReporter.Verbosity::fromString);
-        detailedReportTxtVerbosity = propertyToEnum(properties, "statistics-txt-verbosity",
-                detailedReportTxtVerbosity, BotReporter.Verbosity::fromString);
+        detailedReportWikiVerbosity = SettingsUtils.propertyToEnum(
+                properties,
+                "statistics-wiki-verbosity",
+                detailedReportWikiVerbosity,
+                BotReporter.Verbosity::fromString);
+        detailedReportTxtVerbosity = SettingsUtils.propertyToEnum(
+                properties,
+                "statistics-txt-verbosity",
+                detailedReportTxtVerbosity,
+                BotReporter.Verbosity::fromString);
         STATUS_WIKI_PAGE = properties.getProperty("status-wiki", STATUS_WIKI_PAGE);
         STATUS_WIKI_TEMPLATE = properties.getProperty("status-wiki-template", STATUS_WIKI_TEMPLATE);
         REPORT_FORMAT = properties.getProperty("statistics-format", REPORT_FORMAT);
@@ -491,30 +498,6 @@ public class NirvanaBot extends BasicBot {
         return true;
     }
 
-    // TODO: Move it to utility class.
-    /**
-     * Parse property specified by key from properties dictionary using specified enum parser.
-     * Return parsed enum value or provided default value if property not found.
-     *
-     * @param properties Properties dictionary.
-     * @param key Property name.
-     * @param defaultVal Default value for this property.
-     * @param propertyParser Parser function for this property enum.
-     * @return Property enum value.
-     */
-    public static <T> T propertyToEnum(Properties properties, String key, T defaultVal,
-            Function<String, T> propertyParser) throws BotSettingsError {
-        String value = properties.getProperty(key);
-        if (value == null || value.trim().isEmpty()) return defaultVal;
-        T result = propertyParser.apply(value);
-        if (result == null) {
-            throw new BotSettingsError(
-                    String.format("Cannot parse value \"%s\" for property \"%s\".",
-                    value, key));
-        }
-        return result;
-    }
-    
     @Override
     protected void onInterrupted(InterruptedException exception) {
         log.fatal("Bot execution interrupted", exception);
@@ -739,7 +722,6 @@ public class NirvanaBot extends BasicBot {
         }
 
         try {
-            // TODO: Why not use lazy initializer for this?
             userNamespace = wiki.namespaceIdentifier(Wiki.USER_NAMESPACE);
         } catch (UncheckedIOException e) {
             throw new BotFatalError("Failed to retrieve user namespace");
@@ -1391,7 +1373,6 @@ public class NirvanaBot extends BasicBot {
             return true;
         }
 
-        // TODO: Too many data in constructor. May be use some kind of Context class?
         PageFormatter pageFormatter = new PageFormatter(botTemplateParser,
                 param,
                 data.portalSettingsPage, data.portalSettingsText,
