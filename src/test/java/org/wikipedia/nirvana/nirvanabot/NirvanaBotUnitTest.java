@@ -61,6 +61,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 import javax.security.auth.login.LoginException;
@@ -167,8 +168,9 @@ public class NirvanaBotUnitTest {
                     mockWikiService,
                     mockCatscanService);
 
-            newpagesTemplates = new String[] {"User:TestBot:Template1"};
             mockNewPages = Mockito.mock(NewPages.class);
+
+            properties.setProperty("new-pages-template", "User:TestBot:Template1");
         }
 
         @Override
@@ -255,6 +257,7 @@ public class NirvanaBotUnitTest {
                 .thenReturn(true);
 
         bot.initLog();
+        bot.loadCustomProperties(Collections.emptyMap());
         bot.go();
 
         verify(bot.mockReporter).updateStartStatus(anyString(), anyString());
@@ -270,6 +273,7 @@ public class NirvanaBotUnitTest {
                 .thenThrow(new IOException("Fake exception from test"));
 
         bot.initLog();
+        bot.loadCustomProperties(Collections.emptyMap());
         bot.go();
 
         verify(bot.mockReporter).updateStartStatus(anyString(), anyString());
@@ -286,6 +290,7 @@ public class NirvanaBotUnitTest {
                 .thenThrow(new IOException("Fake exception from test"));
 
         bot.initLog();
+        bot.loadCustomProperties(Collections.emptyMap());
         bot.go();
 
         verify(bot.mockReporter).reportWiki(anyString(), eq(true), anyObject());
@@ -306,6 +311,7 @@ public class NirvanaBotUnitTest {
                 .thenReturn(true);
 
         bot.initLog();
+        bot.loadCustomProperties(Collections.emptyMap());
         bot.go();
 
         verify(bot.mainWiki).relogin();

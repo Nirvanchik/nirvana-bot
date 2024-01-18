@@ -94,7 +94,7 @@ public abstract class BasicBot {
     // TODO: Make it non-static.
     protected static Logger log = null;
 
-    protected static Properties properties = null;
+    protected static Properties properties = new Properties();
 
     protected boolean debugMode = false;
 

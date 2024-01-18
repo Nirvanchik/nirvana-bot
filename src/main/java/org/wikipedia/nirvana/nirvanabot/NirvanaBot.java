@@ -94,7 +94,6 @@ import java.io.UncheckedIOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -363,7 +362,11 @@ public class NirvanaBot extends BasicBot {
     @Override
     protected boolean loadCustomProperties(Map<String, String> launchParams)
             throws BotSettingsError {
+        systemTime = initSystemTime();
         String str = properties.getProperty("new-pages-template");
+        if (str == null) {
+            throw new BotSettingsError("Property \"new-pages-template\" not found");
+        }
         newpagesTemplates = str.trim().split("\\s*,\\s*");
         if (newpagesTemplates == null || newpagesTemplates.length == 0) {
             if (DEBUG_BUILD) {
@@ -441,13 +444,11 @@ public class NirvanaBot extends BasicBot {
         STATUS_WIKI_TEMPLATE = properties.getProperty("status-wiki-template", STATUS_WIKI_TEMPLATE);
         REPORT_FORMAT = properties.getProperty("statistics-format", REPORT_FORMAT);
         if (REPORT_FILE_NAME.contains("%(date)")) {
-            //TODO: Get rid of Calendar.getInstance() here
-            String date = String.format("%1$tF", Calendar.getInstance());
+            String date = String.format("%1$tF", systemTime.now());
             REPORT_FILE_NAME = REPORT_FILE_NAME.replace("%(date)", date);
         }
         if (REPORT_FILE_NAME.contains("%(time)")) {
-            //TODO: Get rid of Calendar.getInstance() here
-            String time = String.format("%1$tT", Calendar.getInstance());
+            String time = String.format("%1$tT", systemTime.now());
             REPORT_FILE_NAME = REPORT_FILE_NAME.replace("%(time)", time).replace(':', '-');
         }
         if (REPORT_FILE_NAME.contains("%(launch_number)")) {
@@ -676,7 +677,6 @@ public class NirvanaBot extends BasicBot {
     protected void go() throws InterruptedException, BotFatalError {
         cacheDir = outDir + "/" + "cache";
 
-        systemTime = initSystemTime();
         long startMillis = getTimeInMillis();
         commons = createCommonsWiki();
         commons.setMaxLag(maxLag);
