@@ -22,7 +22,7 @@
 <entry key="stop-after">0</entry>
 <entry key="start-from">0</entry>
 <entry key="update-pause">1000</entry>
-<entry key="parse-count">100000</entry>
+<entry key="archive-parse-lines-max-count">100000</entry>
 <entry key="statistics">no</entry>
 <entry key="statistics-file">report/report.NirvanaBot.rec-%(date).txt</entry>
 <entry key="statistics-format">txt</entry>

@@ -245,7 +245,7 @@ public class NirvanaBot extends BasicBot {
 
     private static String DEFAULT_HEADER = "";
     private static String DEFAULT_FOOTER = "";
-    private static int DEFAULT_PARSE_COUNT = -1;
+    private static int DEFAULT_ARCHIVE_PARSE_LINES_MAX_COUNT = -1;
     
     private static int DEFAULT_UPDATES_PER_DAY = 1;
     private static int MAX_UPDATES_PER_DAY = 4;
@@ -398,9 +398,8 @@ public class NirvanaBot extends BasicBot {
         DEFAULT_STARTS_PER_DAY = readIntegerProperty(properties,"starts-per-day",
                 DEFAULT_STARTS_PER_DAY, false);
 
-        // TODO: Use more clear naming for this variable
-        DEFAULT_PARSE_COUNT = readIntegerProperty(properties,"parse-count", DEFAULT_PARSE_COUNT,
-                false);
+        DEFAULT_ARCHIVE_PARSE_LINES_MAX_COUNT = readIntegerProperty(properties,
+                "archive-parse-lines-max-count", DEFAULT_ARCHIVE_PARSE_LINES_MAX_COUNT, false);
 
         DEFAULT_SERVICE_NAME = validateService(
                 properties.getProperty("default-service", DEFAULT_SERVICE_NAME),
@@ -1260,7 +1259,7 @@ public class NirvanaBot extends BasicBot {
 
         if (config.hasKey(PortalConfig.KEY_ARCHIVE)) {
             param.archSettings = new ArchiveSettingsParser(localizer).parse(config);
-            param.archSettings.parseCount = DEFAULT_PARSE_COUNT;
+            param.archSettings.parseCount = DEFAULT_ARCHIVE_PARSE_LINES_MAX_COUNT;
             data.errors.addAll(param.archSettings.errors);
         }
 
