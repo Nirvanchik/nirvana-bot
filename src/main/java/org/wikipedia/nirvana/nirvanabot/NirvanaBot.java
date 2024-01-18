@@ -44,13 +44,9 @@ import static org.wikipedia.nirvana.nirvanabot.PortalConfig.LIST_TYPE_PAGES;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.LIST_TYPE_PAGES_OLD;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.LIST_TYPE_PAGES_WITH_TEMPLATES;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.LIST_TYPE_WATCHLIST;
-import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_ABOVE;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_AUTO;
-import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_BELOW;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_BOT;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_DEFAULT;
-import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_ENUMERATE_WITH_HASH;
-import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_ENUMERATE_WITH_HASH2;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_NO;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_SMALL;
 import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_YES;
@@ -58,9 +54,7 @@ import static org.wikipedia.nirvana.util.OptionsUtils.readIntegerProperty;
 import static org.wikipedia.nirvana.util.OptionsUtils.readLongProperty;
 
 import org.wikipedia.Wiki;
-import org.wikipedia.nirvana.archive.ArchiveSettings;
-import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
-import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
+import org.wikipedia.nirvana.archive.ArchiveSettingsParser;
 import org.wikipedia.nirvana.base.BasicBot;
 import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.base.BotSettingsError;
@@ -163,8 +157,6 @@ public class NirvanaBot extends BasicBot {
     private static final String ERROR_NOTIFICATION_TEXT_LOCALISATION_HINT2 =
             "<small>Если вы видите здесь текст на русском языке, значит, локализация бота " +
             "не завершена. Вы можете помочь, добавив переводы [[%1$s|на этой странице]].</small>";
-    private static final String ERROR_PARAMETER_HAS_MULTIPLE_VALUES =
-            "Для параметра \"%1$s\" дано несколько значений. Использовано значение по умолчанию.";
     private static final String ERROR_INVALID_PARAMETER_EN =
             "Error in parameter \"%1$s\". Invalid value (%2$s).";
     private static final String ERROR_INVALID_PARAMETER =
@@ -178,11 +170,6 @@ public class NirvanaBot extends BasicBot {
     private static final String ERROR_AUTHOR_PARAMETER_INVALID_USAGE =
             "Неверный параметр \"%1$s\". Поле %2$s не поддерживается для данного типа " +
             "списков. Удалите его!";
-    private static final String ERROR_PARAMETER_MISSING_VARIABLE =
-            "В параметре бота \"%1$s\" не задан ключ с переменным значением. " +
-            "Значение этого параметра отклонено.";
-    private static final String ERROR_SAME_PERIOD =
-            "Параметр \"%1$s\" и параметр \"%2$s\" имеют одинаковый период повторения: %3$s";
     private static final String ERROR_DISCUSSED_PAGES_SETTINGS_NOT_DEFINED =
             "Настройки обсуждаемых страниц не заданы или некорректны. " +
             "Невозможно обновлять этот вид списков.";
@@ -1211,6 +1198,7 @@ public class NirvanaBot extends BasicBot {
         listTypeDefault = LIST_TYPE_NEW_PAGES;
     }
 
+    @SuppressWarnings("unchecked")
     protected boolean createPortalModule(BotTemplateParser botTemplateParser,
             Map<String, String> options, NewPagesData data) {
         log.debug("Scan portal settings...");
@@ -1270,20 +1258,10 @@ public class NirvanaBot extends BasicBot {
             }
         }
 
-        param.archSettings.parseCount = DEFAULT_PARSE_COUNT;
-
         if (config.hasKey(PortalConfig.KEY_ARCHIVE)) {
-            parseArchiveName(param.archSettings, config.get(PortalConfig.KEY_ARCHIVE));
-        }
-
-        if (config.hasKey(PortalConfig.KEY_ARCHIVE_HEADER_FORMAT) ||
-                config.hasKey(PortalConfig.KEY_ARCHIVE_SUBHEADER_FORMAT)) {
-            data.errors.addAll(parseArchiveHeaders(param.archSettings, config));
-        }
-
-        if (config.hasKey(PortalConfig.KEY_ARCHIVE_PARAMS)) {
-            data.errors.addAll(parseArchiveSettings(param.archSettings,
-                    config.get(PortalConfig.KEY_ARCHIVE_PARAMS)));
+            param.archSettings = new ArchiveSettingsParser(localizer).parse(config);
+            param.archSettings.parseCount = DEFAULT_PARSE_COUNT;
+            data.errors.addAll(param.archSettings.errors);
         }
 
         param.prefix = config.get(PortalConfig.KEY_PREFIX, "");
@@ -1554,123 +1532,6 @@ public class NirvanaBot extends BasicBot {
             }
         }
         return true;
-    }
-
-    private ArrayList<String> parseArchiveHeaders(ArchiveSettings archiveSettings,
-            PortalConfig config) {
-        ArrayList<String> errors = new ArrayList<String>();
-
-        Period p1 = Period.NONE;
-        final String key1 = PortalConfig.KEY_ARCHIVE_HEADER_FORMAT;
-        if (config.hasKey(key1)) {
-            String str = config.getUnquoted(key1);
-            p1 = ArchiveSettings.getHeaderPeriod(str);
-            if (p1 != Period.NONE) {
-                archiveSettings.headerFormat = str;
-            } else {
-                String format = localizer.localize(ERROR_PARAMETER_MISSING_VARIABLE);
-                errors.add(String.format(format, key1));
-            }
-        }
-
-        Period p2 = Period.NONE;
-        final String key2 = PortalConfig.KEY_ARCHIVE_SUBHEADER_FORMAT;
-        if (config.hasKey(key2)) {
-            String str = config.getUnquoted(key2);
-            p2 = ArchiveSettings.getHeaderPeriod(str);
-            if (p2 != Period.NONE) {
-                archiveSettings.superHeaderFormat = archiveSettings.headerFormat;
-                archiveSettings.headerFormat = str;
-            } else {
-                String format = localizer.localize(ERROR_PARAMETER_MISSING_VARIABLE);
-                errors.add(String.format(format, key2));
-            }
-        }
-
-        if (p1 != Period.NONE && p1 == p2) {
-            String format = localizer.localize(ERROR_SAME_PERIOD);
-            errors.add(String.format(format, key1, key2, p1.template()));
-        }
-        return errors;
-    }
-
-    // TODO: Move it to utility class.
-    /**
-     * Parse archive settings from settings string.
-     *
-     * @param archiveSettings ArchiveSettings where to save results.
-     * @param settings settings string.
-     * @return list of errors found during parsing.
-     */
-    public static ArrayList<String> parseArchiveSettings(ArchiveSettings archiveSettings,
-            String settings) {
-        Localizer localizer = Localizer.getInstance();
-        List<String> items = OptionsUtils.optionToList(settings);
-        return parseArchiveSettings(archiveSettings, items, localizer);
-    }
-
-    /**
-     * Parse archive settings specified in the list of Strings.
-     *
-     * @param archiveSettings archive settings that should be initialized.
-     * @param items list of strings to read.
-     * @param localizer localizer used to translate settings names.
-     * @return list of errors found during parsing.
-     */
-    public static ArrayList<String> parseArchiveSettings(ArchiveSettings archiveSettings,
-            List<String> items, Localizer localizer) {
-        ArrayList<String> errors = new ArrayList<String>();
-        if (items.contains(STR_ABOVE) && items.contains(STR_BELOW)) {
-            String format = localizer.localize(ERROR_PARAMETER_HAS_MULTIPLE_VALUES);
-            String param = String.format("%1$s (%2$s/%3$s)", PortalConfig.KEY_ARCHIVE_PARAMS,
-                    STR_ABOVE, STR_BELOW);
-            errors.add(String.format(format, param));
-        } else if (items.contains(STR_ABOVE)) {
-            archiveSettings.addToTop = true;
-        } else if (items.contains(STR_BELOW)) {
-            archiveSettings.addToTop = false;
-        }
-        int cnt = 0;
-        if (items.contains(STR_ENUMERATE_WITH_HASH) ||
-                items.contains(STR_ENUMERATE_WITH_HASH2)) {
-            cnt++;
-            archiveSettings.enumeration = Enumeration.HASH;
-        }
-        if (cnt > 1) {
-            archiveSettings.enumeration = Enumeration.NONE;
-            String format = localizer.localize(ERROR_PARAMETER_HAS_MULTIPLE_VALUES);
-            String param = String.format("%1$s (%2$s)", PortalConfig.KEY_ARCHIVE_PARAMS,
-                    localizer.localize("нумерация"));
-            errors.add(String.format(format, param));
-        }
-        return errors;
-    }
-
-    /**
-     * Parse archive name specified in string.
-     * Results are put in {@link ArchiveSettings} object.
-     *
-     * @param archiveSettings Archive settings object where parsed results are saved.
-     * @param name archive name (read from wiki project settings page).
-     * @return list of errors found when parsing.
-     */
-    public static ArrayList<String> parseArchiveName(ArchiveSettings archiveSettings,
-            String name) {
-        ArrayList<String> errors = new ArrayList<String>();        
-        archiveSettings.archive = name;
-        if (name.contains(Period.YEAR.template())) {
-            archiveSettings.archivePeriod = Period.YEAR;
-        }
-        if (name.contains(Period.SEASON.template())) {
-            archiveSettings.archivePeriod = Period.SEASON;
-        }
-        if (name.contains(Period.QUARTER.template())) {
-            archiveSettings.archivePeriod = Period.QUARTER;
-        }
-        if (name.contains(Period.MONTH.template())) {
-            archiveSettings.archivePeriod = Period.MONTH;
-        }            
-        return errors;
     }
 
     protected static List<List<String>> multiOptionToArray(

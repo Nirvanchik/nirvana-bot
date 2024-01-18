@@ -85,16 +85,13 @@ public class NewPagesWithImages extends NewPages {
     }
 
     /**
-     * Constructs class instanse using bot params, and special for this module additional things
+     * Constructs class instance using bot params, and special for this module additional things
      * like Commons wiki client and {@link ImageFinder} helper class.
      */
     public NewPagesWithImages(PortalParam param, PageFormatter pageFormatter, SystemTime systemTime,
             NirvanaWiki commons, ImageFinder imageFinder) {
         super(param, pageFormatter, systemTime);
-        if (this.archiveSettings.archive != null) {
-            // TODO: Handle this in the apropriate place please. 
-            this.archiveSettings.archive = null;
-        }
+        this.archiveSettings = null;
         this.formatString = formatString.replace(BotVariables.FILE_NAME, "%4$s");
         this.imageFinder = imageFinder;
         this.commons = commons;
@@ -233,7 +230,7 @@ public class NewPagesWithImages extends NewPages {
                     }
                 } else {
                     log.debug("ARCHIVE old line: \t{}", oldItems[i]);
-                    if (archiveSettings.withArchive()) {
+                    if (archiveSettings != null) {
                         archiveItems.add(oldItems[i]);
                     }
                     archiveCount++;
@@ -243,7 +240,7 @@ public class NewPagesWithImages extends NewPages {
 
         Data d = new Data();
         d.newText = pageFormatter.formatPage(subset);
-        if (archiveSettings.withArchive() && archiveItems != null && archiveItems.size() > 0) {
+        if (archiveSettings != null && archiveItems != null && archiveItems.size() > 0) {
             d.archiveText = StringUtils.join(archiveItems.toArray(), delimeter) + "\n";
             d.archiveItems = archiveItems;
         }

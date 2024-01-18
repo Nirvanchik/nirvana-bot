@@ -29,6 +29,7 @@ import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.archive.ScanArchiveSettings;
+import org.wikipedia.nirvana.archive.ScanArchiveSettingsParser;
 import org.wikipedia.nirvana.base.BasicBot;
 import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.base.BotTemplateParser;
@@ -381,38 +382,22 @@ public class StatisticsBot extends BasicBot {
     }
 
     private boolean readPortalSettings(Map<String, String> options, StatisticsParam params) {
-        params.archiveSettings = new ScanArchiveSettings();
-        params.archive = null;
-        String key = "архив";
-        if (options.containsKey(key) && !options.get(key).isEmpty()) {
-            params.archive = options.get(key);
-            NirvanaBot.parseArchiveName(params.archiveSettings, options.get(key));            
-        } else {
+        params.archive = options.get("архив");
+        if (params.archive == null || params.archive.isEmpty()) {
             log.error("Параметр \"архив\" не найден в настройках");
             return false;            
         }
+        PortalConfig config = new PortalConfig(options);
+        params.archiveSettings =
+                new ScanArchiveSettingsParser(Localizer.getInstance()).parse(config);
 
-        String str = "";
-        key = "формат заголовка в архиве";
-        Period p1 = Period.NONE;
-        if (options.containsKey(key) && !options.get(key).isEmpty()) {
-            str = options.get(key);
-            p1 = ArchiveSettings.getHeaderPeriod(str);
-            if (p1 == Period.NONE) {
-                log.error(ERR_NO_VARIABLE, key);
-                return false;
-            } else {
-                params.archiveSettings.headerFormat = str;
-            }
-        }
-
-        key = "параметры архива";
-        if (options.containsKey(key) && !options.get(key).isEmpty()) {
-            parseArchiveSettings(params.archiveSettings, options.get(key));
+        if (params.archiveSettings.errors.size() > 0) {
+            params.archiveSettings.errors.forEach(error -> log.error(error));
+            return false;
         }
 
         params.reportTypes = null;
-        key = "тип";
+        String key = "тип";
         if (options.containsKey(key) && !options.get(key).isEmpty()) {
             params.reportTypes = optionToList(options, key);
         } else {
@@ -527,13 +512,6 @@ public class StatisticsBot extends BasicBot {
             }
         }
         return suboptions;
-    }
-
-    static ArrayList<String> parseArchiveSettings(ScanArchiveSettings archiveSettings,
-            String settings) {
-        Localizer localizer = Localizer.getInstance();
-        List<String> items = OptionsUtils.optionToList(settings);
-        return NirvanaBot.parseArchiveSettings(archiveSettings, items, localizer);
     }
 
     protected SystemTime initSystemTime() {

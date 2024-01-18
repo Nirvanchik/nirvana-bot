@@ -77,6 +77,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 
 /**
@@ -141,8 +142,8 @@ public class NewPages implements PortalModule {
     protected List<List<String>> categoryGroups;
     protected List<List<String>> categoryToIgnoreGroups;
     protected String pageName;
-    @Nonnull
-    protected final ArchiveSettings archiveSettings;
+    @Nullable
+    protected ArchiveSettings archiveSettings;
     protected String format;
     protected String formatString;
     protected int maxItems;
@@ -291,13 +292,14 @@ public class NewPages implements PortalModule {
         int oldCount = 0;
 
         Data() {
-            if (archiveSettings.withArchive()) {
+            if (archiveSettings != null) {
                 archiveItems = new ArrayList<String>();
             }
         }
 
         void makeArchiveText() {
-            if (archiveSettings.withArchive() && archiveItems != null && archiveItems.size() > 0) {
+            if (archiveSettings == null || archiveItems == null) return;
+            if (archiveItems.size() > 0) {
                 if (archiveSettings.enumeration == Enumeration.HASH) {
                     enumerateWithHash(archiveItems);
                 }
@@ -715,7 +717,7 @@ public class NewPages implements PortalModule {
                 continue;
             }
             log.debug("ARCHIVE old line: \t{}", item);
-            if (enableFeatureArchive && archiveSettings.withArchive()) {
+            if (enableFeatureArchive && archiveSettings != null) {
                 updateResults.archiveItems.add(item);
             }
             updateResults.archiveCount++;
@@ -870,7 +872,7 @@ public class NewPages implements PortalModule {
                 summaryBuilder.append(updateResults.newPagesCount).append(summaryNew);
             }
             
-            if (enableFeatureArchive && archiveSettings.withArchive()
+            if (enableFeatureArchive && archiveSettings != null
                     && updateResults.archiveCount > 0) {
                 summaryBuilder.append(", -").append(updateResults.archiveCount).append(" ")
                         .append(localizer.localize("в архив"));
@@ -897,7 +899,7 @@ public class NewPages implements PortalModule {
 
     protected void updateArchiveIfNeed(NirvanaWiki wiki, Data updateResults,
             ReportItem reportData) throws InterruptedException, ArchiveUpdateFailure {
-        if (!enableFeatureArchive || !archiveSettings.withArchive()) {
+        if (!enableFeatureArchive || archiveSettings == null) {
             return;
         }
         reportData.willUpdateArchive();
@@ -925,6 +927,7 @@ public class NewPages implements PortalModule {
             throws LoginException, IOException {
         Archive defaultArchive = null;
         String defaultArhiveName = null;
+        assert archiveSettings != null;
         if (archiveSettings.isSingle()) {
             defaultArhiveName = archiveSettings.archive;            
         } else {

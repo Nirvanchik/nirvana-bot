@@ -139,7 +139,7 @@ public class PageFormatterTest {
     public void setUp() throws Exception {
         params = new PortalParam();
         params.page = "Portal:A/New pages";
-        params.archSettings = new ArchiveSettings();
+        params.archSettings = new ArchiveSettings(params.page);
         params.archSettings.archive = "Portal:A/New pages/Archive";
 
         globalSettings = new BotGlobalSettings();

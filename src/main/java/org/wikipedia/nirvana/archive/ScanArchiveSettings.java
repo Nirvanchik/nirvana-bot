@@ -70,8 +70,8 @@ public class ScanArchiveSettings extends ArchiveSettings {
     /**
      * Default constructor. 
      */
-    public ScanArchiveSettings() {
-        super();
+    public ScanArchiveSettings(String archive) {
+        super(archive);
     }
 
 }

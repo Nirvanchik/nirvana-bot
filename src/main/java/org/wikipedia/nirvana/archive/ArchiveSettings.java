@@ -25,8 +25,11 @@ package org.wikipedia.nirvana.archive;
 
 import org.wikipedia.nirvana.util.DateTools;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -37,7 +40,7 @@ public class ArchiveSettings {
      * Title of a wiki page that contains a list of archived new pages items. Can have placeholders.
      * For placeholders list see {@link ArchiveSettings.Period}.
      */
-    @Nullable
+    @Nonnull
     public String archive;
     /**
      * Archive header format if archive has headers of 1 level.
@@ -77,6 +80,8 @@ public class ArchiveSettings {
      * This value tells how many lines to parse instead of full parsing.
      */
     public int parseCount;
+    
+    public List<String> errors = new ArrayList();
 
     /**
      * A methods to enumarate items in archive.
@@ -124,8 +129,8 @@ public class ArchiveSettings {
     /**
      * Default constructor.
      */
-    public ArchiveSettings() {
-        archive = null;
+    public ArchiveSettings(String archive) {
+        this.archive = archive;
         archivePeriod = Period.NONE;
         addToTop = true;
         removeDeleted = false;
@@ -133,14 +138,6 @@ public class ArchiveSettings {
         superHeaderFormat = null;
         enumeration = Enumeration.NONE;
         parseCount = ArchiveWithHeaders.HOW_MANY_ITEMS_TO_PARSE_DEFAULT; 
-    }
-
-    /**
-     * Return <code>true</code> if new page list is with archive, it requires to update archive
-     * according its settings.
-     */
-    public boolean withArchive() {
-        return archive != null;
     }
 
     /**

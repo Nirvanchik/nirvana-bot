@@ -115,57 +115,20 @@ public class FixArchiveBot extends BasicBot {
             throw new BotFatalError("Invalid settings. "
                     + "All lines must have '=' symbol with the format: 'key=value'.");
         }
-
-        ArchiveProcessingSettings archiveSettings = new ArchiveProcessingSettings();
-        String archive = null;
-        String key = "архив";
-        if (options.containsKey(key) && !options.get(key).isEmpty()) {
-            archive = options.get(key);
-            NirvanaBot.parseArchiveName(archiveSettings,options.get(key));
-        }
         
-        String str = "";
-        key = "формат заголовка в архиве";
-        Period p1 = Period.NONE;
-        if (options.containsKey(key) && !options.get(key).isEmpty()) {
-            str = options.get(key);
-            p1 = ArchiveSettings.getHeaderPeriod(str);
-            if (p1 == Period.NONE) {
-                log.error(ERR_NO_VARIABLE, key);
-                return;
-            } else {
-                archiveSettings.headerFormat = str;
-            }
-        }
+        PortalConfig config = new PortalConfig(options);
 
-        key = "формат подзаголовка в архиве";
-        Period p2 = Period.NONE;
-        if (options.containsKey(key) && !options.get(key).isEmpty()) {
-            str = options.get(key); 
-            p2 = ArchiveSettings.getHeaderPeriod(str);
-            if (p2 == Period.NONE) {
-                log.error(ERR_NO_VARIABLE, key);
-                return;
-            } else {
-                archiveSettings.superHeaderFormat = archiveSettings.headerFormat;
-                archiveSettings.headerFormat = str;
-            }            
+        String key = "архив";
+        String archive = options.get(key);
+        if (archive == null || archive.isEmpty()) {
+            throw new BotFatalError(String.format("Invalid settings. Key \"%s\" not found", key));
         }
-
-        if (p1 != Period.NONE && p2 != Period.NONE && p1 == p2) {
-            log.error("Параметр \"формат заголовка в архиве\" и параметр " +
-                    "\"формат подзаголовка в архиве\" имеют одинаковый период повторения " +
-                    p1.template());
-            return;
-        }
-
-        key = "параметры архива";
-        if (options.containsKey(key) && !options.get(key).isEmpty()) {
-            ArrayList<String> errors = parseArchiveSettings(archiveSettings, options.get(key));
-            if (errors.size() > 0) {
-                errors.forEach(error -> log.error(error));
-                throw new BotFatalError("Invalid settings of archive parameters. See error log.");
-            }
+        ArchiveProcessingSettings archiveSettings =
+                new ArchiveProcessingSettingsParser(Localizer.getInstance()).parse(config);
+        
+        if (archiveSettings.errors.size() > 0) {
+            archiveSettings.errors.forEach(error -> log.error(error));
+            throw new BotFatalError("Invalid settings of archive parameters. See error log.");
         }
 
         key = "первый год";
@@ -293,22 +256,4 @@ public class FixArchiveBot extends BasicBot {
         return true;
     }
 
-    static ArrayList<String> parseArchiveSettings(ArchiveProcessingSettings archiveSettings,
-            String settings) {
-        Localizer localizer = Localizer.getInstance();
-        List<String> items = OptionsUtils.optionToList(settings);
-        return parseArchiveSettings(archiveSettings, items, localizer);
-    }
-
-    static ArrayList<String> parseArchiveSettings(ArchiveProcessingSettings archiveSettings,
-            List<String> items, Localizer localizer) {
-
-        if (items.contains(STR_TOSORT) || items.contains(STR_SORT)) {
-            archiveSettings.sorted = true;
-        }
-        if (items.contains(STR_REMOVE_DUPLICATES)) {
-            archiveSettings.removeDuplicates = true;
-        }
-        return NirvanaBot.parseArchiveSettings(archiveSettings, items, localizer);
-    }
 }

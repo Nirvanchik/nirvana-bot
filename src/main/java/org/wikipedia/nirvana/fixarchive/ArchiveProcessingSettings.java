@@ -43,7 +43,7 @@ public class ArchiveProcessingSettings extends ScanArchiveSettings {
     /**
      * Constructs instance of ArchiveProcessingSettings.
      */
-    public ArchiveProcessingSettings() {
-        super();
+    public ArchiveProcessingSettings(String archive) {
+        super(archive);
     }
 }

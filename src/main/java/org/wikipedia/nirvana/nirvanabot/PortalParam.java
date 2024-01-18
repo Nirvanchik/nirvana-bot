@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Keeps bot settings for portal page to update.
@@ -45,7 +46,8 @@ public class PortalParam {
     public List<String> categoriesToIgnore;
     public String page;
     public CatScanTools.Service service;
-    public ArchiveSettings archSettings = new ArchiveSettings();
+    @Nullable
+    public ArchiveSettings archSettings;
     public int ns;
     public int depth;
     public int hours;

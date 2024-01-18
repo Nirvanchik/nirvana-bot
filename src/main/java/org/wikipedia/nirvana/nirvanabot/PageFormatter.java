@@ -78,6 +78,7 @@ public class PageFormatter {
     
     // Params required for SUBST
     protected final String pageName;
+    @Nullable
     protected final ArchiveSettings archiveSettings;
     protected final String portalSettingsPage;
     protected final String portalSettingsText;
