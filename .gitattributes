@@ -35,9 +35,6 @@ NOTICE text
 .project text
 *.ini text
 *.java text
-# Next files hava CRLF line endings in git (not normalized).
-# TODO: Convert line endings here to LF
-src/main/java/org/wikipedia/nirvana/cleanarchive/CleanArchiveBot.java -text
 *.js text
 *.MD text
 *.properties text
