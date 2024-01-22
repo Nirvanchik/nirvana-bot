@@ -38,6 +38,7 @@ import org.wikipedia.nirvana.error.DangerousEditException;
 import org.wikipedia.nirvana.error.InvalidLineFormatException;
 import org.wikipedia.nirvana.error.ServiceError;
 import org.wikipedia.nirvana.localization.TestLocalizationManager;
+import org.wikipedia.nirvana.nirvanabot.NirvanaBot.NewPagesData;
 import org.wikipedia.nirvana.nirvanabot.report.BotReporter;
 import org.wikipedia.nirvana.nirvanabot.serviceping.CatscanService;
 import org.wikipedia.nirvana.nirvanabot.serviceping.InternetService;
@@ -55,6 +56,7 @@ import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -63,7 +65,9 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 
 /**
@@ -101,6 +105,11 @@ public class NirvanaBotUnitTest {
                 "|категории = Собаки\n" +
                 "|страница = Portal:Portal 1/New pages\n" +
                 "}}\n";
+        public static final String NEW_PAGES_SETTINGS_NOTYPE = 
+                "{{User:TestBot:Template1\n" +
+                "|категории = Собаки\n" +
+                "|страница = Portal:Portal 1/New pages\n" +
+                "}}\n";
         public final NirvanaWiki mainWiki;
         public final NirvanaWiki commonsWiki;
 
@@ -120,6 +129,9 @@ public class NirvanaBotUnitTest {
         public long timeInMillis = 0;
 
         public final NewPages mockNewPages;
+        
+        @Nullable
+        public Consumer<NewPagesData> createPortalModuleHook;
 
         public TestNirvanaBot(int flags) throws TestError, InterruptedException, IOException,
                 LoginException, ServiceError, BotFatalError, InvalidLineFormatException,
@@ -171,6 +183,8 @@ public class NirvanaBotUnitTest {
             mockNewPages = Mockito.mock(NewPages.class);
 
             properties.setProperty("new-pages-template", "User:TestBot:Template1");
+            properties.setProperty("overriden-properties-page", "User:TestBot:GlobalSettings");
+            when(mainWiki.getPageText(eq("User:TestBot:GlobalSettings"))).thenReturn(null);
         }
 
         @Override
@@ -200,6 +214,9 @@ public class NirvanaBotUnitTest {
         protected boolean createPortalModule(BotTemplateParser botTemplateParser, 
                 Map<String, String> options, NewPagesData data) {
             boolean retValue = super.createPortalModule(botTemplateParser, options, data);
+            if (createPortalModuleHook != null) {
+                createPortalModuleHook.accept(data);
+            }
             data.portalModule = mockNewPages;
             return retValue;
         }
@@ -315,5 +332,73 @@ public class NirvanaBotUnitTest {
         bot.go();
 
         verify(bot.mainWiki).relogin();
+    }
+
+    @Test
+    public void testReadOverriddenProperties() throws Exception {
+        TestNirvanaBot bot = new TestNirvanaBot(BasicBot.FLAG_DEFAULT_LOG);
+        bot.enableStatusReport();
+        when(bot.mockCatscanService.isOk()).thenReturn(Status.OK);
+        when(bot.mockNewPages.update(anyObject(), anyObject(), anyString()))
+                .thenReturn(true);
+
+        String globalSettings = "{{{User:TestBot:Template1 (параметры по умолчанию)\n" + 
+                "|тип = список новых статей\n" + 
+                "|элементов = 19\n" + 
+                "|часов = 349\n" + 
+                "|глубина = 5\n" + 
+                "|формат элемента = * [[%(название)]] - (создал (%автор))\n" + 
+                "|пространство имён = 10\n" + 
+                "|шапка = ШАПКА\n" + 
+                "|подвал = \\n<noinclude>\n" + 
+                "[[Категория:Википедия:Списки новых статей по темам|{{PAGENAME}}]]\n" + 
+                "</noinclude>\n" + 
+                "|разделитель = \",\"\n" + 
+                "|поиск картинки = image file,Фото,портрет,Изображение\n" + 
+                "|шаблоны запрещенных картинок = Disputed-fairuse, ОДИ, Несвободный файл/ОДИ\n" + 
+                "|сервис = auto\n" + 
+                "|сервис по умолчанию = petscan\n" + 
+                "|быстрый режим = да\n" + 
+                "|попытки = 4\n" + 
+                "|попытки catscan = 5\n" + 
+                "}}";
+        when(bot.mainWiki.getPageText(eq("User:TestBot:GlobalSettings")))
+                .thenReturn(globalSettings);
+        when(bot.mainWiki
+                .whatTranscludesHere(eq("User:TestBot:Template1"), eq(Wiki.ALL_NAMESPACES)))
+                .thenReturn(new String[] {"Portal:Portal 1/New pages/settings"});
+        when(bot.mainWiki.getPageText(eq("Portal:Portal 1/New pages/settings")))
+                .thenReturn(TestNirvanaBot.NEW_PAGES_SETTINGS_NOTYPE);
+        bot.createPortalModuleHook = new Consumer<NirvanaBot.NewPagesData>() {
+
+            @Override
+            public void accept(NewPagesData data) {
+                PortalParam param = data.param;
+                Assert.assertEquals("список новых статей", data.type);
+                Assert.assertEquals(19, param.maxItems);
+                Assert.assertEquals(349, param.hours);
+                Assert.assertEquals(5, param.depth);
+                Assert.assertEquals("* [[%(название)]] - (создал (%автор))", param.format);
+                Assert.assertEquals(10, param.ns);
+                Assert.assertEquals("ШАПКА", param.header);
+                Assert.assertEquals("\n<noinclude>\n"
+                        + "[[Категория:Википедия:Списки новых статей по темам|{{PAGENAME}}]]\n"
+                        + "</noinclude>", param.footer);
+                Assert.assertEquals(",", param.delimeter);
+                Assert.assertEquals("image file,Фото,портрет,Изображение", param.imageSearchTags);
+                Assert.assertEquals("Disputed-fairuse, ОДИ, Несвободный файл/ОДИ",
+                        param.fairUseImageTemplates);
+                Assert.assertNotNull(param.service);
+                Assert.assertTrue(param.service instanceof CatScanTools.Service);
+                Assert.assertEquals(4, param.tryCount);
+                Assert.assertEquals(5, param.catscanTryCount);
+                Assert.assertEquals(true, param.fastMode);
+            }
+        };
+
+        bot.initLog();
+        bot.loadCustomProperties(Collections.emptyMap());
+        bot.go();
+
     }
 }

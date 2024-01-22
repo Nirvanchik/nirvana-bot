@@ -543,6 +543,10 @@ public class NirvanaBot extends BasicBot {
             throw new IOException(
                     "Failed to read overriden properties page: " + overridenPropertiesPage);
         }
+        if (overridenPropertiesText.trim().isEmpty()) {
+            log.info("Default settings page for template \"{}\" is empty", newpagesTemplate);
+            return false;
+        }
         Map<String, String> options = new HashMap<String, String>();        
         if (!new BotTemplateParser(newpagesTemplate, userNamespace)
                 .tryParseTemplate(overridenPropertiesText, options)) {
@@ -590,6 +594,13 @@ public class NirvanaBot extends BasicBot {
 
         FAIR_USE_IMAGE_TEMPLATES = config.get(PortalConfig.KEY_FAIR_USE_IMAGE_TEMPLATES,
                 FAIR_USE_IMAGE_TEMPLATES);
+
+        globalTryCount = parseIntegerKeyWithMaxVal(config, PortalConfig.KEY_TRY_COUNT,
+                errors, globalTryCount, MAX_TRY_COUNT);
+
+        globalCatscanTryCount = parseIntegerKeyWithMaxVal(config,
+                PortalConfig.KEY_CATSCAN_TRY_COUNT, errors, globalCatscanTryCount,
+                MAX_CATSCAN_TRY_COUNT);
 
         if (!DISCUSSION_PAGES_SETTINGS_WIKI.isEmpty()) {
             log.info("load discussion pages settings from {}", DISCUSSION_PAGES_SETTINGS_WIKI);
@@ -1019,7 +1030,7 @@ public class NirvanaBot extends BasicBot {
                         log.error("OOOOPS!!!", e); // print stack trace
                     }
                 } catch (Exception e) {
-                    log.error(e.toString()); 
+                    log.error(e.toString());
                     if (tryNumber < tryCount) {
                         log.info("RETRY AGAIN");
                         retry = true;
@@ -1030,7 +1041,12 @@ public class NirvanaBot extends BasicBot {
                         log.error("OOOOPS!!!", e); // print stack trace
                     }    
                 } catch (Error e) {
-                    log.error(e.toString()); 
+                    log.error(e.toString());
+                    // Allow exceptions coming from unit tests
+                    if (e.getClass().getName().equals("org.junit.ComparisonFailure")
+                            || e.getClass().getName().equals("java.lang.AssertionError")) {
+                        throw e;
+                    }
                     if (tryNumber < tryCount) {
                         log.info("RETRY AGAIN");
                         retry = true;
