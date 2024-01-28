@@ -264,6 +264,32 @@ public class WikiUtilsTest {
         Assert.assertTrue(success);
         Assert.assertEquals(expected, params);
     }
+    
+    @Test
+    public void testParseBotTemplate_corruptBracketsNotMatch() {
+        TreeMap<String, String> params = new TreeMap<>();
+        String wikiText =
+                "Some text\n" +
+                "{{Templ\n" +
+                "|param1 = val1\n" +
+                "|param2 = val2\n" +
+                "} some text here";
+        boolean success = WikiUtils.parseBotTemplate("Templ", wikiText, params);
+        Assert.assertFalse(success);
+    }
+    
+    @Test
+    public void testParseBotTemplate_templateNotFound() {
+        TreeMap<String, String> params = new TreeMap<>();
+        String wikiText =
+                "Some text\n" +
+                "{{Templ\n" +
+                "|param1 = val1\n" +
+                "|param2 = val2\n" +
+                "} some text here";
+        boolean success = WikiUtils.parseBotTemplate("Templ5", wikiText, params);
+        Assert.assertFalse(success);
+    }
 
     @SuppressWarnings("serial")
     @Test
