@@ -353,6 +353,30 @@ public class NirvanaBot extends BasicBot {
      */
     public NirvanaBot(int flags) {
         super(flags);
+        // This is workaround to make tests OK.
+        // TODO: Get rid of static variables
+        MAX_DEPTH = 30;
+        DEFAULT_DEPTH = 7;
+        MAX_MAXITEMS = 5000;
+        DEFAULT_MAXITEMS = 20;
+        DEFAULT_HOURS = 500;
+        DEFAULT_SERVICE_NAME = "petscan";
+        SELECTED_SERVICE_NAME = SERVICE_AUTO;
+        DEFAULT_FORMAT = "* [[%1$s]]";
+        DEFAULT_FORMAT_STRING = "* [[%1$s]]";
+        DEFAULT_USE_FAST_MODE = true;
+        DEFAULT_DELIMETER = "\n";
+        DEFAULT_NAMESPACE = 0;
+        DEFAULT_HEADER = "";
+        DEFAULT_FOOTER = "";
+        DEFAULT_ARCHIVE_PARSE_LINES_MAX_COUNT = -1;
+        DEFAULT_UPDATES_PER_DAY = 1;
+        MAX_UPDATES_PER_DAY = 4;
+        DEFAULT_STARTS_PER_DAY = 1;
+        DISCUSSION_PAGES_SETTINGS_WIKI = null;
+        DISCUSSION_PAGES_SETTINGS = DiscussionPagesSettings.EMPTY;
+        PICTURE_SEARCH_TAGS = "image file,Фото,портрет,Изображение,Файл,File";
+        overridenPropertiesPage = null;
     }
 
     public static void main(String[] args) {
