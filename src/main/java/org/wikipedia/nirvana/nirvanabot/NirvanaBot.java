@@ -1165,6 +1165,7 @@ public class NirvanaBot extends BasicBot {
     private void sendErrorNotification(String portalSettingsPage, ArrayList<String> errors)
             throws IOException, LoginException {
         String portal = WikiUtils.getPortalFromSettingsSubPage(portalSettingsPage);
+        log.debug("Get talk page for: {}", portal);
         String portalTalkPage = wiki.getTalkPage(portal);
         StringBuilder sb = new StringBuilder();
         String title = localizer.localize(ERROR_NOTIFICATION_TITLE);

@@ -57,11 +57,14 @@ public class NirvanaBotTest {
     public static final String BOT_CONFIG_RU_WITH_DISUSSION_TEMPLATES =
             "bot_config_ru_discussion_templates.xml";
     public static final String BOT_CONFIG_RU_TESTARCH = "bot_config_ru_testarch.xml";
+    public static final String BOT_CONFIG_RU_ERR_NOTIF = "bot_config_ru_error_notif.xml";
     public static final String BOT_CONFIG_BE = "bot_config_be.xml";
     public static final String BOT_CONFIG_DEFAULT_PATH = TEST_DATA_PATH + BOT_CONFIG_DEFAULT;
     public static final String BOT_CONFIG_BE_PATH = TEST_DATA_PATH + BOT_CONFIG_BE;
     public static final String BOT_CONFIG_RU_TESTARCH_PATH =
             TEST_DATA_PATH + BOT_CONFIG_RU_TESTARCH;
+    public static final String BOT_CONFIG_RU_ERR_NOTIF_PATH =
+            TEST_DATA_PATH + BOT_CONFIG_RU_ERR_NOTIF; 
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -1266,7 +1269,7 @@ public class NirvanaBotTest {
     }
 
     /**
-     * Test case 081.
+     * Test case 083.
      * Summary: New pages must support "slow mode" ("fast mode = off"). In slow mode we request
      * data from Catscan for every category in the category list. We merge results and remove
      * duplications. For any category user may specify customized depth. We must not loose it.
@@ -1287,6 +1290,63 @@ public class NirvanaBotTest {
     @Test
     public void newPages_custom_category_depth() throws TestError {
         run("083_new_pages_custom_category_depth.js");
+    }
+
+    /**
+     * Test case 084.
+     * Summary: User can make mistakes in bot settings. Send notification to portal discussion
+     * page in this case.
+     *
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     *
+     * BOT SETTINGS:
+     * 1) тип, сервис имеют невалидные значения
+     *
+     * Similar tests: none.
+     */
+    @Test
+    public void newPages_error_notification() throws TestError {
+        run("084_new_pages_error_notification.js", BOT_CONFIG_RU_ERR_NOTIF_PATH);
+    }
+
+    /**
+     * Test case 085.
+     * Summary: User can make mistakes in bot settings. Send notification to portal discussion
+     * page in this case.
+     *
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     *
+     * BOT SETTINGS:
+     * 1) параметр "категории" не задан (опечатка)
+     *
+     * Similar tests: 084.
+     */
+    @Test
+    public void newPages_error_notification_2() throws TestError {
+        run("085_new_pages_error_notification_2.js", BOT_CONFIG_RU_ERR_NOTIF_PATH);
+    }
+
+    /**
+     * Test case 086.
+     * Summary: User can make mistakes in bot settings. Send notification to portal discussion
+     * page in this case.
+     *
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи"
+     *
+     * BOT SETTINGS:
+     * 1) в поле "формат" неизвестные плейсхолдеры
+     *
+     * Similar tests: 085.
+     */
+    @Test
+    public void newPages_error_notification_3() throws TestError {
+        run("086_new_pages_error_notification_3.js", BOT_CONFIG_RU_ERR_NOTIF_PATH);
     }
 
 }

@@ -83,9 +83,17 @@ public class IntegrationTesting {
             Iterator<?> it = nsIdJsonList.iterator();
             while (it.hasNext()) {
                 JSONObject nsIdJson = (JSONObject) it.next();
-                //System.out.println("ns num type: "+ nsIdJson.get("number").getClass());
                 wiki.mockNamespaceIdentifier((Long) nsIdJson.get("number"),
                         (String) nsIdJson.get("id"));
+            }
+        }
+        JSONArray nsJsonList = (JSONArray) wikiJson.get("namespace");
+        if (nsJsonList != null) {
+            Iterator<?> it = nsJsonList.iterator();
+            while (it.hasNext()) {
+                JSONObject nsJson = (JSONObject) it.next();
+                wiki.mockNamespace((String) nsJson.get("title"),
+                        ((Long) nsJson.get("id")).intValue());
             }
         }
         JSONArray pageTextJsonList = (JSONArray) wikiJson.get("pageText");
