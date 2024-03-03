@@ -1032,13 +1032,10 @@ public class NewPages implements PortalModule {
                 c = DateTools.parseDate(s);
                 if (c != null) return c;
             }
-            for (int i = 1; i < items.length; i++) {
-                String s = items[i];
-                //System.out.println("check string: "+s);
+            for (String s: items) {
                 Revision r = null;
                 try {
-                    r = wiki.getFirstRevision(s,true);
-                    //r = null;
+                    r = wiki.getFirstRevision(s, true);
                 } catch (IOException e) {
                     sLog.warn(String.format("Page %s not found", s));
                 }

@@ -382,6 +382,13 @@ public abstract class BasicBot {
         return wiki;
     }
 
+    /**
+     * Return directory path where bot produces all output files.
+     */
+    public String getOutDir() {
+        return outDir;
+    }
+
     protected void onInterrupted(InterruptedException exception) {
         
     }

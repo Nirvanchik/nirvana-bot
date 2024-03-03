@@ -91,6 +91,7 @@ public class NewPagesWithImages extends NewPages {
     public NewPagesWithImages(PortalParam param, PageFormatter pageFormatter, SystemTime systemTime,
             NirvanaWiki commons, ImageFinder imageFinder) {
         super(param, pageFormatter, systemTime);
+        this.enableFeatureArchive = false;
         this.archiveSettings = null;
         this.formatString = formatString.replace(BotVariables.FILE_NAME, "%4$s");
         this.imageFinder = imageFinder;
@@ -188,10 +189,7 @@ public class NewPagesWithImages extends NewPages {
             }
         }
 
-        // TODO: Is this needed?
-        ArrayList<String> archiveItems = new ArrayList<String>();
         int oldCount = 0;
-        int archiveCount = 0;
     
         // Add elements from old page
         if (true/*count < maxItems /*|| archive!=null*/) { 
@@ -228,28 +226,17 @@ public class NewPagesWithImages extends NewPages {
                     } else {
                         log.debug("SKIP old line: \t{}", oldItems[i]);
                     }
-                } else {
-                    log.debug("ARCHIVE old line: \t{}", oldItems[i]);
-                    if (archiveSettings != null) {
-                        archiveItems.add(oldItems[i]);
-                    }
-                    archiveCount++;
                 }
             }
         }
 
         Data d = new Data();
         d.newText = pageFormatter.formatPage(subset);
-        if (archiveSettings != null && archiveItems != null && archiveItems.size() > 0) {
-            d.archiveText = StringUtils.join(archiveItems.toArray(), delimeter) + "\n";
-            d.archiveItems = archiveItems;
-        }
-        d.archiveCount = archiveCount;
-        d.newPagesCount = subset.size() - (oldCount - archiveCount);
+        d.archiveCount = 0;
+        d.newPagesCount = subset.size() - oldCount;
         if (d.newPagesCount < 0) d.newPagesCount = 0;
         log.debug("updated items count: {}", subset.size());
         log.debug("old items count: {}", oldCount);
-        log.debug("archive count: {}", archiveCount);
         log.debug("new items count: {}", d.newPagesCount);
         
         return d;

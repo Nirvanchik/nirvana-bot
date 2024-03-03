@@ -1011,6 +1011,8 @@ public class NirvanaBotTest {
     /**
      * Test case 052.
      * Summary: when bot updates new pages it must also update archive page with removed items.
+     *    When removed items added to archive, and that archive is split to many wiki pages (one
+     *    page per each year), bot must select archive page according to article date.
      * Similar tests: 042.
      *
      * PORTAL SETTINGS:
@@ -1347,6 +1349,35 @@ public class NirvanaBotTest {
     @Test
     public void newPages_error_notification_3() throws TestError {
         run("086_new_pages_error_notification_3.js", BOT_CONFIG_RU_ERR_NOTIF_PATH);
+    }
+
+    /**
+     * Test case 087.
+     * Summary: when bot updates new pages it must also update archive page with removed items.
+     *    When removed items added to archive, and that archive is split to many wiki pages (one
+     *    page per each year), bot must select archive page according to article date.
+     *    New pages list has items with "NewArticle" template where article title, date and author
+     *    are specified.
+     * Similar tests: 052.
+     *
+     * PORTAL SETTINGS:
+     *   type = "новые статьи"
+     */
+    @Test
+    public void new_pages_archive_update_many_pages_with_dates() throws TestError {
+        run("087_new_pages_archive_update_many_pages_with_dates.js");
+    }
+
+    /**
+     * Test case 088.
+     * Similar tests: 015.
+     * Conditions:
+     * PORTAL SETTINGS:
+     * 1) type = "новые статьи с изображениями"
+     */
+    @Test
+    public void newPages_with_images_update_from_old() throws TestError {
+        run("088_new_pages_with_images_update_from_old.js");
     }
 
 }

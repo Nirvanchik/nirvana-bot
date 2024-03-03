@@ -49,7 +49,9 @@ import org.wikipedia.nirvana.nirvanabot.serviceping.TestServiceManager;
 import org.wikipedia.nirvana.nirvanabot.serviceping.WikiService;
 import org.wikipedia.nirvana.testing.MockSystemTime;
 import org.wikipedia.nirvana.testing.TestError;
+import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.MockDateTools;
+import org.wikipedia.nirvana.util.SystemTime;
 import org.wikipedia.nirvana.wiki.CatScanTools;
 import org.wikipedia.nirvana.wiki.MockCatScanTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
@@ -62,7 +64,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -183,8 +187,19 @@ public class NirvanaBotUnitTest {
             mockNewPages = Mockito.mock(NewPages.class);
 
             properties.setProperty("new-pages-template", "User:TestBot:Template1");
-            properties.setProperty("overriden-properties-page", "User:TestBot:GlobalSettings");
-            when(mainWiki.getPageText(eq("User:TestBot:GlobalSettings"))).thenReturn(null);
+        }
+        
+        protected SystemTime initSystemTime() {
+            return new SystemTime() {
+                public Calendar now() {
+                    Calendar cal = DateTools.parseWikiTimestampUTC("2020-01-24T19:20:40Z");
+                    return cal;
+                }
+            };
+        }
+        
+        public void setProperty(String key, String value) {
+            properties.setProperty(key, value);
         }
 
         @Override
@@ -239,6 +254,11 @@ public class NirvanaBotUnitTest {
         public void enableDetailedWikiReport() {
             enableReport = true;
             REPORT_FORMAT = "wiki";
+        }
+
+        public void enableDetailedTextReport() {
+            enableReport = true;
+            REPORT_FORMAT = "txt";
         }
     }
 
@@ -342,6 +362,8 @@ public class NirvanaBotUnitTest {
         when(bot.mockNewPages.update(anyObject(), anyObject(), anyString()))
                 .thenReturn(true);
 
+        bot.setProperty("overriden-properties-page", "User:TestBot:GlobalSettings");
+
         String globalSettings = "{{{User:TestBot:Template1 (параметры по умолчанию)\n" + 
                 "|тип = список новых статей\n" + 
                 "|элементов = 19\n" + 
@@ -400,5 +422,22 @@ public class NirvanaBotUnitTest {
         bot.loadCustomProperties(Collections.emptyMap());
         bot.go();
 
+    }
+
+    @Test
+    public void testTextReport() throws Exception {
+        TestNirvanaBot bot = new TestNirvanaBot(BasicBot.FLAG_DEFAULT_LOG);
+        bot.enableDetailedTextReport();
+        when(bot.mockCatscanService.isOk()).thenReturn(Status.OK);
+        when(bot.mockNewPages.update(anyObject(), anyObject(), anyString()))
+                .thenReturn(true);
+
+        bot.setProperty("statistics-file", "report_%(date)_%(time)_%(launch_number).txt");
+
+        bot.initLog();
+        bot.loadCustomProperties(Collections.emptyMap());
+        bot.go();
+
+        verify(bot.mockReporter).reportTxt(bot.getOutDir() + "/report_2020-01-24_19-20-40_1.txt");
     }
 }
