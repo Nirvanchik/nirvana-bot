@@ -99,7 +99,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -684,18 +683,10 @@ public class NirvanaBot extends BasicBot {
         return new SystemTime();
     }
 
-    protected long getTimeInMillis() {
-        return systemTime.now().getTimeInMillis();
-    }
-
-    protected void sleep(long millis) throws InterruptedException {
-        Thread.sleep(millis);
-    }
-
     protected void go() throws InterruptedException, BotFatalError {
         cacheDir = outDir + "/" + "cache";
 
-        long startMillis = getTimeInMillis();
+        long startMillis = systemTime.currentTimeMillis();
         commons = createCommonsWiki();
         commons.setMaxLag(maxLag);
 
@@ -784,7 +775,7 @@ public class NirvanaBot extends BasicBot {
         boolean noServicesOrTimeout = false;
         for (String newpagesTemplate: newpagesTemplates) {
 
-            final long startT = getTimeInMillis();
+            final long startT = systemTime.currentTimeMillis();
             log.info("Template to check: {}", newpagesTemplate);
             BotTemplateParser botTemplateParser =
                     new BotTemplateParser(newpagesTemplate, userNamespace);
@@ -847,7 +838,7 @@ public class NirvanaBot extends BasicBot {
 
             while (i < portalNewPagesLists.length) {
                 if (!noServicesOrTimeout && botTimeout > 0 &&
-                        (getTimeInMillis() - startMillis > botTimeout)) {
+                        (systemTime.currentTimeMillis() - startMillis > botTimeout)) {
                     log.debug("Bot work time exceeded allowed maximum of {} ms. Stopping bot.",
                             botTimeout);
                     noServicesOrTimeout = true;
@@ -933,7 +924,7 @@ public class NirvanaBot extends BasicBot {
                                     }
                                     wiki.dumpCookies();
                                     commons.dumpCookies();
-                                    if (UPDATE_PAUSE > 0) sleep(UPDATE_PAUSE);
+                                    if (UPDATE_PAUSE > 0) systemTime.sleep(UPDATE_PAUSE);
                                 }                                    
                             } else {
                                 reportItem.skip();                        
@@ -1099,7 +1090,7 @@ public class NirvanaBot extends BasicBot {
             }
             reportItem.end();
             LocalDateTime endTime = systemTime.nowLdt();
-            long endT = getTimeInMillis();
+            long endT = systemTime.currentTimeMillis();
             reporter.addToTotal(portalNewPagesLists.length);
 
             String finishStatus = (fatalProblem || noServicesOrTimeout) ? "STOPPED" : "FINISHED";

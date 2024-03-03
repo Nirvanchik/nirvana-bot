@@ -236,17 +236,6 @@ public class NirvanaBotUnitTest {
             return retValue;
         }
 
-        @Override
-        protected long getTimeInMillis() {
-            timeInMillis = timeInMillis + 1000;
-            return timeInMillis;
-        }
-
-        @Override
-        protected void sleep(long millis) throws InterruptedException {
-            // Do nothing
-        }
-
         public void enableStatusReport() {
             enableStatus = true;
         }

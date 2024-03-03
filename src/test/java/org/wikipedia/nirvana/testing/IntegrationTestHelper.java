@@ -112,6 +112,7 @@ public class IntegrationTestHelper {
             Assert.assertNotNull(time);
             tmpLog.info("[MOCK] Set current time to " +
                     DateTools.printTimestamp(time.getTime()));
+            final long timeStart = System.currentTimeMillis();
             mockSystemTime = new SystemTime() {
                 @Override
                 public Calendar now() {
@@ -122,6 +123,12 @@ public class IntegrationTestHelper {
                 public OffsetDateTime nowOdt() {
                     return OffsetDateTime.ofInstant(time.toInstant(),
                             ZoneId.systemDefault());
+                }
+
+                @Override
+                public long currentTimeMillis() {
+                    long timeDiff = System.currentTimeMillis() - timeStart;
+                    return time.getTimeInMillis() + timeDiff;
                 }
             };
         }
