@@ -65,7 +65,6 @@ public class NewPagesTest {
     @After
     public void tearDown() throws Exception {
         TestLocalizationManager.reset();
-        NewPages.resetFromTests();
     }
    
     private PortalParam makeTestParam() {

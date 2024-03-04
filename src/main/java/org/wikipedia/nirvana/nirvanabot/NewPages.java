@@ -120,10 +120,8 @@ public class NewPages implements PortalModule {
 
     private static final int WIKI_API_BUNCH_SIZE = 10;
 
-    private static String summaryNew;
-    private static String summaryUpdate;
-
-    private static boolean initialized; 
+    private String summaryNew;
+    private String summaryUpdate;
 
     protected String language;
     protected List<String> categories;
@@ -204,7 +202,7 @@ public class NewPages implements PortalModule {
         this.systemTime = systemTime;
         this.localizer = Localizer.getInstance();
         BotVariables.init();
-        initStatics();
+        initLocalizedVars();
 
         this.language = param.lang;
         this.categories = param.categories;
@@ -241,20 +239,9 @@ public class NewPages implements PortalModule {
         log.debug("Portal module created for portal subpage [[" + this.pageName + "]]");
     }
 
-    /**
-     * Initialize static code. Call it before using any static methods of class.
-     */
-    public static void initStatics() {
-        if (initialized) return;
-        Localizer localizer = Localizer.getInstance();
+    private void initLocalizedVars() {
         summaryNew = localizer.localize("новых");
         summaryUpdate = localizer.localize("обновление");
-
-        initialized = true;
-    }
-
-    public static void resetFromTests() {
-        initialized = false;
     }
 
     protected Calendar now() {
