@@ -24,7 +24,7 @@
 package org.wikipedia.nirvana.fixarchive;
 
 import org.wikipedia.nirvana.archive.ArchiveSimple;
-import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.nirvanabot.NewPageItemParser;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import java.io.IOException;
@@ -42,6 +42,7 @@ public class ArchiveUnique extends ArchiveSimple {
     NirvanaWiki wiki;
 
     protected HashMap<String,Integer> uniqueItemIndexes;
+    private final NewPageItemParser newPageItemParser;
 
     @Override
     public String toString() {
@@ -68,11 +69,12 @@ public class ArchiveUnique extends ArchiveSimple {
         log.debug("ArchiveUnique created");
         this.wiki = wiki;
         uniqueItemIndexes = new HashMap<String,Integer>();
+        newPageItemParser = new NewPageItemParser();
     }
 
     @Override
     public void add(String item, Calendar creationDate) {
-        String title = NewPages.getNewPagesItemArticle(item);
+        String title = newPageItemParser.getNewPagesItemArticle(item);
         if (title != null) {
             String origTitle = null;
             try {

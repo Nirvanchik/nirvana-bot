@@ -27,7 +27,7 @@ import static org.wikipedia.nirvana.archive.EnumerationUtils.OL;
 import static org.wikipedia.nirvana.archive.EnumerationUtils.OL_END;
 
 import org.wikipedia.nirvana.archive.ArchiveSettings.Enumeration;
-import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.nirvanabot.NewPageItemParser;
 import org.wikipedia.nirvana.util.StringTools;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
@@ -100,6 +100,8 @@ public class ArchiveWithHeaders extends Archive {
      * @see ArchiveSettings#superHeaderFormat
      */
     public String superHeaderFormat;
+    
+    private final NewPageItemParser newPageItemParser;
 
     protected Section createSection(Enumeration enumeration, boolean old) {
         return new Section(enumeration,old);        
@@ -570,7 +572,8 @@ public class ArchiveWithHeaders extends Archive {
         parts = new ArrayList<Section>();
         if (parseCount >= 0) {
             numberOfItemsToParse = parseCount;
-        }        
+        }
+        newPageItemParser = new NewPageItemParser();
     }
 
     @Override
@@ -748,7 +751,7 @@ public class ArchiveWithHeaders extends Archive {
                 Section items = parts.get(0);
                 if (items.getSuperHeader() == null) {
                     for (int i = items.getSize() - 1; i >= 0; i--) {
-                        Calendar c = NewPages.getNewPagesItemDate(wiki, items.getItem(i));
+                        Calendar c = newPageItemParser.getNewPagesItemDate(wiki, items.getItem(i));
                         if (c != null) {
                             latestItemHeaderHeader =
                                     ArchiveSettings.getHeaderForDate(c, superHeaderFormat);

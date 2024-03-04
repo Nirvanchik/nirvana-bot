@@ -24,7 +24,7 @@
 package org.wikipedia.nirvana.fixarchive;
 
 import org.wikipedia.nirvana.archive.ArchiveSimple;
-import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.nirvanabot.NewPageItemParser;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +47,7 @@ import javax.security.auth.login.LoginException;
 public class ArchiveSimpleSorted extends ArchiveSimple {
     NirvanaWiki wiki;
     SortedMap<Calendar,String> itemsSorted;
+    private final NewPageItemParser newPageItemParser;
 
     // TODO: Do not do this in constructor!
     /**
@@ -61,6 +62,7 @@ public class ArchiveSimpleSorted extends ArchiveSimple {
     public ArchiveSimpleSorted(NirvanaWiki wiki, String [] lines, boolean addToTop) {
         super(addToTop);
         this.wiki = wiki;
+        newPageItemParser = new NewPageItemParser();
         Comparator<Calendar> compA = new Comparator<Calendar>() {
             @Override
             public int compare(Calendar left, Calendar right) {                
@@ -79,7 +81,7 @@ public class ArchiveSimpleSorted extends ArchiveSimple {
             itemsSorted = new TreeMap<Calendar, String>(compA); // ascending
         }
         for (String line:lines) {
-            Calendar c = NewPages.getNewPagesItemDate(wiki, line);
+            Calendar c = newPageItemParser.getNewPagesItemDate(wiki, line);
             add(line, c);
         }
     }

@@ -27,7 +27,7 @@ import org.wikipedia.Wiki;
 import org.wikipedia.nirvana.base.BasicBot;
 import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.localization.Localizer;
-import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.nirvanabot.NewPageItemParser;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.TextUtils;
 import org.wikipedia.nirvana.wiki.WikiBooster;
@@ -60,6 +60,8 @@ public class CleanArchiveBot extends BasicBot {
     private static final boolean DEBUG = false;
     private static final Method DEFAULT_METHOD = Method.METHOD_1;
     private static final boolean DEFAULT_INCLUDE_REDIRECTS = true;
+    
+    private NewPageItemParser newPageItemParser;
 
     enum Format {
         TXT,
@@ -101,7 +103,7 @@ public class CleanArchiveBot extends BasicBot {
      * Default constructor.
      */
     public CleanArchiveBot() {
-        // Empty
+        this(0);
     }
 
     /**
@@ -148,8 +150,9 @@ public class CleanArchiveBot extends BasicBot {
      */
     @Override
     protected void go() throws InterruptedException, BotFatalError {
+        // TODO: May be move it to constructor?
         Localizer.init(Localizer.NO_LOCALIZATION);
-        NewPages.initStatics();
+        newPageItemParser = new NewPageItemParser();
 
         log.info("Read task information in {}", this.taskFile);
         Task task = readTask(this.taskFile);
@@ -392,7 +395,7 @@ public class CleanArchiveBot extends BasicBot {
                 boolean good = true;
                 for (String badPage: badPages) {
                     if (part.contains(badPage)) {
-                        if (badPage.equals(NewPages.getNewPagesItemArticle(part))) {
+                        if (badPage.equals(newPageItemParser.getNewPagesItemArticle(part))) {
                             good = false;
                             counter++;
                             log.info("Remove line: \"{}\" because it contains \"{}\"", part,

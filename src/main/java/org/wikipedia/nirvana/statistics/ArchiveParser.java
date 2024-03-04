@@ -27,7 +27,7 @@ import org.wikipedia.Wiki.Revision;
 import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.archive.ScanArchiveSettings;
-import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.nirvanabot.NewPageItemParser;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
 import org.wikipedia.nirvana.util.SystemTime;
@@ -41,9 +41,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -280,7 +278,7 @@ public class ArchiveParser {
 
     ArchiveItem parseLine(String line, boolean getSize) throws IOException {
         ArchiveItem item = null;
-        Pattern p = Pattern.compile(NewPages.PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
+        Pattern p = Pattern.compile(NewPageItemParser.PATTERN_NEW_PAGES_LINE_WIKIREF_ARTICLE);
         Matcher m = p.matcher(line);
         while (m.find()) {
             String article = m.group("article");
@@ -297,7 +295,7 @@ public class ArchiveParser {
                 return item;
             }
         }
-        p = Pattern.compile(NewPages.PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM);
+        p = Pattern.compile(NewPageItemParser.PATTERN_NEW_PAGES_LINE_TEMPLATE_ITEM);
         m = p.matcher(line);
         if (m.find()) {
             String templateString = m.group("template");

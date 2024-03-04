@@ -23,32 +23,24 @@
 
 package org.wikipedia.nirvana.fixarchive;
 
-import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_REMOVE_DUPLICATES;
-import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_SORT;
-import static org.wikipedia.nirvana.nirvanabot.PortalConfig.STR_TOSORT;
-
 import org.wikipedia.nirvana.archive.Archive;
-import org.wikipedia.nirvana.archive.ArchiveSettings;
 import org.wikipedia.nirvana.archive.ArchiveSettings.Period;
 import org.wikipedia.nirvana.archive.EnumerationUtils;
 import org.wikipedia.nirvana.base.BasicBot;
 import org.wikipedia.nirvana.base.BotFatalError;
 import org.wikipedia.nirvana.localization.Localizer;
 import org.wikipedia.nirvana.nirvanabot.BotVariables;
-import org.wikipedia.nirvana.nirvanabot.NewPages;
+import org.wikipedia.nirvana.nirvanabot.NewPageItemParser;
 import org.wikipedia.nirvana.nirvanabot.NirvanaBot;
 import org.wikipedia.nirvana.nirvanabot.PortalConfig;
 import org.wikipedia.nirvana.util.DateTools;
 import org.wikipedia.nirvana.util.FileTools;
-import org.wikipedia.nirvana.util.OptionsUtils;
 import org.wikipedia.nirvana.util.TextUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -71,6 +63,8 @@ public class FixArchiveBot extends BasicBot {
             "http://ru.wikipedia.org\n" +
             "Copyright (C) 2020 Dmitry Trofimovich " +
             "(KIN, Nirvanchik, DimaTrofimovich@gmail.com)\n\n";
+    
+    private NewPageItemParser newPageItemParser;
 
     public void showInfo() {
         System.out.print(INFO);
@@ -100,6 +94,7 @@ public class FixArchiveBot extends BasicBot {
         PortalConfig.initStatics();
         BotVariables.init();
         DateTools.init(language);
+        newPageItemParser = new NewPageItemParser();
 
         String task;
         try {
@@ -237,7 +232,7 @@ public class FixArchiveBot extends BasicBot {
                     (    item.compareToIgnoreCase(EnumerationUtils.OL) != 0 &&
                          item.compareToIgnoreCase(EnumerationUtils.OL_END) != 0 &&
                          !p.matcher(item).matches())    ) {
-                Calendar c = NewPages.getNewPagesItemDate(wiki, item);
+                Calendar c = newPageItemParser.getNewPagesItemDate(wiki, item);
                 thisArchive.add(item, c);
             }
         }
