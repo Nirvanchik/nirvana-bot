@@ -33,28 +33,42 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * @author kin
- *
+ * Utility class that can make difficult template searches in wiki page text.
+ * It can search externally provided search items (TemplateFindItem), which is a set of 3 elements
+ * (template, key, value):
+ * 1) template name
+ * 2) template variable
+ * 3) template variable value
+ * 
+ * WikiBooster here is used for speed optimizations
+ * (merge many similar API calls into one heavy call, and then parse and take required data). 
+ * This reduces HTTP traffic very much.
  */
 public class TemplateFinder {
     private final List<TemplateFindItem> findItems;
     private final WikiBooster wikiBooster;
     private final String templatePrefix;
 
+    /**
+     * Constructs instance of class with predefined items to search, Wiki and WikiBooster.
+     */
     public TemplateFinder(List<TemplateFindItem> findItems, NirvanaWiki wiki,
             WikiBooster wikiBooster) throws IOException {
-		this.findItems = findItems;
+        this.findItems = findItems;
         this.wikiBooster = wikiBooster;
         templatePrefix = wiki.namespaceIdentifier(Wiki.TEMPLATE_NAMESPACE) + ":";
-	}
+    }
 
+    /**
+     * Search specified template items in article, which title is provided by user.
+     */
     public boolean find(String article) throws IOException {
         for (TemplateFindItem findItem: findItems) {
             if (findItem(findItem, article)) {
-    			return true;
-    		}
-    	}
-    	return false;
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean findItem(TemplateFindItem item, String article)
@@ -71,20 +85,20 @@ public class TemplateFinder {
 
     private boolean findItemInTemplate(TemplateFindItem item, String text, String template) {
         // 1) Нужно найти и распарсить код шаблона, занести в мапу словарь значений
-    	HashMap<String, String> params = new HashMap<>();
+        HashMap<String, String> params = new HashMap<>();
         if (!WikiUtils.parseWikiTemplate(template, text, params)) {
-    		return false;
-    	}    	
+            return false;
+        }        
         // 2) Пройтись по словарю и отыскать нужный ключ и значение
-    	if (item.param.isEmpty()) {
-    		if (item.value.isEmpty()) {
-    			return true;
-    		} 
-    		for (String value: params.values()) {
-        		if (value.contains(item.value)) {
-        			return true;
-        		}
-        	}
+        if (item.param.isEmpty()) {
+            if (item.value.isEmpty()) {
+                return true;
+            } 
+            for (String value: params.values()) {
+                if (value.contains(item.value)) {
+                    return true;
+                }
+            }
         } else if (item.value.isEmpty()) {
             // We don't care value, just check that param exists
             return params.containsKey(item.param);
@@ -92,7 +106,7 @@ public class TemplateFinder {
             // We care template, param, value
             String value = params.get(item.param);
             return (value != null && value.contains(item.value));
-    	}
-	    return false;
+        }
+        return false;
     }    
 }

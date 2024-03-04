@@ -1,6 +1,6 @@
 /**
- *  @(#)TemplateFindItem.java 23.08.2015
- *  Copyright © 2015 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)TemplateFindItem.java
+ *  Copyright © 2024 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,43 +23,61 @@
 
 package org.wikipedia.nirvana.nirvanabot.templates;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.wikipedia.nirvana.error.BadFormatException;
 import org.wikipedia.nirvana.util.StringTools;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
- * @author kin
+ * Template item to search in wiki page text.
+ * Consists of template name, template parameter and its value.
+ * For example, wiki page could have:
+ *    {{dog
+ *      | size = large
+ *      | height = 50 sm
+ *    }}
+ * Here "dog, size, large" could be an example to search.
  *
  */
-public class TemplateFindItem implements Comparable<TemplateFindItem>{
+public class TemplateFindItem implements Comparable<TemplateFindItem> {
     public final String template;
     public final String param;
     public final String value;
 
-	public TemplateFindItem(String template, String param, String value) {
+    /**
+     * Constructs template item to search.
+     *
+     * @param template template name.
+     * @param param template parameter.
+     * @param value template parameter value.
+     */
+    public TemplateFindItem(String template, String param, String value) {
         this.template = StringUtils.capitalize(template);
         if (param != null && !param.isEmpty()) {
             param = param.toLowerCase();
-		}
+        }
         this.param = param;
-		this.value = value;
+        this.value = value;
         if (template == null || template.isEmpty() || param == null || value == null) {
             throw new RuntimeException("Bad format");
         }
-	}
+    }
 
-	public static TemplateFindItem parseTemplateFindData(String templateFindData) throws BadFormatException {
+    /**
+     * Get {@link TemplateFindItem} from settings string at bot wiki settings page.
+     */
+    public static TemplateFindItem parseTemplateFindData(String templateFindData)
+            throws BadFormatException {
         int slashes = StringTools.howMany(templateFindData, '/'); 
         if (slashes == 2) {
-			String parts[] = StringUtils.splitPreserveAllTokens(templateFindData, "/", 3);
-			parts = StringUtils.stripAll(parts);
+            String[] parts = StringUtils.splitPreserveAllTokens(templateFindData, "/", 3);
+            parts = StringUtils.stripAll(parts);
             if (parts[0].isEmpty()) {
-				throw new BadFormatException();
-			}
-			return new TemplateFindItem(parts[0], parts[1], parts[2]);
+                throw new BadFormatException();
+            }
+            return new TemplateFindItem(parts[0], parts[1], parts[2]);
         } else if (slashes == 1) {
-            String parts[] = StringUtils.splitPreserveAllTokens(templateFindData, "/", 3);
+            String[] parts = StringUtils.splitPreserveAllTokens(templateFindData, "/", 3);
             parts = StringUtils.stripAll(parts);
             if (parts[0].isEmpty()) {
                 throw new BadFormatException();
@@ -70,11 +88,15 @@ public class TemplateFindItem implements Comparable<TemplateFindItem>{
                 throw new BadFormatException();
             }
             return new TemplateFindItem(templateFindData.trim(), "", "");
-		} else {
-			throw new BadFormatException();
-		}
-	}
+        } else {
+            throw new BadFormatException();
+        }
+    }
 
+    /**
+     * @return True if search item is simple. By "simple" we mean when we just search template
+     *     without parameter specification.
+     */
     public boolean isSimple() {
         return param.isEmpty() && value.isEmpty();
     }
