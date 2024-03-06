@@ -78,11 +78,11 @@ public class NamespaceUtils {
      * @return <code>true</code> if article is from category namespace.
      */
     public static boolean categoryNamespace(String article) {
-    	initStatics();
+        initStatics();
         if (article == null) {
             throw new NullPointerException("article argument is null");
         }
         return (article.startsWith(sCategoryNamespace) ||
                 article.startsWith(CATEGORY_NAMESPACE_EN) );
-	}
+    }
 }

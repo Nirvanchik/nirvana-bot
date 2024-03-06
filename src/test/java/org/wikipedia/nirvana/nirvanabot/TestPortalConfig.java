@@ -1,5 +1,5 @@
 /**
- *  @(#)TestPortalConfig.java 11.04.2017
+ *  @(#)TestPortalConfig.java
  *  Copyright © 2017 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
@@ -30,14 +30,14 @@ import java.util.Map;
  */
 public class TestPortalConfig extends PortalConfig {
 
-	/**
-	 * Constructs config.
-	 */
-	public TestPortalConfig(Map<String, String> options) {
-		super(options);
-	}
+    /**
+     * Constructs config.
+     */
+    public TestPortalConfig(Map<String, String> options) {
+        super(options);
+    }
 
-	public static void reset() {
-		PortalConfig.resetFromTests();
-	}
+    public static void reset() {
+        PortalConfig.resetFromTests();
+    }
 }
