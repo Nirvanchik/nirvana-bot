@@ -113,4 +113,21 @@ public class TemplateFindItem implements Comparable<TemplateFindItem> {
             return 0;
         }
     }
+    
+    @Override
+    public boolean equals(Object ob) {
+        if (this == ob) return true;
+        if (ob instanceof TemplateFindItem) {   
+            TemplateFindItem other = (TemplateFindItem) ob;
+            return this.template.equals(other.template)
+                && this.param.equals(other.param)
+                && this.value.equals(other.value);
+        }
+        return false;
+    }
+    
+    @Override
+    public String toString() {
+        return String.format("TemplateFindItem[%s/%s/%s]", this.template, this.param, this.value);
+    }
 }

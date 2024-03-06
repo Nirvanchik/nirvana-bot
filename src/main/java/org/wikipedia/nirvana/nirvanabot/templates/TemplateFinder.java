@@ -91,6 +91,8 @@ public class TemplateFinder {
         }        
         // 2) Пройтись по словарю и отыскать нужный ключ и значение
         if (item.param.isEmpty()) {
+            // NOTE: Unused code. We don't search simple templates manually
+            //     but use wikiBooster.hasTemplate() check instead.
             if (item.value.isEmpty()) {
                 return true;
             } 
