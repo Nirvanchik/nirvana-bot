@@ -88,27 +88,14 @@ public class TemplateFinder {
         HashMap<String, String> params = new HashMap<>();
         if (!WikiUtils.parseWikiTemplate(template, text, params)) {
             return false;
-        }        
+        }
+        assert !item.isSimple();
         // 2) Пройтись по словарю и отыскать нужный ключ и значение
-        if (item.param.isEmpty()) {
-            // NOTE: Unused code. We don't search simple templates manually
-            //     but use wikiBooster.hasTemplate() check instead.
-            if (item.value.isEmpty()) {
-                return true;
-            } 
-            for (String value: params.values()) {
-                if (value.contains(item.value)) {
-                    return true;
-                }
-            }
-        } else if (item.value.isEmpty()) {
+        if (item.value.isEmpty()) {
             // We don't care value, just check that param exists
             return params.containsKey(item.param);
-        } else {
-            // We care template, param, value
-            String value = params.get(item.param);
-            return (value != null && value.contains(item.value));
         }
-        return false;
+        String value = params.get(item.param);
+        return (value != null && value.contains(item.value));
     }    
 }
