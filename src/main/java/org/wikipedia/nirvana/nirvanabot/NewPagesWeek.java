@@ -71,8 +71,8 @@ public class NewPagesWeek extends NewPages {
         pageTitleFormat = "%1$s/" + localizer.localize("День") + " %2$d";
     }
 
-    public class WeekData extends Data {
-        Map<String, Data> days = new LinkedHashMap<String, Data>(DAYS);
+    public class WeekUpdateResults extends UpdateResults {
+        Map<String, UpdateResults> days = new LinkedHashMap<String, UpdateResults>(DAYS);
     }
 
     private class WeekBuffer extends NewPagesBuffer {
@@ -122,13 +122,13 @@ public class NewPagesWeek extends NewPages {
         }
     }
     
-    protected Data getData(NirvanaWiki wiki) throws IOException, InterruptedException,
+    protected UpdateResults getData(NirvanaWiki wiki) throws IOException, InterruptedException,
             ServiceError, BotFatalError, InvalidLineFormatException {
         log.info("Processing data for [[{}]]", this.pageName);
 
         List<Revision> pageInfoList = getNewPages(wiki);
 
-        WeekData data = new WeekData();
+        WeekUpdateResults weekUpdateResults = new WeekUpdateResults();
         WeekBuffer buffer = new WeekBuffer(wiki);
         int count = pageInfoList.size();
         for (int i = 0; i < count ; ++i) {
@@ -136,34 +136,25 @@ public class NewPagesWeek extends NewPages {
         }
 
         for (int day = 0, dayNum = 0; day < DAYS; day++, dayNum--) {
-            String pageName = String.format(pageTitleFormat, this.pageName, dayNum);
-            Data d = new Data();
+            String dayPageName = String.format(pageTitleFormat, this.pageName, dayNum);
+            UpdateResults updateResults = new UpdateResults();
             NewPagesBuffer dayBuf = buffer.buffers[day];
-            String text = wiki.getPageText(pageName);
-            if (text == null) {
-                text = "";
-            }
-            if (true/*dayNum == LAST_DAY || dayNum == 0*/) {
-                analyzeOldText(wiki, text, d, dayBuf);
-                if (dayNum == LAST_DAY) {
-                    data.archiveCount = d.archiveCount;
-                    data.archiveItems = d.archiveItems;
-                    data.makeArchiveText();
-                    d.newPagesCount = 0;
-                } else if (dayNum == 0) {
-                    data.newPagesCount = d.newPagesCount;
-                    d.newPagesCount = dayBuf.size() -
-                            (d.oldCount - d.archiveCount - d.deletedCount);
-                    if (d.newPagesCount < 0) d.newPagesCount = 0;
-                } else {
-                    d.newPagesCount = 0;
+            updateResults.newText = dayBuf.getNewText();
+            updateResults.totalCount = dayBuf.size();
+            if (dayNum == 0) {
+                weekUpdateResults.totalCount = updateResults.totalCount; 
+            } else if (dayNum == LAST_DAY) {
+                String text = wiki.getPageText(pageName);
+                if (text != null) {
+                    analyzeOldText(wiki, text, updateResults, dayBuf);
+                    weekUpdateResults.archiveCount = updateResults.archiveCount;
+                    weekUpdateResults.archiveItems = updateResults.archiveItems;
+                    weekUpdateResults.makeArchiveText();
                 }
-                d.archiveCount = 0;
-                d.archiveItems = null;
             }
-            data.days.put(pageName, d);
+            weekUpdateResults.days.put(dayPageName, updateResults);
         }
-        return data; 
+        return weekUpdateResults; 
     }
 
     @Override
@@ -180,26 +171,30 @@ public class NewPagesWeek extends NewPages {
         }
 
         pageFormatter.getHeaderFooterChanges();
-        WeekData data;
+        WeekUpdateResults weekData;
         try {
-            data = (WeekData)getData(wiki);
+            weekData = (WeekUpdateResults)getData(wiki);
         } finally {
             reportData.reportCatscanStat(CatScanTools.getQuieriesStat());
         }
         reportData.willUpdateNewPages();
-        for (Entry<String,Data> entry:data.days.entrySet()) {
-            Data d = entry.getValue();
+        for (Entry<String,UpdateResults> entry: weekData.days.entrySet()) {
+            UpdateResults updateResults = entry.getValue();
             String str;
-            if (d.newPagesCount > 0) {
-                str = "+" + String.valueOf(d.newPagesCount) + " " + localizer.localize("статей");
+            if (updateResults.newPagesCount() > 0) {
+                str = new StringBuilder("+")
+                        .append(updateResults.newPagesCount()).append(" ")
+                        .append(localizer.localize("статей"))
+                        .toString();
             } else {
                 str = comment;
             } 
             try {
                 log.info("Updating [[{}]] {}", entry.getKey(), str);
-                if (wiki.editIfChanged(entry.getKey(), d.newText, str, this.minor, this.bot)) {
+                if (wiki.editIfChanged(entry.getKey(), updateResults.newText, str, this.minor,
+                        this.bot)) {
                     updated = true;
-                    reportData.newPagesUpdated(d.newPagesCount);
+                    reportData.newPagesUpdated(updateResults.newPagesCount());
                     waitPauseIfNeed();
                 }
             } catch (Exception e) {
@@ -210,7 +205,7 @@ public class NewPagesWeek extends NewPages {
         if (updated) {
             pageFormatter.notifyNewPagesUpdated();
         }
-        updateArchiveIfNeed(wiki, data, reportData);
+        updateArchiveIfNeed(wiki, weekData, reportData);
 
         return updated;
     }

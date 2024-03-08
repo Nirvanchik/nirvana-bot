@@ -100,8 +100,8 @@ public class NewPagesWithImages extends NewPages {
     }
 
     @Override
-    public Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException,
-            ServiceError, BotFatalError {
+    public UpdateResults getData(NirvanaWiki wiki, String text)
+            throws IOException, InterruptedException, ServiceError, BotFatalError {
         log.info("Processing data for [[{}]]", this.pageName);
 
         PageListProcessor pageListProcessor = createPageListProcessor();
@@ -230,16 +230,12 @@ public class NewPagesWithImages extends NewPages {
             }
         }
 
-        Data d = new Data();
-        d.newText = pageFormatter.formatPage(subset);
-        d.archiveCount = 0;
-        d.newPagesCount = subset.size() - oldCount;
-        if (d.newPagesCount < 0) d.newPagesCount = 0;
-        log.debug("updated items count: {}", subset.size());
-        log.debug("old items count: {}", oldCount);
-        log.debug("new items count: {}", d.newPagesCount);
+        UpdateResults updateResults = new UpdateResults();
+        updateResults.newText = pageFormatter.formatPage(subset);
+        updateResults.totalCount = subset.size();
+        updateResults.logStat();
         
-        return d;
+        return updateResults;
     }
 
     /**

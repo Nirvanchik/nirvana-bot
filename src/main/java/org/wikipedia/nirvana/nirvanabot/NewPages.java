@@ -260,17 +260,17 @@ public class NewPages implements PortalModule {
         return text;
     }
 
-    public class Data {        
+    public class UpdateResults {
         String newText;
         String archiveText;
         List<String> archiveItems = null;
-        int newPagesCount = 0;
+        int totalCount = 0;
         int archiveCount = 0;
         int deletedCount = 0;
         int oldCount = 0;
 
-        Data() {
-            if (archiveSettings != null) {
+        UpdateResults() {
+            if (archiveSettings != null && enableFeatureArchive) {
                 archiveItems = new ArrayList<String>();
             }
         }
@@ -284,15 +284,30 @@ public class NewPages implements PortalModule {
                 archiveText = StringUtils.join(archiveItems.iterator(),delimeter) + "\n";
             }
         }
-        
+
         boolean needUpdate(String oldText) {
             if (newText == null || newText.isEmpty()) {
                 return false;
             }
             return !newText.equals(oldText) && !newText.equals(oldText.trim());
         }
+
+        void logStat() {
+            log.debug("updated items count: {}", totalCount);
+            log.debug("old items count: {}", oldCount);
+            log.debug("archive count: {}", archiveCount);
+            log.debug("deleted count: {}", deletedCount);
+            log.debug("new items count: {}", newPagesCount());
+        }
+
+        int newPagesCount() {
+            if (totalCount == 0) return 0;
+            int count = totalCount - (oldCount - archiveCount - deletedCount);
+            if (count < 0) return 0;
+            return count;
+        }
     }
-            
+
     protected class NewPagesBuffer {
         protected NirvanaWiki wiki;
         protected List<String> subset = new ArrayList<String>();
@@ -301,15 +316,15 @@ public class NewPages implements PortalModule {
         public NewPagesBuffer(NirvanaWiki wiki) {
             this.wiki = wiki;
         }
-        
+
         public boolean contains(String item) {
             return subset.contains(item);
         }
-        
+
         public int size() {
             return subset.size();
         }
-        
+
         public boolean checkIsDuplicated(String archiveItem) {
             if (contains(archiveItem)) {
                 return true;
@@ -635,7 +650,7 @@ public class NewPages implements PortalModule {
         }
     }
     
-    protected void analyzeOldText(NirvanaWiki wiki, String text, Data updateResults,
+    protected void analyzeOldText(NirvanaWiki wiki, String text, UpdateResults updateResults,
             NewPagesBuffer buffer) throws IOException {
         log.debug("analyzing old text");
         String oldText = text;
@@ -700,15 +715,15 @@ public class NewPages implements PortalModule {
             }
             updateResults.archiveCount++;
         }
-        updateResults.newText = buffer.getNewText();
     }
 
     protected NewPagesBuffer createPagesBuffer(NirvanaWiki wiki) {
         return new NewPagesBuffer(wiki);
     }
 
-    protected Data getData(NirvanaWiki wiki, String text) throws IOException, InterruptedException,
-            ServiceError, BotFatalError, InvalidLineFormatException, DangerousEditException {
+    protected UpdateResults getData(NirvanaWiki wiki, String text)
+            throws IOException, InterruptedException, ServiceError, BotFatalError,
+            InvalidLineFormatException, DangerousEditException {
         log.info("Get data for [[{}]]", this.pageName);
 
         List<Revision> pageInfoList = getNewPages(wiki);
@@ -719,27 +734,21 @@ public class NewPages implements PortalModule {
         }
     
         // Add elements from old page
-        Data updateResults = new Data();
-                
-        
+        UpdateResults updateResults = new UpdateResults();
+
         if (true/*count < maxItems /*|| archive!=null*/) { 
             analyzeOldText(wiki, text, updateResults, buffer);
         }
+        updateResults.newText = buffer.getNewText();
+        updateResults.totalCount = buffer.size(); 
         
         if (enableFeatureArchive) updateResults.makeArchiveText();
 
-        int totalCount = buffer.size();
-        updateResults.newPagesCount = totalCount - 
-                (updateResults.oldCount - updateResults.archiveCount - updateResults.deletedCount);
-        if (updateResults.newPagesCount < 0) updateResults.newPagesCount = 0;
-        log.debug("updated items count: {}", totalCount);
-        log.debug("old items count: {}", updateResults.oldCount);
-        log.debug("archive count: {}", updateResults.archiveCount);
-        log.debug("deleted count: {}", updateResults.deletedCount);
-        log.debug("new items count: {}", updateResults.newPagesCount);
+        updateResults.logStat();
 
-        if (totalCount == 0 && updateResults.oldCount > dangerousEditThreshold) {
-            throw new DangerousEditException(pageName, updateResults.oldCount, totalCount);
+        if (updateResults.totalCount == 0 && updateResults.oldCount > dangerousEditThreshold) {
+            throw new DangerousEditException(pageName, updateResults.oldCount,
+                    updateResults.totalCount);
         }
 
         return updateResults;
@@ -825,7 +834,7 @@ public class NewPages implements PortalModule {
             pageFormatter.getHeaderFooterChanges();
         }
 
-        Data updateResults;
+        UpdateResults updateResults;
         try {
             updateResults = getData(wiki, text);
         } finally {
@@ -841,13 +850,13 @@ public class NewPages implements PortalModule {
 
         if (updateResults.needUpdate(text)) {
             StringBuilder summaryBuilder = new StringBuilder("");
-            if (updateResults.newPagesCount > 0) {
+            if (updateResults.newPagesCount() > 0) {
                 summaryBuilder.append("+");
             }            
-            if (updateResults.newPagesCount == 0 && !enableFeatureArchive) {
+            if (updateResults.newPagesCount() == 0 && !enableFeatureArchive) {
                 summaryBuilder.append(summaryUpdate);
             } else {
-                summaryBuilder.append(updateResults.newPagesCount).append(summaryNew);
+                summaryBuilder.append(updateResults.newPagesCount()).append(summaryNew);
             }
             
             if (enableFeatureArchive && archiveSettings != null
@@ -864,7 +873,7 @@ public class NewPages implements PortalModule {
                 log.info("Updating [[{}]] {}", this.pageName, summary);
                 wiki.edit(pageName, updateResults.newText, summary, this.minor, this.bot);
                 updated = true;
-                reportData.newPagesUpdated(updateResults.newPagesCount);
+                reportData.newPagesUpdated(updateResults.newPagesCount());
                 pageFormatter.notifyNewPagesUpdated();
             } catch (Exception e) {
                 reportData.newPagesUpdateError();
@@ -875,7 +884,7 @@ public class NewPages implements PortalModule {
         return updated;
     }
 
-    protected void updateArchiveIfNeed(NirvanaWiki wiki, Data updateResults,
+    protected void updateArchiveIfNeed(NirvanaWiki wiki, UpdateResults updateResults,
             ReportItem reportData) throws InterruptedException, ArchiveUpdateFailure {
         if (!enableFeatureArchive || archiveSettings == null) {
             return;
@@ -901,7 +910,7 @@ public class NewPages implements PortalModule {
         }
     }
 
-    protected void updateArchive(NirvanaWiki wiki, Data updateResults)
+    protected void updateArchive(NirvanaWiki wiki, UpdateResults updateResults)
             throws LoginException, IOException {
         Archive defaultArchive = null;
         String defaultArhiveName = null;
