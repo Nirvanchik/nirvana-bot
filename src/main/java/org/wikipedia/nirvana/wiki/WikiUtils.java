@@ -455,4 +455,21 @@ public class WikiUtils {
         int secondLastSlash = subPage.lastIndexOf('/', lastSlash - 1);
         return subPage.substring(0, secondLastSlash >= 0 ? secondLastSlash : lastSlash);
     }
+
+    /**
+     * Replace illegal characters in title to escape codes.
+     * Returns page title string suitable for insertion in wiki text.
+     */
+    public static String escapeTitle(String str) {
+        return str.replace("=", "&#61;");
+    }
+
+    /**
+     * Return original (unescaped) article title taken from wiki text.
+     * In wiki text some symbols can be replaced by escape sequences.
+     */
+    public static String unescapeTitle(String str) {
+        return str.replace("&#61;","=");
+    }
+
 }

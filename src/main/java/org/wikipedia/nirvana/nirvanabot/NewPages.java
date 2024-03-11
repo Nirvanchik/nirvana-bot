@@ -53,6 +53,7 @@ import org.wikipedia.nirvana.wiki.CatScanTools.Service;
 import org.wikipedia.nirvana.wiki.CatScanTools.ServiceFeatures;
 import org.wikipedia.nirvana.wiki.NirvanaWiki;
 import org.wikipedia.nirvana.wiki.WikiBooster;
+import org.wikipedia.nirvana.wiki.WikiUtils;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -242,7 +243,7 @@ public class NewPages extends BasePortalModule {
             }
             for (String title:includedPages) {
                 String variant1 = "[[" + title + "]]";                        
-                String variant2 = "|" + pageTitleNormalToEscaped(
+                String variant2 = "|" + WikiUtils.escapeTitle(
                         title.substring((namespace == 0) ? 0 : namespaceIdentifier.length() + 1))
                         + "|";
                 if (archiveItem.contains(variant1) ||
@@ -284,8 +285,7 @@ public class NewPages extends BasePortalModule {
                 titleToInsert = ":" + titleToInsert;
             }
             if (format.contains("{{") && format.contains("}}")) {
-                // replaces '=' equal-sign by escape-code
-                titleToInsert = pageTitleNormalToEscaped(titleToInsert);
+                titleToInsert = WikiUtils.escapeTitle(titleToInsert);
             }
             return titleToInsert;
         }
@@ -533,7 +533,7 @@ public class NewPages extends BasePortalModule {
 
         void extractTitle() {
             title = newPageItemParser.getNewPagesItemArticle(item);
-            if (title != null) title = pageTitleEscapedToNormal(title);
+            if (title != null) title = WikiUtils.unescapeTitle(title);
         }
 
         String fullTitle() {
@@ -799,13 +799,4 @@ public class NewPages extends BasePortalModule {
         return;
     }
 
-    // TODO: Move it to static utils class
-    public static String pageTitleNormalToEscaped(String str) {
-        return str.replace("=", "&#61;");
-    }
-
-    // TODO: Move it to static utils class
-    public static String pageTitleEscapedToNormal(String str) {
-        return str.replace("&#61;","=");
-    }
 }
