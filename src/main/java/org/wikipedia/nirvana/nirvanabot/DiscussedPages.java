@@ -188,7 +188,7 @@ public class DiscussedPages extends Pages {
         super(param, pageFormatter, systemTime);
         this.prefix = param.prefix;
         this.settings = settings;
-        getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL;
+        getRevisionMethod = GetRevisionMethod.GET_FIRST_REV_IF_NEED;
         this.discussionTemplates = filterDiscussionTemplates();
         dateTools = DateTools.getInstance();
         this.checkPlaceholdersBeforeUpdate = false;

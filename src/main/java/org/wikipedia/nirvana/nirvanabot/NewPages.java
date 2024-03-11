@@ -130,7 +130,7 @@ public class NewPages extends BasePortalModule {
     protected Map<String,String> pageLists;
     protected Map<String,String> pageListsToIgnore;
 
-    protected GetRevisionMethod getRevisionMethod = GetRevisionMethod.GET_REV;
+    protected GetRevisionMethod getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
     
     protected boolean enableFeatureUpdateFromOld = true;
     protected boolean enableFeatureArchive = true;
@@ -160,11 +160,7 @@ public class NewPages extends BasePortalModule {
 
     protected enum GetRevisionMethod {
         GET_FIRST_REV,
-        GET_FIRST_REV_IF_NEED,
-        GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL,
-        GET_REV,
-        GET_TOP_REV
-        //GET_LAST_REV_BY_PAGE_NAME
+        GET_FIRST_REV_IF_NEED
     }
 
     /**
@@ -321,19 +317,7 @@ public class NewPages extends BasePortalModule {
                     page = wiki.getFirstRevision(pageInfo.getPage());
                     break;
                 // Is this needed?
-                case GET_REV:
-                    page = wiki.getRevision(pageInfo.getRevid());
-                    break;
-                // Is this needed?
-                case GET_TOP_REV:
-                    page = wiki.getTopRevision(pageInfo.getPage());
-                    break;
-                // Is this needed?
                 case GET_FIRST_REV_IF_NEED:
-                    page = pageInfo;
-                    break;
-                // Is this needed?
-                case GET_FIRST_REV_IF_NEED_SAVE_ORIGINAL:
                     page = pageInfo;
                     break;
                 default:
@@ -484,9 +468,6 @@ public class NewPages extends BasePortalModule {
         PageListProcessor pageListProcessor = createPageListProcessor();
         CatScanTools.resetStat();
         log.info("Using pagelist fetcher: {}", pageListProcessor);
-        if (getRevisionMethod == GetRevisionMethod.GET_REV) {
-            getRevisionMethod = GetRevisionMethod.GET_FIRST_REV;
-        }
         List<Revision> pageInfoList = pageListProcessor.getNewPages(wiki);
         
         pageInfoList = filterPagesByCondition(pageInfoList, wiki);
