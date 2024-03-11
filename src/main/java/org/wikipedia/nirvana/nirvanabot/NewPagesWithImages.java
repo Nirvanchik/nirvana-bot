@@ -230,7 +230,7 @@ public class NewPagesWithImages extends NewPages {
             }
         }
 
-        UpdateResults updateResults = new UpdateResults();
+        NewPagesUpdateResults updateResults = new NewPagesUpdateResults();
         updateResults.newText = pageFormatter.formatPage(subset);
         updateResults.totalCount = subset.size();
         updateResults.logStat();

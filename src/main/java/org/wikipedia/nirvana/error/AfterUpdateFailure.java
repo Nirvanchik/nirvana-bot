@@ -1,6 +1,6 @@
 /**
- *  @(#)ArchiveUpdateFailure.java
- *  Copyright © 2020 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
+ *  @(#)AfterUpdateFailure.java
+ *  Copyright © 2024 Dmitry Trofimovich (KIN, Nirvanchik, DimaTrofimovich@gmail.com)
  *  
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,26 +24,33 @@
 package org.wikipedia.nirvana.error;
 
 /**
- * Exception that raised when archive update fails.
- * This failure should be handled separately, "retry logic" is disabled for it and
- * this wrapper exception used to catch this fail and skip retrying task.
+ * Wrapper exception, raised if any unhandled exception happened during some processing 
+ * (additional actions) after main portal module was successfully updated.
+ * Usually this means something bad but not very critical as the main task was successfully done. 
  *
  */
-public class ArchiveUpdateFailure extends AfterUpdateFailure {
+public class AfterUpdateFailure extends Exception {
 
     private static final long serialVersionUID = 1L;
 
     /**
+     * Constructor with message argument.
+     */
+    public AfterUpdateFailure(String message) {
+        super(message);
+    }
+
+    /**
      * Constructor with Throwable cause argument.
      */
-    public ArchiveUpdateFailure(Throwable cause) {
+    public AfterUpdateFailure(Throwable cause) {
         super(cause);
     }
 
     /**
      * Constructor with Throwable cause and String message arguments.
      */
-    public ArchiveUpdateFailure(String message, Throwable cause) {
+    public AfterUpdateFailure(String message, Throwable cause) {
         super(message, cause);
     }
 
@@ -56,7 +63,7 @@ public class ArchiveUpdateFailure extends AfterUpdateFailure {
      * @param enableSuppression whether or not suppression is enabled or disabled.
      * @param writableStackTrace whether or not the stack trace should be writable.
      */
-    public ArchiveUpdateFailure(String message, Throwable cause, boolean enableSuppression,
+    public AfterUpdateFailure(String message, Throwable cause, boolean enableSuppression,
             boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }

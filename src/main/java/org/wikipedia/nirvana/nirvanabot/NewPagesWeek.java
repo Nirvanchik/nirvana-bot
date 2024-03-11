@@ -71,7 +71,7 @@ public class NewPagesWeek extends NewPages {
         pageTitleFormat = "%1$s/" + localizer.localize("День") + " %2$d";
     }
 
-    public class WeekUpdateResults extends UpdateResults {
+    public class WeekUpdateResults extends NewPagesUpdateResults {
         Map<String, UpdateResults> days = new LinkedHashMap<String, UpdateResults>(DAYS);
     }
 
@@ -137,7 +137,7 @@ public class NewPagesWeek extends NewPages {
 
         for (int day = 0, dayNum = 0; day < DAYS; day++, dayNum--) {
             String dayPageName = String.format(pageTitleFormat, this.pageName, dayNum);
-            UpdateResults updateResults = new UpdateResults();
+            NewPagesUpdateResults updateResults = new NewPagesUpdateResults();
             NewPagesBuffer dayBuf = buffer.buffers[day];
             updateResults.newText = dayBuf.getNewText();
             updateResults.totalCount = dayBuf.size();
@@ -147,9 +147,8 @@ public class NewPagesWeek extends NewPages {
                 String text = wiki.getPageText(pageName);
                 if (text != null) {
                     analyzeOldText(wiki, text, updateResults, dayBuf);
-                    weekUpdateResults.archiveCount = updateResults.archiveCount;
+                    weekUpdateResults.outdateCount = updateResults.outdateCount;
                     weekUpdateResults.archiveItems = updateResults.archiveItems;
-                    weekUpdateResults.makeArchiveText();
                 }
             }
             weekUpdateResults.days.put(dayPageName, updateResults);

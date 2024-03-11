@@ -24,7 +24,7 @@
 package org.wikipedia.nirvana.nirvanabot;
 
 import org.wikipedia.nirvana.base.BotFatalError;
-import org.wikipedia.nirvana.error.ArchiveUpdateFailure;
+import org.wikipedia.nirvana.error.AfterUpdateFailure;
 import org.wikipedia.nirvana.error.DangerousEditException;
 import org.wikipedia.nirvana.error.InvalidLineFormatException;
 import org.wikipedia.nirvana.error.ServiceError;
@@ -41,5 +41,5 @@ import javax.security.auth.login.LoginException;
 public interface PortalModule {
     public boolean update(NirvanaWiki wiki, ReportItem reportData, String comment)
             throws IOException, LoginException, InterruptedException, ServiceError, BotFatalError,
-            InvalidLineFormatException, DangerousEditException, ArchiveUpdateFailure;
+            InvalidLineFormatException, DangerousEditException, AfterUpdateFailure;
 }
